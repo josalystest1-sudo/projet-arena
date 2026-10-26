@@ -79,3 +79,12 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 - Mort subite au tour 10 (soins ÷2, dégâts +25 % par tour cumulés), fin forcée à la fin du tour 15 : plus de PV totaux, puis plus de dégâts infligés, puis l'équipe prioritaire. Jamais de match nul. En simulation, 100 % des combats finissent entre les tours 8 et 15.
 - 4e passif inventé pour chaque classe (le GDD n'en donne que 3) : Colère (Guerrier, +10 % de dégâts par quart de PV manquant), Météorologue (Mage, forte revient 1 tour plus tôt), Sanctuaire (Prêtre, barrières +25 %).
 - Synergies du prototype : Provocation + Nova (celle du GDD) et trois nouvelles pour couvrir chaque paire de classes : Bastion (Rempart + Prière, le Rempart se reforme), Éclat (Trait de givre + Châtiment sur la même cible, +40 dégâts de lumière), Plaie brûlante (Fendoir + Boule de feu sur la même cible, saignement +2 tours). Une Synergie se déclenche quand la seconde compétence du couple se résout, même si la première est passée avant.
+
+**Écran et IA (2026-10-26, prototype)**
+
+- Le joueur choisit sa classe au lancement et peut retirer son kit (« Autre tirage, prototype seulement ») : c'est volontairement contraire au Destin non modifiable, pour tester les 3 classes et tous les kits. À retirer quand les comptes arrivent (étape 4).
+- Chaque équipe contient toujours un Guerrier, un Mage et un Prêtre (un Front, un Dégâts, un Soutien), kits tirés au hasard.
+- Bouton « Prêt » : la phase d'Intention se termine dès que le joueur est prêt et que ses alliés ont décidé, sans attendre les 12 s.
+- Les alliés IA décident entre 1 et 4,5 s après le début du tour, puis réajustent leur Intention quand le joueur change la sienne. Les ennemis décident entre eux sans voir nos Intentions.
+- Si le joueur est KO, ses alliés continuent ; la phase d'Intention est raccourcie.
+- L'IA joue ses fortes dès qu'elles sont prêtes et utiles (« un cran en dessous d'un bon joueur ») ; elle concentre la cible visée par ses alliés et cherche les Synergies connues.
