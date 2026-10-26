@@ -1,0 +1,42 @@
+[
+  {
+    "id": "provocation_nova",
+    "name": "Piège de feu",
+    "skills": [
+      "provocation",
+      "nova"
+    ],
+    "same_target": false,
+    "description": "Les ennemis provoqués subissent la Nova à +50 %."
+  },
+  {
+    "id": "rempart_priere",
+    "name": "Bastion",
+    "skills": [
+      "rempart",
+      "priere"
+    ],
+    "same_target": false,
+    "description": "Le Rempart se reforme : l'allié protégé est à l'abri d'un coup de plus."
+  },
+  {
+    "id": "trait_de_givre_chatiment",
+    "name": "Éclat",
+    "skills": [
+      "trait_de_givre",
+      "chatiment"
+    ],
+    "same_target": true,
+    "description": "La cible gelée subit 40 dégâts de lumière supplémentaires."
+  },
+  {
+    "id": "fendoir_boule_de_feu",
+    "name": "Plaie brûlante",
+    "skills": [
+      "fendoir",
+      "boule_de_feu"
+    ],
+    "same_target": true,
+    "description": "Le saignement de la cible dure 2 tours de plus."
+  }
+]

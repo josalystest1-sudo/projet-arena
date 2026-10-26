@@ -1,0 +1,112 @@
+## Un personnage en combat : stats, kit (une compétence par palier + un passif), recharges, états.
+## Module pur : aucune dépendance aux nœuds de scène.
+class_name CombatUnit
+extends RefCounted
+
+const TIERS := ["basique", "moyenne", "forte"]
+
+var id: String
+var display_name: String
+var class_id: String
+var team: int = 0
+var slot: int = 0
+var max_hp: int = 100
+var hp: int = 100
+var base_speed: int = 5
+var power: int = 100
+## Palier -> identifiant de compétence.
+var skills: Dictionary = {}
+var passive: String = ""
+## Palier -> numéro du tour à partir duquel la compétence est de nouveau disponible.
+var cooldown_until: Dictionary = {}
+var statuses: Array[Dictionary] = []
+## Drapeaux « une fois par combat » (second_souffle, resurrection, revived...).
+var flags: Dictionary = {}
+var last_target: String = ""
+var is_player: bool = false
+
+
+## Construit une unité depuis une classe et des choix de kit (index par palier et index de passif).
+static func from_class(data: CombatData, p_class_id: String, picks: Dictionary, p_id: String, p_team: int, p_slot: int) -> CombatUnit:
+	var cls: Dictionary = data.classes[p_class_id]
+	var unit := CombatUnit.new()
+	unit.id = p_id
+	unit.class_id = p_class_id
+	unit.display_name = str(picks.get("name", cls["name"]))
+	unit.team = p_team
+	unit.slot = p_slot
+	unit.max_hp = int(cls["stats"]["max_hp"])
+	unit.hp = unit.max_hp
+	unit.base_speed = int(cls["stats"]["speed"])
+	unit.power = int(cls["stats"]["power"])
+	for tier in TIERS:
+		var pool: Array = cls["skills"][tier]
+		unit.skills[tier] = pool[int(picks.get(tier, 0)) % pool.size()]
+	var passive_pool: Array = cls["passives"]
+	unit.passive = passive_pool[int(picks.get("passive", 0)) % passive_pool.size()]
+	return unit
+
+
+## Tire un kit au hasard (en attendant le générateur de Destin de l'étape 2).
+static func random_picks(rng: RandomNumberGenerator) -> Dictionary:
+	return {
+		"basique": rng.randi_range(0, 1),
+		"moyenne": rng.randi_range(0, 1),
+		"forte": rng.randi_range(0, 1),
+		"passive": rng.randi_range(0, 3),
+	}
+
+
+func is_alive() -> bool:
+	return hp > 0
+
+
+func hp_ratio() -> float:
+	return float(hp) / float(max_hp)
+
+
+func tier_of(skill_id: String) -> String:
+	for tier in TIERS:
+		if skills.get(tier, "") == skill_id:
+			return tier
+	return ""
+
+
+func has_status(status_id: String) -> bool:
+	return not get_status(status_id).is_empty()
+
+
+func get_status(status_id: String) -> Dictionary:
+	for status in statuses:
+		if status["id"] == status_id:
+			return status
+	return {}
+
+
+## Ajoute un état ; s'il existe déjà, garde la durée et la valeur les plus hautes.
+func add_status(status: Dictionary) -> void:
+	var existing := get_status(status["id"])
+	if existing.is_empty():
+		statuses.append(status.duplicate())
+		return
+	existing["turns"] = maxi(int(existing.get("turns", 0)), int(status.get("turns", 0)))
+	existing["value"] = maxi(int(existing.get("value", 0)), int(status.get("value", 0)))
+	if status.has("source"):
+		existing["source"] = status["source"]
+
+
+func remove_status(status_id: String) -> void:
+	for i in range(statuses.size() - 1, -1, -1):
+		if statuses[i]["id"] == status_id:
+			statuses.remove_at(i)
+
+
+func barrier_amount() -> int:
+	return int(get_status("barriere").get("value", 0))
+
+
+func status_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for status in statuses:
+		ids.append(str(status["id"]))
+	return ids
