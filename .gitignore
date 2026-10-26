@@ -1,0 +1,17 @@
+# Godot 4
+.godot/
+*.import
+export_presets.cfg.secret
+build/
+export/
+
+# OS / éditeurs
+.DS_Store
+Thumbs.db
+*.swp
+
+# Secrets
+.env
+*.keystore
+*.p12
+*.mobileprovision
