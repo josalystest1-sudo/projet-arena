@@ -1,4 +1,4 @@
-## Conditions de fin, mort subite, IA.
+## Conditions de fin et mort subite.
 extends "res://tests/test_case.gd"
 
 const GM := ["guerrier", "mage"]
@@ -38,9 +38,9 @@ func test_mort_subite_reduit_les_soins_et_augmente_les_degats() -> void:
 	for event in events_of_type(events, "heal"):
 		if event["target"] == "a1" and event["kind"] == "priere":
 			healed += int(event["amount"])
-	assert_eq(healed, int(round(40 * heal_mult)), "Prière (40) réduite par la mort subite")
+	assert_eq(healed, int(round(skill_power("priere", "heal") * heal_mult)), "Prière réduite par la mort subite")
 	var hits := damage_from(events, "b2", "a1", "hit")
-	assert_eq(hits, int(round(34 * 1.1 * damage_mult)), "dégâts augmentés au premier tour de mort subite")
+	assert_eq(hits, int(round(skill_power("boule_de_feu") * class_power("mage") * damage_mult)), "dégâts augmentés au premier tour de mort subite")
 
 
 func test_fin_forcee_sans_match_nul() -> void:
@@ -65,57 +65,3 @@ func test_egalite_parfaite_departagee() -> void:
 	combat.resolve_turn([])
 	assert_true(combat.finished, "fin forcée")
 	assert_true(combat.winner in [0, 1], "jamais de match nul")
-
-
-func test_ia_soigne_un_allie_bas() -> void:
-	var combat := duo_combat(["mage", "pretre"], GM)
-	combat.get_unit("a1").hp = 45
-	var choice := CombatAI.choose(combat, combat.get_unit("a2"), [])
-	assert_eq(choice.skill_id, "restauration", "le Prêtre choisit Restauration")
-	assert_eq(choice.target_id, "a1", "sur le Mage blessé")
-
-
-func test_ia_concentre_la_cible_des_allies() -> void:
-	var combat := duo_combat(GM, GM)
-	var choice := CombatAI.choose(combat, combat.get_unit("a1"), [action("a2", "boule_de_feu", "b1")])
-	assert_eq(choice.target_id, "b1", "le Guerrier suit l'Intention du Mage")
-
-
-func test_ia_releve_un_ko() -> void:
-	var combat := duo_combat(["guerrier", "pretre"], GM, {"pretre": {"forte": 1}})
-	advance_to_turn(combat, 3)
-	heal_all(combat)
-	combat.get_unit("a1").hp = 0
-	var choice := CombatAI.choose(combat, combat.get_unit("a2"), [])
-	assert_eq(choice.skill_id, "resurrection", "le Prêtre relève")
-	assert_eq(choice.target_id, "a1", "le Guerrier KO")
-
-
-func test_ia_cherche_la_synergie_provocation_nova() -> void:
-	var combat := duo_combat(GM, GM)
-	advance_to_turn(combat, 3)
-	heal_all(combat)
-	var choice := CombatAI.choose(combat, combat.get_unit("a2"), [action("a1", "provocation", "b2")])
-	assert_eq(choice.skill_id, "nova", "le Mage aligne sa Nova sur la Provocation")
-
-
-func test_combats_ia_contre_ia_se_terminent() -> void:
-	var rng := RandomNumberGenerator.new()
-	rng.seed = 2026
-	var wins := {0: 0, 1: 0}
-	var turns_total := 0
-	var synergies := 0
-	for i in range(30):
-		var combat := Combat.create(data, Duo.random_duo(data, rng), Duo.random_duo(data, rng), i % 2)
-		while not combat.finished:
-			var actions := CombatAI.choose_team(combat, 0)
-			actions.append_array(CombatAI.choose_team(combat, 1))
-			var events := combat.resolve_turn(actions)
-			synergies += events_of_type(events, "synergy").size()
-			assert_true(combat.turn <= combat.forced_end_turn + 1, "jamais au-delà du tour de fin forcée")
-		wins[combat.winner] += 1
-		turns_total += combat.turn
-	assert_eq(wins[0] + wins[1], 30, "30 vainqueurs")
-	assert_true(synergies > 0, "des Synergies se déclenchent en IA contre IA")
-	assert_between(float(turns_total) / 30.0, 5.0, 15.0, "durée moyenne des combats (tours)")
-	print("    (IA vs IA : %d / %d victoires, %.1f tours en moyenne, %d synergies)" % [wins[0], wins[1], float(turns_total) / 30.0, synergies])

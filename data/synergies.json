@@ -27,7 +27,7 @@
       "chatiment"
     ],
     "same_target": true,
-    "description": "La cible gelée subit 40 dégâts de lumière supplémentaires."
+    "description": "La cible gelée subit 75 dégâts de lumière supplémentaires."
   },
   {
     "id": "fendoir_boule_de_feu",
@@ -37,7 +37,7 @@
       "boule_de_feu"
     ],
     "same_target": true,
-    "description": "Le saignement de la cible dure 2 tours de plus."
+    "description": "Le saignement de la cible s'aggrave : une fois et demie plus fort et 2 tours de plus."
   },
   {
     "id": "cri_de_guerre_bouclier_de_mana",
@@ -57,7 +57,7 @@
       "chatiment"
     ],
     "same_target": false,
-    "description": "Le Châtiment frappe aussi l'autre ennemi provoqué."
+    "description": "Le Châtiment frappe aussi l'autre ennemi provoqué, une fois et demie plus fort."
   },
   {
     "id": "arc_de_foudre_priere",
@@ -67,6 +67,6 @@
       "priere"
     ],
     "same_target": false,
-    "description": "La Prière soigne aussi l'autre membre du duo."
+    "description": "La Prière soigne aussi l'autre membre du duo, une fois et demie plus fort."
   }
 ]

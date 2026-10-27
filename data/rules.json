@@ -1,7 +1,7 @@
 {
   "sudden_death_turn": 8,
   "forced_end_turn": 13,
-  "sudden_death_damage_step": 0.3,
+  "sudden_death_damage_step": 0.5,
   "sudden_death_heal_mult": 0.5,
   "cooldowns": {
     "basique": 0,

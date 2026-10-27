@@ -5,22 +5,28 @@ const GM := ["guerrier", "mage"]
 const GP := ["guerrier", "pretre"]
 const MP := ["mage", "pretre"]
 
+var mage_power: float = 1.0
+
+
+func setup() -> void:
+	super.setup()
+	mage_power = class_power("mage")
+
 
 func test_degats_de_base_et_peau_de_fer() -> void:
 	var combat := duo_combat(GM, GM)
 	var events := combat.resolve_turn([action("a1", "taillade", "b2"), action("b1", "taillade", "a2")])
-	assert_eq(damage_from(events, "a1", "b2"), 34, "Taillade sur le Mage")
+	assert_eq(damage_from(events, "a1", "b2"), skill_power("taillade"), "Taillade sur le Mage")
 	var combat_2 := duo_combat(GM, GM)
 	var events_2 := combat_2.resolve_turn([action("a2", "boule_de_feu", "b1")])
-	# 34 × 1,1 (puissance du Mage) × 0,85 (Peau de fer) = 31,79 → 32
-	assert_eq(damage_from(events_2, "a2", "b1"), 32, "Boule de feu sur le Guerrier à Peau de fer")
+	# Boule de feu × puissance du Mage × 0,85 (Peau de fer)
+	assert_eq(damage_from(events_2, "a2", "b1"), int(round(skill_power("boule_de_feu") * mage_power * 0.85)), "Boule de feu sur le Guerrier à Peau de fer")
 
 
 func test_focalisation_et_cible_unique() -> void:
 	var combat := duo_combat(GM, GM, {"mage": {"passive": 1}})
 	var events := combat.resolve_turn([action("a2", "boule_de_feu", "b2")])
-	# 34 × 1,1 × 1,2 = 44,88 → 45
-	assert_eq(damage_from(events, "a2", "b2"), 45, "Focalisation +20 %")
+	assert_eq(damage_from(events, "a2", "b2"), int(round(skill_power("boule_de_feu") * mage_power * 1.2)), "Focalisation +20 %")
 
 
 func test_provocation_redirige_tout_le_duo_adverse() -> void:
@@ -75,7 +81,7 @@ func test_rempart_absorbe_un_coup_et_bastion_en_absorbe_deux() -> void:
 		action("b2", "boule_de_feu", "a2"),
 	])
 	assert_eq(events_of_type(events, "absorbed").size(), 1, "un seul coup absorbé")
-	assert_eq(damage_from(events, "b2", "a2"), 37, "le second coup passe (34 × 1,1)")
+	assert_eq(damage_from(events, "b2", "a2"), int(round(skill_power("boule_de_feu") * mage_power)), "le second coup passe")
 	assert_false(combat.get_unit("a2").has_status("rempart"), "le Rempart a servi")
 
 	var combat_2 := duo_combat(GP, GM, {"guerrier": {"moyenne": 1}, "pretre": {"basique": 1}})
@@ -95,7 +101,6 @@ func test_rempart_absorbe_un_coup_et_bastion_en_absorbe_deux() -> void:
 func test_synergie_provocation_nova() -> void:
 	var combat := duo_combat(GM, GP)
 	jump_to_turn(combat, 3)
-	var mage_power := 1.1
 	var events := combat.resolve_turn([
 		action("a1", "provocation", "b2"),
 		action("a2", "nova", "b1"),
@@ -107,8 +112,8 @@ func test_synergie_provocation_nova() -> void:
 		if event["source"] == "a2":
 			nova_hits[event["target"]] = int(event["amount"])
 	# b2 (cible) et b1 (prochain ennemi à agir) sont provoqués : Nova +50 % sur les deux.
-	assert_eq(nova_hits["b2"], int(round(55 * mage_power * 1.5)), "Prêtre provoqué : Nova +50 %")
-	assert_eq(nova_hits["b1"], int(round(55 * mage_power * 1.5 * 0.85)), "Guerrier provoqué (Peau de fer) : Nova +50 %")
+	assert_eq(nova_hits["b2"], int(round(skill_power("nova") * mage_power * 1.5)), "Prêtre provoqué : Nova +50 %")
+	assert_eq(nova_hits["b1"], int(round(skill_power("nova") * mage_power * 1.5 * 0.85)), "Guerrier provoqué (Peau de fer) : Nova +50 %")
 
 
 func test_synergie_nova_resolue_avant_provocation() -> void:
@@ -156,12 +161,14 @@ func test_saignement_et_plaie_brulante() -> void:
 	heal_all(combat_2)
 	var events := combat_2.resolve_turn([action("a1", "fendoir", "b2"), action("a2", "boule_de_feu", "b2")])
 	assert_eq(events_of_type(events, "synergy").size(), 1, "Plaie brûlante déclenchée")
+	var worse := int(round(skill_power("fendoir", "status") * Combat.SYNERGY_PLAIE_BLEED_MULT))
 	assert_eq(int(combat_2.get_unit("b2").get_status("saignement")["turns"]), 4, "saignement prolongé de 2 tours")
+	assert_eq(int(combat_2.get_unit("b2").get_status("saignement")["value"]), worse, "et une fois et demie plus fort")
 	var dot := 0
 	for event in events_of_type(events, "damage"):
 		if event["kind"] == "dot":
 			dot += int(event["amount"])
-	assert_eq(dot, 12, "le saignement a fait 12 dégâts en fin de tour")
+	assert_eq(dot, worse, "le saignement aggravé a fait ses dégâts en fin de tour")
 
 
 func test_synergie_forteresse_protege_tout_le_duo() -> void:
@@ -169,8 +176,8 @@ func test_synergie_forteresse_protege_tout_le_duo() -> void:
 	jump_to_turn(combat, 3)
 	var events := combat.resolve_turn([action("a1", "cri_de_guerre", "a1"), action("a2", "bouclier_de_mana", "a1")])
 	assert_eq(events_of_type(events, "synergy").size(), 1, "Forteresse déclenchée")
-	# Le Bouclier de mana (150 × 1,1 = 165) se pose aussi sur le Mage, que personne ne frappe ce tour.
-	assert_eq(combat.get_unit("a2").barrier_amount(), 165, "l'autre membre du duo reçoit le même bouclier")
+	# Le Bouclier de mana se pose aussi sur le Mage, que personne ne frappe ce tour.
+	assert_eq(combat.get_unit("a2").barrier_amount(), int(round(skill_power("bouclier_de_mana", "barrier") * mage_power)), "l'autre membre du duo reçoit le même bouclier")
 	assert_true(combat.get_unit("a1").has_status("barriere"), "la cible garde son bouclier")
 
 
@@ -178,8 +185,8 @@ func test_synergie_jugement_frappe_l_autre_ennemi_provoque() -> void:
 	var combat := duo_combat(GP, GM)
 	var events := combat.resolve_turn([action("a1", "provocation", "b1"), action("a2", "chatiment", "b1")])
 	assert_eq(events_of_type(events, "synergy").size(), 1, "Jugement déclenché")
-	assert_eq(damage_from(events, "a2", "b1", "hit"), 24, "le Châtiment frappe sa cible (28, Peau de fer)")
-	assert_eq(damage_from(events, "a2", "b2", "synergie"), 28, "et l'autre ennemi provoqué")
+	assert_eq(damage_from(events, "a2", "b1", "hit"), int(round(skill_power("chatiment") * 0.85)), "le Châtiment frappe sa cible (Peau de fer)")
+	assert_eq(damage_from(events, "a2", "b2", "synergie"), int(round(skill_power("chatiment") * 1.5)), "et l'autre ennemi provoqué, une fois et demie plus fort")
 
 
 func test_synergie_courant_de_vie_soigne_tout_le_duo() -> void:
@@ -192,7 +199,7 @@ func test_synergie_courant_de_vie_soigne_tout_le_duo() -> void:
 	for event in events_of_type(events, "heal"):
 		if event["target"] == "a1" and event["kind"] == "synergie":
 			bonus += int(event["amount"])
-	assert_eq(bonus, 40, "le Mage reçoit aussi la Prière")
+	assert_eq(bonus, int(round(skill_power("priere", "heal") * 1.5)), "le Mage reçoit aussi la Prière, une fois et demie plus forte")
 
 
 func test_brasier_brule_un_tour() -> void:
@@ -202,7 +209,7 @@ func test_brasier_brule_un_tour() -> void:
 	for event in events_of_type(events, "damage"):
 		if event["kind"] == "dot" and event["target"] == "b2":
 			burn += int(event["amount"])
-	assert_eq(burn, 8, "brûlure de 8 en fin de tour")
+	assert_eq(burn, int(Combat.BRASIER_BURN["value"]), "brûlure en fin de tour")
 	assert_false(combat.get_unit("b2").has_status("brulure"), "brûlure terminée après 1 tour")
 
 
@@ -221,18 +228,19 @@ func test_purification_retire_un_etat_negatif() -> void:
 func test_cri_de_guerre_augmente_les_degats_trois_tours() -> void:
 	var combat := duo_combat(GM, GM, {"guerrier": {"forte": 1}})
 	jump_to_turn(combat, 3)
-	var boosted := int(round(34 * 1.1 * 1.3))
+	var boost := 1.0 + float(skill_power("cri_de_guerre", "status")) / 100.0
+	var boosted := int(round(skill_power("boule_de_feu") * mage_power * boost))
 	var events := combat.resolve_turn([action("a1", "cri_de_guerre", "a1"), action("a2", "boule_de_feu", "b2")])
-	assert_eq(damage_from(events, "a2", "b2"), boosted, "Boule de feu +30 %")
+	assert_eq(damage_from(events, "a2", "b2"), boosted, "Boule de feu renforcée")
 	heal_all(combat)
 	var events_2 := combat.resolve_turn([action("a2", "boule_de_feu", "b2")])
-	assert_eq(damage_from(events_2, "a2", "b2"), boosted, "toujours +30 % au deuxième tour")
+	assert_eq(damage_from(events_2, "a2", "b2"), boosted, "toujours renforcée au deuxième tour")
 	heal_all(combat)
 	var events_3 := combat.resolve_turn([action("a2", "boule_de_feu", "b2")])
-	assert_eq(damage_from(events_3, "a2", "b2"), boosted, "toujours +30 % au troisième tour")
+	assert_eq(damage_from(events_3, "a2", "b2"), boosted, "toujours renforcée au troisième tour")
 	heal_all(combat)
 	var events_4 := combat.resolve_turn([action("a2", "boule_de_feu", "b2")])
-	assert_eq(damage_from(events_4, "a2", "b2"), int(round(34 * 1.1)), "plus de bonus au quatrième tour")
+	assert_eq(damage_from(events_4, "a2", "b2"), int(round(skill_power("boule_de_feu") * mage_power)), "plus de bonus au quatrième tour")
 
 
 func test_soins_restauration_et_foi() -> void:
@@ -247,7 +255,7 @@ func test_soins_restauration_et_foi() -> void:
 	for event in events_of_type(events, "heal"):
 		if event["target"] == "a1":
 			healed += int(event["amount"])
-	assert_eq(healed, int(round(85 * 1.2)), "Restauration +20 % grâce à Foi sous 40 % de PV")
+	assert_eq(healed, int(round(skill_power("restauration", "heal") * 1.2)), "Restauration +20 % grâce à Foi sous 40 % de PV")
 
 
 func test_egide_pose_une_barriere_sur_tout_le_duo() -> void:
@@ -265,16 +273,17 @@ func test_bouclier_de_mana_et_sanctuaire() -> void:
 	advance_to_turn(combat, 3)
 	heal_all(combat)
 	combat.resolve_turn([action("a1", "bouclier_de_mana", "a2"), action("a2", "egide", "a2")])
-	# Le Bouclier de mana (150 × 1,1 = 165) et l'Égide avec Sanctuaire (60 × 1,25 = 75) : la plus grosse reste.
-	assert_true(combat.get_unit("a2").barrier_amount() <= 165, "barrière plafonnée à la plus grosse")
-	assert_true(combat.get_unit("a1").barrier_amount() <= 75, "Égide +25 % avec Sanctuaire")
+	# Le Bouclier de mana et l'Égide avec Sanctuaire (+25 %) : la plus grosse reste.
+	assert_true(combat.get_unit("a2").barrier_amount() <= int(round(skill_power("bouclier_de_mana", "barrier") * mage_power)), "barrière plafonnée à la plus grosse")
+	assert_true(combat.get_unit("a1").barrier_amount() <= int(round(skill_power("egide", "barrier") * 1.25)), "Égide +25 % avec Sanctuaire")
 
 
 func test_martyr_encaisse_une_part() -> void:
 	var combat := duo_combat(MP, GM, {"pretre": {"passive": 1}})
 	var events := combat.resolve_turn([action("b1", "taillade", "a1")])
-	assert_eq(damage_from(events, "b1", "a1"), 27, "le Mage prend 80 %")
-	assert_eq(damage_from(events, "b1", "a2", "martyr"), 7, "le Prêtre Martyr prend 20 %")
+	var share := int(round(skill_power("taillade") * 0.2))
+	assert_eq(damage_from(events, "b1", "a1"), skill_power("taillade") - share, "le Mage prend 80 %")
+	assert_eq(damage_from(events, "b1", "a2", "martyr"), share, "le Prêtre Martyr prend 20 %")
 
 
 func test_second_souffle_une_seule_fois() -> void:

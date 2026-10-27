@@ -56,6 +56,19 @@ func duo_combat(classes_a: Array, classes_b: Array, picks_a: Dictionary = {}, pi
 	return Combat.create(data, duo_team(classes_a, picks_a), duo_team(classes_b, picks_b))
 
 
+## Puissance d'un effet d'une compétence, lue dans les données (pour que les tests suivent les réglages).
+func skill_power(skill_id: String, effect_type: String = "damage") -> int:
+	for effect in data.skill(skill_id)["effects"]:
+		if effect["type"] == effect_type:
+			return int(effect.get("power", effect.get("value", 0)))
+	return 0
+
+
+## Puissance d'une classe, en multiplicateur (le Mage frappe plus fort que les autres).
+func class_power(class_id: String) -> float:
+	return float(data.classes[class_id]["stats"]["power"]) / 100.0
+
+
 func action(actor: String, skill: String, target: String) -> CombatAction:
 	return CombatAction.make(actor, skill, target)
 
