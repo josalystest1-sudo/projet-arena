@@ -326,15 +326,14 @@ static func _same_target(combat: Combat, unit: CombatUnit, leader: CombatUnit, l
 	return decision
 
 
-## Achève (Dégâts) : forte, moyenne puis basique de dégâts, toujours sur l'ennemi le plus proche du KO, même si ce n'est
-## pas la cible du joueur. Il ne secourt personne.
+## Achève (Dégâts) : les règles de Libre, mais toujours sur l'ennemi le plus proche du KO (le moins de PV restants),
+## même si ce n'est pas la cible du joueur.
 static func _finish(combat: Combat, unit: CombatUnit) -> Dictionary:
 	var target := _closest_to_ko(combat, unit)
-	var decision := _pick(combat, unit, ["forte"], ["degats", "renfort"], unit, target, "acheve")
-	if decision.is_empty():
-		decision = _pick(combat, unit, ["moyenne", "basique"], ["degats"], unit, target, "acheve")
-	if decision.is_empty():
-		decision = _libre(combat, unit, target, false)
+	var decision := _libre(combat, unit, target, false)
+	var chosen: CombatAction = decision.get("action")
+	if chosen != null and chosen.target_id == target.id and combat.is_hostile(chosen.skill_id):
+		decision["rule"] = "acheve"
 	return decision
 
 
@@ -351,8 +350,9 @@ static func _heal_first(combat: Combat, unit: CombatUnit, leader: CombatUnit) ->
 	return decision
 
 
-## Affaiblis-les (Soutien) : ses affaiblissements et contrôles sur la cible du joueur, sinon ses coups (forte d'abord) ;
-## il ne soigne qu'en urgence (un allié sous 30 % de PV). Sans aucune attaque, il joue comme en Libre, et le dit.
+## Affaiblis-les (Soutien) : ses affaiblissements et contrôles d'abord, sur la cible du joueur ; il ne soigne avant qu'en
+## urgence (un allié sous 30 % de PV). Sinon, les règles de Libre, sur la cible du joueur. (Le Prêtre n'a ni
+## affaiblissement ni contrôle : pour lui, c'est Libre sur ta cible.)
 static func _weaken(combat: Combat, unit: CombatUnit, leader: CombatUnit, leader_action: CombatAction) -> Dictionary:
 	var target := _leader_target(combat, unit, leader, leader_action)
 	var hurt := _lowest_ally(combat, unit)
@@ -362,10 +362,10 @@ static func _weaken(combat: Combat, unit: CombatUnit, leader: CombatUnit, leader
 	if decision.is_empty():
 		decision = _pick_weakening(combat, unit, target)
 	if decision.is_empty():
-		decision = _pick(combat, unit, STRONG_FIRST, ["degats"], hurt, target, "affaiblit_coups")
-	if decision.is_empty():
 		decision = _libre(combat, unit, target, false)
-		decision["rule"] = "sans_attaque"
+		var chosen: CombatAction = decision.get("action")
+		if chosen != null and chosen.target_id == target.id and combat.is_hostile(chosen.skill_id):
+			decision["rule"] = "affaiblit_coups"
 	return decision
 
 

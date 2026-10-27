@@ -170,12 +170,11 @@ func test_acheve_vise_l_ennemi_le_plus_proche_du_ko() -> void:
 	assert_eq(announce(combat, CombatAI.ACHEVE)["action"].target_id, "b1", "une barrière compte : l'autre est plus proche du KO")
 
 
-func test_acheve_ne_secourt_plus() -> void:
+func test_acheve_garde_le_secours_de_libre() -> void:
 	var combat := duo_combat(GM, GM, {"mage": {"forte": 1}})
 	jump_to_turn(combat, 3)
 	set_ratio(combat, "a1", 0.3)
-	assert_eq(announce(combat, CombatAI.LIBRE)["action"].skill_id, "bouclier_de_mana", "en Libre, il te secourt")
-	assert_eq(announce(combat, CombatAI.ACHEVE)["action"].skill_id, "trait_de_givre", "en Achève, il frappe")
+	assert_move(announce(combat, CombatAI.ACHEVE), "bouclier_de_mana", "a1", "sous 50 %, il te secourt comme en Libre : seule la cible change")
 
 
 # --- Soutien : Soigne d'abord, Affaiblis-les --------------------------------------
@@ -202,25 +201,31 @@ func test_soigne_d_abord_toi_avant_lui() -> void:
 	assert_move(announce(combat, CombatAI.SOIGNE_D_ABORD), "restauration", "a1", "en Soigne d'abord : toi")
 
 
-func test_affaiblis_les_un_pretre_frappe_ta_cible_avant_de_soigner() -> void:
+func test_affaiblis_les_un_pretre_joue_libre_sur_ta_cible() -> void:
 	var combat := duo_combat(["mage", "pretre"], GM)
-	set_ratio(combat, "a1", 0.45)
-	assert_eq(announce(combat, CombatAI.LIBRE)["action"].skill_id, "restauration", "en Libre, à 45 %, il soigne")
+	combat.get_unit("b2").hp = 60
+	assert_move(announce(combat, CombatAI.LIBRE), "chatiment", "b2", "en Libre, il frappe l'ennemi le plus bas")
 	var decision := announce(combat, CombatAI.AFFAIBLIS, action("a1", "boule_de_feu", "b1"))
-	assert_move(decision, "chatiment", "b1", "le Prêtre n'a ni affaiblissement ni contrôle : ses coups, sur ta cible")
+	assert_move(decision, "chatiment", "b1", "le Prêtre n'a ni affaiblissement ni contrôle : Libre, sur ta cible")
 	assert_eq(decision["rule"], "affaiblit_coups", "règle : il frappe ta cible")
-	set_ratio(combat, "a1", 0.25)
-	var urgent := announce(combat, CombatAI.AFFAIBLIS, action("a1", "boule_de_feu", "b1"))
-	assert_move(urgent, "restauration", "a1", "sous 30 % : urgence, il te soigne")
-	assert_eq(urgent["rule"], "urgence", "règle : urgence")
+	set_ratio(combat, "a1", 0.45)
+	assert_move(announce(combat, CombatAI.AFFAIBLIS, action("a1", "boule_de_feu", "b1")), "restauration", "a1", "il soigne comme en Libre")
+
+
+func test_affaiblis_les_ses_affaiblissements_d_abord() -> void:
+	# Un Mage n'est pas Soutien ; on vérifie la règle sur un Soutien fictif qui aurait Trait de givre (il fait agir en dernier).
+	var combat := duo_combat(["guerrier", "pretre"], GM)
+	var acolyte := combat.acolyte_of(0)
+	acolyte.skills["moyenne"] = "trait_de_givre"
+	var decision := announce(combat, CombatAI.AFFAIBLIS, action("a1", "taillade", "b1"))
+	assert_move(decision, "trait_de_givre", "b1", "son contrôle d'abord, sur ta cible")
+	assert_eq(decision["rule"], "affaiblit", "règle : affaiblit")
 
 
 func test_affaiblis_les_sans_attaque_joue_comme_en_libre() -> void:
 	var combat := duo_combat(["mage", "pretre"], GM, {"pretre": {"basique": 1}})
 	set_ratio(combat, "a1", 0.4)
-	var decision := announce(combat, CombatAI.AFFAIBLIS, action("a1", "boule_de_feu", "b1"))
-	assert_move(decision, "restauration", "a1", "Prière, Restauration : aucune attaque, il te soigne comme en Libre")
-	assert_eq(decision["rule"], "sans_attaque", "et il le dit")
+	assert_move(announce(combat, CombatAI.AFFAIBLIS, action("a1", "boule_de_feu", "b1")), "restauration", "a1", "Prière, Restauration : il te soigne comme en Libre")
 
 
 func test_ce_qui_affaiblit_ou_controle() -> void:

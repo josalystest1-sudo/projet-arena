@@ -32,7 +32,7 @@
     "acheve": {
       "name": "Achève",
       "summary": "Il finit le plus faible.",
-      "description": "Forte dès qu'elle est prête, sinon moyenne, sinon basique, toujours sur l'ennemi qui a le moins de PV restants (barrière comprise), même si ce n'est pas ta cible. Il ne secourt plus personne."
+      "description": "Il joue comme en Libre, mais toujours sur l'ennemi qui a le moins de PV restants (barrière comprise), même si ce n'est pas ta cible."
     },
     "soigne_d_abord": {
       "name": "Soigne d'abord",
@@ -42,7 +42,7 @@
     "affaiblis": {
       "name": "Affaiblis-les",
       "summary": "Il s'en prend à ta cible.",
-      "description": "Ses affaiblissements et ses contrôles sur ta cible ; s'il n'en a pas, ses coups (forte d'abord). Il ne soigne plus qu'en urgence, si l'un de vous passe sous {urgent_below%} de PV."
+      "description": "Ses affaiblissements et ses contrôles d'abord, sur ta cible (un soin avant seulement si l'un de vous passe sous {urgent_below%} de PV). Sinon il joue comme en Libre, sur ta cible. Un Prêtre n'a ni affaiblissement ni contrôle : pour lui, c'est Libre sur ta cible."
     },
     "garde_ta_forte": {
       "name": "Garde ta forte",
