@@ -58,7 +58,7 @@ SYNERGY_LEVERS = {
     "provocation_chatiment": "mult", "arc_de_foudre_priere": "mult",
     "fendoir_boule_de_feu": "bonus", "cri_de_guerre_bouclier_de_mana": "share",
 }
-PAIR_GAIN = 1.0
+PAIR_GAIN = 0.5
 PAIR_LIMIT = 0.15
 # Bornes des chiffres de Synergie : au-delà, une Synergie change de nature (ou ne se joue pas assez pour être réglée
 # par sa force : il faut alors revoir son effet).
