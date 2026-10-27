@@ -38,5 +38,35 @@
     ],
     "same_target": true,
     "description": "Le saignement de la cible dure 2 tours de plus."
+  },
+  {
+    "id": "cri_de_guerre_bouclier_de_mana",
+    "name": "Forteresse",
+    "skills": [
+      "cri_de_guerre",
+      "bouclier_de_mana"
+    ],
+    "same_target": false,
+    "description": "Le Bouclier de mana se pose aussi sur l'autre membre du duo."
+  },
+  {
+    "id": "provocation_chatiment",
+    "name": "Jugement",
+    "skills": [
+      "provocation",
+      "chatiment"
+    ],
+    "same_target": false,
+    "description": "Le Châtiment frappe aussi l'autre ennemi provoqué."
+  },
+  {
+    "id": "arc_de_foudre_priere",
+    "name": "Courant de vie",
+    "skills": [
+      "arc_de_foudre",
+      "priere"
+    ],
+    "same_target": false,
+    "description": "La Prière soigne aussi l'autre membre du duo."
   }
 ]

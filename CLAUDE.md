@@ -76,16 +76,25 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 
 **Règles de combat (2026-10-26, prototype : valeurs de départ, à ajuster par le simulateur)**
 
-- Chiffres : Guerrier 330 PV, vitesse 9, puissance 100 ; Mage 230 PV, vitesse 8, puissance 110 ; Prêtre 270 PV, vitesse 7, puissance 100. Dégâts = puissance de la compétence × puissance du perso / 100.
+- Chiffres : Guerrier 250 PV, vitesse 9, puissance 100 ; Mage 175 PV, vitesse 8, puissance 110 ; Prêtre 205 PV, vitesse 7, puissance 100. Dégâts = puissance de la compétence × puissance du perso / 100. (2026-10-27 : PV baissés de 25 % après le retour de Gautier « c'est un peu fade » : le premier KO arrivait au tour 7 et un combat sur quatre finissait au décompte des PV.)
 - Recharges : une moyenne jouée au tour N revient au tour N+3, une forte au tour N+5 ; forte jouable à partir du tour 3.
 - Ordre du tour : la file est calculée au début de la résolution (vitesse + bonus de la compétence + passifs). À vitesse égale, la priorité est **tirée à pile ou face à chaque combat puis alterne à chaque tour** (sans ça, l'équipe prioritaire gagnait 56 % des combats miroirs en simulation).
 - Coup de bouclier : la cible échange sa place avec celle qui la suit dans la file. Trait de givre : la cible passe en fin de file ; si elle a déjà agi, elle agira en dernier au tour suivant.
 - Provocation : la cible choisie et le prochain ennemi à agir sont provoqués ; ne détourne que les compétences offensives (un soin reste un soin).
 - Rempart : protège jusqu'à la fin du tour suivant ou jusqu'au premier coup (les dégâts sur la durée ne le consomment pas). Les barrières ne se cumulent pas : la plus grosse reste.
 - Un perso mis KO avant d'agir perd son action. Un KO perd ses états. Un perso relevé revient à 30 % de ses PV, recharges remises à zéro, et n'agit qu'au tour suivant. On ne peut être relevé qu'une fois par combat, et la Résurrection ne sert qu'une fois par combat.
-- Mort subite au tour 10 (soins ÷2, dégâts +25 % par tour cumulés), fin forcée à la fin du tour 15 : plus de PV totaux, puis plus de dégâts infligés, puis l'équipe prioritaire. Jamais de match nul. En simulation, 100 % des combats finissent entre les tours 8 et 15.
+- Mort subite au tour 8 (soins ÷2, dégâts +30 % par tour cumulés), fin forcée à la fin du tour 13 : plus de PV totaux, puis plus de dégâts infligés, puis l'équipe prioritaire. Jamais de match nul. Ces réglages sont dans `data/rules.json`. En simulation (2026-10-27) : 10 tours en moyenne, premier KO vers le tour 5, 93 % des combats finis par KO, 96 % entre les tours 8 et 15.
 - 4e passif inventé pour chaque classe (le GDD n'en donne que 3) : Colère (Guerrier, +10 % de dégâts par quart de PV manquant), Météorologue (Mage, forte revient 1 tour plus tôt), Sanctuaire (Prêtre, barrières +25 %).
 - Synergies du prototype : Provocation + Nova (celle du GDD) et trois nouvelles pour couvrir chaque paire de classes : Bastion (Rempart + Prière, le Rempart se reforme), Éclat (Trait de givre + Châtiment sur la même cible, +40 dégâts de lumière), Plaie brûlante (Fendoir + Boule de feu sur la même cible, saignement +2 tours). Une Synergie se déclenche quand la seconde compétence du couple se résout, même si la première est passée avant.
+
+**Duo : moteur (2026-10-27, étape 1 du duo)**
+
+- Le moteur accepte des camps de toute taille. En PvP, chaque camp est un duo : le personnage principal (`a1`, `b1`) puis son acolyte (`a2`, `b2`, marqué `is_acolyte`). `engine/duo.gd` compose les duos.
+- Classe de l'acolyte : tirée au hasard parmi les classes dont le rôle principal diffère de celui du joueur (avec 3 classes : les deux autres).
+- Kit de l'acolyte (3 actives + 1 passif, comme un joueur) : tiré au hasard **parmi les kits qui ont au moins une Synergie avec celui du joueur**. Sans cette règle, 69 % des duos n'avaient aucune Synergie possible avec les 4 Synergies de départ, alors que le GDD veut « aucun duo sans Synergie ».
+- 3 Synergies ajoutées pour que tout kit de joueur ait une Synergie possible avec chaque classe d'acolyte (un test le vérifie) : **Forteresse** (Cri de guerre + Bouclier de mana : le bouclier se pose aussi sur l'autre membre du duo), **Jugement** (Provocation + Châtiment : le Châtiment frappe aussi l'autre ennemi provoqué), **Courant de vie** (Arc de foudre + Prière : la Prière soigne aussi l'autre membre du duo).
+- Provocation en duo : la cible et le prochain ennemi à agir, donc tout le duo adverse. Gardé tel quel (c'est le métier du Front) ; à la Tour, face à 3 ennemis, le troisième garde sa cible.
+- L'acolyte a exactement les stats d'un personnage de sa classe (même niveau que le joueur ; pas encore de niveaux au prototype). Pas de mini-Destin avant l'étape 3, ni de nom modifiable avant les comptes.
 
 **Écran et IA (2026-10-26, prototype)**
 
@@ -94,4 +103,8 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 - Bouton « Prêt » : la phase d'Intention se termine dès que le joueur est prêt et que ses alliés ont décidé, sans attendre les 12 s.
 - Les alliés IA décident entre 1 et 4,5 s après le début du tour, puis réajustent leur Intention quand le joueur change la sienne. Les ennemis décident entre eux sans voir nos Intentions.
 - Si le joueur est KO, ses alliés continuent ; la phase d'Intention est raccourcie.
+- Le joueur peut toucher n'importe quel perso pour voir son kit et ses recharges ; un badge « FORTE PRÊTE » s'affiche sur les ennemis dont la forte est disponible. On voit ce qu'un ennemi *peut* faire, jamais ce qu'il a choisi : ses Intentions restent cachées (GDD). (2026-10-27, pour que « maintenant ou au tour suivant » soit un vrai choix.)
+- Prévision sur la cible visée : dégâts, soin, « KO ! » ou « Bloqué », calculée par le moteur (`Combat.preview`) sans tenir compte de ce que les autres feront avant. Sous chaque bouton, une ligne dorée nomme la Synergie possible avec un allié, et s'allume quand il la prépare.
+- Ressenti (2026-10-27) : bruitages synthétiques provisoires (`tools/generate_sfx.py`, bouton pour couper le son), secousses d'écran, flash, annonce en grand des fortes et des Synergies, persos qui respirent, tremblent et tombent au KO. Toucher l'écran pendant la résolution l'accélère.
+- Série de victoires, record et bilan V/D gardés sur l'appareil (`user://profil.cfg`) en attendant les comptes ; l'écran de fin montre ta part du combat et le meilleur des 6.
 - L'IA joue ses fortes dès qu'elles sont prêtes et utiles (« un cran en dessous d'un bon joueur ») ; elle concentre la cible visée par ses alliés et cherche les Synergies connues.

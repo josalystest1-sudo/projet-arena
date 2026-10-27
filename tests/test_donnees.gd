@@ -45,4 +45,4 @@ func test_unite_tire_une_competence_par_palier() -> void:
 	for tier in CombatUnit.TIERS:
 		assert_eq(data.skill(unit.skills[tier])["tier"], tier, "palier tiré")
 	assert_true(data.passives.has(unit.passive), "passif tiré")
-	assert_eq(unit.hp, 230, "PV du Mage")
+	assert_eq(unit.hp, int(data.classes["mage"]["stats"]["max_hp"]), "PV du Mage pris dans les données")

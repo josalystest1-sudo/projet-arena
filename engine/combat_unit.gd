@@ -24,6 +24,8 @@ var statuses: Array[Dictionary] = []
 var flags: Dictionary = {}
 var last_target: String = ""
 var is_player: bool = false
+## Acolyte : second personnage du duo, toujours piloté par l'IA (le joueur ne contrôle jamais ses sorts).
+var is_acolyte: bool = false
 
 
 ## Construit une unité depuis une classe et des choix de kit (index par palier et index de passif).

@@ -12,7 +12,7 @@
   "provocation": {
     "name": "Provocation", "class": "guerrier", "tier": "moyenne", "element": "contondant", "target": "enemy",
     "effects": [{"type": "taunt", "count": 2}],
-    "description": "La cible et un autre ennemi doivent attaquer le Guerrier ce tour."
+    "description": "La cible et le prochain ennemi à agir doivent attaquer le Guerrier ce tour."
   },
   "rempart": {
     "name": "Rempart", "class": "guerrier", "tier": "moyenne", "element": "", "target": "ally",
@@ -53,7 +53,7 @@
   "nova": {
     "name": "Nova", "class": "mage", "tier": "forte", "element": "feu", "target": "enemies_all",
     "effects": [{"type": "damage", "power": 55}],
-    "description": "Explosion de feu sur les 3 ennemis."
+    "description": "Explosion de feu sur tous les ennemis."
   },
   "bouclier_de_mana": {
     "name": "Bouclier de mana", "class": "mage", "tier": "forte", "element": "", "target": "ally",
@@ -84,7 +84,7 @@
   "egide": {
     "name": "Égide", "class": "pretre", "tier": "forte", "element": "lumiere", "target": "allies_all",
     "effects": [{"type": "barrier", "power": 60, "turns": 3}],
-    "description": "Barrière sur toute l'équipe pendant 3 tours."
+    "description": "Barrière sur tout le duo pendant 3 tours."
   },
   "resurrection": {
     "name": "Résurrection", "class": "pretre", "tier": "forte", "element": "lumiere", "target": "ally_ko", "once_per_combat": true,

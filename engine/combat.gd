@@ -1,4 +1,5 @@
-## Le moteur de règles du combat 3v3, tour par tour simultané.
+## Le moteur de règles du combat, tour par tour simultané. Les camps sont de taille variable :
+## 2 contre 2 en PvP (un joueur et son acolyte de chaque côté), 2 contre 2 ou 3 à la Tour.
 ## Module pur : aucune dépendance aux nœuds de scène, aucun affichage, aucun hasard.
 ## Il est réutilisé tel quel par le client, le serveur, l'IA des Échos et le simulateur.
 ##
@@ -9,14 +10,6 @@
 class_name Combat
 extends RefCounted
 
-## Tour à partir duquel la mort subite s'applique (soins divisés par deux,
-## dégâts +25 % par tour écoulé depuis ce tour).
-const SUDDEN_DEATH_TURN := 10
-## Dernier tour joué : à la fin de ce tour, l'équipe avec le plus de PV gagne.
-const FORCED_END_TURN := 15
-## Recharges (en tours d'indisponibilité) et tour de déblocage de la forte.
-const COOLDOWN_BY_TIER := {"basique": 0, "moyenne": 2, "forte": 4}
-const STRONG_AVAILABLE_FROM_TURN := 3
 ## Valeurs des passifs et effets (chiffres de départ du prototype).
 const PEAU_DE_FER_REDUCTION := 0.15
 const SECOND_SOUFFLE_THRESHOLD := 0.30
@@ -48,11 +41,23 @@ var damage_by_team: Dictionary = {0: 0, 1: 0}
 ## Tirée à pile ou face par l'appelant (l'écran, le serveur, le simulateur) : le moteur reste déterministe.
 var priority_team: int = 0
 
+# --- Règles chiffrées, lues dans data/rules.json à la création du combat ---
+## Tour à partir duquel la mort subite s'applique (soins réduits, dégâts en hausse à chaque tour).
+var sudden_death_turn: int = 10
+## Dernier tour joué : à la fin de ce tour, l'équipe avec le plus de PV gagne.
+var forced_end_turn: int = 15
+var sudden_death_damage_step: float = 0.25
+var sudden_death_heal: float = 0.5
+## Recharges (en tours d'indisponibilité) et tour de déblocage de la forte.
+var cooldown_by_tier: Dictionary = {"basique": 0, "moyenne": 2, "forte": 4}
+var strong_available_from_turn: int = 3
+
 # --- État interne d'un tour en cours de résolution ---
 var _events: Array[Dictionary] = []
 var _actions: Dictionary = {}          # unit_id -> CombatAction
 var _acted: Dictionary = {}            # unit_id -> true une fois son tour passé (ou perdu)
 var _resolved: Dictionary = {}         # unit_id -> true si l'action a bien été exécutée
+var _resolved_targets: Dictionary = {} # unit_id -> identifiants des cibles réellement touchées par son action
 var _queue: Array[CombatUnit] = []     # file d'attente du tour : qui agit ensuite
 var _damage_dealt: Dictionary = {}     # actor_id -> {target_id: dégâts infligés ce tour}
 var _synergy_pairs: Array[Dictionary] = []
@@ -63,12 +68,20 @@ var _current_hits: Dictionary = {}     # cibles distinctes touchées par l'actio
 # Construction
 # ---------------------------------------------------------------------------
 
-## team_a et team_b : listes de dictionnaires {class_id, picks, name (optionnel), is_player (optionnel)}.
+## team_a et team_b : listes de dictionnaires {class_id, picks, name, is_player, is_acolyte} (seuls class_id et picks sont obligatoires).
+## Un camp peut compter autant de membres qu'on veut : 2 en PvP (le joueur puis son acolyte), 2 ou 3 à la Tour.
 ## p_priority_team : équipe qui agit en premier à vitesse égale au tour 1 (0 ou 1).
 static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_team: int = 0) -> Combat:
 	var combat := Combat.new()
 	combat.data = p_data
 	combat.priority_team = p_priority_team
+	var rules: Dictionary = p_data.rules
+	combat.sudden_death_turn = int(rules.get("sudden_death_turn", combat.sudden_death_turn))
+	combat.forced_end_turn = int(rules.get("forced_end_turn", combat.forced_end_turn))
+	combat.sudden_death_damage_step = float(rules.get("sudden_death_damage_step", combat.sudden_death_damage_step))
+	combat.sudden_death_heal = float(rules.get("sudden_death_heal_mult", combat.sudden_death_heal))
+	combat.cooldown_by_tier = rules.get("cooldowns", combat.cooldown_by_tier)
+	combat.strong_available_from_turn = int(rules.get("strong_available_from_turn", combat.strong_available_from_turn))
 	for team in [0, 1]:
 		var members: Array = team_a if team == 0 else team_b
 		for slot in range(members.size()):
@@ -80,6 +93,7 @@ static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_
 				picks["name"] = member["name"]
 			var unit := CombatUnit.from_class(p_data, member["class_id"], picks, unit_id, team, slot)
 			unit.is_player = bool(member.get("is_player", false))
+			unit.is_acolyte = bool(member.get("is_acolyte", false))
 			combat.units.append(unit)
 	return combat
 
@@ -103,6 +117,22 @@ func team_units(team: int, alive_only: bool = false) -> Array[CombatUnit]:
 	return result
 
 
+## Le personnage principal d'un camp (le joueur, ou le joueur IA d'en face) : celui que l'acolyte accompagne.
+func leader_of(team: int) -> CombatUnit:
+	for unit in team_units(team):
+		if not unit.is_acolyte:
+			return unit
+	return null
+
+
+## L'acolyte d'un camp (null s'il n'y en a pas, par exemple un groupe d'ennemis de la Tour).
+func acolyte_of(team: int) -> CombatUnit:
+	for unit in team_units(team):
+		if unit.is_acolyte:
+			return unit
+	return null
+
+
 func allies_of(unit: CombatUnit, alive_only: bool = false) -> Array[CombatUnit]:
 	return team_units(unit.team, alive_only)
 
@@ -123,17 +153,17 @@ func priority_team_for_turn(p_turn: int) -> int:
 
 
 func is_sudden_death() -> bool:
-	return turn >= SUDDEN_DEATH_TURN
+	return turn >= sudden_death_turn
 
 
 func sudden_death_damage_mult() -> float:
 	if not is_sudden_death():
 		return 1.0
-	return 1.0 + 0.25 * float(turn - SUDDEN_DEATH_TURN + 1)
+	return 1.0 + sudden_death_damage_step * float(turn - sudden_death_turn + 1)
 
 
 func sudden_death_heal_mult() -> float:
-	return 0.5 if is_sudden_death() else 1.0
+	return sudden_death_heal if is_sudden_death() else 1.0
 
 
 ## Nombre de tours avant qu'une compétence soit de nouveau disponible (0 = disponible).
@@ -141,7 +171,7 @@ func cooldown_remaining(unit: CombatUnit, tier: String) -> int:
 	var until := int(unit.cooldown_until.get(tier, 0))
 	var remaining := until - turn
 	if tier == "forte":
-		remaining = maxi(remaining, STRONG_AVAILABLE_FROM_TURN - turn)
+		remaining = maxi(remaining, strong_available_from_turn - turn)
 	return maxi(remaining, 0)
 
 
@@ -232,6 +262,48 @@ func find_synergies(actions: Array) -> Array[Dictionary]:
 	return pairs
 
 
+## Prévision pour l'affichage : ce que ferait cette compétence sur cette cible si elle partait maintenant.
+## Ne modifie rien. Ne tient pas compte de ce que les autres feront avant (le tour est simultané).
+## Renvoie {damage, heal, blocked, lethal, revive}.
+func preview(actor: CombatUnit, skill_id: String, target: CombatUnit) -> Dictionary:
+	var result := {"damage": 0, "heal": 0, "blocked": false, "lethal": false, "revive": false}
+	var skill := data.skill(skill_id)
+	if skill.is_empty() or target == null:
+		return result
+	var single := str(skill.get("target")) in ["enemy", "ally", "self"]
+	for effect in skill.get("effects", []):
+		match str(effect["type"]):
+			"damage":
+				result["damage"] = int(result["damage"]) + _damage_amount(actor, target, int(effect["power"]), 1.0, single)
+			"heal":
+				result["heal"] = int(result["heal"]) + mini(_heal_amount(actor, target, int(effect["power"])), target.max_hp - target.hp)
+			"revive":
+				result["revive"] = not target.is_alive()
+	if int(result["damage"]) > 0:
+		result["blocked"] = target.has_status("rempart")
+		result["lethal"] = not result["blocked"] and int(result["damage"]) >= target.hp + target.barrier_amount()
+	return result
+
+
+## Pour chaque palier d'une unité : les alliés vivants qui possèdent la compétence partenaire d'une Synergie.
+## Renvoie {palier: [{ally_id, skill_id, name, available}]}. « available » : l'allié peut la jouer ce tour.
+func synergy_partners(unit: CombatUnit) -> Dictionary:
+	var result := {}
+	for tier in CombatUnit.TIERS:
+		var skill_id: String = unit.skills.get(tier, "")
+		var partners: Array = []
+		for ally in allies_of(unit, true):
+			if ally == unit:
+				continue
+			for ally_tier in CombatUnit.TIERS:
+				var ally_skill: String = ally.skills.get(ally_tier, "")
+				var synergy := data.find_synergy(skill_id, ally_skill)
+				if not synergy.is_empty():
+					partners.append({"ally_id": ally.id, "skill_id": ally_skill, "name": synergy["name"], "available": can_use(ally, ally_tier)})
+		result[tier] = partners
+	return result
+
+
 # ---------------------------------------------------------------------------
 # Résolution d'un tour
 # ---------------------------------------------------------------------------
@@ -243,6 +315,7 @@ func resolve_turn(actions: Array) -> Array[Dictionary]:
 	_actions = {}
 	_acted = {}
 	_resolved = {}
+	_resolved_targets = {}
 	_queue = []
 	_damage_dealt = {}
 	_synergy_pairs = []
@@ -343,6 +416,7 @@ func _execute_action(actor: CombatUnit, action: CombatAction) -> void:
 	actor.last_target = action.target_id
 
 	var targets := _resolve_targets(actor, action)
+	_resolved_targets[actor.id] = _ids(targets)
 	_emit({"type": "action", "actor": actor.id, "skill": action.skill_id, "tier": tier,
 		"targets": _ids(targets), "redirected": bool(_is_redirected(actor, action, targets))})
 	if targets.is_empty():
@@ -433,10 +507,7 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 					_add_status(target, {"id": effect["id"], "turns": int(effect["turns"]), "value": int(effect.get("value", 0)), "source": actor.id})
 		"barrier":
 			for target in targets:
-				var amount := float(effect["power"]) * float(actor.power) / 100.0
-				if actor.passive == "sanctuaire":
-					amount *= 1.0 + SANCTUAIRE_BONUS
-				_add_status(target, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": int(round(amount)), "source": actor.id})
+				_add_status(target, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": _barrier_amount(actor, int(effect["power"])), "source": actor.id})
 		"absorb_next_hit":
 			for target in targets:
 				_add_status(target, {"id": "rempart", "turns": int(effect.get("turns", 2)), "value": 1, "source": actor.id})
@@ -470,10 +541,8 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 
 # --- Dégâts et soins -------------------------------------------------------
 
-## Calcule et inflige des dégâts d'une compétence. Renvoie les PV réellement perdus par la cible.
-func _deal_damage(source: CombatUnit, target: CombatUnit, base_power: int, element: String, mult: float, single_target: bool) -> int:
-	if not target.is_alive():
-		return 0
+## Montant des dégâts d'une compétence, avant Martyr, Rempart et barrière.
+func _damage_amount(source: CombatUnit, target: CombatUnit, base_power: int, mult: float, single_target: bool) -> int:
 	var amount := float(base_power) * float(source.power) / 100.0 * mult
 	if source.has_status("cri_de_guerre"):
 		amount *= 1.0 + float(source.get_status("cri_de_guerre")["value"]) / 100.0
@@ -485,7 +554,31 @@ func _deal_damage(source: CombatUnit, target: CombatUnit, base_power: int, eleme
 	amount *= sudden_death_damage_mult()
 	if target.passive == "peau_de_fer":
 		amount *= 1.0 - PEAU_DE_FER_REDUCTION
-	var total := int(round(amount))
+	return int(round(amount))
+
+
+## Montant d'un soin de compétence (avant plafond des PV max).
+func _heal_amount(source: CombatUnit, target: CombatUnit, base_power: int) -> int:
+	var amount := float(base_power) * float(source.power) / 100.0
+	if source.passive == "foi" and target.hp_ratio() < FOI_THRESHOLD:
+		amount *= 1.0 + FOI_BONUS
+	amount *= sudden_death_heal_mult()
+	return int(round(amount))
+
+
+## Valeur d'une barrière posée par une unité.
+func _barrier_amount(source: CombatUnit, base_power: int) -> int:
+	var amount := float(base_power) * float(source.power) / 100.0
+	if source.passive == "sanctuaire":
+		amount *= 1.0 + SANCTUAIRE_BONUS
+	return int(round(amount))
+
+
+## Calcule et inflige des dégâts d'une compétence. Renvoie les PV réellement perdus par la cible.
+func _deal_damage(source: CombatUnit, target: CombatUnit, base_power: int, element: String, mult: float, single_target: bool) -> int:
+	if not target.is_alive():
+		return 0
+	var total := _damage_amount(source, target, base_power, mult, single_target)
 
 	# Martyr : un Prêtre allié de la cible encaisse une part des dégâts.
 	for ally in allies_of(target, true):
@@ -539,13 +632,8 @@ func _apply_damage(source: CombatUnit, target: CombatUnit, amount: int, element:
 func _heal(source: CombatUnit, target: CombatUnit, base_power: int, kind: String, raw: bool = false) -> int:
 	if not target.is_alive():
 		return 0
-	var amount := float(base_power)
-	if not raw:
-		amount *= float(source.power) / 100.0
-		if source.passive == "foi" and target.hp_ratio() < FOI_THRESHOLD:
-			amount *= 1.0 + FOI_BONUS
-	amount *= sudden_death_heal_mult()
-	var healed := mini(int(round(amount)), target.max_hp - target.hp)
+	var amount := _heal_amount(source, target, base_power) if not raw else int(round(float(base_power) * sudden_death_heal_mult()))
+	var healed := mini(amount, target.max_hp - target.hp)
 	target.hp += healed
 	_emit({"type": "heal", "source": source.id, "target": target.id, "amount": healed, "kind": kind, "hp": target.hp})
 	return healed
@@ -609,7 +697,7 @@ func _add_status(target: CombatUnit, status: Dictionary) -> void:
 # --- Recharges ---------------------------------------------------------------
 
 func _start_cooldown(unit: CombatUnit, tier: String) -> void:
-	var cooldown := int(COOLDOWN_BY_TIER.get(tier, 0))
+	var cooldown := int(cooldown_by_tier.get(tier, 0))
 	if cooldown <= 0:
 		return
 	if tier == "forte" and unit.passive == "meteorologue":
@@ -664,6 +752,12 @@ func _fire_synergies(actor: CombatUnit) -> void:
 				_synergy_eclat(actor, partner)
 			"fendoir_boule_de_feu":
 				_synergy_plaie_brulante(actor)
+			"cri_de_guerre_bouclier_de_mana":
+				_synergy_forteresse(actor, partner)
+			"provocation_chatiment":
+				_synergy_jugement(actor, partner)
+			"arc_de_foudre_priere":
+				_synergy_courant_de_vie(actor, partner)
 
 
 func _synergy_provocation_nova(second: CombatUnit, first: CombatUnit) -> void:
@@ -710,6 +804,47 @@ func _synergy_plaie_brulante(second: CombatUnit) -> void:
 		_emit({"type": "status", "target": target.id, "status": "saignement", "turns": bleed["turns"], "value": bleed["value"]})
 
 
+## Forteresse : le Bouclier de mana se pose aussi sur les autres membres du duo.
+func _synergy_forteresse(second: CombatUnit, first: CombatUnit) -> void:
+	var mage := second if _actions[second.id].skill_id == "bouclier_de_mana" else first
+	var effect := _skill_effect("bouclier_de_mana", "barrier")
+	var already: Array = _resolved_targets.get(mage.id, [])
+	for ally in allies_of(mage, true):
+		if not already.has(ally.id):
+			_add_status(ally, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": _barrier_amount(mage, int(effect.get("power", 0))), "source": mage.id})
+
+
+## Jugement : le Châtiment frappe aussi chaque autre ennemi provoqué par le Guerrier.
+func _synergy_jugement(second: CombatUnit, first: CombatUnit) -> void:
+	var guerrier := second if _actions[second.id].skill_id == "provocation" else first
+	var pretre := first if guerrier == second else second
+	var power := int(_skill_effect("chatiment", "damage").get("power", 0))
+	var already: Array = _resolved_targets.get(pretre.id, [])
+	for enemy in enemies_of(pretre, true):
+		var provoked := enemy.get_status("provoque")
+		if provoked.is_empty() or str(provoked.get("source", "")) != guerrier.id or already.has(enemy.id):
+			continue
+		_apply_damage(pretre, enemy, _damage_amount(pretre, enemy, power, 1.0, true), "lumiere", "synergie")
+
+
+## Courant de vie : la Prière soigne aussi les autres membres du duo.
+func _synergy_courant_de_vie(second: CombatUnit, first: CombatUnit) -> void:
+	var pretre := second if _actions[second.id].skill_id == "priere" else first
+	var power := int(_skill_effect("priere", "heal").get("power", 0))
+	var already: Array = _resolved_targets.get(pretre.id, [])
+	for ally in allies_of(pretre, true):
+		if not already.has(ally.id):
+			_heal(pretre, ally, power, "synergie")
+
+
+## Le premier effet d'un type donné dans une compétence (ex. la barrière du Bouclier de mana).
+func _skill_effect(skill_id: String, effect_type: String) -> Dictionary:
+	for effect in data.skill(skill_id).get("effects", []):
+		if str(effect["type"]) == effect_type:
+			return effect
+	return {}
+
+
 # ---------------------------------------------------------------------------
 # Fin de tour
 # ---------------------------------------------------------------------------
@@ -753,7 +888,7 @@ func _check_end() -> void:
 			winner = 0 if alive_a > alive_b else 1
 		else:
 			winner = _tie_break()
-	elif turn >= FORCED_END_TURN:
+	elif turn >= forced_end_turn:
 		finished = true
 		end_reason = "mort_subite"
 		var hp_a := team_total_hp(0)
