@@ -60,12 +60,13 @@ Chaque joueur reçoit, lors de son premier combat, un acolyte : un second person
 
 **Comment il joue.** Son IA suit des règles simples et lisibles, les mêmes que celles des Échos : il annonce son Intention **en premier**, au début des 12 secondes, et le joueur choisit en sachant ce que son acolyte va faire. Le joueur peut lui donner une **posture**, qui tient jusqu'à nouvel ordre et ne coûte pas d'action :
 
-| Posture | Ce que l'acolyte fait |
-| --- | --- |
-| Libre (par défaut) | Joue son rôle : un Front protège, un Dégâts concentre sur la cible la plus basse, un Soutien soigne sous 50 % de PV |
-| Protège-moi | Priorité absolue à la survie du joueur (provocations, barrières, soins sur lui) |
-| Fonce | Tout en dégâts, forte dès qu'elle est disponible, sur la cible du joueur |
-| Garde ta forte | Ne joue sa forte que si le joueur joue la sienne le même tour (pour les Synergies) |
+Une posture ne demande jamais à l'acolyte quelque chose qui n'est pas dans son kit : elle change l'ordre de ses priorités, pas sa classe. Les postures dépendent donc de son rôle. Libre est la posture par défaut ; Garde ta forte existe pour tous.
+
+| Rôle de l'acolyte | Libre (défaut) | Posture 2 | Posture 3 | Garde ta forte (tous) |
+| --- | --- | --- | --- | --- |
+| Front | Alterne protection et dégâts selon la situation | **Tiens la ligne** : provocations, barrières, encaisse à la place du joueur | **Cogne** : ses coups avant ses protections | Ne joue sa forte que si le joueur joue la sienne le même tour |
+| Dégâts | Frappe la cible la plus basse | **Même cible que moi** : suit la cible du joueur, pour concentrer | **Achève** : vise toujours l'ennemi le plus proche du KO, même si ce n'est pas la cible du joueur | idem |
+| Soutien | Soigne sous 50 % de PV, sinon renforce ou affaiblit | **Soigne d'abord** : priorité aux PV du joueur, soins dès 70 % | **Affaiblis-les** : priorité aux débuffs et aux contrôles sur l'ennemi que vise le joueur | idem |
 
 L'acolyte doit être **prévisible plutôt que brillant** : un joueur qui connaît ses postures doit pouvoir anticiper chacun de ses coups. C'est ce qui rend le duo jouable, et c'est ce qui permet de lire le duo adverse.
 
@@ -394,7 +395,7 @@ L'univers doit répondre à trois questions que le jeu pose dès l'écran de cr�
 **Proposé dans ce document, à valider**
 
 - [ ] La classe de l'acolyte ne change jamais librement ; seule son évolution (au niveau 30 du joueur) peut déplacer son rôle
-- [ ] Les 4 postures de l'acolyte (Libre, Protège-moi, Fonce, Garde ta forte) et le fait qu'il annonce son action en premier
+- [ ] Les postures de l'acolyte selon son rôle (Libre, deux postures propres au rôle, Garde ta forte) et le fait qu'il annonce son action en premier
 - [ ] Les Expéditions de l'Écho : XP plafonnée pendant l'absence, rapport au retour
 - [ ] À la Tour, 20 % de PV rendus entre deux étages et recharges conservées
 
