@@ -110,7 +110,7 @@ def write_passives(passives):
 
 def write_destins(destins):
     lines = ["{"]
-    sections = ("kit_items", "kit_pairs", "duo_classes", "duo_items")
+    sections = ("kit_items", "kit_pairs", "kit_triples", "duo_classes", "duo_items")
     for n, section in enumerate(sections):
         values = destins.get(section, {})
         lines.append(f'  "{section}": {{')
@@ -178,6 +178,7 @@ def measure(files):
                     keys += ["comp:" + row[prefix + t] for t in ("basique", "moyenne", "forte")]
                     keys += [f"duo:{row[partner]}:{row[prefix + t]}" for t in ("basique", "moyenne", "forte", "passif")]
                     keys.append(f"duoclasse:{row[partner]}:{cls}")
+                    keys.append("trio:" + "+".join(sorted(row[prefix + t] for t in ("basique", "moyenne", "forte"))))
                 keys += ["syn:" + s for s in filter(None, row["synergies_possibles"].split("+"))]
                 keys.append("compo:" + "+".join(sorted([row["joueur"], row["acolyte"]])))
                 for key in keys:
@@ -310,6 +311,19 @@ def tune(rates):
         old = inner.get(item_id, 0.0)
         inner[item_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * deviation / 100.0)), 3)
         report.append(f"budget {item_id} avec un {partner} ({deviation:+.1f}) : {old:+.3f} -> {inner[item_id]:+.3f}")
+    # Les trois compétences d'un kit ensemble (un trio qui va trop bien ou trop mal ensemble, au-delà de ses paires).
+    triples = destins.setdefault("kit_triples", {})
+    for key, rate in sorted(rates.items()):
+        if not key.startswith("trio:"):
+            continue
+        trio = key.split(":")[1]
+        deviation = rate - rates["classe:" + skills[trio.split("+")[0]]["class"]]
+        margin = 196.0 * math.sqrt(0.25 / GAMES[key])
+        if abs(deviation) < max(1.5, margin):
+            continue
+        old = triples.get(trio, 0.0)
+        triples[trio] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * deviation / 100.0)), 3)
+        report.append(f"budget du trio {trio} ({deviation:+.1f}) : {old:+.3f} -> {triples[trio]:+.3f}")
     compos = destins.setdefault("duo_classes", {})
     for key, rate in sorted(rates.items()):
         if not key.startswith("compo:"):

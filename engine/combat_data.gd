@@ -18,7 +18,8 @@ var postures: Dictionary = {}
 var tower: Dictionary = {}
 ## Le budget de puissance des Destins (data/destins.json), en ajustement des PV et de la puissance (+0,04 = +4 %) :
 ## « kit_items » pour un élément seul qui n'a pas de chiffre à régler (Rempart, Résonance, Météorologue) ;
-## « kit_pairs » pour une paire d'un même kit qui va trop bien (ou trop mal) ensemble.
+## « kit_pairs » pour une paire d'un même kit qui va trop bien (ou trop mal) ensemble ; « kit_triples » pour les trois
+## compétences ensemble (clé : les trois dans l'ordre alphabétique, ex. « arc_de_foudre+etincelle+nova »).
 ## En duo, le partenaire compte aussi : « duo_items » (un élément selon la classe du partenaire, ex. un Bouclier de mana
 ## à côté d'un Guerrier) et « duo_classes » (la composition du duo).
 var destins: Dictionary = {}
@@ -83,6 +84,9 @@ func kit_bonus(skill_ids: Array, passive_id: String, own_class: String = "", par
 		total += float(singles.get(str(items[i]), 0.0)) + float(with_partner.get(str(items[i]), 0.0))
 		for j in range(i + 1, items.size()):
 			total += float(pairs.get(pair_key(str(items[i]), str(items[j])), 0.0))
+	var trio: Array = skill_ids.duplicate()
+	trio.sort()
+	total += float(destins.get("kit_triples", {}).get("+".join(trio), 0.0))
 	if partner_class != "":
 		total += float(destins.get("duo_classes", {}).get(pair_key(own_class, partner_class), 0.0))
 	return total

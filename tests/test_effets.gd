@@ -222,13 +222,14 @@ func test_courant_de_vie_sur_un_allie_a_fond_pose_une_barriere() -> void:
 
 
 func test_le_budget_du_destin_ajuste_pv_et_puissance() -> void:
-	data.destins = {"kit_items": {"resurrection": 0.02}, "kit_pairs": {CombatData.pair_key("priere", "resurrection"): 0.03, CombatData.pair_key("egide", "priere"): -0.04}}
+	data.destins = {"kit_items": {"resurrection": 0.02}, "kit_pairs": {CombatData.pair_key("priere", "resurrection"): 0.02, CombatData.pair_key("egide", "priere"): -0.04},
+		"kit_triples": {"chatiment+egide+restauration": 0.5, "priere+restauration+resurrection": 0.01}}
 	var picks := {"basique": 1, "moyenne": 0, "forte": 1, "passive": 0}
 	var unit := CombatUnit.from_class(data, "pretre", picks, "a1", 0, 0)
 	assert_eq(unit.skills["basique"], "priere", "kit tiré")
 	assert_eq(unit.skills["forte"], "resurrection", "kit tiré")
 	var stats: Dictionary = data.classes["pretre"]["stats"]
-	assert_eq(unit.max_hp, int(round(float(stats["max_hp"]) * 1.05)), "+2 % pour la Résurrection, +3 % pour la paire Prière + Résurrection")
+	assert_eq(unit.max_hp, int(round(float(stats["max_hp"]) * 1.05)), "+2 % pour la Résurrection, +2 % pour la paire Prière + Résurrection, +1 % pour le trio")
 	assert_eq(unit.power, int(round(float(stats["power"]) * 1.05)), "et +5 % de puissance")
 	picks["forte"] = 0
 	var other := CombatUnit.from_class(data, "pretre", picks, "a1", 0, 0)
