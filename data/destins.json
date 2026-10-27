@@ -1,4 +1,9 @@
 {
+  "kit_items": {
+    "meteorologue": 0.015,
+    "rempart": -0.007,
+    "resonance": 0.009
+  },
   "kit_pairs": {
     "arc_de_foudre+bouclier_de_mana": 0.017,
     "arc_de_foudre+nova": -0.02,

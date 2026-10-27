@@ -8,7 +8,7 @@
     ],
     "same_target": false,
     "params": {
-      "bonus": 0.469
+      "bonus": 0.514
     },
     "description": "Les ennemis provoqués subissent la Nova à +{bonus%}."
   },
@@ -45,7 +45,7 @@
     "same_target": true,
     "params": {
       "extra_turns": 2,
-      "bonus": 0.413
+      "bonus": 0.495
     },
     "description": "Le saignement de la cible dure {extra_turns} tours de plus et fait +{bonus%} de dégâts."
   },
@@ -59,7 +59,7 @@
     "same_target": false,
     "description": "Le Bouclier de mana se pose aussi sur l'autre membre du duo, à {share%} de sa taille.",
     "params": {
-      "share": 0.706
+      "share": 0.583
     }
   },
   {
@@ -71,7 +71,7 @@
     ],
     "same_target": false,
     "params": {
-      "mult": 1.348
+      "mult": 1.373
     },
     "description": "Le Châtiment frappe aussi l'autre ennemi provoqué, à {mult%} de sa force."
   },

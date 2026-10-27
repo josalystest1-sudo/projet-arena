@@ -22,7 +22,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 			timing = "Dès le tour %d, puis recharge : %d tours." % [int(app.data.rules.get("strong_available_from_turn", 3)), int(cooldowns.get("forte", 4))]
 		kit.add_child(UiKit.label(timing, 14, Color(0.6, 0.65, 0.8), false))
 	UiKit.passive_block(kit, app.data, app.player_passive())
-	UiKit.destin_balance(kit, app.data, app.player_skills(), app.player_passive())
+	UiKit.destin_balance(kit, app.data, app.player_skills(), app.player_passive(), app.player_class, app.acolyte["class_id"])
 
 	var synergies := UiKit.card(column, 6)
 	synergies.add_child(UiKit.label("Tes Synergies avec %s" % app.acolyte_name, 20, UiKit.GOLD, false))

@@ -63,6 +63,9 @@ PAIR_LIMIT = 0.15
 # Une compétence ou un passif sans chiffre à régler (Rempart, Résonance, Météorologue) se règle par le budget du
 # Destin : un ajustement de PV et de puissance du perso qui l'a (data/destins.json, « kit_items »).
 ITEM_GAIN = 0.5
+# En duo, un élément n'a pas la même force selon la classe du partenaire (un Bouclier de mana protège mieux un Guerrier
+# qui encaisse) : réglé par « duo_items ». La composition du duo, qui touche les deux membres : « duo_classes ».
+COMPO_GAIN = 0.25
 # Bornes des chiffres de Synergie : au-delà, une Synergie change de nature (ou ne se joue pas assez pour être réglée
 # par sa force : il faut alors revoir son effet).
 SYNERGY_LIMITS = {"mult": (0.5, 1.5), "share": (0.3, 1.0), "bonus": (0.05, 1.0)}
@@ -107,12 +110,21 @@ def write_passives(passives):
 
 def write_destins(destins):
     lines = ["{"]
-    for n, section in enumerate(("kit_items", "kit_pairs")):
+    sections = ("kit_items", "kit_pairs", "duo_classes", "duo_items")
+    for n, section in enumerate(sections):
         values = destins.get(section, {})
-        keys = sorted(k for k, v in values.items() if v != 0)
         lines.append(f'  "{section}": {{')
-        lines += [f'    "{k}": {values[k]}' + ("," if i < len(keys) - 1 else "") for i, k in enumerate(keys)]
-        lines.append("  }" + ("," if n == 0 else ""))
+        if section == "duo_items":
+            partners = sorted(values)
+            for p_index, partner in enumerate(partners):
+                inner = values[partner]
+                keys = sorted(k for k, v in inner.items() if v != 0)
+                body = ", ".join(f'"{k}": {inner[k]}' for k in keys)
+                lines.append(f'    "{partner}": {{{body}}}' + ("," if p_index < len(partners) - 1 else ""))
+        else:
+            keys = sorted(k for k, v in values.items() if v != 0)
+            lines += [f'    "{k}": {values[k]}' + ("," if i < len(keys) - 1 else "") for i, k in enumerate(keys)]
+        lines.append("  }" + ("," if n < len(sections) - 1 else ""))
     lines.append("}")
     with open(os.path.join(DATA, "destins.json"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
@@ -149,6 +161,9 @@ def simulate(round_index, count):
     return files
 
 
+GAMES = {}
+
+
 def measure(files):
     import csv
     rates = defaultdict(lambda: [0, 0])
@@ -157,15 +172,18 @@ def measure(files):
             for row in csv.DictReader(f):
                 won = int(row["gagne"])
                 keys = []
-                for side, prefix in (("joueur", "j_"), ("acolyte", "a_")):
+                for side, prefix, partner in (("joueur", "j_", "acolyte"), ("acolyte", "a_", "joueur")):
                     cls = row[side]
                     keys += ["classe:" + cls, "passif:" + row[prefix + "passif"]]
                     keys += ["comp:" + row[prefix + t] for t in ("basique", "moyenne", "forte")]
+                    keys += [f"duo:{row[partner]}:{row[prefix + t]}" for t in ("basique", "moyenne", "forte", "passif")]
                 keys += ["syn:" + s for s in filter(None, row["synergies_possibles"].split("+"))]
                 keys.append("compo:" + "+".join(sorted([row["joueur"], row["acolyte"]])))
                 for key in keys:
                     rates[key][0] += won
                     rates[key][1] += 1
+    GAMES.clear()
+    GAMES.update({k: g for k, (w, g) in rates.items()})
     return {k: 100.0 * w / g for k, (w, g) in rates.items() if g > 0}
 
 
@@ -274,6 +292,31 @@ def tune(rates):
         old = items.get(item_id, 0.0)
         items[item_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * deviation / 100.0)), 3)
         report.append(f"budget {item_id} ({deviation:+.1f}) : {old:+.3f} -> {items[item_id]:+.3f}")
+    duo_items = destins.setdefault("duo_items", {})
+    for key, rate in sorted(rates.items()):
+        if not key.startswith("duo:"):
+            continue
+        _, partner, item_id = key.split(":")
+        overall = rates.get("comp:" + item_id, rates.get("passif:" + item_id))
+        deviation = rate - overall
+        margin = 196.0 * math.sqrt(0.25 / GAMES[key])
+        if abs(deviation) < max(1.5, margin):
+            continue
+        inner = duo_items.setdefault(partner, {})
+        old = inner.get(item_id, 0.0)
+        inner[item_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * deviation / 100.0)), 3)
+        report.append(f"budget {item_id} avec un {partner} ({deviation:+.1f}) : {old:+.3f} -> {inner[item_id]:+.3f}")
+    compos = destins.setdefault("duo_classes", {})
+    for key, rate in sorted(rates.items()):
+        if not key.startswith("compo:"):
+            continue
+        deviation = rate - 50.0
+        if abs(deviation) < 0.8:
+            continue
+        compo = key.split(":")[1]
+        old = compos.get(compo, 0.0)
+        compos[compo] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - COMPO_GAIN * deviation / 100.0)), 3)
+        report.append(f"budget du duo {compo} ({deviation:+.1f}) : {old:+.3f} -> {compos[compo]:+.3f}")
     write_destins(destins)
     for passive_id, key in PASSIVE_LEVERS.items():
         passive = passives[passive_id]

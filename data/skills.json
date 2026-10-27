@@ -21,7 +21,7 @@
   },
   "fendoir": {
     "name": "Fendoir", "class": "guerrier", "tier": "forte", "element": "tranchant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 65}, {"type": "status", "id": "saignement", "turns": 3, "value": 13}],
+    "effects": [{"type": "damage", "power": 64}, {"type": "status", "id": "saignement", "turns": 3, "value": 13}],
     "description": "Gros dégâts tranchants et saignement pendant {turns} tours."
   },
   "cri_de_guerre": {
@@ -83,7 +83,7 @@
   },
   "egide": {
     "name": "Égide", "class": "pretre", "tier": "forte", "element": "lumiere", "target": "allies_all",
-    "effects": [{"type": "barrier", "power": 69, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 68, "turns": 3}],
     "description": "Barrière sur tout le duo pendant {turns} tours."
   },
   "resurrection": {

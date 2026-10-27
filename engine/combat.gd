@@ -87,7 +87,9 @@ static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_
 			if member.has("name"):
 				picks = picks.duplicate()
 				picks["name"] = member["name"]
-			var unit := CombatUnit.from_class(p_data, member["class_id"], picks, unit_id, team, slot)
+			# En duo, le budget du Destin dépend aussi de la classe du partenaire.
+			var partner_class := str(members[1 - slot]["class_id"]) if members.size() == 2 else ""
+			var unit := CombatUnit.from_class(p_data, member["class_id"], picks, unit_id, team, slot, partner_class)
 			unit.is_player = bool(member.get("is_player", false))
 			unit.is_acolyte = bool(member.get("is_acolyte", false))
 			if member.has("max_hp_mult"):
