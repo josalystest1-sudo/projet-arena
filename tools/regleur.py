@@ -177,6 +177,7 @@ def measure(files):
                     keys += ["classe:" + cls, "passif:" + row[prefix + "passif"]]
                     keys += ["comp:" + row[prefix + t] for t in ("basique", "moyenne", "forte")]
                     keys += [f"duo:{row[partner]}:{row[prefix + t]}" for t in ("basique", "moyenne", "forte", "passif")]
+                    keys.append(f"duoclasse:{row[partner]}:{cls}")
                 keys += ["syn:" + s for s in filter(None, row["synergies_possibles"].split("+"))]
                 keys.append("compo:" + "+".join(sorted([row["joueur"], row["acolyte"]])))
                 for key in keys:
@@ -297,8 +298,11 @@ def tune(rates):
         if not key.startswith("duo:"):
             continue
         _, partner, item_id = key.split(":")
+        own_class = skills[item_id]["class"] if item_id in skills else passives[item_id]["class"]
         overall = rates.get("comp:" + item_id, rates.get("passif:" + item_id))
-        deviation = rate - overall
+        # L'écart propre au partenaire : l'élément comparé à sa classe dans ce duo, moins son écart à sa classe en
+        # général (déjà réglé par son chiffre). Ainsi un duo entier qui gagne trop ne déplace pas tous ses éléments.
+        deviation = (rate - rates[f"duoclasse:{partner}:{own_class}"]) - (overall - rates["classe:" + own_class])
         margin = 196.0 * math.sqrt(0.25 / GAMES[key])
         if abs(deviation) < max(1.5, margin):
             continue
