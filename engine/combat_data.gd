@@ -139,6 +139,15 @@ func synergy_description(synergy: Dictionary) -> String:
 	return fill(str(synergy.get("description", "")), synergy.get("params", {}))
 
 
+## Ce que fait un acolyte de cette classe dans une posture (Libre dépend de son rôle), avec les seuils des données.
+func posture_description(posture_id: String, class_id: String) -> String:
+	var info: Dictionary = postures.get("postures", {}).get(posture_id, {})
+	var text := str(info.get("description", ""))
+	if info.has("roles") and classes.has(class_id):
+		text = str(info["roles"].get(str(classes[class_id]["roles"][0]), text))
+	return fill(text, postures.get("thresholds", {}))
+
+
 func status_name(status_id: String) -> String:
 	return str(statuses.get(status_id, {}).get("name", status_id))
 

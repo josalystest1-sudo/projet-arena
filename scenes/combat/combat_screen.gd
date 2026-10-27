@@ -222,11 +222,12 @@ func _build_layout() -> void:
 	ally_row.add_child(posture_panel)
 	posture_title = _side_label("Posture", 15, ACOLYTE_BLUE)
 	posture_panel.add_child(posture_title)
-	for posture_id in CombatAI.POSTURES:
+	for posture_id in app.acolyte_postures():
 		var button := Button.new()
 		button.text = _posture_name(posture_id)
 		button.custom_minimum_size = Vector2(SIDE_WIDTH, 44)
-		button.add_theme_font_size_override("font_size", 16)
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.add_theme_font_size_override("font_size", 15)
 		button.pressed.connect(_on_posture_pressed.bind(posture_id))
 		posture_panel.add_child(button)
 		posture_buttons[posture_id] = button
@@ -997,9 +998,7 @@ func _posture_name(posture_id: String) -> String:
 ## Ce que fait l'acolyte dans une posture, en clair (pour la posture Libre : selon son rôle).
 func _posture_text(posture_id: String) -> String:
 	var info: Dictionary = data.postures.get("postures", {}).get(posture_id, {})
-	var detail := str(info.get("description", ""))
-	if posture_id == CombatAI.LIBRE and not acolyte.is_empty():
-		detail = str(info.get("roles", {}).get(Duo.main_role(data, acolyte["class_id"]), ""))
+	var detail := data.posture_description(posture_id, str(acolyte.get("class_id", "")))
 	return "%s — %s %s" % [info.get("name", posture_id), info.get("summary", ""), detail]
 
 

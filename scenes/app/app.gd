@@ -54,11 +54,12 @@ func _ready() -> void:
 	sfx = Sfx.new()
 	add_child(sfx)
 	sfx.muted = profile.muted
-	if CombatAI.POSTURES.has(profile.posture):
-		posture = profile.posture
+	posture = profile.posture
 	theme = UiKit.make_theme()
 	_build_layout()
-	show_screen("home" if load_saved_duo() else "creation")
+	var has_duo := load_saved_duo()
+	_check_posture()
+	show_screen("home" if has_duo else "creation")
 
 
 func _seed_from_url() -> int:
@@ -163,6 +164,20 @@ func create_character(class_id: String) -> void:
 func draw_acolyte() -> void:
 	acolyte = Duo.draw_acolyte(data, player_class, player_picks, rng)
 	acolyte_name = ACOLYTE_NAMES[rng.randi_range(0, ACOLYTE_NAMES.size() - 1)]
+	_check_posture()
+
+
+## Les postures de ton acolyte : elles dépendent de son rôle (Libre, les deux de son rôle, Garde ta forte).
+func acolyte_postures() -> Array:
+	if acolyte.is_empty():
+		return [CombatAI.LIBRE, CombatAI.GARDE_TA_FORTE]
+	return CombatAI.postures_for(data, acolyte["class_id"])
+
+
+## Une posture gardée qui n'existe pas pour ce rôle (autre acolyte, ancienne sauvegarde) redevient Libre.
+func _check_posture() -> void:
+	if not acolyte_postures().has(posture):
+		set_posture(CombatAI.LIBRE)
 
 
 ## Prototype seulement : un autre tirage pour le joueur. L'acolyte reste s'il fait toujours Synergie avec lui.
@@ -224,11 +239,7 @@ func class_label(class_id: String) -> String:
 
 ## Le texte d'une posture pour cet acolyte (en Libre, la règle dépend de son rôle).
 func posture_text(posture_id: String) -> String:
-	var info: Dictionary = data.postures.get("postures", {}).get(posture_id, {})
-	var detail := str(info.get("description", ""))
-	if posture_id == CombatAI.LIBRE and not acolyte.is_empty():
-		detail = str(info.get("roles", {}).get(Duo.main_role(data, acolyte["class_id"]), ""))
-	return detail
+	return data.posture_description(posture_id, str(acolyte.get("class_id", "")))
 
 
 func posture_name(posture_id: String) -> String:

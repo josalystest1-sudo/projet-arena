@@ -22,7 +22,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	var postures := UiKit.card(column, 8)
 	postures.add_child(UiKit.label("Ses postures", 20, UiKit.GOLD, false))
 	postures.add_child(UiKit.label("Elles ne coûtent pas d'action et durent jusqu'à nouvel ordre. Touche celle qu'il prendra au début de chaque combat.", 15, UiKit.SOFT, false))
-	for posture_id in CombatAI.POSTURES:
+	for posture_id in app.acolyte_postures():
 		var button := UiKit.button("", _on_posture.bind(posture_id), 46, 18)
 		posture_buttons[posture_id] = button
 		postures.add_child(button)

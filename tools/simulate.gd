@@ -76,8 +76,7 @@ func _initialize() -> void:
 	print("  contre un joueur qui l'ignore (posture Libre, ne lit pas l'annonce) : %.1f %% de victoires" % _duel(data, count, "malin", "ignore"))
 	print("  contre un joueur qui lit l'annonce mais laisse la posture sur Libre : %.1f %% de victoires" % _duel(data, count, "malin", "libre"))
 	print("  lire l'annonce (posture Libre) contre l'ignorer : %.1f %%" % _duel(data, count, "libre", "ignore"))
-	for posture in ["protege_moi", "fonce", "garde_ta_forte"]:
-		print("  posture %s tout le combat, contre Libre tout le combat : %.1f %%" % [posture, _duel(data, count, "posture:" + posture, "libre")])
+	print("  (chaque posture, rôle par rôle : tools/postures.gd)")
 	quit(0)
 
 
