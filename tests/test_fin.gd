@@ -15,26 +15,30 @@ func test_victoire_quand_l_equipe_adverse_est_ko() -> void:
 
 func test_mort_subite_reduit_les_soins_et_augmente_les_degats() -> void:
 	var combat := standard_combat({"pretre": {"basique": 1}})
-	jump_to_turn(combat, Combat.SUDDEN_DEATH_TURN)
+	jump_to_turn(combat, combat.sudden_death_turn)
 	assert_true(combat.is_sudden_death(), "mort subite active")
 	var mage := combat.get_unit("a2")
-	mage.hp = 200
+	mage.hp = int(mage.max_hp * 0.85)
+	var damage_mult := combat.sudden_death_damage_mult()
+	var heal_mult := combat.sudden_death_heal_mult()
+	assert_true(damage_mult > 1.0, "les dégâts augmentent")
+	assert_true(heal_mult < 1.0, "les soins baissent")
 	var events := combat.resolve_turn([action("a3", "priere", "a2"), action("b2", "boule_de_feu", "a2")])
 	var healed := 0
 	for event in events_of_type(events, "heal"):
 		if event["target"] == "a2" and event["kind"] == "priere":
 			healed += int(event["amount"])
-	assert_eq(healed, 20, "Prière (40) divisée par deux")
+	assert_eq(healed, int(round(40 * heal_mult)), "Prière (40) réduite par la mort subite")
 	var hits := damage_from(events, "b2", "a2", "hit")
-	assert_eq(hits, int(round(34 * 1.1 * 1.25)), "dégâts +25 % au premier tour de mort subite")
+	assert_eq(hits, int(round(34 * 1.1 * damage_mult)), "dégâts augmentés au premier tour de mort subite")
 
 
 func test_fin_forcee_sans_match_nul() -> void:
 	var combat := standard_combat()
-	jump_to_turn(combat, Combat.FORCED_END_TURN - 1)
+	jump_to_turn(combat, combat.forced_end_turn - 1)
 	combat.resolve_turn([])
 	assert_false(combat.finished, "pas fini avant le dernier tour")
-	assert_eq(combat.turn, Combat.FORCED_END_TURN, "dernier tour")
+	assert_eq(combat.turn, combat.forced_end_turn, "dernier tour")
 	# Les deux équipes sont identiques et jouent pareil ; seule différence : le Guerrier B est entamé.
 	for unit in combat.units:
 		unit.hp = unit.max_hp
@@ -48,7 +52,7 @@ func test_fin_forcee_sans_match_nul() -> void:
 
 func test_egalite_parfaite_departagee() -> void:
 	var combat := standard_combat()
-	jump_to_turn(combat, Combat.FORCED_END_TURN)
+	jump_to_turn(combat, combat.forced_end_turn)
 	combat.resolve_turn([])
 	assert_true(combat.finished, "fin forcée")
 	assert_true(combat.winner in [0, 1], "jamais de match nul")
@@ -103,7 +107,7 @@ func test_combats_ia_contre_ia_se_terminent() -> void:
 			actions.append_array(CombatAI.choose_team(combat, 1))
 			var events := combat.resolve_turn(actions)
 			synergies += events_of_type(events, "synergy").size()
-			assert_true(combat.turn <= Combat.FORCED_END_TURN + 1, "jamais plus de 15 tours")
+			assert_true(combat.turn <= combat.forced_end_turn + 1, "jamais au-delà du tour de fin forcée")
 		wins[combat.winner] += 1
 		turns_total += combat.turn
 	assert_eq(wins[0] + wins[1], 30, "30 vainqueurs")

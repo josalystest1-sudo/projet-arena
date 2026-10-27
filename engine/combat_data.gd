@@ -10,6 +10,8 @@ var skills: Dictionary = {}
 var passives: Dictionary = {}
 var statuses: Dictionary = {}
 var synergies: Array = []
+## Règles chiffrées du combat (mort subite, recharges...), dans data/rules.json.
+var rules: Dictionary = {}
 
 
 static func load_default() -> CombatData:
@@ -22,6 +24,7 @@ static func load_from_dir(dir: String) -> CombatData:
 	data.passives = _read_json(dir + "passives.json")
 	data.statuses = _read_json(dir + "statuses.json")
 	data.synergies = _read_json(dir + "synergies.json")
+	data.rules = _read_json(dir + "rules.json")
 	var class_ids: Array = _read_json(dir + "classes.json")
 	for class_id in class_ids:
 		data.classes[class_id] = _read_json(dir + "classes/" + class_id + ".json")
