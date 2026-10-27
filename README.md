@@ -12,9 +12,9 @@ Le projet est entièrement développé avec Claude Code.
 | Dossier | Contenu |
 | --- | --- |
 | `engine/` | Le moteur de règles du combat : module pur, sans affichage, réutilisé par le client, le serveur, l'IA et le simulateur. |
-| `data/` | Les données de jeu en JSON : classes, compétences, passifs, états, Synergies. |
+| `data/` | Les données de jeu en JSON : classes, compétences, passifs, états, Synergies, IA, la Tour et son bestiaire de monstres. |
 | `scenes/app/` | L'application : profil, duo, navigation entre les écrans (scène de démarrage). |
-| `scenes/screens/` | Les écrans : création, rencontre de l'acolyte, Vitrine, Acolyte, Compétences, La Tour, Profil, Paramètres, face-à-face. |
+| `scenes/screens/` | Les écrans : création, rencontre de l'acolyte, Vitrine, Acolyte, Compétences, La Tour, Bestiaire, Profil, Paramètres, face-à-face. |
 | `scenes/ui/` | Les briques communes de l'interface : thème, boutons, cartes, portraits animés. |
 | `scenes/combat/` | L'écran de combat (affichage uniquement, aucune règle). |
 | `tests/` | Les tests automatiques du moteur, lancés en CI à chaque PR. |
@@ -36,4 +36,12 @@ godot --headless --path . --script res://tools/simulate_tour.gd -- 500
 godot --headless --path . --script res://tools/equilibrage.gd -- 20000 1 /tmp/equilibrage.csv
 python3 tools/equilibrage.py /tmp/equilibrage.csv
 python3 tools/regleur.py 8 16000   # règle les chiffres de data/ par passes successives (4 processus Godot)
+```
+
+La Tour (menace de chaque monstre, puis difficulté de chaque étage) :
+
+```
+godot --headless --path . --script res://tools/simulate_tour.gd -- 1000 1 /tmp/etages.csv
+python3 tools/menace.py /tmp/etages.csv [--ecrire]   # menace réelle des monstres (--ecrire : la règle dans data/bestiaire.json)
+python3 tools/regleur_tour.py 3 2000                 # chaque étage vers son taux de chute cible (data/tower.json)
 ```
