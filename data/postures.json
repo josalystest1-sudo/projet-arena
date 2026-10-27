@@ -11,7 +11,7 @@
       "roles": {
         "front": "Dès que tu as perdu des PV, il te protège avec sa moyenne (si elle est prête). Sinon il joue sa forte dès qu'elle est prête, sinon il frappe l'ennemi le plus bas.",
         "degats": "Il frappe l'ennemi le plus bas : forte dès qu'elle est prête, sinon moyenne, sinon basique. Il ne te secourt que si l'un de vous passe sous {libre_rescue_below%} de PV.",
-        "soutien": "Il soigne le plus blessé dès que l'un de vous passe sous {libre_heal_below%} de PV, sinon joue sa forte dès qu'elle est prête, sinon frappe l'ennemi le plus bas."
+        "soutien": "Il te soigne dès que tu passes sous {libre_heal_below%} de PV (sinon le plus blessé de vous deux sous ce seuil), sinon il retire un état négatif, sinon il joue sa forte dès qu'elle est prête (une protection seulement si l'un de vous a perdu des PV), sinon il frappe l'ennemi le plus bas."
       }
     },
     "tiens_la_ligne": {
@@ -22,7 +22,7 @@
     "cogne": {
       "name": "Cogne",
       "summary": "Ses coups avant ses protections.",
-      "description": "Forte dès qu'elle est prête, sinon sa moyenne si elle frappe, sinon sa basique, sur l'ennemi le plus bas. Il ne te protège plus que si tu passes sous {cogne_protect_below%} de PV."
+      "description": "Ses coups d'abord : forte dès qu'elle est prête, sinon sa moyenne si elle frappe (une provocation frappe aussi), sinon sa basique, sur l'ennemi le plus bas. Il ne te protège plus que si tu passes sous {cogne_protect_below%} de PV."
     },
     "meme_cible": {
       "name": "Même cible que moi",
@@ -52,10 +52,10 @@
   },
   "always": "Quelle que soit sa posture, il relève un allié KO dès qu'il le peut.",
   "thresholds": {
-    "libre_heal_below": 0.6,
+    "libre_heal_below": 0.5,
     "libre_rescue_below": 0.5,
     "heal_first_below": 0.7,
-    "cogne_protect_below": 0.5,
+    "cogne_protect_below": 0.3,
     "urgent_below": 0.3,
     "ai_leader_protect_below": 0.4,
     "ai_leader_finish_below": 0.35

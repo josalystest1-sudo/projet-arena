@@ -255,12 +255,18 @@ static func _libre(combat: Combat, unit: CombatUnit, focus: CombatUnit, hold_for
 			if decision.is_empty():
 				decision = _pick(combat, unit, forte, ["degats", "renfort", "protection"], hurt, enemy, "forte")
 		"soutien":
-			if hurt_badly:
+			# Il soigne le joueur d'abord dès qu'il passe sous le seuil, sinon le plus blessé (lui compris).
+			var leader := combat.leader_of(unit.team)
+			if leader != null and leader != unit and leader.is_alive() and leader.hp_ratio() < below:
+				decision = _pick_heal(combat, unit, any_tier, leader, "soin")
+			elif hurt_badly:
 				decision = _pick_heal(combat, unit, any_tier, hurt, "soin")
 			if decision.is_empty():
 				decision = _pick_cleanse(combat, unit, any_tier, combat.allies_of(unit, true))
+			# Sa forte : une protection seulement si l'un de vous a déjà perdu des PV (une Égide à fond de PV est gâchée).
 			if decision.is_empty():
-				decision = _pick(combat, unit, forte, ["protection", "degats", "renfort"], hurt, enemy, "forte")
+				var kinds: Array = ["protection", "degats", "renfort"] if _someone_hurt(combat, unit) else ["degats", "renfort"]
+				decision = _pick(combat, unit, forte, kinds, hurt, enemy, "forte")
 		_:
 			if hurt_badly:
 				decision = _pick(combat, unit, any_tier, ["soin", "protection"], hurt, enemy, "secours")
@@ -287,18 +293,23 @@ static func _hold_the_line(combat: Combat, unit: CombatUnit, leader: CombatUnit)
 	return decision
 
 
-## Cogne (Front) : forte, moyenne puis basique de dégâts sur l'ennemi le plus bas ; il ne protège qu'en urgence
-## (le joueur sous 30 % de PV).
+## Cogne (Front) : ses coups (forte, moyenne, basique : toute compétence qui frappe) sur l'ennemi le plus bas ;
+## il ne protège qu'en urgence (le joueur sous 30 % de PV).
 static func _cogne(combat: Combat, unit: CombatUnit) -> Dictionary:
 	var enemy := _lowest_enemy(combat, unit)
 	var guarded := _guarded_ally(combat, unit)
 	var decision := {}
 	if guarded.hp_ratio() < _threshold(combat, "cogne_protect_below", 0.3):
 		decision = _pick(combat, unit, STRONG_FIRST, ["protection"], guarded, enemy, "urgence")
-	if decision.is_empty():
-		decision = _pick(combat, unit, ["forte"], ["degats", "renfort"], unit, enemy, "cogne")
-	if decision.is_empty():
-		decision = _pick(combat, unit, ["moyenne", "basique"], ["degats"], unit, enemy, "cogne")
+	# Ses coups : toute compétence qui frappe, même une provocation (elle frappe sa cible).
+	for tier in STRONG_FIRST:
+		if not decision.is_empty():
+			break
+		var skill_id: String = unit.skills[tier]
+		if combat.can_use(unit, tier) and (_has_effect(combat, skill_id, "damage") or skill_kind(combat.data, skill_id) == "renfort"):
+			var target := _target_for(combat, unit, skill_id, unit, enemy)
+			if target != null:
+				decision = _decision(unit, skill_id, target, "cogne")
 	if decision.is_empty():
 		decision = _libre(combat, unit, enemy, false)
 	return decision
@@ -585,6 +596,14 @@ static func _leader_target(combat: Combat, unit: CombatUnit, leader: CombatUnit,
 		if _is_enemy(unit, previous):
 			return previous
 	return _lowest_enemy(combat, unit)
+
+
+## L'un des alliés a déjà perdu des PV.
+static func _someone_hurt(combat: Combat, unit: CombatUnit) -> bool:
+	for ally in combat.allies_of(unit, true):
+		if ally.hp < ally.max_hp:
+			return true
+	return false
 
 
 static func _is_enemy(unit: CombatUnit, other: CombatUnit) -> bool:

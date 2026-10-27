@@ -69,14 +69,18 @@ func test_libre_un_soutien_soigne_le_plus_blesse_sous_son_seuil() -> void:
 	set_ratio(combat, "a1", below - 0.05)
 	assert_move(announce(combat, CombatAI.LIBRE), "restauration", "a1", "sous le seuil : son plus gros soin, sur toi")
 	set_ratio(combat, "a2", below - 0.2)
-	assert_move(announce(combat, CombatAI.LIBRE), "restauration", "a2", "il soigne le plus blessé des deux, lui compris")
+	assert_move(announce(combat, CombatAI.LIBRE), "restauration", "a1", "toi d'abord, même s'il est plus blessé que toi")
+	set_ratio(combat, "a1", below + 0.05)
+	assert_move(announce(combat, CombatAI.LIBRE), "restauration", "a2", "toi au-dessus du seuil : il se soigne lui-même")
 
 
-func test_libre_un_soutien_joue_sa_forte_des_qu_elle_est_prete() -> void:
+func test_libre_un_soutien_joue_sa_forte_des_qu_elle_sert() -> void:
 	var combat := duo_combat(["mage", "pretre"], GM)
 	jump_to_turn(combat, 3)
+	assert_eq(announce(combat, CombatAI.LIBRE)["action"].skill_id, "chatiment", "personne n'a perdu de PV : il garde son Égide")
+	set_ratio(combat, "a1", 0.9)
 	var decision := announce(combat, CombatAI.LIBRE)
-	assert_eq(decision["action"].skill_id, "egide", "Égide dès le tour 3")
+	assert_eq(decision["action"].skill_id, "egide", "tu as perdu des PV : Égide dès qu'elle est prête")
 	assert_eq(decision["rule"], "forte", "règle : forte prête")
 
 
@@ -123,6 +127,13 @@ func test_cogne_ses_coups_avant_ses_protections() -> void:
 	var urgent := announce(combat, CombatAI.COGNE)
 	assert_move(urgent, "rempart", "a1", "sous son seuil : son Rempart sur toi")
 	assert_eq(urgent["rule"], "urgence", "règle : urgence")
+
+
+func test_cogne_une_provocation_compte_comme_un_coup() -> void:
+	var combat := duo_combat(["mage", "guerrier"], GM)
+	var decision := announce(combat, CombatAI.COGNE)
+	assert_move(decision, "provocation", "b2", "la Provocation frappe : en Cogne, c'est un coup, sur l'ennemi le plus fragile")
+	assert_eq(decision["rule"], "cogne", "règle : cogne")
 
 
 # --- Dégâts : Même cible que moi, Achève ------------------------------------------
