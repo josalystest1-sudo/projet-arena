@@ -11,7 +11,7 @@
       "roles": {
         "front": "Dès que tu as perdu des PV, il te protège avec sa moyenne (si elle est prête). Sinon il joue sa forte dès qu'elle est prête, sinon il frappe l'ennemi le plus bas.",
         "degats": "Il frappe l'ennemi le plus bas : forte dès qu'elle est prête, sinon moyenne, sinon basique. Il ne te secourt que si l'un de vous passe sous {libre_rescue_below%} de PV.",
-        "soutien": "Il te soigne dès que tu passes sous {libre_heal_below%} de PV (sinon le plus blessé de vous deux sous ce seuil), sinon il retire un état négatif, sinon il joue sa forte dès qu'elle est prête (une protection seulement si l'un de vous a perdu des PV), sinon il frappe l'ennemi le plus bas."
+        "soutien": "Il soigne le plus blessé dès que l'un de vous passe sous {libre_heal_below%} de PV, sinon retire un état négatif, sinon joue sa forte dès qu'elle est prête, sinon frappe l'ennemi le plus bas."
       }
     },
     "tiens_la_ligne": {

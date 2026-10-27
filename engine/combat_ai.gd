@@ -256,18 +256,12 @@ static func _libre(combat: Combat, unit: CombatUnit, focus: CombatUnit, hold_for
 			if decision.is_empty():
 				decision = _pick(combat, unit, forte, ["degats", "renfort", "protection"], hurt, enemy, "forte")
 		"soutien":
-			# Il soigne le joueur d'abord dès qu'il passe sous le seuil, sinon le plus blessé (lui compris).
-			var leader := combat.leader_of(unit.team)
-			if leader != null and leader != unit and leader.is_alive() and leader.hp_ratio() < below:
-				decision = _pick_heal(combat, unit, any_tier, leader, "soin")
-			elif hurt_badly:
+			if hurt_badly:
 				decision = _pick_heal(combat, unit, any_tier, hurt, "soin")
 			if decision.is_empty():
 				decision = _pick_cleanse(combat, unit, any_tier, combat.allies_of(unit, true))
-			# Sa forte : une protection seulement si l'un de vous a déjà perdu des PV (une Égide à fond de PV est gâchée).
 			if decision.is_empty():
-				var kinds: Array = ["protection", "degats", "renfort"] if _someone_hurt(combat, unit) else ["degats", "renfort"]
-				decision = _pick(combat, unit, forte, kinds, hurt, enemy, "forte")
+				decision = _pick(combat, unit, forte, ["protection", "degats", "renfort"], hurt, enemy, "forte")
 		_:
 			if hurt_badly:
 				decision = _pick(combat, unit, any_tier, ["soin", "protection"], hurt, enemy, "secours")
@@ -603,14 +597,6 @@ static func _leader_target(combat: Combat, unit: CombatUnit, leader: CombatUnit,
 static func _forte_has_synergy(combat: Combat, leader: CombatUnit, acolyte: CombatUnit) -> bool:
 	for tier in CombatUnit.TIERS:
 		if not combat.data.find_synergy(leader.skills[tier], acolyte.skills["forte"]).is_empty():
-			return true
-	return false
-
-
-## L'un des alliés a déjà perdu des PV.
-static func _someone_hurt(combat: Combat, unit: CombatUnit) -> bool:
-	for ally in combat.allies_of(unit, true):
-		if ally.hp < ally.max_hp:
 			return true
 	return false
 

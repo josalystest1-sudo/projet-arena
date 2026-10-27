@@ -69,18 +69,14 @@ func test_libre_un_soutien_soigne_le_plus_blesse_sous_son_seuil() -> void:
 	set_ratio(combat, "a1", below - 0.05)
 	assert_move(announce(combat, CombatAI.LIBRE), "restauration", "a1", "sous le seuil : son plus gros soin, sur toi")
 	set_ratio(combat, "a2", below - 0.2)
-	assert_move(announce(combat, CombatAI.LIBRE), "restauration", "a1", "toi d'abord, même s'il est plus blessé que toi")
-	set_ratio(combat, "a1", below + 0.05)
-	assert_move(announce(combat, CombatAI.LIBRE), "restauration", "a2", "toi au-dessus du seuil : il se soigne lui-même")
+	assert_move(announce(combat, CombatAI.LIBRE), "restauration", "a2", "il soigne le plus blessé des deux, lui compris")
 
 
-func test_libre_un_soutien_joue_sa_forte_des_qu_elle_sert() -> void:
+func test_libre_un_soutien_joue_sa_forte_des_qu_elle_est_prete() -> void:
 	var combat := duo_combat(["mage", "pretre"], GM)
 	jump_to_turn(combat, 3)
-	assert_eq(announce(combat, CombatAI.LIBRE)["action"].skill_id, "chatiment", "personne n'a perdu de PV : il garde son Égide")
-	set_ratio(combat, "a1", 0.9)
 	var decision := announce(combat, CombatAI.LIBRE)
-	assert_eq(decision["action"].skill_id, "egide", "tu as perdu des PV : Égide dès qu'elle est prête")
+	assert_eq(decision["action"].skill_id, "egide", "Égide dès le tour 3")
 	assert_eq(decision["rule"], "forte", "règle : forte prête")
 
 
@@ -195,7 +191,7 @@ func test_soigne_d_abord_te_soigne_plus_tot_que_libre() -> void:
 
 func test_soigne_d_abord_toi_avant_lui() -> void:
 	var combat := duo_combat(["mage", "pretre"], GM)
-	set_ratio(combat, "a1", float(data.postures["thresholds"]["heal_first_below"]) - 0.05)
+	set_ratio(combat, "a1", float(data.postures["thresholds"]["libre_heal_below"]) - 0.05)
 	set_ratio(combat, "a2", 0.3)
 	assert_move(announce(combat, CombatAI.LIBRE), "restauration", "a2", "en Libre, le plus blessé : lui")
 	assert_move(announce(combat, CombatAI.SOIGNE_D_ABORD), "restauration", "a1", "en Soigne d'abord : toi")
