@@ -7,7 +7,8 @@ Usage : python3 tools/regleur.py <tours de réglage> <combats par tour>
 1. tools/equilibrage.gd fait jouer les combats (4 processus en parallèle), l'IA aux commandes des deux duos ;
 2. on mesure le taux de victoire de chaque classe, compétence, passif et Synergie ;
 3. on corrige le chiffre principal de chacun, proportionnellement à son écart :
-   - une classe : ses PV max (écart à 50 %) ;
+   - une classe : sa puissance (écart à 50 %) ; ses PV restent ceux de son rôle (le Front le plus solide, le Dégâts
+     le plus fragile), sinon le réglage finit par casser l'identité des classes ;
    - une compétence ou un passif : son chiffre (écart au taux de sa classe, pour ne pas corriger deux fois) ;
    - une Synergie : son chiffre (écart à la moyenne de ses deux classes).
    - une paire d'éléments d'un même kit (deux compétences, ou une compétence et le passif) : son ajustement de PV et
@@ -268,9 +269,10 @@ def tune(rates):
         cls = load(os.path.join("classes", class_id + ".json"))
         hp = cls["stats"]["max_hp"]
         power = cls["stats"]["power"]
-        # Une classe se règle par ses PV et sa puissance (qui porte aussi les soins et les barrières).
-        new_hp = int(round(step(hp, deviation, CLASS_GAIN) / 5.0) * 5)
-        new_power = int(round(step(power, deviation, CLASS_GAIN)))
+        # Une classe se règle par sa puissance (qui porte aussi les soins et les barrières). Ses PV ne bougent pas : ils
+        # disent son rôle (un réglage par les PV avait fini par donner moins de PV au Guerrier qu'au Prêtre).
+        new_hp = hp
+        new_power = int(round(step(power, deviation, 2 * CLASS_GAIN)))
         set_class_stats(class_id, new_hp, new_power)
         report.append(f"classe {class_id} {rates['classe:' + class_id]:.1f} % : PV {hp} -> {new_hp}, puissance {power} -> {new_power}")
     for skill_id, levers in SKILL_LEVERS.items():

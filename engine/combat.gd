@@ -650,6 +650,7 @@ func _apply_damage(source: CombatUnit, target: CombatUnit, amount: int, element:
 	_emit({"type": "damage", "source": source_id, "target": target.id, "amount": amount, "element": element, "kind": kind, "hp": target.hp})
 	if source != null and source.team != target.team and kind != "dot":
 		target.last_hit_by = source.id
+		target.damage_taken_from[source.id] = int(target.damage_taken_from.get(source.id, 0)) + amount
 	if source != null:
 		damage_by_team[source.team] = int(damage_by_team[source.team]) + amount
 		if not _damage_dealt.has(source.id):

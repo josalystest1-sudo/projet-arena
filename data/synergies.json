@@ -59,7 +59,7 @@
     "same_target": false,
     "description": "Le Bouclier de mana se pose aussi sur l'autre membre du duo, à {share%} de sa taille.",
     "params": {
-      "share": 0.609
+      "share": 0.638
     }
   },
   {
@@ -71,7 +71,7 @@
     ],
     "same_target": false,
     "params": {
-      "mult": 1.373
+      "mult": 1.376
     },
     "description": "Le Châtiment frappe aussi l'autre ennemi provoqué, à {mult%} de sa force."
   },

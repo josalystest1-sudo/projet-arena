@@ -234,9 +234,7 @@ static func _libre(combat: Combat, unit: CombatUnit, focus: CombatUnit, hold_for
 
 ## Protège-moi : tout pour la survie du joueur d'abord, puis il frappe celui qui l'a frappé.
 static func _protect_me(combat: Combat, unit: CombatUnit, leader: CombatUnit) -> Dictionary:
-	var attacker := combat.get_unit(leader.last_hit_by)
-	if not _is_enemy(unit, attacker):
-		attacker = _lowest_enemy(combat, unit)
+	var attacker := _worst_attacker(combat, unit, leader)
 	var all_tiers: Array = STRONG_FIRST
 	var decision := _pick(combat, unit, all_tiers, ["protection"], leader, attacker, "protege")
 	if decision.is_empty() and leader.hp_ratio() < _threshold(combat, "protect_heal_below", 0.75):
@@ -250,6 +248,20 @@ static func _protect_me(combat: Combat, unit: CombatUnit, leader: CombatUnit) ->
 	if decision.is_empty():
 		decision = _pick(combat, unit, ["basique"], ["soin", "protection", "renfort"], leader, attacker, "basique_toi")
 	return decision
+
+
+## Celui qui a fait le plus de dégâts au joueur depuis le début du combat (encore debout). Une cible stable : en duo,
+## les deux ennemis frappent chacun leur tour, et riposter sur le dernier qui a frappé dispersait les coups.
+## Personne ne l'a encore frappé : l'ennemi le plus bas.
+static func _worst_attacker(combat: Combat, unit: CombatUnit, leader: CombatUnit) -> CombatUnit:
+	var worst: CombatUnit = null
+	var most := 0
+	for enemy in combat.enemies_of(unit, true):
+		var dealt := int(leader.damage_taken_from.get(enemy.id, 0))
+		if dealt > most:
+			worst = enemy
+			most = dealt
+	return worst if worst != null else _lowest_enemy(combat, unit)
 
 
 ## Fonce : tout en dégâts, sur la cible du joueur.

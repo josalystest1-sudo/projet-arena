@@ -104,6 +104,18 @@ func test_protege_moi_riposte_sur_celui_qui_t_a_frappe() -> void:
 	assert_eq(announce(combat, CombatAI.LIBRE)["action"].target_id, "b2", "en Libre, il aurait frappé le plus bas")
 
 
+func test_protege_moi_riposte_sur_celui_qui_t_a_fait_le_plus_mal() -> void:
+	var combat := duo_combat(GM, GM)
+	combat.resolve_turn([action("b1", "taillade", "a1"), action("b2", "boule_de_feu", "a2")])
+	combat.resolve_turn([action("b1", "taillade", "a1"), action("b2", "boule_de_feu", "a2")])
+	heal_all(combat)
+	combat.resolve_turn([action("b1", "taillade", "a2"), action("b2", "boule_de_feu", "a1")])
+	assert_eq(combat.get_unit("a1").last_hit_by, "b2", "le dernier à t'avoir frappé : le Mage")
+	assert_true(int(combat.get_unit("a1").damage_taken_from["b1"]) > int(combat.get_unit("a1").damage_taken_from["b2"]), "mais le Guerrier t'a fait plus mal")
+	heal_all(combat)
+	assert_eq(announce(combat, CombatAI.PROTEGE_MOI)["action"].target_id, "b1", "il garde sa cible : celui qui t'a fait le plus mal")
+
+
 func test_protege_moi_protege_d_abord_puis_frappe_avec_sa_forte() -> void:
 	var combat := duo_combat(GM, GM, {"mage": {"forte": 1}})
 	jump_to_turn(combat, 3)

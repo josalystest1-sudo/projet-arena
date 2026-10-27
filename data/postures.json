@@ -13,7 +13,7 @@
     "protege_moi": {
       "name": "Protège-moi",
       "summary": "Tout pour ta survie.",
-      "description": "Ses protections pour toi dès qu'elles sont prêtes, ses soins dès que tu as perdu un quart de tes PV. Sinon il frappe celui qui t'a frappé, forte comprise."
+      "description": "Ses protections pour toi dès qu'elles sont prêtes, ses soins dès que tu as perdu un quart de tes PV. Sinon il frappe celui qui t'a fait le plus de dégâts, forte comprise."
     },
     "fonce": {
       "name": "Fonce",
@@ -46,7 +46,7 @@
     "basique_allie": "sa basique, sur le plus blessé",
     "basique_toi": "sa basique, sur toi",
     "sans_attaque": "il n'a aucune attaque : il joue comme en Libre",
-    "riposte": "frappe celui qui t'a frappé",
+    "riposte": "frappe celui qui t'a fait le plus mal",
     "fonce": "frappe ta cible",
     "avec_toi": "forte avec la tienne",
     "synergie": "cherche la Synergie"

@@ -52,12 +52,12 @@
   },
   "nova": {
     "name": "Nova", "class": "mage", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 57}],
+    "effects": [{"type": "damage", "power": 56}],
     "description": "Explosion de feu sur tous les ennemis."
   },
   "bouclier_de_mana": {
     "name": "Bouclier de mana", "class": "mage", "tier": "forte", "element": "", "target": "ally",
-    "effects": [{"type": "barrier", "power": 182, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 185, "turns": 3}],
     "description": "Grosse barrière sur un allié pendant {turns} tours."
   },
 

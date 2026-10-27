@@ -49,10 +49,10 @@ func test_fin_forcee_sans_match_nul() -> void:
 	combat.resolve_turn([])
 	assert_false(combat.finished, "pas fini avant le dernier tour")
 	assert_eq(combat.turn, combat.forced_end_turn, "dernier tour")
-	# Les deux duos sont identiques et jouent pareil ; seule différence : le Guerrier B est entamé.
+	# Les deux duos sont identiques et jouent les mêmes coups l'un sur l'autre ; seule différence : le Guerrier B est entamé.
 	heal_all(combat)
 	combat.get_unit("b1").hp = int(combat.get_unit("b1").max_hp * 0.6)
-	combat.resolve_turn([])
+	combat.resolve_turn([action("a1", "taillade", "b1"), action("b1", "taillade", "a1"), action("a2", "boule_de_feu", "b2"), action("b2", "boule_de_feu", "a2")])
 	assert_true(combat.finished, "fin forcée")
 	assert_eq(combat.end_reason, "mort_subite", "raison : mort subite")
 	assert_true(combat.team_total_hp(0) > combat.team_total_hp(1), "le duo A a plus de PV")
