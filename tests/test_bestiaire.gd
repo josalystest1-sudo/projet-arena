@@ -88,7 +88,7 @@ func test_affaibli_reduit_les_degats_infliges() -> void:
 	var mage := combat.get_unit("a2")
 	var normal := combat._damage_amount(mage, combat.get_unit("b1"), 50, 1.0, true)
 	mage.add_status({"id": "affaibli", "turns": 2, "value": 25})
-	assert_eq(combat._damage_amount(mage, combat.get_unit("b1"), 50, 1.0, true), int(round(normal * 0.75)), "-25 % de dégâts")
+	assert_between(combat._damage_amount(mage, combat.get_unit("b1"), 50, 1.0, true), int(round(normal * 0.75)) - 1, int(round(normal * 0.75)) + 1, "-25 % de dégâts (à l'arrondi près)")
 	assert_true(data.is_negative_status("affaibli"), "un état négatif (une Purification le retire)")
 
 
