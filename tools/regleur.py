@@ -60,6 +60,9 @@ SYNERGY_LEVERS = {
 }
 PAIR_GAIN = 0.5
 PAIR_LIMIT = 0.15
+# Une compétence ou un passif sans chiffre à régler (Rempart, Résonance, Météorologue) se règle par le budget du
+# Destin : un ajustement de PV et de puissance du perso qui l'a (data/destins.json, « kit_items »).
+ITEM_GAIN = 0.5
 # Bornes des chiffres de Synergie : au-delà, une Synergie change de nature (ou ne se joue pas assez pour être réglée
 # par sa force : il faut alors revoir son effet).
 SYNERGY_LIMITS = {"mult": (0.5, 1.5), "share": (0.3, 1.0), "bonus": (0.05, 1.0)}
@@ -103,11 +106,14 @@ def write_passives(passives):
 
 
 def write_destins(destins):
-    pairs = destins["kit_pairs"]
-    lines = ["{", '  "kit_pairs": {']
-    keys = sorted(k for k, v in pairs.items() if v != 0)
-    lines += [f'    "{k}": {pairs[k]}' + ("," if i < len(keys) - 1 else "") for i, k in enumerate(keys)]
-    lines += ["  }", "}"]
+    lines = ["{"]
+    for n, section in enumerate(("kit_items", "kit_pairs")):
+        values = destins.get(section, {})
+        keys = sorted(k for k, v in values.items() if v != 0)
+        lines.append(f'  "{section}": {{')
+        lines += [f'    "{k}": {values[k]}' + ("," if i < len(keys) - 1 else "") for i, k in enumerate(keys)]
+        lines.append("  }" + ("," if n == 0 else ""))
+    lines.append("}")
     with open(os.path.join(DATA, "destins.json"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
@@ -257,6 +263,18 @@ def tune(rates):
                     effect[key] = step_int(old, deviation)
                     report.append(f"{skill_id} ({deviation:+.1f}) : {key} {old} -> {effect[key]}")
                     break
+    destins = load("destins.json")
+    items = destins.setdefault("kit_items", {})
+    unleveled = [(sid, "comp:", s["class"]) for sid, s in skills.items() if sid not in SKILL_LEVERS]
+    unleveled += [(pid, "passif:", p["class"]) for pid, p in passives.items() if pid not in PASSIVE_LEVERS]
+    for item_id, prefix, class_id in unleveled:
+        deviation = rates[prefix + item_id] - rates["classe:" + class_id]
+        if abs(deviation) < 1.0:
+            continue
+        old = items.get(item_id, 0.0)
+        items[item_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * deviation / 100.0)), 3)
+        report.append(f"budget {item_id} ({deviation:+.1f}) : {old:+.3f} -> {items[item_id]:+.3f}")
+    write_destins(destins)
     for passive_id, key in PASSIVE_LEVERS.items():
         passive = passives[passive_id]
         deviation = rates["passif:" + passive_id] - rates["classe:" + passive["class"]]

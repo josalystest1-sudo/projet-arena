@@ -16,8 +16,9 @@ var rules: Dictionary = {}
 var postures: Dictionary = {}
 ## La Tour : étages, ennemis, PV rendus entre deux étages, dans data/tower.json.
 var tower: Dictionary = {}
-## Le budget de puissance des Destins (data/destins.json) : certaines paires d'un même kit vont trop bien (ou trop
-## mal) ensemble ; « kit_pairs » donne pour chaque paire un ajustement des PV et de la puissance (+0,04 = +4 %).
+## Le budget de puissance des Destins (data/destins.json), en ajustement des PV et de la puissance (+0,04 = +4 %) :
+## « kit_items » pour un élément seul qui n'a pas de chiffre à régler (Rempart, Résonance, Météorologue) ;
+## « kit_pairs » pour une paire d'un même kit qui va trop bien (ou trop mal) ensemble.
 var destins: Dictionary = {}
 
 
@@ -67,13 +68,15 @@ static func pair_key(a: String, b: String) -> String:
 	return "%s+%s" % [a, b] if a < b else "%s+%s" % [b, a]
 
 
-## L'ajustement de PV et de puissance d'un kit (3 compétences + 1 passif) : la somme de ses paires.
+## L'ajustement de PV et de puissance d'un kit (3 compétences + 1 passif) : ses éléments, puis ses paires.
 func kit_bonus(skill_ids: Array, passive_id: String) -> float:
+	var singles: Dictionary = destins.get("kit_items", {})
 	var pairs: Dictionary = destins.get("kit_pairs", {})
 	var items: Array = skill_ids.duplicate()
 	items.append(passive_id)
 	var total := 0.0
 	for i in range(items.size()):
+		total += float(singles.get(str(items[i]), 0.0))
 		for j in range(i + 1, items.size()):
 			total += float(pairs.get(pair_key(str(items[i]), str(items[j])), 0.0))
 	return total

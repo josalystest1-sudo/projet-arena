@@ -38,7 +38,7 @@ func test_mort_subite_reduit_les_soins_et_augmente_les_degats() -> void:
 	for event in events_of_type(events, "heal"):
 		if event["target"] == "a1" and event["kind"] == "priere":
 			healed += int(event["amount"])
-	assert_eq(healed, int(round(round(skill_power("priere", "heal") * class_power("pretre")) * heal_mult)), "Prière réduite par la mort subite")
+	assert_eq(healed, int(round(skill_power("priere", "heal") * class_power("pretre") * heal_mult)), "Prière réduite par la mort subite")
 	var hits := damage_from(events, "b2", "a1", "hit")
 	assert_eq(hits, int(round(skill_power("boule_de_feu") * class_power("mage") * damage_mult)), "dégâts augmentés au premier tour de mort subite")
 
