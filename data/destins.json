@@ -21,10 +21,10 @@
     "lumiere_interieure+resurrection": -0.02,
     "nova+trait_de_givre": 0.011,
     "priere+resurrection": 0.035,
-    "provocation+second_souffle": -0.005,
-    "provocation+veteran": 0.003,
-    "rempart+second_souffle": 0.005,
-    "rempart+veteran": -0.002,
+    "provocation+second_souffle": -0.015,
+    "provocation+veteran": 0.016,
+    "rempart+second_souffle": 0.017,
+    "rempart+veteran": -0.017,
     "resurrection+sanctuaire": 0.034
   }
 }
