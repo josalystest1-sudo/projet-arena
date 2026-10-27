@@ -29,6 +29,9 @@ var acolyte_name: String = ""
 var posture: String = CombatAI.LIBRE
 var player_id: String = "a1"
 var acolyte_id: String = "a2"
+## « pvp » : ton duo contre un duo IA ; « tour » : la montée de la Tour (étape 2).
+var mode: String = "pvp"
+var tower: Tower
 
 # Phase d'Intention.
 var phase: String = "menu"   # menu, intent, resolve, end
@@ -54,6 +57,7 @@ var sfx: Sfx
 var views: Dictionary = {}
 var enemy_units: HBoxContainer
 var ally_units: HBoxContainer
+var enemy_side: VBoxContainer
 var enemy_posture_label: Label
 var posture_title: Label
 var posture_buttons: Dictionary = {}
@@ -201,7 +205,7 @@ func _build_layout() -> void:
 	enemy_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	enemy_row.add_theme_constant_override("separation", 8)
 	root.add_child(enemy_row)
-	var enemy_side := VBoxContainer.new()
+	enemy_side = VBoxContainer.new()
 	enemy_side.custom_minimum_size = Vector2(SIDE_WIDTH, 0)
 	enemy_side.alignment = BoxContainer.ALIGNMENT_CENTER
 	enemy_row.add_child(enemy_side)
@@ -507,12 +511,20 @@ func _show_kit() -> void:
 	for synergy in synergies:
 		box.add_child(_label("• %s : %s + %s. %s" % [synergy["name"], data.skill_name(synergy["skills"][0]), data.skill_name(synergy["skills"][1]), synergy["description"]], 15, Color(1, 0.9, 0.6)))
 	box.add_child(_spacer(4))
-	var fight := Button.new()
-	fight.text = "Combattre"
-	fight.custom_minimum_size = Vector2(0, 66)
-	fight.add_theme_font_size_override("font_size", 28)
-	fight.pressed.connect(_start_combat)
-	box.add_child(fight)
+	var modes := HBoxContainer.new()
+	modes.add_theme_constant_override("separation", 8)
+	box.add_child(modes)
+	for entry in [["Combat\nen duo", _start_combat], ["La Tour", _start_tower]]:
+		var fight := Button.new()
+		fight.text = entry[0]
+		fight.custom_minimum_size = Vector2(0, 72)
+		fight.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		fight.add_theme_font_size_override("font_size", 24)
+		fight.pressed.connect(entry[1])
+		modes.add_child(fight)
+	var record := int(profile.tower_records.get(player_class, 0))
+	if record > 0:
+		box.add_child(_label("Ton record à la Tour (%s) : étage %d sur %d" % [cls["name"], record, Tower.start(data, []).floor_count()], 15, Color(0.75, 0.9, 0.75)))
 	var rerolls := HBoxContainer.new()
 	rerolls.add_theme_constant_override("separation", 8)
 	box.add_child(rerolls)
@@ -576,35 +588,165 @@ func _start_combat() -> void:
 	stats = {}
 	speed = 1.0
 	sfx.play("clic")
-	var team_a := Duo.members(player_class, player_picks, acolyte)
-	team_a[0]["name"] = "Toi"
-	team_a[0]["is_player"] = true
-	team_a[1]["name"] = acolyte_name
+	var team_a := _duo_members()
 	# En face : un duo IA tiré au hasard (en attendant les Échos de l'étape 5).
 	var team_b := Duo.random_duo(data, rng)
 	var first := rng.randi_range(0, ENEMY_NAMES.size() - 1)
 	team_b[0]["name"] = ENEMY_NAMES[first]
 	team_b[1]["name"] = ENEMY_NAMES[(first + rng.randi_range(1, ENEMY_NAMES.size() - 1)) % ENEMY_NAMES.size()]
+	mode = "pvp"
 	combat = Combat.create(data, team_a, team_b, rng.randi_range(0, 1))
+	_setup_views([combat.acolyte_of(1), combat.leader_of(1)])
+	enemy_posture_label.text = "Posture de %s : ?" % combat.acolyte_of(1).display_name
+	_begin_intent_phase()
+
+
+## Ton duo pour le moteur : toi, puis ton acolyte.
+func _duo_members() -> Array:
+	var team := Duo.members(player_class, player_picks, acolyte)
+	team[0]["name"] = "Toi"
+	team[0]["is_player"] = true
+	team[1]["name"] = acolyte_name
+	return team
+
+
+## Les persos à l'écran. Dans ta rangée : l'acolyte à côté de la colonne des postures, puis toi.
+func _setup_views(enemies: Array) -> void:
 	player_id = combat.leader_of(0).id
 	acolyte_id = combat.acolyte_of(0).id
-
 	views = {}
 	_clear_children(enemy_units)
 	_clear_children(ally_units)
-	# Dans chaque rangée : l'acolyte à côté de la colonne des postures, puis le joueur.
-	for team in [1, 0]:
-		for unit in [combat.acolyte_of(team), combat.leader_of(team)]:
-			var view := UnitView.new()
-			view.setup(unit)
-			view.subtitle = data.class_name_of(unit.class_id)
-			view.tapped.connect(_on_unit_tapped)
-			(ally_units if team == 0 else enemy_units).add_child(view)
-			views[unit.id] = view
-			view.sync(unit, data)
-			stats[unit.id] = {"damage": 0, "heal": 0, "kos": 0}
-	enemy_posture_label.text = "Posture de %s : ?" % combat.acolyte_of(1).display_name
+	enemy_side.visible = mode == "pvp"
+	var order: Array = []
+	order.append_array(enemies)
+	order.append(combat.acolyte_of(0))
+	order.append(combat.leader_of(0))
+	for unit in order:
+		var view := UnitView.new()
+		view.setup(unit)
+		view.subtitle = data.class_name_of(unit.class_id)
+		view.tapped.connect(_on_unit_tapped)
+		(ally_units if unit.team == 0 else enemy_units).add_child(view)
+		views[unit.id] = view
+		view.sync(unit, data)
+		stats[unit.id] = {"damage": 0, "heal": 0, "kos": 0}
+
+
+# ---------------------------------------------------------------------------
+# La Tour : le duo grimpe des étages, PV et recharges gardés d'un étage à l'autre
+# ---------------------------------------------------------------------------
+
+func _start_tower() -> void:
+	sfx.play("clic")
+	tower = Tower.start(data, _duo_members())
+	_start_floor()
+
+
+func _start_floor() -> void:
+	if menu_layer != null:
+		menu_layer.queue_free()
+		menu_layer = null
+	if end_layer != null:
+		end_layer.queue_free()
+		end_layer = null
+	synergies_fired = 0
+	stats = {}
+	speed = 1.0
+	mode = "tour"
+	combat = tower.create_combat(rng)
+	_setup_views(combat.team_units(1))
+	if tower.is_boss_floor():
+		_show_cutin("ÉTAGE %d : GARDIEN" % tower.current_floor, Color("ffa94d"))
+	else:
+		_show_cutin("ÉTAGE %d" % tower.current_floor, GOLD)
 	_begin_intent_phase()
+
+
+## Fin d'un étage : on monte (PV +20 %, recharges gardées) ou la montée s'arrête et le record tombe peut-être.
+func _show_floor_end() -> void:
+	phase = "end"
+	var floor_number := tower.current_floor
+	var result := tower.finish_floor(combat)
+	end_layer = _make_layer()
+	var box: VBoxContainer = end_layer.get_meta("box")
+	if result["won"] and not tower.finished:
+		sfx.play("victoire")
+		box.add_child(_label("Étage %d franchi !" % floor_number, 40, GOLD))
+		if combat.end_reason == "limite_de_tours":
+			box.add_child(_label("Épuisés, les ennemis abandonnent.", 18, Color.WHITE))
+		box.add_child(_label("Entre deux étages : 20 % de tes PV max rendus, recharges conservées.", 17, Color(0.8, 0.85, 1)))
+		for line in result["report"]:
+			var unit := combat.get_unit(line["id"])
+			var gain := int(line["after"]) - int(line["before"])
+			var text := "%s : %d PV + %d = %d PV" % [_short_name(unit.id), int(line["before"]), gain, int(line["after"])]
+			if gain <= 0:
+				text = "%s : %d PV, déjà au maximum" % [_short_name(unit.id), int(line["after"])]
+			if line["revived"]:
+				text = "%s : KO, relevé avec %d PV" % [_short_name(unit.id), int(line["after"])]
+			box.add_child(_label(text, 19, Color.WHITE if unit.is_player else ACOLYTE_BLUE))
+		var next := tower.current_floor
+		box.add_child(_label("Étage %d : %d ennemis%s" % [next, int(tower.floor_info()["enemies"]), ", dont un Gardien" if tower.is_boss_floor() else ""], 17, Color("ffa94d")))
+		box.add_child(_spacer(8))
+		var climb := Button.new()
+		climb.text = "Monter à l'étage %d" % next
+		climb.custom_minimum_size = Vector2(0, 76)
+		climb.add_theme_font_size_override("font_size", 28)
+		climb.pressed.connect(_start_floor)
+		box.add_child(climb)
+		var stop := Button.new()
+		stop.text = "Abandonner la montée"
+		stop.custom_minimum_size = Vector2(0, 50)
+		stop.pressed.connect(_end_climb)
+		box.add_child(stop)
+		return
+	_end_climb()
+
+
+## La montée est finie (tombé, sommet franchi ou abandon) : l'étage atteint, et le record de ta classe.
+func _end_climb() -> void:
+	phase = "end"
+	if end_layer != null:
+		end_layer.queue_free()
+	end_layer = _make_layer()
+	var box: VBoxContainer = end_layer.get_meta("box")
+	var cls_name := data.class_name_of(player_class)
+	var previous := int(profile.tower_records.get(player_class, 0))
+	var reached := tower.reached
+	if reached > previous:
+		profile.tower_records[player_class] = reached
+		profile.save()
+	if tower.cleared_all:
+		sfx.play("victoire")
+		box.add_child(_label("Sommet atteint !", 44, GOLD))
+		box.add_child(_label("Ton duo a franchi les %d étages de la Tour." % tower.floor_count(), 20, Color.WHITE))
+	else:
+		sfx.play("defaite")
+		box.add_child(_label("La montée s'arrête", 40, Color("ff6b6b")))
+		box.add_child(_label("Étage atteint : %d sur %d" % [reached, tower.floor_count()], 26, Color.WHITE))
+	if reached > previous and previous > 0:
+		box.add_child(_label("Nouveau record pour ton %s ! (avant : étage %d)" % [cls_name, previous], 20, Color("51cf66")))
+	elif reached > previous:
+		box.add_child(_label("Premier record pour ton %s." % cls_name, 20, Color("51cf66")))
+	else:
+		box.add_child(_label("Record de ton %s : étage %d" % [cls_name, previous], 20, Color("ffa94d")))
+	box.add_child(_spacer(10))
+	var again := Button.new()
+	again.text = "Recommencer la Tour"
+	again.custom_minimum_size = Vector2(0, 76)
+	again.add_theme_font_size_override("font_size", 28)
+	again.pressed.connect(_start_tower)
+	box.add_child(again)
+	var duel := Button.new()
+	duel.text = "Combat en duo"
+	duel.custom_minimum_size = Vector2(0, 54)
+	duel.pressed.connect(_start_combat)
+	box.add_child(duel)
+	var change := Button.new()
+	change.text = "Changer de personnage"
+	change.custom_minimum_size = Vector2(0, 54)
+	change.pressed.connect(_show_menu)
+	box.add_child(change)
 
 
 func _player() -> CombatUnit:
@@ -644,9 +786,16 @@ func _begin_intent_phase() -> void:
 	turn_label.text = "Tour %d" % combat.turn
 	sfx.play("tour")
 	banner.text = ""
-	if combat.is_sudden_death():
+	if mode == "tour":
+		sudden_label.text = "La Tour — étage %d sur %d  ·  record : %d" % [tower.current_floor, tower.floor_count(), int(profile.tower_records.get(player_class, 0))]
+		if combat.turn >= combat.exhaustion_turn:
+			sudden_label.text = "Les ennemis s'épuisent : plus de soins ni de barrières  ·  abandon au tour %d" % combat.forced_end_turn
+		sudden_label.add_theme_color_override("font_color", Color("ffa94d"))
+	elif combat.is_sudden_death():
+		sudden_label.add_theme_color_override("font_color", Color("ff6b6b"))
 		sudden_label.text = "MORT SUBITE : soins ÷2, dégâts +%d %%  ·  fin au tour %d" % [int(round((combat.sudden_death_damage_mult() - 1.0) * 100.0)), combat.forced_end_turn]
 	elif combat.turn >= combat.sudden_death_turn - 2:
+		sudden_label.add_theme_color_override("font_color", Color("ff6b6b"))
 		sudden_label.text = "Mort subite au tour %d" % combat.sudden_death_turn
 	else:
 		sudden_label.text = ""
@@ -1209,6 +1358,9 @@ func _input(event: InputEvent) -> void:
 # ---------------------------------------------------------------------------
 
 func _show_end() -> void:
+	if mode == "tour":
+		_show_floor_end()
+		return
 	phase = "end"
 	end_layer = _make_layer()
 	var box: VBoxContainer = end_layer.get_meta("box")

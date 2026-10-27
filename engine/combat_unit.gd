@@ -14,6 +14,8 @@ var max_hp: int = 100
 var hp: int = 100
 var base_speed: int = 5
 var power: int = 100
+## Multiplicateur de ses soins (1 en PvP ; plus bas pour les ennemis de la Tour, pour qu'aucun étage ne s'éternise).
+var heal_mult: float = 1.0
 ## Palier -> identifiant de compétence.
 var skills: Dictionary = {}
 var passive: String = ""

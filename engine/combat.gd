@@ -54,6 +54,13 @@ var sudden_death_heal: float = 0.5
 ## Recharges (en tours d'indisponibilité) et tour de déblocage de la forte.
 var cooldown_by_tier: Dictionary = {"basique": 0, "moyenne": 2, "forte": 4}
 var strong_available_from_turn: int = 3
+## La Tour n'a pas de mort subite (GDD) : seulement une limite de tours au bout de laquelle un camp désigné gagne.
+var sudden_death_enabled: bool = true
+## Camp vainqueur à la fin forcée, s'il est imposé (-1 : le plus de PV totaux, comme en PvP).
+var forced_end_winner: int = -1
+## Épuisement (la Tour) : à partir de ce tour, ce camp ne soigne plus et ne pose plus de barrières (-1 : jamais).
+var exhausted_team: int = -1
+var exhaustion_turn: int = 0
 
 # --- État interne d'un tour en cours de résolution ---
 var _events: Array[Dictionary] = []
@@ -73,6 +80,9 @@ var _current_hits: Dictionary = {}     # cibles distinctes touchées par l'actio
 
 ## team_a et team_b : listes de dictionnaires {class_id, picks, name, is_player, is_acolyte} (seuls class_id et picks sont obligatoires).
 ## Un camp peut compter autant de membres qu'on veut : 2 en PvP (le joueur puis son acolyte), 2 ou 3 à la Tour.
+## Pour la Tour, un membre peut aussi porter : max_hp_mult et power_mult (ennemis plus ou moins forts),
+## heal_mult (soins plus faibles des ennemis de la Tour), hp (PV de départ, gardés d'un étage à l'autre)
+## et cooldowns ({palier: tours restants}, recharges conservées).
 ## p_priority_team : équipe qui agit en premier à vitesse égale au tour 1 (0 ou 1).
 static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_team: int = 0) -> Combat:
 	var combat := Combat.new()
@@ -97,6 +107,18 @@ static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_
 			var unit := CombatUnit.from_class(p_data, member["class_id"], picks, unit_id, team, slot)
 			unit.is_player = bool(member.get("is_player", false))
 			unit.is_acolyte = bool(member.get("is_acolyte", false))
+			if member.has("max_hp_mult"):
+				unit.max_hp = maxi(1, int(round(float(unit.max_hp) * float(member["max_hp_mult"]))))
+				unit.hp = unit.max_hp
+			if member.has("power_mult"):
+				unit.power = maxi(1, int(round(float(unit.power) * float(member["power_mult"]))))
+			unit.heal_mult = float(member.get("heal_mult", 1.0))
+			if member.has("hp"):
+				unit.hp = clampi(int(member["hp"]), 1, unit.max_hp)
+			var carried: Dictionary = member.get("cooldowns", {})
+			for tier in carried:
+				if int(carried[tier]) > 0:
+					unit.cooldown_until[tier] = 1 + int(carried[tier])
 			combat.units.append(unit)
 	return combat
 
@@ -156,7 +178,12 @@ func priority_team_for_turn(p_turn: int) -> int:
 
 
 func is_sudden_death() -> bool:
-	return turn >= sudden_death_turn
+	return sudden_death_enabled and turn >= sudden_death_turn
+
+
+## Épuisement des ennemis de la Tour : ils ne soignent plus et ne protègent plus.
+func is_exhausted(unit: CombatUnit) -> bool:
+	return unit.team == exhausted_team and turn >= exhaustion_turn
 
 
 func sudden_death_damage_mult() -> float:
@@ -565,12 +592,16 @@ func _heal_amount(source: CombatUnit, target: CombatUnit, base_power: int) -> in
 	var amount := float(base_power) * float(source.power) / 100.0
 	if source.passive == "foi" and target.hp_ratio() < FOI_THRESHOLD:
 		amount *= 1.0 + FOI_BONUS
-	amount *= sudden_death_heal_mult()
+	amount *= source.heal_mult * sudden_death_heal_mult()
+	if is_exhausted(source):
+		amount = 0.0
 	return int(round(amount))
 
 
 ## Valeur d'une barrière posée par une unité.
 func _barrier_amount(source: CombatUnit, base_power: int) -> int:
+	if is_exhausted(source):
+		return 0
 	var amount := float(base_power) * float(source.power) / 100.0
 	if source.passive == "sanctuaire":
 		amount *= 1.0 + SANCTUAIRE_BONUS
@@ -896,10 +927,12 @@ func _check_end() -> void:
 			winner = _tie_break()
 	elif turn >= forced_end_turn:
 		finished = true
-		end_reason = "mort_subite"
+		end_reason = "mort_subite" if sudden_death_enabled else "limite_de_tours"
 		var hp_a := team_total_hp(0)
 		var hp_b := team_total_hp(1)
-		if hp_a != hp_b:
+		if forced_end_winner >= 0:
+			winner = forced_end_winner
+		elif hp_a != hp_b:
 			winner = 0 if hp_a > hp_b else 1
 		else:
 			winner = _tie_break()

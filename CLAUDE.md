@@ -112,6 +112,14 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 - Postures gardées tout le combat contre Libre : Protège-moi 46 %, Fonce 51 %, Garde ta forte 48 %. Aucune ne domine : c'est un choix de situation.
 - Limite connue : le simulateur ne démontre pas encore le pilier « le duo gagne ». Un joueur IA qui lit l'annonce et cherche les Synergies gagne 51 % contre un qui l'ignore, parce que les deux en déclenchent presque autant (1,6 contre 1,5 par combat) : quand chacun joue son rôle, les couples tombent d'eux-mêmes. Il faudra une IA qui prépare ses coups sur plusieurs tours (étape 4), et surtout le ressenti de Gautier.
 
+**La Tour (2026-10-27, étape 2, PR laissée ouverte en attendant le test de l'étape 1)**
+
+- `engine/tower.gd` (module pur) et `data/tower.json` : 10 étages. Pour chaque étage, le fichier donne le nombre d'ennemis (2 ou 3) et leur force (PV et puissance en multiplicateurs) ; classes et kits des ennemis sont tirés au hasard. Étages 5 et 10 : un Gardien (+60 % de PV). Noms : Sentinelle (Guerrier), Arcaniste (Mage), Oracle (Prêtre).
+- Entre deux étages : 20 % des PV max rendus, **un membre KO revient avec 20 %** (le GDD ne dit rien ; sans ça, le duo se réduisait à un seul perso pour toute la suite), recharges conservées. Une forte prête l'est dès le tour 1 de l'étage suivant (la règle « forte au tour 3 » ne vaut qu'au premier étage). Ce qui sert « une fois par combat » (Résurrection, relève, Second souffle) revient à chaque étage.
+- Pas de mort subite (GDD). Mais sans rien, 15 % des montées se bloquaient dans des combats sans fin (un duo qui frappe peu contre des Prêtres ennemis). D'où trois règles, qui ne pénalisent jamais le joueur : les soins des ennemis de la Tour sont moitié moins forts ; **à partir du tour 12 d'un étage, les ennemis s'épuisent** (plus de soins ni de barrières) ; au tour 24, ils abandonnent et l'étage est franchi (le GDD dit qu'un étage se perd quand le duo tombe, donc un duo debout ne perd pas).
+- Record = étage atteint (celui où le duo tombe, ou 10), gardé par classe sur l'appareil. On peut abandonner la montée entre deux étages.
+- Réglage au simulateur (`tools/simulate_tour.gd`, l'IA joue les deux camps) : la plupart des montées s'arrêtent entre les étages 4 et 8, 6 % atteignent le sommet, 8,5 tours par étage, 1,5 % des étages finissent par abandon. Étage moyen selon la classe du joueur : Guerrier 6,4, Mage 6,3, Prêtre 7,8 (le Prêtre gère mieux l'usure ; le record étant par classe, ce n'est pas bloquant).
+
 **Écran (2026-10-26, prototype ; passé en duo le 2026-10-27)**
 
 - Le joueur choisit sa classe au lancement et peut retirer son kit ou son acolyte (« Autre tirage pour toi », « Autre acolyte », prototype seulement) : c'est volontairement contraire au Destin non modifiable, pour tester les 3 classes et tous les kits. À retirer quand les comptes arrivent (étape 5). Un nouveau tirage du joueur garde l'acolyte s'il fait toujours Synergie avec lui.
