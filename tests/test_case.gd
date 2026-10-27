@@ -7,6 +7,8 @@ var data: CombatData
 
 func setup() -> void:
 	data = CombatData.load_default()
+	# Les tests vérifient les règles avec les chiffres des classes : sans l'ajustement des Destins (testé à part).
+	data.destins = {"kit_pairs": {}}
 
 
 func assert_true(condition: bool, message: String = "") -> void:
@@ -62,6 +64,21 @@ func skill_power(skill_id: String, effect_type: String = "damage") -> int:
 		if effect["type"] == effect_type:
 			return int(effect.get("power", effect.get("value", 0)))
 	return 0
+
+
+## Un chiffre de passif ou de Synergie, lu dans les données (ils bougent avec l'équilibrage).
+func pp(passive_id: String, key: String) -> float:
+	return data.passive_param(passive_id, key, 0.0)
+
+
+func sp(synergy_id: String, key: String) -> float:
+	return data.synergy_param(synergy_id, key, 0.0)
+
+
+## Met un perso à un pourcentage de ses PV max (les PV de chaque classe bougent avec l'équilibrage).
+func set_ratio(combat: Combat, unit_id: String, ratio: float) -> void:
+	var unit := combat.get_unit(unit_id)
+	unit.hp = maxi(1, int(floor(float(unit.max_hp) * ratio)))
 
 
 ## Puissance d'une classe, en multiplicateur (le Mage frappe plus fort que les autres).

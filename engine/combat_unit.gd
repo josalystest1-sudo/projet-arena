@@ -25,15 +25,20 @@ var statuses: Array[Dictionary] = []
 ## Drapeaux « une fois par combat » (second_souffle, resurrection, revived...).
 var flags: Dictionary = {}
 var last_target: String = ""
-## Le dernier ennemi qui lui a porté un coup direct (sert à la riposte de l'acolyte en posture Protège-moi).
+## Le dernier ennemi qui lui a porté un coup direct.
 var last_hit_by: String = ""
+## Les dégâts reçus de chaque ennemi depuis le début du combat, coups directs seulement (sert à la riposte de
+## l'acolyte Front en posture Tiens la ligne : il frappe celui qui t'a fait le plus mal).
+var damage_taken_from: Dictionary = {}
 var is_player: bool = false
 ## Acolyte : second personnage du duo, toujours piloté par l'IA (le joueur ne contrôle jamais ses sorts).
 var is_acolyte: bool = false
 
 
 ## Construit une unité depuis une classe et des choix de kit (index par palier et index de passif).
-static func from_class(data: CombatData, p_class_id: String, picks: Dictionary, p_id: String, p_team: int, p_slot: int) -> CombatUnit:
+## partner_class : la classe de l'autre membre du duo (vide hors duo) ; is_acolyte : un acolyte (joué par l'IA).
+## Les deux servent au budget de puissance du Destin.
+static func from_class(data: CombatData, p_class_id: String, picks: Dictionary, p_id: String, p_team: int, p_slot: int, partner_class: String = "", p_is_acolyte: bool = false) -> CombatUnit:
 	var cls: Dictionary = data.classes[p_class_id]
 	var unit := CombatUnit.new()
 	unit.id = p_id
@@ -50,6 +55,14 @@ static func from_class(data: CombatData, p_class_id: String, picks: Dictionary, 
 		unit.skills[tier] = pool[int(picks.get(tier, 0)) % pool.size()]
 	var passive_pool: Array = cls["passives"]
 	unit.passive = passive_pool[int(picks.get("passive", 0)) % passive_pool.size()]
+	# Budget de puissance du Destin : un kit dont les pièces vont trop bien ensemble a un peu moins de PV et de
+	# puissance, et inversement (data/destins.json).
+	unit.is_acolyte = p_is_acolyte
+	var bonus := data.kit_bonus(unit.skills.values(), unit.passive, p_class_id, partner_class, p_is_acolyte)
+	if bonus != 0.0:
+		unit.max_hp = maxi(1, int(round(float(unit.max_hp) * (1.0 + bonus))))
+		unit.hp = unit.max_hp
+		unit.power = maxi(1, int(round(float(unit.power) * (1.0 + bonus))))
 	return unit
 
 

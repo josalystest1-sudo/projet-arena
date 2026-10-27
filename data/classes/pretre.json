@@ -3,7 +3,7 @@
   "name": "Prêtre",
   "roles": ["soutien", "front"],
   "identity": "Il répare, il relève, il tient.",
-  "stats": {"max_hp": 220, "speed": 7, "power": 100},
+  "stats": {"max_hp": 220, "speed": 7, "power": 116},
   "skills": {
     "basique": ["chatiment", "priere"],
     "moyenne": ["restauration", "purification"],

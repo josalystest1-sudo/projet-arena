@@ -3,19 +3,32 @@
 ## dans le même ordre ; la première qui s'applique décide. Un joueur qui connaît la posture devine le coup.
 ## Module pur et déterministe : mêmes entrées, même choix.
 ##
-## Règle commune : un allié KO est relevé dès que possible (le joueur d'abord).
-## Libre          : chacun joue son rôle (Front protège dès que le joueur a perdu des PV, Dégâts frappe le plus bas, Soutien soigne sous 50 %).
-## Protège-moi    : protections et soins sur le joueur d'abord, sinon il frappe celui qui l'a frappé.
-## Fonce          : forte, puis moyenne, puis basique de dégâts, toujours sur la cible du joueur.
-## Garde ta forte : comme Libre, mais la forte ne part que le tour où le joueur joue la sienne (ou une Synergie avec elle).
+## Une posture change l'ordre de ses priorités, jamais sa classe : les postures dépendent du rôle de l'acolyte (GDD,
+## liste par rôle dans data/postures.json). Règle commune : un allié KO est relevé dès que possible (le joueur d'abord).
+## Libre (tous)            : il joue son rôle (Front protège dès que le joueur a perdu des PV, Dégâts frappe le plus bas,
+##                           Soutien soigne sous 50 %).
+## Garde ta forte (tous)   : comme Libre, mais la forte ne part que le tour où le joueur joue la sienne (ou une Synergie avec elle).
+## Front   Tiens la ligne  : provocations et protections sur le joueur dès qu'elles sont prêtes, sinon il frappe celui
+##                           qui a fait le plus mal au joueur.
+##         Cogne           : ses coups (forte, moyenne, basique) avant ses protections ; il ne protège qu'en urgence.
+## Dégâts  Même cible      : comme Libre, mais sur la cible du joueur.
+##         Achève          : toujours l'ennemi le plus proche du KO (le moins de PV restants), sans secourir personne.
+## Soutien Soigne d'abord  : soigne le joueur dès 70 % de PV, puis comme Libre.
+##         Affaiblis-les   : ses affaiblissements et contrôles sur la cible du joueur, sinon ses coups ; il ne soigne
+##                           qu'en urgence.
 class_name CombatAI
 extends RefCounted
 
 const LIBRE := "libre"
-const PROTEGE_MOI := "protege_moi"
-const FONCE := "fonce"
 const GARDE_TA_FORTE := "garde_ta_forte"
-const POSTURES := [LIBRE, PROTEGE_MOI, FONCE, GARDE_TA_FORTE]
+const TIENS_LA_LIGNE := "tiens_la_ligne"
+const COGNE := "cogne"
+const MEME_CIBLE := "meme_cible"
+const ACHEVE := "acheve"
+const SOIGNE_D_ABORD := "soigne_d_abord"
+const AFFAIBLIS := "affaiblis"
+## Les effets qui affaiblissent ou contrôlent un ennemi (posture Affaiblis-les).
+const WEAKENING_EFFECTS := ["push_back", "act_last"]
 ## L'IA regarde toujours ses compétences de la plus forte à la plus faible.
 const STRONG_FIRST := ["forte", "moyenne", "basique"]
 
@@ -26,21 +39,38 @@ const STRONG_FIRST := ["forte", "moyenne", "basique"]
 
 ## L'annonce de l'acolyte selon sa posture. leader_action : l'Intention actuelle du joueur (null tant qu'il n'a rien choisi).
 ## Renvoie {action, rule, held_forte} : rule dit quelle règle a décidé (pour l'afficher), held_forte qu'il garde une forte prête.
+## Une posture qui n'est pas celle de son rôle compte comme Libre.
 static func decide_acolyte(combat: Combat, unit: CombatUnit, posture: String, leader_action: CombatAction) -> Dictionary:
 	var leader := combat.leader_of(unit.team)
+	if not postures_for(combat.data, unit.class_id).has(posture):
+		posture = LIBRE
 	var decision := _rule_revive(combat, unit)
 	if decision.is_empty():
 		var leader_up := leader != null and leader.is_alive() and leader != unit
 		match posture:
-			PROTEGE_MOI:
-				decision = _protect_me(combat, unit, leader) if leader_up else _libre(combat, unit, null, false)
-			FONCE:
-				decision = _fonce(combat, unit, leader, leader_action)
+			TIENS_LA_LIGNE:
+				decision = _hold_the_line(combat, unit, leader) if leader_up else _libre(combat, unit, null, false)
+			COGNE:
+				decision = _cogne(combat, unit)
+			MEME_CIBLE:
+				decision = _same_target(combat, unit, leader, leader_action)
+			ACHEVE:
+				decision = _finish(combat, unit)
+			SOIGNE_D_ABORD:
+				decision = _heal_first(combat, unit, leader) if leader_up else _libre(combat, unit, null, false)
+			AFFAIBLIS:
+				decision = _weaken(combat, unit, leader, leader_action)
 			GARDE_TA_FORTE:
 				decision = _keep_strong(combat, unit, leader, leader_action) if leader_up else _libre(combat, unit, null, false)
 			_:
 				decision = _libre(combat, unit, null, false)
 	return _complete(combat, unit, decision)
+
+
+## Les postures d'un acolyte de cette classe, dans l'ordre du sélecteur : Libre, les deux de son rôle, Garde ta forte.
+static func postures_for(data: CombatData, class_id: String) -> Array:
+	var by_role: Dictionary = data.postures.get("by_role", {})
+	return by_role.get(Duo.main_role(data, class_id), [LIBRE, GARDE_TA_FORTE])
 
 
 # ---------------------------------------------------------------------------
@@ -71,20 +101,29 @@ static func choose_posture(combat: Combat, team: int) -> String:
 	var acolyte := combat.acolyte_of(team)
 	if leader == null or acolyte == null or not leader.is_alive() or not acolyte.is_alive():
 		return LIBRE
+	var allowed := postures_for(combat.data, acolyte.class_id)
+	# Il est en danger : la posture qui le protège (Tiens la ligne, Soigne d'abord ; un Dégâts n'en a pas).
 	if leader.hp_ratio() < _threshold(combat, "ai_leader_protect_below", 0.4):
-		return PROTEGE_MOI
+		for posture in [TIENS_LA_LIGNE, SOIGNE_D_ABORD]:
+			if allowed.has(posture):
+				return posture
+	# Un adversaire est presque KO : la posture offensive (Cogne, Achève, Affaiblis-les).
 	for enemy in combat.team_units(1 - team, true):
 		if enemy.hp_ratio() < _threshold(combat, "ai_leader_finish_below", 0.35):
-			return FONCE
-	# Sa forte revient au tour suivant : l'acolyte garde la sienne pour les lancer ensemble.
+			for posture in [COGNE, ACHEVE, AFFAIBLIS]:
+				if allowed.has(posture):
+					return posture
+	# Sa forte revient au tour suivant et celle de l'acolyte fait Synergie avec l'une de ses compétences : l'acolyte garde
+	# la sienne pour la jouer avec lui (sans Synergie à construire, la garder ne fait que la retarder).
 	if combat.can_use(acolyte, "forte") and skill_kind(combat.data, acolyte.skills["forte"]) != "releve" \
-			and combat.cooldown_remaining(leader, "forte") == 1:
+			and combat.cooldown_remaining(leader, "forte") == 1 and _forte_has_synergy(combat, leader, acolyte):
 		return GARDE_TA_FORTE
 	return LIBRE
 
 
 ## Les Intentions de tout un camp, dans l'ordre d'un vrai tour : posture, annonce de l'acolyte, choix du joueur,
-## puis l'acolyte révise son annonce s'il doit réagir (Fonce suit la cible, Garde ta forte attend la forte).
+## puis l'acolyte révise son annonce s'il doit réagir (Même cible et Affaiblis-les suivent la cible, Garde ta forte attend
+## la forte).
 ## fixed_actions : Intentions déjà connues (celle du joueur humain). Renvoie {actions, posture}.
 static func plan_team(combat: Combat, team: int, fixed_actions: Array = [], posture: String = "") -> Dictionary:
 	var actions: Array = fixed_actions.duplicate()
@@ -201,11 +240,14 @@ static func _rule_revive(combat: Combat, unit: CombatUnit) -> Dictionary:
 static func _libre(combat: Combat, unit: CombatUnit, focus: CombatUnit, hold_forte: bool) -> Dictionary:
 	var enemy := focus if _is_enemy(unit, focus) else _lowest_enemy(combat, unit)
 	var hurt := _lowest_ally(combat, unit)
-	var hurt_badly := hurt != null and hurt.hp_ratio() < _threshold(combat, "libre_heal_below", 0.5)
+	var role := Duo.main_role(combat.data, unit.class_id)
+	# Un Soutien soigne sous son seuil ; un Dégâts ne secourt que sous le sien.
+	var below := _threshold(combat, "libre_heal_below", 0.5) if role == "soutien" else _threshold(combat, "libre_rescue_below", 0.5)
+	var hurt_badly := hurt != null and hurt.hp_ratio() < below
 	var forte: Array = [] if hold_forte else ["forte"]
 	var any_tier: Array = forte + ["moyenne", "basique"]
 	var decision := {}
-	match Duo.main_role(combat.data, unit.class_id):
+	match role:
 		"front":
 			# Il protège l'allié le plus fragile (en duo : le joueur) dès que celui-ci a perdu des PV et que sa protection est prête.
 			var guarded := _guarded_ally(combat, unit)
@@ -232,37 +274,141 @@ static func _libre(combat: Combat, unit: CombatUnit, focus: CombatUnit, hold_for
 	return decision
 
 
-## Protège-moi : tout pour la survie du joueur d'abord, puis il frappe celui qui l'a frappé.
-static func _protect_me(combat: Combat, unit: CombatUnit, leader: CombatUnit) -> Dictionary:
-	var attacker := combat.get_unit(leader.last_hit_by)
-	if not _is_enemy(unit, attacker):
-		attacker = _lowest_enemy(combat, unit)
-	var all_tiers: Array = STRONG_FIRST
-	var decision := _pick(combat, unit, all_tiers, ["protection"], leader, attacker, "protege")
-	if decision.is_empty() and leader.hp_ratio() < _threshold(combat, "protect_heal_below", 0.75):
-		decision = _pick_heal(combat, unit, all_tiers, leader, "soin_toi")
-	if decision.is_empty():
-		decision = _pick_cleanse(combat, unit, all_tiers, [leader])
+## Tiens la ligne (Front) : provocations et protections sur le joueur dès qu'elles sont prêtes, même à fond de PV ;
+## sinon il frappe celui qui a fait le plus mal au joueur.
+static func _hold_the_line(combat: Combat, unit: CombatUnit, leader: CombatUnit) -> Dictionary:
+	var attacker := _worst_attacker(combat, unit, leader)
+	var decision := _pick(combat, unit, STRONG_FIRST, ["protection"], leader, attacker, "tiens")
 	if decision.is_empty():
 		decision = _pick(combat, unit, ["forte"], ["degats", "renfort"], leader, attacker, "riposte")
 	if decision.is_empty():
 		decision = _pick(combat, unit, ["moyenne", "basique"], ["degats"], leader, attacker, "riposte")
 	if decision.is_empty():
-		decision = _pick(combat, unit, ["basique"], ["soin", "protection", "renfort"], leader, attacker, "basique_toi")
+		decision = _libre(combat, unit, attacker, false)
 	return decision
 
 
-## Fonce : tout en dégâts, sur la cible du joueur.
-static func _fonce(combat: Combat, unit: CombatUnit, leader: CombatUnit, leader_action: CombatAction) -> Dictionary:
+## Cogne (Front) : ses coups (forte, moyenne, basique : toute compétence qui frappe) sur l'ennemi le plus bas ;
+## il ne protège qu'en urgence (le joueur sous 30 % de PV).
+static func _cogne(combat: Combat, unit: CombatUnit) -> Dictionary:
+	var enemy := _lowest_enemy(combat, unit)
+	var guarded := _guarded_ally(combat, unit)
+	var decision := {}
+	if guarded.hp_ratio() < _threshold(combat, "cogne_protect_below", 0.3):
+		decision = _pick(combat, unit, STRONG_FIRST, ["protection"], guarded, enemy, "urgence")
+	# Ses coups : toute compétence qui frappe, même une provocation (elle frappe sa cible).
+	for tier in STRONG_FIRST:
+		if not decision.is_empty():
+			break
+		var skill_id: String = unit.skills[tier]
+		if combat.can_use(unit, tier) and (_has_effect(combat, skill_id, "damage") or skill_kind(combat.data, skill_id) == "renfort"):
+			var target := _target_for(combat, unit, skill_id, unit, enemy)
+			if target != null:
+				decision = _decision(unit, skill_id, target, "cogne")
+	if decision.is_empty():
+		decision = _libre(combat, unit, enemy, false)
+	return decision
+
+
+## Même cible que moi (Dégâts) : les règles de Libre, mais sur la cible du joueur.
+static func _same_target(combat: Combat, unit: CombatUnit, leader: CombatUnit, leader_action: CombatAction) -> Dictionary:
 	var target := _leader_target(combat, unit, leader, leader_action)
-	var decision := _pick(combat, unit, ["forte"], ["degats", "renfort"], unit, target, "fonce")
-	if decision.is_empty():
-		decision = _pick(combat, unit, ["moyenne", "basique"], ["degats"], unit, target, "fonce")
-	if decision.is_empty():
-		# Rien pour frapper (un Soutien qui n'a que des soins) : il joue comme en Libre, et le dit.
-		decision = _libre(combat, unit, target, false)
-		decision["rule"] = "sans_attaque"
+	var decision := _libre(combat, unit, target, false)
+	var chosen: CombatAction = decision.get("action")
+	if chosen != null and chosen.target_id == target.id and combat.is_hostile(chosen.skill_id):
+		decision["rule"] = "meme_cible"
 	return decision
+
+
+## Achève (Dégâts) : les règles de Libre, mais toujours sur l'ennemi le plus proche du KO (le moins de PV restants),
+## même si ce n'est pas la cible du joueur.
+static func _finish(combat: Combat, unit: CombatUnit) -> Dictionary:
+	var target := _closest_to_ko(combat, unit)
+	var decision := _libre(combat, unit, target, false)
+	var chosen: CombatAction = decision.get("action")
+	if chosen != null and chosen.target_id == target.id and combat.is_hostile(chosen.skill_id):
+		decision["rule"] = "acheve"
+	return decision
+
+
+## Soigne d'abord (Soutien) : son plus gros soin sur le joueur dès qu'il passe sous 70 % de PV, puis il lui retire un
+## état négatif ; sinon comme Libre.
+static func _heal_first(combat: Combat, unit: CombatUnit, leader: CombatUnit) -> Dictionary:
+	var decision := {}
+	if leader.hp_ratio() < _threshold(combat, "heal_first_below", 0.7):
+		decision = _pick_heal(combat, unit, STRONG_FIRST, leader, "soin_toi")
+	if decision.is_empty():
+		decision = _pick_cleanse(combat, unit, STRONG_FIRST, [leader])
+	if decision.is_empty():
+		decision = _libre(combat, unit, null, false)
+	return decision
+
+
+## Affaiblis-les (Soutien) : ses affaiblissements et contrôles d'abord, sur la cible du joueur ; il ne soigne avant qu'en
+## urgence (un allié sous 30 % de PV). Sinon, les règles de Libre, sur la cible du joueur. (Le Prêtre n'a ni
+## affaiblissement ni contrôle : pour lui, c'est Libre sur ta cible.)
+static func _weaken(combat: Combat, unit: CombatUnit, leader: CombatUnit, leader_action: CombatAction) -> Dictionary:
+	var target := _leader_target(combat, unit, leader, leader_action)
+	var hurt := _lowest_ally(combat, unit)
+	var decision := {}
+	if hurt != null and hurt.hp_ratio() < _threshold(combat, "urgent_below", 0.3):
+		decision = _pick_heal(combat, unit, STRONG_FIRST, hurt, "urgence")
+	if decision.is_empty():
+		decision = _pick_weakening(combat, unit, target)
+	if decision.is_empty():
+		decision = _libre(combat, unit, target, false)
+		var chosen: CombatAction = decision.get("action")
+		if chosen != null and chosen.target_id == target.id and combat.is_hostile(chosen.skill_id):
+			decision["rule"] = "affaiblit_coups"
+	return decision
+
+
+## Une compétence prête qui affaiblit ou contrôle un ennemi (la plus forte d'abord), sur la cible donnée.
+static func _pick_weakening(combat: Combat, unit: CombatUnit, target: CombatUnit) -> Dictionary:
+	for tier in STRONG_FIRST:
+		var skill_id: String = unit.skills[tier]
+		if not combat.can_use(unit, tier) or not weakens(combat.data, skill_id):
+			continue
+		var chosen := _target_for(combat, unit, skill_id, null, target)
+		if chosen != null and chosen.team != unit.team:
+			return _decision(unit, skill_id, chosen, "affaiblit")
+	return {}
+
+
+## Une compétence qui affaiblit ou contrôle un ennemi : repousse, fait agir en dernier, ou pose un état négatif.
+static func weakens(data: CombatData, skill_id: String) -> bool:
+	for effect in data.skill(skill_id).get("effects", []):
+		var type := str(effect["type"])
+		if WEAKENING_EFFECTS.has(type):
+			return true
+		if type == "status" and data.is_negative_status(str(effect.get("id", ""))) and str(effect.get("on", "")) == "":
+			return true
+	return false
+
+
+## L'ennemi le plus proche du KO : le moins de PV restants, barrière comprise (à égalité : le plus bas en %).
+static func _closest_to_ko(combat: Combat, unit: CombatUnit) -> CombatUnit:
+	var best: CombatUnit = null
+	for enemy in combat.enemies_of(unit, true):
+		var left := enemy.hp + enemy.barrier_amount()
+		if best == null or left < best.hp + best.barrier_amount() \
+				or (left == best.hp + best.barrier_amount() and enemy.hp_ratio() < best.hp_ratio()):
+			best = enemy
+	return best
+
+
+## Celui qui a fait le plus de dégâts au joueur depuis le début du combat (encore debout). Une cible stable : en duo,
+## les deux ennemis frappent chacun leur tour, et riposter sur le dernier qui a frappé dispersait les coups.
+## Personne ne l'a encore frappé : l'ennemi le plus bas.
+static func _worst_attacker(combat: Combat, unit: CombatUnit, leader: CombatUnit) -> CombatUnit:
+	var worst: CombatUnit = null
+	var most := 0
+	for enemy in combat.enemies_of(unit, true):
+		var dealt := int(leader.damage_taken_from.get(enemy.id, 0))
+		if dealt > most:
+			worst = enemy
+			most = dealt
+	return worst if worst != null else _lowest_enemy(combat, unit)
 
 
 ## Garde ta forte : comme Libre, mais la forte attend celle du joueur (ou une compétence qui fait Synergie avec elle).
@@ -395,6 +541,9 @@ static func _wasted(combat: Combat, unit: CombatUnit, skill_id: String, target: 
 						useless = false
 				return useless
 			"heal":
+				if bool(effect.get("overflow_barrier", false)):
+					# Un soin qui déborde en barrière n'est inutile que si la cible a déjà une barrière au moins aussi grosse.
+					return target.hp >= target.max_hp and target.barrier_amount() >= int(effect["power"])
 				return target.hp >= target.max_hp and not _has_effect(combat, skill_id, "cleanse")
 	return false
 
@@ -442,6 +591,14 @@ static func _leader_target(combat: Combat, unit: CombatUnit, leader: CombatUnit,
 		if _is_enemy(unit, previous):
 			return previous
 	return _lowest_enemy(combat, unit)
+
+
+## La forte de l'acolyte fait Synergie avec l'une des compétences du joueur.
+static func _forte_has_synergy(combat: Combat, leader: CombatUnit, acolyte: CombatUnit) -> bool:
+	for tier in CombatUnit.TIERS:
+		if not combat.data.find_synergy(leader.skills[tier], acolyte.skills["forte"]).is_empty():
+			return true
+	return false
 
 
 static func _is_enemy(unit: CombatUnit, other: CombatUnit) -> bool:

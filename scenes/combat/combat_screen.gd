@@ -1,5 +1,6 @@
-## Écran de combat du prototype en duo : toi et ton acolyte (piloté par l'IA) contre un duo IA.
+## Écran de combat du prototype en duo : toi et ton acolyte (piloté par l'IA) contre un duo IA, ou les étages de la Tour.
 ## Toute la règle vit dans le moteur (res://engine) ; cet écran affiche, collecte tes choix et anime les événements.
+## Il est ouvert par l'application (scenes/app/app.gd) depuis la Vitrine, le face-à-face ou l'écran de la Tour.
 extends Control
 
 const INTENT_SECONDS := 12.0
@@ -17,9 +18,10 @@ const PANEL_COLOR := Color("1f2538")
 const GOLD := Color("ffd43b")
 const ACOLYTE_BLUE := Color("9ad1ff")
 
+var app: ArenaApp
 var data: CombatData
 var combat: Combat
-var rng := RandomNumberGenerator.new()
+var rng: RandomNumberGenerator
 
 # Ton duo, gardé d'un combat à l'autre (l'acolyte ne change pas, comme dans le vrai jeu).
 var player_class: String = "guerrier"
@@ -80,65 +82,33 @@ var stage: Control
 var flash_rect: ColorRect
 var cutin: Label
 var mute_button: Button
+var quit_button: Button
+var _quit_armed := false
 var synergy_labels: Dictionary = {}
 
 
-func _ready() -> void:
-	# Pour tester : une adresse terminée par ?graine=7 rejoue toujours les mêmes tirages.
-	var test_seed := _seed_from_url()
-	if test_seed != 0:
-		rng.seed = test_seed
-	else:
-		rng.randomize()
-	data = CombatData.load_default()
-	profile = PlayerProfile.load_profile()
-	sfx = Sfx.new()
-	add_child(sfx)
-	sfx.muted = profile.muted
-	if CombatAI.POSTURES.has(profile.posture):
-		posture = profile.posture
-	theme = _make_theme()
+## Appelé par l'application : options = {mode: "pvp" (avec enemy : le duo adverse) ou "tour"}.
+func setup(p_app: ArenaApp, options: Dictionary) -> void:
+	app = p_app
+	data = app.data
+	profile = app.profile
+	sfx = app.sfx
+	rng = app.rng
+	player_class = app.player_class
+	player_picks = app.player_picks
+	acolyte = app.acolyte
+	acolyte_name = app.acolyte_name
+	posture = app.posture
 	_build_layout()
-	_show_menu()
-
-
-func _seed_from_url() -> int:
-	if not OS.has_feature("web"):
-		return 0
-	var value := str(JavaScriptBridge.eval("new URLSearchParams(window.location.search).get('graine') || ''", true))
-	return int(value) if value.is_valid_int() else 0
+	if str(options.get("mode", "pvp")) == "tour":
+		_start_tower()
+	else:
+		_start_combat(options.get("enemy", []))
 
 
 # ---------------------------------------------------------------------------
 # Construction de l'interface
 # ---------------------------------------------------------------------------
-
-func _make_theme() -> Theme:
-	var t := Theme.new()
-	t.default_font_size = 20
-	var normal := StyleBoxFlat.new()
-	normal.bg_color = Color("2b3350")
-	normal.set_corner_radius_all(10)
-	normal.set_content_margin_all(8)
-	var hover := normal.duplicate()
-	hover.bg_color = Color("36406a")
-	var pressed := normal.duplicate()
-	pressed.bg_color = Color("4a5590")
-	var disabled := normal.duplicate()
-	disabled.bg_color = Color("1c2033")
-	t.set_stylebox("normal", "Button", normal)
-	t.set_stylebox("hover", "Button", hover)
-	t.set_stylebox("pressed", "Button", pressed)
-	t.set_stylebox("disabled", "Button", disabled)
-	t.set_stylebox("focus", "Button", StyleBoxEmpty.new())
-	t.set_color("font_disabled_color", "Button", Color(0.55, 0.55, 0.6))
-	var panel := StyleBoxFlat.new()
-	panel.bg_color = PANEL_COLOR
-	panel.set_corner_radius_all(14)
-	panel.set_content_margin_all(10)
-	t.set_stylebox("panel", "PanelContainer", panel)
-	return t
-
 
 func _build_layout() -> void:
 	var bg := ColorRect.new()
@@ -194,6 +164,12 @@ func _build_layout() -> void:
 	mute_button.pressed.connect(_on_mute_pressed)
 	top.add_child(mute_button)
 	_refresh_mute_button()
+	quit_button = Button.new()
+	quit_button.text = "Quitter"
+	quit_button.custom_minimum_size = Vector2(64, 36)
+	quit_button.add_theme_font_size_override("font_size", 15)
+	quit_button.pressed.connect(_on_quit_pressed)
+	top.add_child(quit_button)
 	sudden_label = Label.new()
 	sudden_label.add_theme_color_override("font_color", Color("ff6b6b"))
 	sudden_label.add_theme_font_size_override("font_size", 16)
@@ -246,11 +222,12 @@ func _build_layout() -> void:
 	ally_row.add_child(posture_panel)
 	posture_title = _side_label("Posture", 15, ACOLYTE_BLUE)
 	posture_panel.add_child(posture_title)
-	for posture_id in CombatAI.POSTURES:
+	for posture_id in app.acolyte_postures():
 		var button := Button.new()
 		button.text = _posture_name(posture_id)
 		button.custom_minimum_size = Vector2(SIDE_WIDTH, 44)
-		button.add_theme_font_size_override("font_size", 16)
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.add_theme_font_size_override("font_size", 15)
 		button.pressed.connect(_on_posture_pressed.bind(posture_id))
 		posture_panel.add_child(button)
 		posture_buttons[posture_id] = button
@@ -361,6 +338,28 @@ func _on_mute_pressed() -> void:
 	sfx.play("clic")
 
 
+## Quitter demande un second appui. En duel, quitter compte comme une défaite ; à la Tour, la montée s'arrête là.
+## (Pas pendant l'animation d'un tour : on attend la phase de choix.)
+func _on_quit_pressed() -> void:
+	if phase == "resolve":
+		return
+	if phase == "end" or combat == null:
+		app.show_screen("home")
+		return
+	if not _quit_armed:
+		_quit_armed = true
+		quit_button.text = "Sûr ?"
+		quit_button.modulate = Color(1, 0.6, 0.6)
+		return
+	phase = "end"
+	if mode == "tour":
+		tower.reached = tower.current_floor
+		_end_climb()
+	else:
+		profile.record_result(false)
+		app.show_screen("home")
+
+
 func _refresh_mute_button() -> void:
 	mute_button.text = "Son : non" if sfx.muted else "Son : oui"
 
@@ -392,151 +391,6 @@ func _clear_children(node: Node) -> void:
 	for child in node.get_children():
 		node.remove_child(child)
 		child.queue_free()
-
-
-# ---------------------------------------------------------------------------
-# Menu : ton personnage et la rencontre de ton acolyte (prototype)
-# ---------------------------------------------------------------------------
-
-func _show_menu() -> void:
-	phase = "menu"
-	if menu_layer != null:
-		menu_layer.queue_free()
-	menu_layer = _make_layer()
-	var box: VBoxContainer = menu_layer.get_meta("box")
-	box.add_child(_label("Projet Arena", 40, GOLD))
-	box.add_child(_label("Prototype de combat en duo", 20, Color(0.8, 0.85, 1)))
-	if profile.wins + profile.losses > 0:
-		box.add_child(_label("%d victoire%s · %d défaite%s · record : %d d'affilée" % [profile.wins, "s" if profile.wins > 1 else "", profile.losses, "s" if profile.losses > 1 else "", profile.best_streak], 17, Color(0.75, 0.9, 0.75)))
-	box.add_child(_spacer(6))
-	if _load_saved_duo():
-		var resume := Button.new()
-		resume.text = "Continuer avec ton duo\n%s et %s (%s)" % [data.class_name_of(player_class), acolyte_name, data.class_name_of(acolyte["class_id"])]
-		resume.custom_minimum_size = Vector2(0, 76)
-		resume.add_theme_font_size_override("font_size", 22)
-		resume.pressed.connect(_show_kit)
-		box.add_child(resume)
-		box.add_child(_spacer(4))
-		box.add_child(_label("Ou un nouveau personnage :", 18, Color.WHITE))
-	else:
-		box.add_child(_label("Choisis ton personnage :", 22, Color.WHITE))
-	for class_id in CLASS_ORDER:
-		var cls: Dictionary = data.classes[class_id]
-		var button := Button.new()
-		var roles: Array = cls["roles"]
-		button.text = "%s  ·  %s / %s\n%s" % [cls["name"], ROLE_LABELS[roles[0]], ROLE_LABELS[roles[1]], cls["identity"]]
-		button.custom_minimum_size = Vector2(0, 80)
-		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.pressed.connect(_on_class_chosen.bind(class_id))
-		box.add_child(button)
-
-
-func _load_saved_duo() -> bool:
-	var saved := profile.duo
-	if saved.is_empty() or not data.classes.has(saved.get("player_class", "")) or not data.classes.has(saved.get("acolyte_class", "")):
-		return false
-	player_class = saved["player_class"]
-	player_picks = saved["player_picks"]
-	acolyte = {"class_id": saved["acolyte_class"], "picks": saved["acolyte_picks"]}
-	acolyte_name = str(saved.get("acolyte_name", ACOLYTE_NAMES[0]))
-	return true
-
-
-func _save_duo() -> void:
-	profile.duo = {"player_class": player_class, "player_picks": player_picks, "acolyte_class": acolyte["class_id"], "acolyte_picks": acolyte["picks"], "acolyte_name": acolyte_name}
-	profile.save()
-
-
-func _on_class_chosen(class_id: String) -> void:
-	sfx.play("clic")
-	player_class = class_id
-	player_picks = CombatUnit.random_picks(rng)
-	_draw_acolyte()
-	_save_duo()
-	_show_kit()
-
-
-## L'acolyte est tiré une fois : une classe qui complète ton rôle, et des compétences qui font Synergie avec les tiennes.
-func _draw_acolyte() -> void:
-	acolyte = Duo.draw_acolyte(data, player_class, player_picks, rng)
-	acolyte_name = ACOLYTE_NAMES[rng.randi_range(0, ACOLYTE_NAMES.size() - 1)]
-
-
-## Prototype seulement : un autre tirage pour toi. Ton acolyte reste s'il fait toujours Synergie avec toi.
-func _on_reroll_player() -> void:
-	sfx.play("clic")
-	player_picks = CombatUnit.random_picks(rng)
-	if Duo.kit_synergies(data, player_class, player_picks, acolyte["class_id"], acolyte["picks"]).is_empty() \
-			or not Duo.acolyte_classes(data, player_class).has(acolyte["class_id"]):
-		var keep_name := acolyte_name
-		_draw_acolyte()
-		acolyte_name = keep_name
-	_save_duo()
-	_show_kit()
-
-
-func _on_reroll_acolyte() -> void:
-	sfx.play("clic")
-	_draw_acolyte()
-	_save_duo()
-	_show_kit()
-
-
-func _show_kit() -> void:
-	if menu_layer != null:
-		menu_layer.queue_free()
-	menu_layer = _make_layer(8)
-	var box: VBoxContainer = menu_layer.get_meta("box")
-	var cls: Dictionary = data.classes[player_class]
-	box.add_child(_label("Toi : %s" % cls["name"], 32, GOLD))
-	box.add_child(_label("Ton Destin (tiré au hasard)", 17, Color(0.8, 0.85, 1)))
-	for skill_id in Duo.kit_skills(data, player_class, player_picks):
-		var skill := data.skill(skill_id)
-		box.add_child(_label("%s — %s : %s" % [TIER_LABELS[skill["tier"]], skill["name"], skill["description"]], 16, Color.WHITE))
-	var passive_id: String = cls["passives"][int(player_picks["passive"]) % cls["passives"].size()]
-	box.add_child(_label("Passif — %s : %s" % [data.passive_name(passive_id), data.passives[passive_id]["description"]], 16, Color(0.75, 0.9, 0.75)))
-
-	var aco_cls: Dictionary = data.classes[acolyte["class_id"]]
-	box.add_child(_spacer(4))
-	box.add_child(_label("Ton acolyte : %s, %s (%s)" % [acolyte_name, aco_cls["name"], ROLE_LABELS[aco_cls["roles"][0]]], 24, ACOLYTE_BLUE))
-	var names: Array = []
-	for skill_id in Duo.kit_skills(data, acolyte["class_id"], acolyte["picks"]):
-		names.append(data.skill_name(skill_id))
-	var aco_passive: String = aco_cls["passives"][int(acolyte["picks"]["passive"]) % aco_cls["passives"].size()]
-	box.add_child(_label("%s · passif %s" % [" · ".join(names), data.passive_name(aco_passive)], 16, Color.WHITE))
-	box.add_child(_label("Il joue seul : tu ne choisis jamais ses sorts. Au début de chaque tour, il annonce son coup au-dessus de lui ; tu choisis le tien en le sachant. Ses 4 postures, à gauche de l'écran, changent sa façon de jouer.", 15, Color(0.8, 0.85, 1)))
-
-	var synergies := Duo.kit_synergies(data, player_class, player_picks, acolyte["class_id"], acolyte["picks"])
-	box.add_child(_label("Vos Synergies (à jouer le même tour) :", 17, GOLD))
-	for synergy in synergies:
-		box.add_child(_label("• %s : %s + %s. %s" % [synergy["name"], data.skill_name(synergy["skills"][0]), data.skill_name(synergy["skills"][1]), synergy["description"]], 15, Color(1, 0.9, 0.6)))
-	box.add_child(_spacer(4))
-	var modes := HBoxContainer.new()
-	modes.add_theme_constant_override("separation", 8)
-	box.add_child(modes)
-	for entry in [["Combat\nen duo", _start_combat], ["La Tour", _start_tower]]:
-		var fight := Button.new()
-		fight.text = entry[0]
-		fight.custom_minimum_size = Vector2(0, 72)
-		fight.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		fight.add_theme_font_size_override("font_size", 24)
-		fight.pressed.connect(entry[1])
-		modes.add_child(fight)
-	var record := int(profile.tower_records.get(player_class, 0))
-	if record > 0:
-		box.add_child(_label("Ton record à la Tour (%s) : étage %d sur %d" % [cls["name"], record, Tower.start(data, []).floor_count()], 15, Color(0.75, 0.9, 0.75)))
-	var rerolls := HBoxContainer.new()
-	rerolls.add_theme_constant_override("separation", 8)
-	box.add_child(rerolls)
-	for entry in [["Autre tirage\npour toi", _on_reroll_player], ["Autre\nacolyte", _on_reroll_acolyte], ["Changer\nde classe", _show_menu]]:
-		var button := Button.new()
-		button.text = entry[0]
-		button.custom_minimum_size = Vector2(0, 58)
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		button.add_theme_font_size_override("font_size", 16)
-		button.pressed.connect(entry[1])
-		rerolls.add_child(button)
-	box.add_child(_label("(Les nouveaux tirages n'existent que dans le prototype : en vrai, ton Destin et ton acolyte ne changent jamais.)", 13, Color(0.6, 0.62, 0.7)))
 
 
 func _make_layer(separation: int = 12) -> Control:
@@ -577,7 +431,8 @@ func _spacer(height: float) -> Control:
 # Démarrage d'un combat
 # ---------------------------------------------------------------------------
 
-func _start_combat() -> void:
+## Un duel : ton duo contre le duo adverse choisi au face-à-face (tiré ici s'il n'y en a pas).
+func _start_combat(enemy: Array = []) -> void:
 	if menu_layer != null:
 		menu_layer.queue_free()
 		menu_layer = null
@@ -588,26 +443,18 @@ func _start_combat() -> void:
 	stats = {}
 	speed = 1.0
 	sfx.play("clic")
-	var team_a := _duo_members()
-	# En face : un duo IA tiré au hasard (en attendant les Échos de l'étape 5).
-	var team_b := Duo.random_duo(data, rng)
-	var first := rng.randi_range(0, ENEMY_NAMES.size() - 1)
-	team_b[0]["name"] = ENEMY_NAMES[first]
-	team_b[1]["name"] = ENEMY_NAMES[(first + rng.randi_range(1, ENEMY_NAMES.size() - 1)) % ENEMY_NAMES.size()]
+	var team_a := app.duo_members()
+	# En face : un duo IA (en attendant les Échos de l'étape 5).
+	var team_b := enemy
+	if team_b.is_empty():
+		team_b = Duo.random_duo(data, rng)
+		team_b[0]["name"] = ENEMY_NAMES[0]
+		team_b[1]["name"] = ENEMY_NAMES[1]
 	mode = "pvp"
 	combat = Combat.create(data, team_a, team_b, rng.randi_range(0, 1))
 	_setup_views([combat.acolyte_of(1), combat.leader_of(1)])
 	enemy_posture_label.text = "Posture de %s : ?" % combat.acolyte_of(1).display_name
 	_begin_intent_phase()
-
-
-## Ton duo pour le moteur : toi, puis ton acolyte.
-func _duo_members() -> Array:
-	var team := Duo.members(player_class, player_picks, acolyte)
-	team[0]["name"] = "Toi"
-	team[0]["is_player"] = true
-	team[1]["name"] = acolyte_name
-	return team
 
 
 ## Les persos à l'écran. Dans ta rangée : l'acolyte à côté de la colonne des postures, puis toi.
@@ -639,7 +486,7 @@ func _setup_views(enemies: Array) -> void:
 
 func _start_tower() -> void:
 	sfx.play("clic")
-	tower = Tower.start(data, _duo_members())
+	tower = Tower.start(data, app.duo_members())
 	_start_floor()
 
 
@@ -740,12 +587,12 @@ func _end_climb() -> void:
 	var duel := Button.new()
 	duel.text = "Combat en duo"
 	duel.custom_minimum_size = Vector2(0, 54)
-	duel.pressed.connect(_start_combat)
+	duel.pressed.connect(func(): app.show_screen("versus"))
 	box.add_child(duel)
 	var change := Button.new()
-	change.text = "Changer de personnage"
+	change.text = "Retour à l'accueil"
 	change.custom_minimum_size = Vector2(0, 54)
-	change.pressed.connect(_show_menu)
+	change.pressed.connect(func(): app.show_screen("home"))
 	box.add_child(change)
 
 
@@ -878,8 +725,7 @@ func _on_posture_pressed(posture_id: String) -> void:
 	sfx.play("clic")
 	if posture_id != posture:
 		posture = posture_id
-		profile.posture = posture_id
-		profile.save()
+		app.set_posture(posture_id)
 		views[acolyte_id].float_text(_posture_name(posture_id), ACOLYTE_BLUE)
 		_update_announce(false)
 	_refresh_posture_panel()
@@ -1006,10 +852,10 @@ func _refresh_skill_buttons() -> void:
 		synergy_label.add_theme_color_override("font_color", GOLD if hot else Color(1, 0.83, 0.23, 0.5))
 		if hot and not button.disabled and tier != selected_tier:
 			button.modulate = Color(1.0, 0.95, 0.7)
-	passive_info.text = "Ton passif : %s — %s" % [data.passive_name(player.passive), data.passives[player.passive]["description"]]
+	passive_info.text = "Ton passif : %s — %s" % [data.passive_name(player.passive), data.passive_description(player.passive)]
 	if selected_tier != "":
 		var skill := data.skill(player.skills[selected_tier])
-		skill_info.text = "%s : %s" % [skill["name"], skill["description"]]
+		skill_info.text = "%s : %s" % [skill["name"], data.skill_description(player.skills[selected_tier])]
 	elif not player.is_alive():
 		skill_info.text = "%s continue seul. Tu peux encore changer sa posture." % acolyte_name
 	else:
@@ -1152,9 +998,7 @@ func _posture_name(posture_id: String) -> String:
 ## Ce que fait l'acolyte dans une posture, en clair (pour la posture Libre : selon son rôle).
 func _posture_text(posture_id: String) -> String:
 	var info: Dictionary = data.postures.get("postures", {}).get(posture_id, {})
-	var detail := str(info.get("description", ""))
-	if posture_id == CombatAI.LIBRE and not acolyte.is_empty():
-		detail = str(info.get("roles", {}).get(Duo.main_role(data, acolyte["class_id"]), ""))
+	var detail := data.posture_description(posture_id, str(acolyte.get("class_id", "")))
 	return "%s — %s %s" % [info.get("name", posture_id), info.get("summary", ""), detail]
 
 
@@ -1404,10 +1248,10 @@ func _show_end() -> void:
 	again.text = "Rejouer" if not won else "Combat suivant"
 	again.custom_minimum_size = Vector2(0, 76)
 	again.add_theme_font_size_override("font_size", 30)
-	again.pressed.connect(_start_combat)
+	again.pressed.connect(func(): app.show_screen("versus"))
 	box.add_child(again)
 	var change := Button.new()
-	change.text = "Changer de personnage"
+	change.text = "Retour à l'accueil"
 	change.custom_minimum_size = Vector2(0, 54)
-	change.pressed.connect(_show_menu)
+	change.pressed.connect(func(): app.show_screen("home"))
 	box.add_child(change)

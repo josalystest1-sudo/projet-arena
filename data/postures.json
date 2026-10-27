@@ -1,24 +1,48 @@
 {
-  "order": ["libre", "protege_moi", "fonce", "garde_ta_forte"],
+  "by_role": {
+    "front": ["libre", "tiens_la_ligne", "cogne", "garde_ta_forte"],
+    "degats": ["libre", "meme_cible", "acheve", "garde_ta_forte"],
+    "soutien": ["libre", "soigne_d_abord", "affaiblis", "garde_ta_forte"]
+  },
   "postures": {
     "libre": {
       "name": "Libre",
       "summary": "Il joue son rôle.",
       "roles": {
         "front": "Dès que tu as perdu des PV, il te protège avec sa moyenne (si elle est prête). Sinon il joue sa forte dès qu'elle est prête, sinon il frappe l'ennemi le plus bas.",
-        "degats": "Il frappe l'ennemi le plus bas : forte dès qu'elle est prête, sinon moyenne, sinon basique. Il ne te secourt que si l'un de vous passe sous 50 % de PV.",
-        "soutien": "Il soigne le plus blessé dès que l'un de vous passe sous 50 % de PV, sinon joue sa forte dès qu'elle est prête, sinon frappe l'ennemi le plus bas."
+        "degats": "Il frappe l'ennemi le plus bas : forte dès qu'elle est prête, sinon moyenne, sinon basique. Il ne te secourt que si l'un de vous passe sous {libre_rescue_below%} de PV.",
+        "soutien": "Il soigne le plus blessé dès que l'un de vous passe sous {libre_heal_below%} de PV, sinon retire un état négatif, sinon joue sa forte dès qu'elle est prête, sinon frappe l'ennemi le plus bas."
       }
     },
-    "protege_moi": {
-      "name": "Protège-moi",
-      "summary": "Tout pour ta survie.",
-      "description": "Ses protections pour toi dès qu'elles sont prêtes, ses soins dès que tu as perdu un quart de tes PV. Sinon il frappe celui qui t'a frappé, forte comprise."
+    "tiens_la_ligne": {
+      "name": "Tiens la ligne",
+      "summary": "Il encaisse à ta place.",
+      "description": "Ses provocations et ses protections pour toi dès qu'elles sont prêtes, même si tu as tous tes PV. Sinon il frappe celui qui t'a fait le plus de dégâts, forte comprise."
     },
-    "fonce": {
-      "name": "Fonce",
-      "summary": "Tout en dégâts, sur ta cible.",
-      "description": "Forte dès qu'elle est prête, sinon moyenne, sinon basique, toujours sur ta cible. Il ne soigne plus et ne protège plus."
+    "cogne": {
+      "name": "Cogne",
+      "summary": "Ses coups avant ses protections.",
+      "description": "Ses coups d'abord : forte dès qu'elle est prête, sinon sa moyenne si elle frappe (une provocation frappe aussi), sinon sa basique, sur l'ennemi le plus bas. Il ne te protège plus que si tu passes sous {cogne_protect_below%} de PV."
+    },
+    "meme_cible": {
+      "name": "Même cible que moi",
+      "summary": "Il concentre sur ta cible.",
+      "description": "Il joue comme en Libre, mais il frappe ta cible (celle que tu choisis, sinon celle du tour précédent)."
+    },
+    "acheve": {
+      "name": "Achève",
+      "summary": "Il finit le plus faible.",
+      "description": "Il joue comme en Libre, mais toujours sur l'ennemi qui a le moins de PV restants (barrière comprise), même si ce n'est pas ta cible."
+    },
+    "soigne_d_abord": {
+      "name": "Soigne d'abord",
+      "summary": "Tes PV avant tout.",
+      "description": "Son plus gros soin sur toi dès que tu passes sous {heal_first_below%} de PV, puis il te retire un état négatif. Sinon il joue comme en Libre."
+    },
+    "affaiblis": {
+      "name": "Affaiblis-les",
+      "summary": "Il s'en prend à ta cible.",
+      "description": "Ses affaiblissements et ses contrôles d'abord, sur ta cible (un soin avant seulement si l'un de vous passe sous {urgent_below%} de PV). Sinon il joue comme en Libre, sur ta cible. Un Prêtre n'a ni affaiblissement ni contrôle : pour lui, c'est Libre sur ta cible."
     },
     "garde_ta_forte": {
       "name": "Garde ta forte",
@@ -29,13 +53,18 @@
   "always": "Quelle que soit sa posture, il relève un allié KO dès qu'il le peut.",
   "thresholds": {
     "libre_heal_below": 0.5,
-    "protect_heal_below": 0.75,
+    "libre_rescue_below": 0.5,
+    "heal_first_below": 0.7,
+    "cogne_protect_below": 0.3,
+    "urgent_below": 0.3,
     "ai_leader_protect_below": 0.4,
     "ai_leader_finish_below": 0.35
   },
   "reasons": {
     "releve": "relève son allié",
     "protege": "te protège",
+    "tiens": "tient la ligne devant toi",
+    "urgence": "urgence : il te secourt",
     "soin": "soigne le plus blessé",
     "soin_toi": "te soigne",
     "secours": "secourt le plus blessé",
@@ -46,8 +75,12 @@
     "basique_allie": "sa basique, sur le plus blessé",
     "basique_toi": "sa basique, sur toi",
     "sans_attaque": "il n'a aucune attaque : il joue comme en Libre",
-    "riposte": "frappe celui qui t'a frappé",
-    "fonce": "frappe ta cible",
+    "riposte": "frappe celui qui t'a fait le plus mal",
+    "cogne": "frappe l'ennemi le plus bas",
+    "meme_cible": "frappe ta cible",
+    "acheve": "achève le plus proche du KO",
+    "affaiblit": "affaiblit ta cible",
+    "affaiblit_coups": "frappe ta cible",
     "avec_toi": "forte avec la tienne",
     "synergie": "cherche la Synergie"
   }

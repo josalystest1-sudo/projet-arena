@@ -7,7 +7,10 @@
       "nova"
     ],
     "same_target": false,
-    "description": "Les ennemis provoqués subissent la Nova à +50 %."
+    "params": {
+      "bonus": 0.467
+    },
+    "description": "Les ennemis provoqués subissent la Nova à +{bonus%}."
   },
   {
     "id": "rempart_priere",
@@ -27,7 +30,10 @@
       "chatiment"
     ],
     "same_target": true,
-    "description": "La cible gelée subit 75 dégâts de lumière supplémentaires."
+    "params": {
+      "damage": 30
+    },
+    "description": "La cible gelée subit {damage} dégâts de lumière supplémentaires."
   },
   {
     "id": "fendoir_boule_de_feu",
@@ -37,7 +43,11 @@
       "boule_de_feu"
     ],
     "same_target": true,
-    "description": "Le saignement de la cible s'aggrave : une fois et demie plus fort et 2 tours de plus."
+    "params": {
+      "extra_turns": 2,
+      "bonus": 0.514
+    },
+    "description": "Le saignement de la cible dure {extra_turns} tours de plus et fait +{bonus%} de dégâts."
   },
   {
     "id": "cri_de_guerre_bouclier_de_mana",
@@ -47,7 +57,10 @@
       "bouclier_de_mana"
     ],
     "same_target": false,
-    "description": "Le Bouclier de mana se pose aussi sur l'autre membre du duo."
+    "description": "Le Bouclier de mana se pose aussi sur l'autre membre du duo, à {share%} de sa taille.",
+    "params": {
+      "share": 0.734
+    }
   },
   {
     "id": "provocation_chatiment",
@@ -57,7 +70,10 @@
       "chatiment"
     ],
     "same_target": false,
-    "description": "Le Châtiment frappe aussi l'autre ennemi provoqué, une fois et demie plus fort."
+    "params": {
+      "mult": 1.352
+    },
+    "description": "Le Châtiment frappe aussi l'autre ennemi provoqué, à {mult%} de sa force."
   },
   {
     "id": "arc_de_foudre_priere",
@@ -67,6 +83,9 @@
       "priere"
     ],
     "same_target": false,
-    "description": "La Prière soigne aussi l'autre membre du duo, une fois et demie plus fort."
+    "params": {
+      "mult": 1.217
+    },
+    "description": "La Prière soigne aussi l'autre membre du duo, à {mult%} de sa force ; comme pour la Prière, une part de ce qui dépasse ses PV max devient une barrière."
   }
 ]
