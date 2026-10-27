@@ -15,7 +15,7 @@ Le projet est entièrement développé avec Claude Code.
 | `data/` | Les données de jeu en JSON : classes, compétences, passifs, états, Synergies. |
 | `scenes/combat/` | L'écran de combat du prototype (affichage uniquement, aucune règle). |
 | `tests/` | Les tests automatiques du moteur, lancés en CI à chaque PR. |
-| `tools/` | Le mini-simulateur IA contre IA (duo contre duo) et le générateur de bruitages provisoires. |
+| `tools/` | Les simulateurs (duo contre duo, montées de la Tour) et le générateur de bruitages provisoires. |
 | `.github/workflows/` | Tests à chaque PR, export web publié sur GitHub Pages à chaque fusion sur `main`. |
 
 ## Lancer en local (pour les développeurs)
@@ -24,4 +24,5 @@ Le projet est entièrement développé avec Claude Code.
 godot --headless --path . --import
 godot --headless --path . --script res://tests/run_tests.gd
 godot --headless --path . --script res://tools/simulate.gd -- 1000
+godot --headless --path . --script res://tools/simulate_tour.gd -- 500
 ```
