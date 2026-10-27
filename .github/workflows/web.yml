@@ -1,0 +1,74 @@
+name: Export web et publication sur GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  GODOT_VERSION: "4.5"
+
+jobs:
+  build:
+    name: Tests puis export web
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache de Godot et des modèles d'export web
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/godot
+            ~/.local/share/godot/export_templates
+          key: godot-${{ env.GODOT_VERSION }}-linux-web-templates
+
+      - name: Téléchargement de Godot et des modèles web
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot
+          curl -sSL -o /tmp/godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+          curl -sSL -o /tmp/templates.tpz "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_export_templates.tpz"
+          TEMPLATES=~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          mkdir -p "$TEMPLATES"
+          unzip -q -j /tmp/templates.tpz templates/web_nothreads_release.zip templates/web_nothreads_debug.zip templates/version.txt -d "$TEMPLATES"
+          rm /tmp/templates.tpz
+
+      - name: Import du projet
+        run: timeout 300 ~/godot/godot --headless --path . --import
+
+      - name: Tests (on ne publie jamais une version qui échoue)
+        run: timeout 600 ~/godot/godot --headless --path . --script res://tests/run_tests.gd
+
+      - name: Export web
+        run: |
+          mkdir -p build/web
+          timeout 600 ~/godot/godot --headless --path . --export-release "Web" build/web/index.html
+          test -f build/web/index.wasm
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/web
+
+  deploy:
+    name: Publication sur GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
