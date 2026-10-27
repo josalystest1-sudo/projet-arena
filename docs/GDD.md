@@ -10,7 +10,7 @@ Six piliers, non négociables, qui tranchent toutes les décisions de ce documen
 
 1. **Un perso, une identité.** Un seul personnage par compte, un seul acolyte. Son Destin n'existe nulle part ailleurs. Le joueur ne choisit pas son Destin, il apprend à le jouer.
 2. **Le joueur agit à chaque tour.** Pas de combat automatique pour le joueur. Chaque tour demande un vrai choix : quelle compétence, quelle cible, maintenant ou au tour suivant. Seul l'acolyte joue seul.
-3. **Le duo gagne.** Un joueur qui joue autour de son acolyte (ses recharges, sa posture, ses Synergies) bat un joueur qui l'ignore. Chaque rôle, Soutien compris, est jouable et compétitif parce que l'acolyte complète toujours ce qui manque.
+3. **Le duo gagne.** Un joueur qui joue autour de son acolyte (ses recharges, son annonce, ses Synergies) bat un joueur qui l'ignore. Chaque rôle, Soutien compris, est jouable et compétitif parce que l'acolyte complète toujours ce qui manque.
 4. **Zéro méta.** Toutes les classes se valent, tous les Destins se valent. L'écart vient du jeu, jamais du tirage ni du choix de classe.
 5. **Aucune limite de jeu.** Pas d'énergie, pas de nombre de parties par jour. Le joueur joue tant qu'il veut.
 6. **Le beau se voit.** Le jeu vit des skins. Un skin acheté (pour le perso ou l'acolyte) est visible par tout le monde, partout : vitrine, combat, écran de fin, profil.
@@ -58,15 +58,9 @@ Chaque joueur reçoit, lors de son premier combat, un acolyte : un second person
 
 **Progression.** L'acolyte a le même niveau que le joueur, toujours : il gagne l'XP en même temps que lui. Il n'y a rien à gérer.
 
-**Comment il joue.** Son IA suit des règles simples et lisibles, les mêmes que celles des Échos : il annonce son Intention **en premier**, au début des 12 secondes, et le joueur choisit en sachant ce que son acolyte va faire. Le joueur peut lui donner une **posture**, qui tient jusqu'à nouvel ordre et ne coûte pas d'action :
+**Comment il joue.** Comme un second joueur, tout seul. Le joueur ne lui donne aucun ordre, aucune consigne, aucune posture. Son IA suit des règles simples, fixes et lisibles, propres à son rôle (un Front protège le joueur quand il a perdu des PV sinon il frappe ; un Dégâts concentre sur l'ennemi le plus bas ; un Soutien soigne le plus blessé sous 50 % sinon affaiblit ou renforce), les mêmes que celles des Échos. Une seule règle sert à construire les Synergies : s'il existe une Synergie entre sa forte et une compétence que le joueur aura au tour suivant, il attend un tour, jamais plus.
 
-Une posture ne demande jamais à l'acolyte quelque chose qui n'est pas dans son kit : elle change l'ordre de ses priorités, pas sa classe. Les postures dépendent donc de son rôle. Libre est la posture par défaut ; Garde ta forte existe pour tous.
-
-| Rôle de l'acolyte | Libre (défaut) | Posture 2 | Posture 3 | Garde ta forte (tous) |
-| --- | --- | --- | --- | --- |
-| Front | Alterne protection et dégâts selon la situation | **Tiens la ligne** : provocations, barrières, encaisse à la place du joueur | **Cogne** : ses coups avant ses protections | Ne joue sa forte que si le joueur joue la sienne le même tour |
-| Dégâts | Frappe la cible la plus basse | **Même cible que moi** : suit la cible du joueur, pour concentrer | **Achève** : vise toujours l'ennemi le plus proche du KO, même si ce n'est pas la cible du joueur | idem |
-| Soutien | Soigne sous 50 % de PV, sinon renforce ou affaiblit | **Soigne d'abord** : priorité aux PV du joueur, soins dès 70 % | **Affaiblis-les** : priorité aux débuffs et aux contrôles sur l'ennemi que vise le joueur | idem |
+Ce qui rend le duo jouable, c'est qu'il **annonce son action en premier**, dès le début des 12 secondes : le joueur voit ce qu'il va faire et sur qui, et choisit en le sachant. Ce n'est pas du contrôle, c'est de l'information.
 
 L'acolyte doit être **prévisible plutôt que brillant** : un joueur qui connaît ses postures doit pouvoir anticiper chacun de ses coups. C'est ce qui rend le duo jouable, et c'est ce qui permet de lire le duo adverse.
 
@@ -161,8 +155,8 @@ Un combat oppose deux duos (joueur + acolyte) en PvP, ou un duo à un groupe d'e
 
 **Un tour, pas à pas**
 
-1. **Annonce de l'acolyte.** Dès le début des 12 secondes, l'acolyte affiche en transparence ce qu'il va faire et sur qui, selon sa posture. L'adversaire ne voit rien.
-2. **Choix du joueur (12 s).** Il choisit une de ses 3 compétences disponibles et une cible, en connaissant l'action de son acolyte. Il peut changer la posture de l'acolyte, qui révise alors son annonce. Pas de choix à la fin du timer = basique sur la même cible qu'au tour précédent.
+1. **Annonce de l'acolyte.** Dès le début des 12 secondes, l'acolyte affiche en transparence ce qu'il va faire et sur qui. L'adversaire ne voit rien.
+2. **Choix du joueur (12 s).** Il choisit une de ses 3 compétences disponibles et une cible, en connaissant l'action de son acolyte. Pas de choix à la fin du timer = basique sur la même cible qu'au tour précédent.
 3. **Révélation.** Les 4 actions s'affichent.
 4. **Résolution.** Les actions s'exécutent par ordre de vitesse (stat + modificateurs du tour). Les Synergies se déclenchent au moment où la seconde compétence du couple se résout.
 5. **Fin de tour.** Effets sur la durée (saignement, poison, brûlure), les recharges avancent d'un tour.
@@ -179,7 +173,7 @@ La forte n'est pas disponible au tour 1, pour éviter que tout le monde ouvre pa
 
 **Ce que chaque tour demande au joueur.** Lire l'annonce de son acolyte, deviner ce que le duo adverse prépare (ses recharges sont visibles : on sait quand sa forte revient), et décider : frapper la même cible que l'acolyte, protéger, ou garder sa moyenne pour contrer la forte adverse qui arrive. Deux taps, douze secondes, aucune action automatique pour le joueur.
 
-**Les Synergies.** Certains couples de compétences, joués le même tour par le joueur et son acolyte, déclenchent un effet bonus. Elles sont affichées pendant les 12 secondes dès qu'un couple est possible (une icône relie les deux persos). Une Synergie est un effet unique par couple, pas une version amplifiée de chaque compétence. Comme l'acolyte annonce en premier, une Synergie se **construit** : la posture Garde ta forte sert exactement à ça. Exemples :
+**Les Synergies.** Certains couples de compétences, joués le même tour par le joueur et son acolyte, déclenchent un effet bonus. Elles sont affichées pendant les 12 secondes dès qu'un couple est possible (une icône relie les deux persos). Une Synergie est un effet unique par couple, pas une version amplifiée de chaque compétence. Comme l'acolyte annonce en premier et attend un tour quand une Synergie se prépare, une Synergie se construit sur deux tours : le joueur voit venir le couple et choisit de le compléter ou non. Exemples :
 
 | Couple | Effet de la Synergie |
 | --- | --- |
@@ -217,7 +211,7 @@ Pas de file par rôle : chaque duo est équilibré par construction, puisque l'a
 
 **Les Échos : les joueurs absents jouent quand même.** Le joueur dont l'Écho a combattu reçoit une notification à son retour, « Ton Écho a gagné 2 combats pendant ton absence », avec une petite récompense. Trois effets : les files sont toujours pleines, même le jour du lancement ; les skins des absents restent visibles ; le joueur a une raison de revenir. Un combat contre un Écho compte pour le classement avec un poids réduit (50 % des points), et l'Écho est signalé par une icône discrète, pour ne jamais mentir au joueur.
 
-**L'IA.** Une seule IA pour l'acolyte, les Échos, les ennemis de la Tour et le simulateur d'équilibrage. Elle suit les postures, cherche les Synergies et concentre les attaques. Elle est volontairement prévisible : un joueur attentif doit pouvoir anticiper ses coups.
+**L'IA.** Une seule IA pour l'acolyte, les Échos, les ennemis de la Tour et le simulateur d'équilibrage. Elle suit des règles fixes par rôle, cherche les Synergies et concentre les attaques. Elle est volontairement prévisible : un joueur attentif doit pouvoir anticiper ses coups.
 
 ## Progression, classement et rétention
 
@@ -302,10 +296,10 @@ Treize écrans en V1, tous en portrait, pensés pour une main. Le combat est le 
 | Rencontre de l'acolyte | Au premier combat : attribution et présentation de l'acolyte | L'acolyte arrive, son nom, sa classe, son mini-Destin |
 | Vitrine (accueil) | Le hub | Le duo en grand, animé, avec ses skins ; deux boutons dominants : Combattre, La Tour |
 | Destin | L'arbre complet, placement des points | L'arbre entier, les nœuds pris allumés |
-| Acolyte | Sa fiche, son mini-Destin, ses postures, son skin | L'acolyte en pied, sa classe, ses 3 compétences |
+| Acolyte | Sa fiche, son mini-Destin, ses règles de jeu, son skin | L'acolyte en pied, sa classe, ses 3 compétences |
 | Compétences | Les 3 actives et le passif, leurs évolutions acquises, les Synergies connues avec l'acolyte | Les 4 icônes (3 actives, 1 passif) et leur description |
 | File d'attente | Recherche d'adversaire | Temps estimé, l'adversaire trouvé apparaît avec son acolyte |
-| Combat | Le jeu | Les 4 persos (ou le duo et les ennemis de l'étage), le timer de 12 s, les recharges, l'annonce de l'acolyte, le sélecteur de posture |
+| Combat | Le jeu | Les 4 persos (ou le duo et les ennemis de l'étage), le timer de 12 s, les recharges, l'annonce de l'acolyte |
 | Fin de combat | Résultat | Pose de victoire du duo, XP, points de rang, Synergies déclenchées |
 | La Tour | Choix de l'étage de départ (dernier palier atteint), résumé de la montée en cours | L'étage actuel, le record, le classement de sa classe |
 | Classement | PvP (deux ligues) et Tour (par classe) | Son rang, les 50 premiers |
@@ -313,7 +307,7 @@ Treize écrans en V1, tous en portrait, pensés pour une main. Le combat est le 
 | Profil (le sien ou celui d'un autre) | Carte d'identité | Le duo en pied avec ses skins, classe, niveau, rang, record de Tour, saisons passées |
 | Paramètres | Compte, son, langue | — |
 
-**Le combat sur un téléphone.** Les ennemis en haut, le duo au milieu, sprites en pied. L'annonce de l'acolyte est une icône translucide au-dessus de lui, reliée par un trait à sa cible ; une Synergie possible fait clignoter le trait. En bas, les 3 compétences en grandes touches, leur recharge affichée dessus, puis les cibles ; à gauche, un petit sélecteur de posture pour l'acolyte. Deux taps par tour en temps normal, un troisième pour changer de posture.
+**Le combat sur un téléphone.** Les ennemis en haut, le duo au milieu, sprites en pied. L'annonce de l'acolyte est une icône translucide au-dessus de lui, reliée par un trait à sa cible ; une Synergie possible fait clignoter le trait. En bas, les 3 compétences en grandes touches, leur recharge affichée dessus, puis les cibles. Deux taps par tour.
 
 ## Stack technique et pipeline
 
@@ -380,7 +374,7 @@ L'univers doit répondre à trois questions que le jeu pose dès l'écran de cr�
 - Nom de travail : **Projet Arena**.
 - Format de la V1 : **PvP en duo** (joueur + acolyte contre joueur + acolyte) et **la Tour** (PvE solo en duo). Le 3v3 entre humains passe en V2.
 - Combat tour par tour simultané, système classique de RPG : 3 compétences à recharge (basique sans recharge, moyenne 2 tours, forte 4 tours disponible au tour 3). Pas de mana en V1. Pas de Tempo, pas de Garde ni de Brèche, pas de mécanique de timing en temps réel.
-- Un seul personnage par compte, un seul acolyte, fixe, attribué au premier combat, de classe complémentaire. Le joueur ne contrôle pas ses sorts ; il lui donne une posture.
+- Un seul personnage par compte, un seul acolyte, fixe, attribué au premier combat, de classe complémentaire. Le joueur ne contrôle pas ses sorts et ne lui donne aucun ordre : l'acolyte joue seul, selon des règles fixes par rôle, et annonce son action en premier.
 - Destin généré aléatoirement à la création, unique, non modifiable, non choisi. 45 nœuds, 30 points. L'acolyte a un mini-Destin de 15 nœuds, auto-attribué.
 - Chaque classe : pool de 6 actives (2 basiques, 2 moyennes, 2 fortes) et pool de 4 passifs ; chaque personnage tire une active de chaque palier et 1 passif via son Destin.
 - Évolution au niveau 30, choix parmi 3, saut de puissance majeur, nouveau Destin à zéro ; l'acolyte évolue en même temps, choix parmi 3 dont une qui déplace son rôle.
@@ -395,7 +389,7 @@ L'univers doit répondre à trois questions que le jeu pose dès l'écran de cr�
 **Proposé dans ce document, à valider**
 
 - [ ] La classe de l'acolyte ne change jamais librement ; seule son évolution (au niveau 30 du joueur) peut déplacer son rôle
-- [ ] Les postures de l'acolyte selon son rôle (Libre, deux postures propres au rôle, Garde ta forte) et le fait qu'il annonce son action en premier
+- [ ] L'acolyte annonce son action en premier, et attend un tour (jamais plus) quand une Synergie avec le joueur se prépare
 - [ ] Les Expéditions de l'Écho : XP plafonnée pendant l'absence, rapport au retour
 - [ ] À la Tour, 20 % de PV rendus entre deux étages et recharges conservées
 
