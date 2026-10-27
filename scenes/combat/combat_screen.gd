@@ -776,6 +776,8 @@ func _refresh_acolyte_panel() -> void:
 	var waiting: Dictionary = announce.get("waiting", {})
 	if not waiting.is_empty():
 		acolyte_info.text = "Garde sa forte pour la Synergie %s au prochain tour" % waiting["synergy"]["name"]
+	elif str(announce.get("rule", "")) == "avec_toi":
+		acolyte_info.text = "Joue la forte qu'il gardait : à toi de jouer la Synergie"
 	else:
 		acolyte_info.text = "Joue seul selon son rôle (%s)" % ROLE_LABELS.get(Duo.main_role(data, acolyte.get("class_id", "")), "")
 
