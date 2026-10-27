@@ -87,6 +87,15 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 - 4e passif inventé pour chaque classe (le GDD n'en donne que 3) : Colère (Guerrier, +10 % de dégâts par quart de PV manquant), Météorologue (Mage, forte revient 1 tour plus tôt), Sanctuaire (Prêtre, barrières +25 %).
 - Synergies du prototype : Provocation + Nova (celle du GDD) et trois nouvelles pour couvrir chaque paire de classes : Bastion (Rempart + Prière, le Rempart se reforme), Éclat (Trait de givre + Châtiment sur la même cible, +40 dégâts de lumière), Plaie brûlante (Fendoir + Boule de feu sur la même cible, saignement +2 tours). Une Synergie se déclenche quand la seconde compétence du couple se résout, même si la première est passée avant.
 
+**Duo : moteur (2026-10-27, étape 1 du duo)**
+
+- Le moteur accepte des camps de toute taille. En PvP, chaque camp est un duo : le personnage principal (`a1`, `b1`) puis son acolyte (`a2`, `b2`, marqué `is_acolyte`). `engine/duo.gd` compose les duos.
+- Classe de l'acolyte : tirée au hasard parmi les classes dont le rôle principal diffère de celui du joueur (avec 3 classes : les deux autres).
+- Kit de l'acolyte (3 actives + 1 passif, comme un joueur) : tiré au hasard **parmi les kits qui ont au moins une Synergie avec celui du joueur**. Sans cette règle, 69 % des duos n'avaient aucune Synergie possible avec les 4 Synergies de départ, alors que le GDD veut « aucun duo sans Synergie ».
+- 3 Synergies ajoutées pour que tout kit de joueur ait une Synergie possible avec chaque classe d'acolyte (un test le vérifie) : **Forteresse** (Cri de guerre + Bouclier de mana : le bouclier se pose aussi sur l'autre membre du duo), **Jugement** (Provocation + Châtiment : le Châtiment frappe aussi l'autre ennemi provoqué), **Courant de vie** (Arc de foudre + Prière : la Prière soigne aussi l'autre membre du duo).
+- Provocation en duo : la cible et le prochain ennemi à agir, donc tout le duo adverse. Gardé tel quel (c'est le métier du Front) ; à la Tour, face à 3 ennemis, le troisième garde sa cible.
+- L'acolyte a exactement les stats d'un personnage de sa classe (même niveau que le joueur ; pas encore de niveaux au prototype). Pas de mini-Destin avant l'étape 3, ni de nom modifiable avant les comptes.
+
 **Écran et IA (2026-10-26, prototype)**
 
 - Le joueur choisit sa classe au lancement et peut retirer son kit (« Autre tirage, prototype seulement ») : c'est volontairement contraire au Destin non modifiable, pour tester les 3 classes et tous les kits. À retirer quand les comptes arrivent (étape 4).

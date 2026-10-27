@@ -1,6 +1,6 @@
 # Projet Arena
 
-RPG mobile PvP 3v3, tour par tour simultané, pixel art. Godot 4, iOS + Android.
+RPG mobile en duo (ton perso + un acolyte piloté par l'IA), tour par tour simultané, pixel art. Godot 4, iOS + Android.
 
 - `docs/GDD.md` : le game design document complet (source de vérité).
 - `CLAUDE.md` : le résumé lu par Claude Code à chaque session, avec les choix faits en cours de route.
@@ -15,7 +15,7 @@ Le projet est entièrement développé avec Claude Code.
 | `data/` | Les données de jeu en JSON : classes, compétences, passifs, états, Synergies. |
 | `scenes/combat/` | L'écran de combat du prototype (affichage uniquement, aucune règle). |
 | `tests/` | Les tests automatiques du moteur, lancés en CI à chaque PR. |
-| `tools/` | Le mini-simulateur IA contre IA. |
+| `tools/` | Le mini-simulateur IA contre IA (duo contre duo) et le générateur de bruitages provisoires. |
 | `.github/workflows/` | Tests à chaque PR, export web publié sur GitHub Pages à chaque fusion sur `main`. |
 
 ## Lancer en local (pour les développeurs)

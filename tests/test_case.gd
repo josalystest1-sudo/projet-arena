@@ -40,17 +40,20 @@ func member(class_id: String, picks: Dictionary = {}) -> Dictionary:
 	return {"class_id": class_id, "picks": picks}
 
 
-## Équipe standard Guerrier / Mage / Prêtre.
-func standard_team(picks_by_class: Dictionary = {}) -> Array:
-	return [
-		member("guerrier", picks_by_class.get("guerrier", {})),
-		member("mage", picks_by_class.get("mage", {})),
-		member("pretre", picks_by_class.get("pretre", {})),
-	]
+## Un camp en duo : le premier membre est le personnage principal, le second son acolyte.
+## picks_by_class : kits par classe, ex. {"mage": {"basique": 1}} (par défaut, premier choix de chaque palier).
+func duo_team(classes: Array, picks_by_class: Dictionary = {}) -> Array:
+	var team := []
+	for i in range(classes.size()):
+		var entry := member(classes[i], picks_by_class.get(classes[i], {}))
+		entry["is_acolyte"] = i == 1
+		team.append(entry)
+	return team
 
 
-func standard_combat(picks_a: Dictionary = {}, picks_b: Dictionary = {}) -> Combat:
-	return Combat.create(data, standard_team(picks_a), standard_team(picks_b))
+## Un combat en duo : a1 et a2 contre b1 et b2 (dans l'ordre des classes données).
+func duo_combat(classes_a: Array, classes_b: Array, picks_a: Dictionary = {}, picks_b: Dictionary = {}) -> Combat:
+	return Combat.create(data, duo_team(classes_a, picks_a), duo_team(classes_b, picks_b))
 
 
 func action(actor: String, skill: String, target: String) -> CombatAction:

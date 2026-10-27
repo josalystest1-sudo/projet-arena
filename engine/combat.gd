@@ -1,4 +1,5 @@
-## Le moteur de règles du combat 3v3, tour par tour simultané.
+## Le moteur de règles du combat, tour par tour simultané. Les camps sont de taille variable :
+## 2 contre 2 en PvP (un joueur et son acolyte de chaque côté), 2 contre 2 ou 3 à la Tour.
 ## Module pur : aucune dépendance aux nœuds de scène, aucun affichage, aucun hasard.
 ## Il est réutilisé tel quel par le client, le serveur, l'IA des Échos et le simulateur.
 ##
@@ -56,6 +57,7 @@ var _events: Array[Dictionary] = []
 var _actions: Dictionary = {}          # unit_id -> CombatAction
 var _acted: Dictionary = {}            # unit_id -> true une fois son tour passé (ou perdu)
 var _resolved: Dictionary = {}         # unit_id -> true si l'action a bien été exécutée
+var _resolved_targets: Dictionary = {} # unit_id -> identifiants des cibles réellement touchées par son action
 var _queue: Array[CombatUnit] = []     # file d'attente du tour : qui agit ensuite
 var _damage_dealt: Dictionary = {}     # actor_id -> {target_id: dégâts infligés ce tour}
 var _synergy_pairs: Array[Dictionary] = []
@@ -66,7 +68,8 @@ var _current_hits: Dictionary = {}     # cibles distinctes touchées par l'actio
 # Construction
 # ---------------------------------------------------------------------------
 
-## team_a et team_b : listes de dictionnaires {class_id, picks, name (optionnel), is_player (optionnel)}.
+## team_a et team_b : listes de dictionnaires {class_id, picks, name, is_player, is_acolyte} (seuls class_id et picks sont obligatoires).
+## Un camp peut compter autant de membres qu'on veut : 2 en PvP (le joueur puis son acolyte), 2 ou 3 à la Tour.
 ## p_priority_team : équipe qui agit en premier à vitesse égale au tour 1 (0 ou 1).
 static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_team: int = 0) -> Combat:
 	var combat := Combat.new()
@@ -90,6 +93,7 @@ static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_
 				picks["name"] = member["name"]
 			var unit := CombatUnit.from_class(p_data, member["class_id"], picks, unit_id, team, slot)
 			unit.is_player = bool(member.get("is_player", false))
+			unit.is_acolyte = bool(member.get("is_acolyte", false))
 			combat.units.append(unit)
 	return combat
 
@@ -111,6 +115,22 @@ func team_units(team: int, alive_only: bool = false) -> Array[CombatUnit]:
 		if unit.team == team and (not alive_only or unit.is_alive()):
 			result.append(unit)
 	return result
+
+
+## Le personnage principal d'un camp (le joueur, ou le joueur IA d'en face) : celui que l'acolyte accompagne.
+func leader_of(team: int) -> CombatUnit:
+	for unit in team_units(team):
+		if not unit.is_acolyte:
+			return unit
+	return null
+
+
+## L'acolyte d'un camp (null s'il n'y en a pas, par exemple un groupe d'ennemis de la Tour).
+func acolyte_of(team: int) -> CombatUnit:
+	for unit in team_units(team):
+		if unit.is_acolyte:
+			return unit
+	return null
 
 
 func allies_of(unit: CombatUnit, alive_only: bool = false) -> Array[CombatUnit]:
@@ -295,6 +315,7 @@ func resolve_turn(actions: Array) -> Array[Dictionary]:
 	_actions = {}
 	_acted = {}
 	_resolved = {}
+	_resolved_targets = {}
 	_queue = []
 	_damage_dealt = {}
 	_synergy_pairs = []
@@ -395,6 +416,7 @@ func _execute_action(actor: CombatUnit, action: CombatAction) -> void:
 	actor.last_target = action.target_id
 
 	var targets := _resolve_targets(actor, action)
+	_resolved_targets[actor.id] = _ids(targets)
 	_emit({"type": "action", "actor": actor.id, "skill": action.skill_id, "tier": tier,
 		"targets": _ids(targets), "redirected": bool(_is_redirected(actor, action, targets))})
 	if targets.is_empty():
@@ -485,10 +507,7 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 					_add_status(target, {"id": effect["id"], "turns": int(effect["turns"]), "value": int(effect.get("value", 0)), "source": actor.id})
 		"barrier":
 			for target in targets:
-				var amount := float(effect["power"]) * float(actor.power) / 100.0
-				if actor.passive == "sanctuaire":
-					amount *= 1.0 + SANCTUAIRE_BONUS
-				_add_status(target, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": int(round(amount)), "source": actor.id})
+				_add_status(target, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": _barrier_amount(actor, int(effect["power"])), "source": actor.id})
 		"absorb_next_hit":
 			for target in targets:
 				_add_status(target, {"id": "rempart", "turns": int(effect.get("turns", 2)), "value": 1, "source": actor.id})
@@ -544,6 +563,14 @@ func _heal_amount(source: CombatUnit, target: CombatUnit, base_power: int) -> in
 	if source.passive == "foi" and target.hp_ratio() < FOI_THRESHOLD:
 		amount *= 1.0 + FOI_BONUS
 	amount *= sudden_death_heal_mult()
+	return int(round(amount))
+
+
+## Valeur d'une barrière posée par une unité.
+func _barrier_amount(source: CombatUnit, base_power: int) -> int:
+	var amount := float(base_power) * float(source.power) / 100.0
+	if source.passive == "sanctuaire":
+		amount *= 1.0 + SANCTUAIRE_BONUS
 	return int(round(amount))
 
 
@@ -725,6 +752,12 @@ func _fire_synergies(actor: CombatUnit) -> void:
 				_synergy_eclat(actor, partner)
 			"fendoir_boule_de_feu":
 				_synergy_plaie_brulante(actor)
+			"cri_de_guerre_bouclier_de_mana":
+				_synergy_forteresse(actor, partner)
+			"provocation_chatiment":
+				_synergy_jugement(actor, partner)
+			"arc_de_foudre_priere":
+				_synergy_courant_de_vie(actor, partner)
 
 
 func _synergy_provocation_nova(second: CombatUnit, first: CombatUnit) -> void:
@@ -769,6 +802,47 @@ func _synergy_plaie_brulante(second: CombatUnit) -> void:
 	if not bleed.is_empty():
 		bleed["turns"] = int(bleed["turns"]) + SYNERGY_PLAIE_EXTRA_TURNS
 		_emit({"type": "status", "target": target.id, "status": "saignement", "turns": bleed["turns"], "value": bleed["value"]})
+
+
+## Forteresse : le Bouclier de mana se pose aussi sur les autres membres du duo.
+func _synergy_forteresse(second: CombatUnit, first: CombatUnit) -> void:
+	var mage := second if _actions[second.id].skill_id == "bouclier_de_mana" else first
+	var effect := _skill_effect("bouclier_de_mana", "barrier")
+	var already: Array = _resolved_targets.get(mage.id, [])
+	for ally in allies_of(mage, true):
+		if not already.has(ally.id):
+			_add_status(ally, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": _barrier_amount(mage, int(effect.get("power", 0))), "source": mage.id})
+
+
+## Jugement : le Châtiment frappe aussi chaque autre ennemi provoqué par le Guerrier.
+func _synergy_jugement(second: CombatUnit, first: CombatUnit) -> void:
+	var guerrier := second if _actions[second.id].skill_id == "provocation" else first
+	var pretre := first if guerrier == second else second
+	var power := int(_skill_effect("chatiment", "damage").get("power", 0))
+	var already: Array = _resolved_targets.get(pretre.id, [])
+	for enemy in enemies_of(pretre, true):
+		var provoked := enemy.get_status("provoque")
+		if provoked.is_empty() or str(provoked.get("source", "")) != guerrier.id or already.has(enemy.id):
+			continue
+		_apply_damage(pretre, enemy, _damage_amount(pretre, enemy, power, 1.0, true), "lumiere", "synergie")
+
+
+## Courant de vie : la Prière soigne aussi les autres membres du duo.
+func _synergy_courant_de_vie(second: CombatUnit, first: CombatUnit) -> void:
+	var pretre := second if _actions[second.id].skill_id == "priere" else first
+	var power := int(_skill_effect("priere", "heal").get("power", 0))
+	var already: Array = _resolved_targets.get(pretre.id, [])
+	for ally in allies_of(pretre, true):
+		if not already.has(ally.id):
+			_heal(pretre, ally, power, "synergie")
+
+
+## Le premier effet d'un type donné dans une compétence (ex. la barrière du Bouclier de mana).
+func _skill_effect(skill_id: String, effect_type: String) -> Dictionary:
+	for effect in data.skill(skill_id).get("effects", []):
+		if str(effect["type"]) == effect_type:
+			return effect
+	return {}
 
 
 # ---------------------------------------------------------------------------
