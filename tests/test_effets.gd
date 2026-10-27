@@ -174,7 +174,8 @@ func test_saignement_et_plaie_brulante() -> void:
 	for event in events_of_type(events, "damage"):
 		if event["kind"] == "dot":
 			dot += int(event["amount"])
-	assert_eq(dot, skill_power("fendoir", "status"), "le saignement a fait ses dégâts en fin de tour")
+	var bleed_value := int(round(skill_power("fendoir", "status") * (1.0 + sp("fendoir_boule_de_feu", "bonus"))))
+	assert_eq(dot, bleed_value, "le saignement, renforcé, a fait ses dégâts en fin de tour")
 
 
 func test_synergie_forteresse_protege_tout_le_duo() -> void:
@@ -183,7 +184,8 @@ func test_synergie_forteresse_protege_tout_le_duo() -> void:
 	var events := combat.resolve_turn([action("a1", "cri_de_guerre", "b1"), action("a2", "bouclier_de_mana", "a1")])
 	assert_eq(events_of_type(events, "synergy").size(), 1, "Forteresse déclenchée")
 	# Le Bouclier de mana se pose aussi sur le Mage, que personne ne frappe ce tour.
-	assert_eq(combat.get_unit("a2").barrier_amount(), int(round(skill_power("bouclier_de_mana", "barrier") * mage_power)), "l'autre membre du duo reçoit le même bouclier")
+	var shield := int(round(skill_power("bouclier_de_mana", "barrier") * mage_power))
+	assert_eq(combat.get_unit("a2").barrier_amount(), int(round(shield * sp("cri_de_guerre_bouclier_de_mana", "share"))), "l'autre membre du duo reçoit le bouclier (à sa part)")
 	assert_true(combat.get_unit("a1").has_status("barriere"), "la cible garde son bouclier")
 
 
@@ -208,6 +210,30 @@ func test_synergie_courant_de_vie_soigne_tout_le_duo() -> void:
 		if event["target"] == "a1" and event["kind"] == "synergie":
 			bonus += int(event["amount"])
 	assert_eq(bonus, int(round(round(skill_power("priere", "heal") * sp("arc_de_foudre_priere", "mult")) * class_power("pretre"))), "le Mage reçoit aussi la Prière")
+
+
+func test_courant_de_vie_sur_un_allie_a_fond_pose_une_barriere() -> void:
+	var combat := duo_combat(MP, GM, {"mage": {"moyenne": 1}, "pretre": {"basique": 1, "passive": 3}})
+	combat.get_unit("a2").hp = 120
+	combat.resolve_turn([action("a1", "arc_de_foudre", "b1"), action("a2", "priere", "a2"), action("b1", "taillade", "a2"), action("b2", "boule_de_feu", "a2")])
+	var expected := int(round(round(skill_power("priere", "heal") * sp("arc_de_foudre_priere", "mult")) * class_power("pretre")))
+	assert_eq(combat.get_unit("a1").hp, combat.get_unit("a1").max_hp, "le Mage avait tous ses PV")
+	assert_eq(combat.get_unit("a1").barrier_amount(), expected, "le soin du Courant de vie devient une barrière")
+
+
+func test_le_budget_du_destin_ajuste_pv_et_puissance() -> void:
+	data.destins = {"kit_pairs": {CombatData.pair_key("priere", "resurrection"): 0.05, CombatData.pair_key("egide", "priere"): -0.04}}
+	var picks := {"basique": 1, "moyenne": 0, "forte": 1, "passive": 0}
+	var unit := CombatUnit.from_class(data, "pretre", picks, "a1", 0, 0)
+	assert_eq(unit.skills["basique"], "priere", "kit tiré")
+	assert_eq(unit.skills["forte"], "resurrection", "kit tiré")
+	var stats: Dictionary = data.classes["pretre"]["stats"]
+	assert_eq(unit.max_hp, int(round(float(stats["max_hp"]) * 1.05)), "+5 % de PV pour la paire Prière + Résurrection")
+	assert_eq(unit.power, int(round(float(stats["power"]) * 1.05)), "et +5 % de puissance")
+	picks["forte"] = 0
+	var other := CombatUnit.from_class(data, "pretre", picks, "a1", 0, 0)
+	assert_eq(other.max_hp, int(round(float(stats["max_hp"]) * 0.96)), "-4 % pour la paire Prière + Égide")
+	data.destins = {"kit_pairs": {}}
 
 
 func test_brasier_brule_un_tour() -> void:

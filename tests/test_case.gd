@@ -7,6 +7,8 @@ var data: CombatData
 
 func setup() -> void:
 	data = CombatData.load_default()
+	# Les tests vérifient les règles avec les chiffres des classes : sans l'ajustement des Destins (testé à part).
+	data.destins = {"kit_pairs": {}}
 
 
 func assert_true(condition: bool, message: String = "") -> void:

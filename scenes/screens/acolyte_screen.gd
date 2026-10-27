@@ -17,6 +17,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	for skill_id in app.acolyte_skills():
 		UiKit.skill_block(kit, app.data, skill_id, UiKit.ACOLYTE_BLUE)
 	UiKit.passive_block(kit, app.data, app.acolyte_passive())
+	UiKit.destin_balance(kit, app.data, app.acolyte_skills(), app.acolyte_passive())
 
 	var postures := UiKit.card(column, 8)
 	postures.add_child(UiKit.label("Ses postures", 20, UiKit.GOLD, false))

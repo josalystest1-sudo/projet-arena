@@ -16,6 +16,9 @@ var rules: Dictionary = {}
 var postures: Dictionary = {}
 ## La Tour : étages, ennemis, PV rendus entre deux étages, dans data/tower.json.
 var tower: Dictionary = {}
+## Le budget de puissance des Destins (data/destins.json) : certaines paires d'un même kit vont trop bien (ou trop
+## mal) ensemble ; « kit_pairs » donne pour chaque paire un ajustement des PV et de la puissance (+0,04 = +4 %).
+var destins: Dictionary = {}
 
 
 static func load_default() -> CombatData:
@@ -31,6 +34,7 @@ static func load_from_dir(dir: String) -> CombatData:
 	data.rules = _read_json(dir + "rules.json")
 	data.postures = _read_json(dir + "postures.json")
 	data.tower = _read_json(dir + "tower.json")
+	data.destins = _read_json(dir + "destins.json")
 	var class_ids: Array = _read_json(dir + "classes.json")
 	for class_id in class_ids:
 		data.classes[class_id] = _read_json(dir + "classes/" + class_id + ".json")
@@ -56,6 +60,23 @@ func skill_name(skill_id: String) -> String:
 
 func passive_name(passive_id: String) -> String:
 	return str(passives.get(passive_id, {}).get("name", passive_id))
+
+
+## Clé d'une paire d'éléments d'un kit (deux compétences, ou une compétence et le passif), dans l'ordre alphabétique.
+static func pair_key(a: String, b: String) -> String:
+	return "%s+%s" % [a, b] if a < b else "%s+%s" % [b, a]
+
+
+## L'ajustement de PV et de puissance d'un kit (3 compétences + 1 passif) : la somme de ses paires.
+func kit_bonus(skill_ids: Array, passive_id: String) -> float:
+	var pairs: Dictionary = destins.get("kit_pairs", {})
+	var items: Array = skill_ids.duplicate()
+	items.append(passive_id)
+	var total := 0.0
+	for i in range(items.size()):
+		for j in range(i + 1, items.size()):
+			total += float(pairs.get(pair_key(str(items[i]), str(items[j])), 0.0))
+	return total
 
 
 ## Un chiffre d'un passif (data/passives.json, « params »).

@@ -72,7 +72,7 @@ func test_les_ennemis_s_epuisent() -> void:
 	jump_to_turn(combat, combat.exhaustion_turn)
 	assert_eq(combat._heal_amount(enemy, enemy, 80), 0, "épuisés : plus de soins")
 	assert_eq(combat._barrier_amount(enemy, 60), 0, "ni de barrières")
-	assert_eq(combat._heal_amount(combat.get_unit("a2"), ally, 44), 44, "ton duo soigne toujours")
+	assert_eq(combat._heal_amount(combat.get_unit("a2"), ally, 44), int(round(44 * class_power("pretre"))), "ton duo soigne toujours")
 
 
 func test_a_la_limite_de_tours_les_ennemis_abandonnent() -> void:

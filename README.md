@@ -18,7 +18,7 @@ Le projet est entièrement développé avec Claude Code.
 | `scenes/ui/` | Les briques communes de l'interface : thème, boutons, cartes, portraits animés. |
 | `scenes/combat/` | L'écran de combat (affichage uniquement, aucune règle). |
 | `tests/` | Les tests automatiques du moteur, lancés en CI à chaque PR. |
-| `tools/` | Les simulateurs (duo contre duo, montées de la Tour) et le générateur de bruitages provisoires. |
+| `tools/` | Les simulateurs (duo contre duo, montées de la Tour), l'équilibrage (mesure et régleur automatique) et le générateur de bruitages provisoires. |
 | `.github/workflows/` | Tests à chaque PR, export web publié sur GitHub Pages à chaque fusion sur `main`. |
 
 ## Lancer en local (pour les développeurs)
@@ -28,4 +28,12 @@ godot --headless --path . --import
 godot --headless --path . --script res://tests/run_tests.gd
 godot --headless --path . --script res://tools/simulate.gd -- 1000
 godot --headless --path . --script res://tools/simulate_tour.gd -- 500
+```
+
+Équilibrage (taux de victoire de chaque classe, compétence, passif, Synergie, composition et kit, fourchette 48–52 %) :
+
+```
+godot --headless --path . --script res://tools/equilibrage.gd -- 20000 1 /tmp/equilibrage.csv
+python3 tools/equilibrage.py /tmp/equilibrage.csv
+python3 tools/regleur.py 8 16000   # règle les chiffres de data/ par passes successives (4 processus Godot)
 ```

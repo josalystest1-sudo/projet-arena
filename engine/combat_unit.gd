@@ -50,6 +50,13 @@ static func from_class(data: CombatData, p_class_id: String, picks: Dictionary, 
 		unit.skills[tier] = pool[int(picks.get(tier, 0)) % pool.size()]
 	var passive_pool: Array = cls["passives"]
 	unit.passive = passive_pool[int(picks.get("passive", 0)) % passive_pool.size()]
+	# Budget de puissance du Destin : un kit dont les pièces vont trop bien ensemble a un peu moins de PV et de
+	# puissance, et inversement (data/destins.json).
+	var bonus := data.kit_bonus(unit.skills.values(), unit.passive)
+	if bonus != 0.0:
+		unit.max_hp = maxi(1, int(round(float(unit.max_hp) * (1.0 + bonus))))
+		unit.hp = unit.max_hp
+		unit.power = maxi(1, int(round(float(unit.power) * (1.0 + bonus))))
 	return unit
 
 

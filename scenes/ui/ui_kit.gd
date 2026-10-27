@@ -126,3 +126,14 @@ static func skill_block(parent: Node, data: CombatData, skill_id: String, accent
 static func passive_block(parent: Node, data: CombatData, passive_id: String) -> void:
 	parent.add_child(label("Passif — %s" % data.passive_name(passive_id), 19, Color(0.75, 0.9, 0.75), false))
 	parent.add_child(label(data.passive_description(passive_id), 16, SOFT, false))
+
+
+## Le budget de puissance du Destin : un kit dont les pièces se complètent moins bien reçoit un peu plus de PV et de
+## puissance, et inversement (aucun Destin ne doit dominer). Rien n'est affiché quand l'ajustement est nul.
+static func destin_balance(parent: Node, data: CombatData, skill_ids: Array, passive_id: String) -> void:
+	var bonus := data.kit_bonus(skill_ids, passive_id)
+	var percent := int(round(bonus * 100.0))
+	if percent == 0:
+		return
+	var why := "ces compétences se complètent moins bien que d'autres" if percent > 0 else "ces compétences se complètent particulièrement bien"
+	parent.add_child(label("Équilibre du Destin : %s%d %% de PV et de puissance, parce que %s." % ["+" if percent > 0 else "-", absi(percent), why], 14, Color(0.6, 0.65, 0.8), false))

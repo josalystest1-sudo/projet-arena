@@ -523,11 +523,10 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 					_add_status(target, {"id": "brulure", "turns": int(_pp("brasier", "turns", 1)), "value": int(_pp("brasier", "value", 10)), "source": actor.id})
 		"heal":
 			for target in targets:
-				var expected := _heal_amount(actor, target, int(effect["power"])) if target.is_alive() else 0
-				var healed := _heal(actor, target, int(effect["power"]), str(context["skill_id"]))
-				# Prière : le soin qui dépasse les PV max devient une barrière (un petit soin n'est jamais perdu).
-				if bool(effect.get("overflow_barrier", false)) and target.is_alive() and expected > healed:
-					_add_status(target, {"id": "barriere", "turns": 2, "value": expected - healed, "source": actor.id})
+				if bool(effect.get("overflow_barrier", false)):
+					_heal_with_overflow(actor, target, int(effect["power"]), str(context["skill_id"]))
+				else:
+					_heal(actor, target, int(effect["power"]), str(context["skill_id"]))
 		"status":
 			for target in targets:
 				if target.is_alive():
@@ -672,6 +671,16 @@ func _heal(source: CombatUnit, target: CombatUnit, base_power: int, kind: String
 	target.hp += healed
 	_emit({"type": "heal", "source": source.id, "target": target.id, "amount": healed, "kind": kind, "hp": target.hp})
 	return healed
+
+
+## Prière : le soin qui dépasse les PV max devient une barrière (un petit soin n'est jamais perdu).
+func _heal_with_overflow(source: CombatUnit, target: CombatUnit, base_power: int, kind: String) -> void:
+	if not target.is_alive():
+		return
+	var expected := _heal_amount(source, target, base_power)
+	var healed := _heal(source, target, base_power, kind)
+	if expected > healed:
+		_add_status(target, {"id": "barriere", "turns": 2, "value": expected - healed, "source": source.id})
 
 
 func _revive(actor: CombatUnit, target: CombatUnit, percent: int) -> void:
@@ -836,20 +845,22 @@ func _synergy_plaie_brulante(second: CombatUnit) -> void:
 	var bleed := target.get_status("saignement")
 	if not bleed.is_empty():
 		bleed["turns"] = int(bleed["turns"]) + int(_sp("fendoir_boule_de_feu", "extra_turns", 2))
+		bleed["value"] = int(round(float(bleed["value"]) * (1.0 + _sp("fendoir_boule_de_feu", "bonus", 0.0))))
 		_emit({"type": "status", "target": target.id, "status": "saignement", "turns": bleed["turns"], "value": bleed["value"]})
 
 
-## Forteresse : le Bouclier de mana se pose aussi sur les autres membres du duo.
+## Forteresse : le Bouclier de mana se pose aussi sur les autres membres du duo (à une part de sa taille).
 func _synergy_forteresse(second: CombatUnit, first: CombatUnit) -> void:
 	var mage := second if _actions[second.id].skill_id == "bouclier_de_mana" else first
 	var effect := _skill_effect("bouclier_de_mana", "barrier")
 	var already: Array = _resolved_targets.get(mage.id, [])
 	for ally in allies_of(mage, true):
 		if not already.has(ally.id):
-			_add_status(ally, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": _barrier_amount(mage, int(effect.get("power", 0))), "source": mage.id})
+			var amount := int(round(float(_barrier_amount(mage, int(effect.get("power", 0)))) * _sp("cri_de_guerre_bouclier_de_mana", "share", 1.0)))
+			_add_status(ally, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": amount, "source": mage.id})
 
 
-## Jugement : le Châtiment frappe aussi, une fois et demie plus fort, chaque autre ennemi provoqué par le Guerrier.
+## Jugement : le Châtiment frappe aussi chaque autre ennemi provoqué par le Guerrier (force réglée dans les données).
 func _synergy_jugement(second: CombatUnit, first: CombatUnit) -> void:
 	var guerrier := second if _actions[second.id].skill_id == "provocation" else first
 	var pretre := first if guerrier == second else second
@@ -862,14 +873,15 @@ func _synergy_jugement(second: CombatUnit, first: CombatUnit) -> void:
 		_apply_damage(pretre, enemy, _damage_amount(pretre, enemy, power, _sp("provocation_chatiment", "mult", 1.0), true), "lumiere", "synergie")
 
 
-## Courant de vie : la Prière soigne aussi les autres membres du duo, une fois et demie plus fort.
+## Courant de vie : la Prière soigne aussi les autres membres du duo (force réglée dans les données) ; comme la Prière,
+## ce qui dépasse leurs PV max devient une barrière.
 func _synergy_courant_de_vie(second: CombatUnit, first: CombatUnit) -> void:
 	var pretre := second if _actions[second.id].skill_id == "priere" else first
 	var power := int(round(float(_skill_effect("priere", "heal").get("power", 0)) * _sp("arc_de_foudre_priere", "mult", 1.0)))
 	var already: Array = _resolved_targets.get(pretre.id, [])
 	for ally in allies_of(pretre, true):
 		if not already.has(ally.id):
-			_heal(pretre, ally, power, "synergie")
+			_heal_with_overflow(pretre, ally, power, "synergie")
 
 
 ## Le premier effet d'un type donné dans une compétence (ex. la barrière du Bouclier de mana).

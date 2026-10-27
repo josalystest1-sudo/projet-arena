@@ -10,6 +10,9 @@ Usage : python3 tools/regleur.py <tours de réglage> <combats par tour>
    - une classe : ses PV max (écart à 50 %) ;
    - une compétence ou un passif : son chiffre (écart au taux de sa classe, pour ne pas corriger deux fois) ;
    - une Synergie : son chiffre (écart à la moyenne de ses deux classes).
+   - une paire d'éléments d'un même kit (deux compétences, ou une compétence et le passif) : son ajustement de PV et
+     de puissance dans data/destins.json (écart entre le taux des kits qui ont la paire et ce qu'on attendrait de
+     chacun des deux éléments seul). C'est le budget de puissance du Destin : aucun kit ne doit dominer.
 Les fichiers de data/ sont réécrits ; on relit le résultat avec tools/equilibrage.py.
 """
 import json
@@ -53,7 +56,13 @@ PASSIVE_LEVERS = {
 SYNERGY_LEVERS = {
     "provocation_nova": "bonus", "trait_de_givre_chatiment": "damage",
     "provocation_chatiment": "mult", "arc_de_foudre_priere": "mult",
+    "fendoir_boule_de_feu": "bonus", "cri_de_guerre_bouclier_de_mana": "share",
 }
+PAIR_GAIN = 1.0
+PAIR_LIMIT = 0.15
+# Bornes des chiffres de Synergie : au-delà, une Synergie change de nature (ou ne se joue pas assez pour être réglée
+# par sa force : il faut alors revoir son effet).
+SYNERGY_LIMITS = {"mult": (0.5, 1.5), "share": (0.3, 1.0), "bonus": (0.05, 1.0)}
 
 
 def load(name):
@@ -90,6 +99,16 @@ def write_passives(passives):
         lines.append(f'  "{key}": ' + json.dumps(passive, ensure_ascii=False) + ("," if i < len(items) - 1 else ""))
     lines.append("}")
     with open(os.path.join(DATA, "passives.json"), "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+
+
+def write_destins(destins):
+    pairs = destins["kit_pairs"]
+    lines = ["{", '  "kit_pairs": {']
+    keys = sorted(k for k, v in pairs.items() if v != 0)
+    lines += [f'    "{k}": {pairs[k]}' + ("," if i < len(keys) - 1 else "") for i, k in enumerate(keys)]
+    lines += ["  }", "}"]
+    with open(os.path.join(DATA, "destins.json"), "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
 
@@ -144,10 +163,69 @@ def measure(files):
     return {k: 100.0 * w / g for k, (w, g) in rates.items() if g > 0}
 
 
+def pair_key(a, b):
+    return f"{a}+{b}" if a < b else f"{b}+{a}"
+
+
+def measure_pairs(files):
+    """Pour chaque paire d'un même kit : (taux observé, taux attendu des deux éléments pris seuls, marge, parties)."""
+    import csv
+    import itertools
+    single = defaultdict(lambda: [0, 0])
+    pair = defaultdict(lambda: [0, 0])
+    classes = defaultdict(lambda: [0, 0])
+    owner = {}
+    for path in files:
+        with open(path, encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                won = int(row["gagne"])
+                for side, prefix in (("joueur", "j_"), ("acolyte", "a_")):
+                    items = [row[prefix + t] for t in ("basique", "moyenne", "forte", "passif")]
+                    for entry in [classes[row[side]]] + [single[i] for i in items]:
+                        entry[0] += won
+                        entry[1] += 1
+                    for a, b in itertools.combinations(items, 2):
+                        key = pair_key(a, b)
+                        owner[key] = row[side]
+                        pair[key][0] += won
+                        pair[key][1] += 1
+    rate = lambda e: 100.0 * e[0] / e[1]
+    result = {}
+    for key, entry in pair.items():
+        a, b = key.split("+")
+        expected = rate(single[a]) + rate(single[b]) - rate(classes[owner[key]])
+        result[key] = (rate(entry), expected, 196.0 * math.sqrt(0.25 / entry[1]), entry[1])
+    return result
+
+
+def tune_pairs(pairs):
+    destins = load("destins.json")
+    values = destins.setdefault("kit_pairs", {})
+    report = []
+    for key, (observed, expected, margin, games) in sorted(pairs.items()):
+        deviation = observed - expected
+        if abs(deviation) < max(1.5, margin):
+            continue
+        old = values.get(key, 0.0)
+        values[key] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - PAIR_GAIN * deviation / 100.0)), 3)
+        report.append(f"paire {key} ({deviation:+.1f}) : {old:+.3f} -> {values[key]:+.3f}")
+    write_destins(destins)
+    return report
+
+
 def step(value, deviation, gain=GAIN):
     factor = 1.0 - gain * deviation / 100.0
     factor = min(1.0 + MAX_STEP, max(1.0 - MAX_STEP, factor))
     return value * factor
+
+
+def step_int(value, deviation, gain=GAIN):
+    """Un petit nombre entier (puissance 24, brûlure 9) ne bougerait jamais à l'arrondi : on le bouge d'au moins 1
+    quand l'écart est net."""
+    new = max(1, int(round(step(value, deviation, gain))))
+    if new == value and abs(deviation) >= 1.5:
+        new = max(1, value - 1 if deviation > 0 else value + 1)
+    return new
 
 
 def tune(rates):
@@ -176,7 +254,7 @@ def tune(rates):
             for effect in skill["effects"]:
                 if effect["type"] == effect_type and key in effect:
                     old = effect[key]
-                    effect[key] = max(1, int(round(step(old, deviation))))
+                    effect[key] = step_int(old, deviation)
                     report.append(f"{skill_id} ({deviation:+.1f}) : {key} {old} -> {effect[key]}")
                     break
     for passive_id, key in PASSIVE_LEVERS.items():
@@ -185,8 +263,7 @@ def tune(rates):
         if abs(deviation) < 1.0:
             continue
         old = passive["params"][key]
-        new = step(old, deviation, PASSIVE_GAIN)
-        passive["params"][key] = int(round(new)) if isinstance(old, int) else round(new, 3)
+        passive["params"][key] = step_int(old, deviation, PASSIVE_GAIN) if isinstance(old, int) else round(step(old, deviation, PASSIVE_GAIN), 3)
         report.append(f"passif {passive_id} ({deviation:+.1f}) : {key} {old} -> {passive['params'][key]}")
     for synergy in synergies:
         key = SYNERGY_LEVERS.get(synergy["id"])
@@ -199,8 +276,11 @@ def tune(rates):
         if abs(deviation) < 1.5:
             continue
         old = synergy["params"][key]
-        new = step(old, deviation, SYNERGY_GAIN)
-        synergy["params"][key] = int(round(new)) if isinstance(old, int) else round(new, 3)
+        if isinstance(old, int):
+            synergy["params"][key] = step_int(old, deviation, SYNERGY_GAIN)
+        else:
+            low, high = SYNERGY_LIMITS.get(key, (0.0, 10.0))
+            synergy["params"][key] = round(min(high, max(low, step(old, deviation, SYNERGY_GAIN))), 3)
         report.append(f"synergie {synergy['id']} ({deviation:+.1f}) : {key} {old} -> {synergy['params'][key]}")
     write_skills(skills)
     write_passives(passives)
@@ -212,10 +292,13 @@ def main():
     rounds = int(sys.argv[1]) if len(sys.argv) > 1 else 5
     count = int(sys.argv[2]) if len(sys.argv) > 2 else 12000
     for r in range(1, rounds + 1):
-        rates = measure(simulate(r, count))
+        files = simulate(r, count)
+        rates = measure(files)
+        pairs = measure_pairs(files)
         spread = [v for k, v in rates.items() if k.startswith(("comp:", "passif:", "classe:"))]
-        print(f"\n== Réglage {r} : écart max à 50 % = {max(abs(v - 50) for v in spread):.1f} points")
-        for line in tune(rates):
+        worst_pair = max(abs(o - e) for o, e, _, _ in pairs.values())
+        print(f"\n== Réglage {r} : écart max à 50 % = {max(abs(v - 50) for v in spread):.1f} points ; pire paire : {worst_pair:.1f} points")
+        for line in tune(rates) + tune_pairs(pairs):
             print("  " + line)
         sys.stdout.flush()
 
