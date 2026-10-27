@@ -11,7 +11,7 @@
   },
   "provocation": {
     "name": "Provocation", "class": "guerrier", "tier": "moyenne", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "taunt", "count": 2}, {"type": "damage", "power": 24}],
+    "effects": [{"type": "taunt", "count": 2}, {"type": "damage", "power": 25}],
     "description": "Frappe la cible ; elle et le prochain ennemi à agir doivent attaquer le Guerrier ce tour."
   },
   "rempart": {
@@ -21,7 +21,7 @@
   },
   "fendoir": {
     "name": "Fendoir", "class": "guerrier", "tier": "forte", "element": "tranchant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 65}, {"type": "status", "id": "saignement", "turns": 3, "value": 13}],
+    "effects": [{"type": "damage", "power": 65}, {"type": "status", "id": "saignement", "turns": 3, "value": 14}],
     "description": "Gros dégâts tranchants et saignement pendant {turns} tours."
   },
   "cri_de_guerre": {
@@ -32,12 +32,12 @@
 
   "boule_de_feu": {
     "name": "Boule de feu", "class": "mage", "tier": "basique", "element": "feu", "target": "enemy",
-    "effects": [{"type": "damage", "power": 41}],
+    "effects": [{"type": "damage", "power": 40}],
     "description": "Boule de feu sur un ennemi."
   },
   "etincelle": {
     "name": "Étincelle", "class": "mage", "tier": "basique", "element": "foudre", "target": "enemy", "speed_bonus": 6,
-    "effects": [{"type": "damage", "power": 34}],
+    "effects": [{"type": "damage", "power": 35}],
     "description": "Éclair rapide : le Mage agit tôt dans le tour."
   },
   "trait_de_givre": {
@@ -47,7 +47,7 @@
   },
   "arc_de_foudre": {
     "name": "Arc de foudre", "class": "mage", "tier": "moyenne", "element": "foudre", "target": "enemies_2",
-    "effects": [{"type": "damage", "power": 43}],
+    "effects": [{"type": "damage", "power": 44}],
     "description": "La foudre frappe la cible et un second ennemi."
   },
   "nova": {
@@ -68,7 +68,7 @@
   },
   "priere": {
     "name": "Prière", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "heal", "power": 53, "overflow_barrier": true}],
+    "effects": [{"type": "heal", "power": 54, "overflow_barrier": true}],
     "description": "Petit soin sur un allié ; ce qui dépasse ses PV max devient une barrière."
   },
   "restauration": {
@@ -83,12 +83,12 @@
   },
   "egide": {
     "name": "Égide", "class": "pretre", "tier": "forte", "element": "lumiere", "target": "allies_all",
-    "effects": [{"type": "barrier", "power": 68, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 66, "turns": 3}],
     "description": "Barrière sur tout le duo pendant {turns} tours."
   },
   "resurrection": {
     "name": "Résurrection", "class": "pretre", "tier": "forte", "element": "lumiere", "target": "ally_ko", "once_per_combat": true,
-    "effects": [{"type": "revive", "percent": 25}],
+    "effects": [{"type": "revive", "percent": 26}],
     "description": "Relève un allié KO à {percent} % de ses PV. Une fois par combat."
   }
 }
