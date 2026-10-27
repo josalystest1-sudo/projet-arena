@@ -113,9 +113,10 @@ static func choose_posture(combat: Combat, team: int) -> String:
 			for posture in [COGNE, ACHEVE, AFFAIBLIS]:
 				if allowed.has(posture):
 					return posture
-	# Sa forte revient au tour suivant : l'acolyte garde la sienne pour les lancer ensemble.
+	# Sa forte revient au tour suivant et celle de l'acolyte fait Synergie avec l'une de ses compétences : l'acolyte garde
+	# la sienne pour la jouer avec lui (sans Synergie à construire, la garder ne fait que la retarder).
 	if combat.can_use(acolyte, "forte") and skill_kind(combat.data, acolyte.skills["forte"]) != "releve" \
-			and combat.cooldown_remaining(leader, "forte") == 1:
+			and combat.cooldown_remaining(leader, "forte") == 1 and _forte_has_synergy(combat, leader, acolyte):
 		return GARDE_TA_FORTE
 	return LIBRE
 
@@ -596,6 +597,14 @@ static func _leader_target(combat: Combat, unit: CombatUnit, leader: CombatUnit,
 		if _is_enemy(unit, previous):
 			return previous
 	return _lowest_enemy(combat, unit)
+
+
+## La forte de l'acolyte fait Synergie avec l'une des compétences du joueur.
+static func _forte_has_synergy(combat: Combat, leader: CombatUnit, acolyte: CombatUnit) -> bool:
+	for tier in CombatUnit.TIERS:
+		if not combat.data.find_synergy(leader.skills[tier], acolyte.skills["forte"]).is_empty():
+			return true
+	return false
 
 
 ## L'un des alliés a déjà perdu des PV.
