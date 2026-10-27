@@ -13,54 +13,54 @@
   "floors": [
     {
       "enemies": 2,
-      "hp": 0.45,
-      "power": 0.6
+      "hp": 0.405,
+      "power": 0.625
     },
     {
       "enemies": 2,
-      "hp": 0.55,
-      "power": 0.66
+      "hp": 0.495,
+      "power": 0.688
     },
     {
       "enemies": 2,
-      "hp": 0.6,
-      "power": 0.744
+      "hp": 0.54,
+      "power": 0.775
     },
     {
       "enemies": 3,
-      "hp": 0.4,
-      "power": 0.54
+      "hp": 0.36,
+      "power": 0.562
     },
     {
       "enemies": 2,
-      "hp": 0.65,
-      "power": 0.84,
+      "hp": 0.585,
+      "power": 0.875,
       "boss": true
     },
     {
       "enemies": 3,
-      "hp": 0.48,
-      "power": 0.672
+      "hp": 0.432,
+      "power": 0.7
     },
     {
       "enemies": 2,
-      "hp": 0.8,
-      "power": 0.984
+      "hp": 0.72,
+      "power": 1.025
     },
     {
       "enemies": 3,
-      "hp": 0.55,
-      "power": 0.768
+      "hp": 0.495,
+      "power": 0.8
     },
     {
       "enemies": 3,
-      "hp": 0.6,
-      "power": 0.84
+      "hp": 0.54,
+      "power": 0.875
     },
     {
       "enemies": 3,
-      "hp": 0.66,
-      "power": 0.912,
+      "hp": 0.594,
+      "power": 0.95,
       "boss": true
     }
   ]
