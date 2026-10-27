@@ -21,22 +21,32 @@ func _initialize() -> void:
 	var first_ko_count := 0
 	var key_wins := {}
 	var key_games := {}
-	var postures := {}
+	var waits := 0
+	var waits_paid := 0
 	for i in range(count):
 		var combat := Combat.create(data, Duo.random_duo(data, rng), Duo.random_duo(data, rng), rng.randi_range(0, 1))
 		var first_ko := 0
+		# Les acolytes qui ont gardé leur forte au tour précédent : leur Synergie s'est-elle déclenchée ce tour-ci ?
+		var waited := {}
 		while not combat.finished:
-			var plan_a := CombatAI.plan_team(combat, 0)
-			var plan_b := CombatAI.plan_team(combat, 1)
-			for plan in [plan_a, plan_b]:
-				postures[plan["posture"]] = int(postures.get(plan["posture"], 0)) + 1
-			var actions: Array = plan_a["actions"]
-			actions.append_array(plan_b["actions"])
+			var actions: Array = CombatAI.choose_team(combat, 0)
+			actions.append_array(CombatAI.choose_team(combat, 1))
+			var fired := {}
 			for event in combat.resolve_turn(actions):
 				if event["type"] == "synergy":
 					synergies[event["name"]] = int(synergies.get(event["name"], 0)) + 1
+					for actor in event["actors"]:
+						fired[actor] = true
 				elif event["type"] == "ko" and first_ko == 0:
 					first_ko = combat.turn
+			for unit_id in waited:
+				if fired.has(unit_id):
+					waits_paid += 1
+			waited = {}
+			for action in actions:
+				if action.waits_for_synergy:
+					waits += 1
+					waited[action.actor_id] = true
 		if first_ko > 0:
 			first_ko_total += first_ko
 			first_ko_count += 1
@@ -65,18 +75,17 @@ func _initialize() -> void:
 	print("Moyenne : %.1f tours   entre 8 et 15 : %.0f %%   premier KO : tour %.1f" % [float(total_turns) / count, 100.0 * in_target / count, float(first_ko_total) / maxi(first_ko_count, 1)])
 	print("Fins : ", reasons)
 	print("Synergies : ", synergies)
-	print("Postures choisies par les joueurs IA (par tour) : ", postures)
+	print("Attentes de l'acolyte pour une Synergie : %.2f par combat ; Synergie déclenchée au tour suivant dans %.0f %% des cas" % [float(waits) / count, 100.0 * waits_paid / maxi(waits, 1)])
 	var names := key_games.keys()
 	names.sort()
 	for key in names:
 		print("  %-24s %5.1f %%  (%d)" % [key, 100.0 * float(key_wins.get(key, 0)) / float(key_games[key]), key_games[key]])
 	# Pilier « le duo gagne » : jouer autour de son acolyte doit battre l'ignorer.
 	print("")
-	print("Jouer autour de l'acolyte (lit son annonce, cherche les Synergies, change de posture) :")
-	print("  contre un joueur qui l'ignore (posture Libre, ne lit pas l'annonce) : %.1f %% de victoires" % _duel(data, count, "malin", "ignore"))
-	print("  contre un joueur qui lit l'annonce mais laisse la posture sur Libre : %.1f %% de victoires" % _duel(data, count, "malin", "libre"))
-	print("  lire l'annonce (posture Libre) contre l'ignorer : %.1f %%" % _duel(data, count, "libre", "ignore"))
-	print("  (chaque posture, rôle par rôle : tools/postures.gd)")
+	print("Jouer autour de l'acolyte (lire son annonce et chercher les Synergies) :")
+	print("  contre un joueur qui ignore son annonce : %.1f %% de victoires" % _duel(data, count, "malin", "ignore"))
+	print("La règle d'attente (l'acolyte garde sa forte un tour pour une Synergie) :")
+	print("  avec, contre sans : %.1f %% de victoires" % _duel(data, count, "malin", "sans_attente"))
 	quit(0)
 
 
@@ -102,18 +111,18 @@ func _duel(data: CombatData, count: int, style_a: String, style_b: String) -> fl
 	return 100.0 * wins_a / count
 
 
+## malin : le joueur IA lit l'annonce de son acolyte (comme en jeu) ; ignore : il ne la lit pas ;
+## sans_attente : comme malin, mais l'acolyte n'attend jamais pour une Synergie.
 func _plan(combat: Combat, team: int, style: String) -> Array:
-	match style:
-		"ignore":
-			var actions: Array = []
-			for unit in combat.team_units(team, true):
-				if unit.is_acolyte:
-					actions.append(CombatAI.decide_acolyte(combat, unit, CombatAI.LIBRE, null)["action"])
-				else:
-					actions.append(CombatAI.decide_leader(combat, unit, null)["action"])
-			return actions
-		"libre":
-			return CombatAI.plan_team(combat, team, [], CombatAI.LIBRE)["actions"]
-	if style.begins_with("posture:"):
-		return CombatAI.plan_team(combat, team, [], style.substr(8))["actions"]
-	return CombatAI.plan_team(combat, team)["actions"]
+	if style == "malin":
+		return CombatAI.choose_team(combat, team)
+	var actions: Array = []
+	var announce: CombatAction = null
+	var acolyte := combat.acolyte_of(team)
+	if acolyte != null and acolyte.is_alive():
+		announce = CombatAI.decide_acolyte(combat, acolyte, style != "sans_attente")["action"]
+		actions.append(announce)
+	for unit in combat.team_units(team, true):
+		if unit != acolyte:
+			actions.append(CombatAI.decide_leader(combat, unit, announce if style == "sans_attente" else null)["action"])
+	return actions

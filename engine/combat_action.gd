@@ -5,6 +5,8 @@ extends RefCounted
 var actor_id: String
 var skill_id: String
 var target_id: String
+## L'acolyte garde sa forte ce tour-ci pour une Synergie au tour suivant (le moteur s'en souvient : jamais deux tours de suite).
+var waits_for_synergy: bool = false
 
 
 static func make(p_actor_id: String, p_skill_id: String, p_target_id: String) -> CombatAction:

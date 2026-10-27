@@ -1,4 +1,4 @@
-## Chargement des données de jeu : classes, compétences, passifs, Synergies, états, règles, postures, Tour.
+## Chargement des données de jeu : classes, compétences, passifs, Synergies, états, règles, IA, Tour.
 ## Module pur : aucune dépendance aux nœuds de scène. Les données vivent dans res://data/.
 class_name CombatData
 extends RefCounted
@@ -12,8 +12,8 @@ var statuses: Dictionary = {}
 var synergies: Array = []
 ## Règles chiffrées du combat (mort subite, recharges...), dans data/rules.json.
 var rules: Dictionary = {}
-## Postures de l'acolyte : noms, descriptions et seuils de l'IA, dans data/postures.json.
-var postures: Dictionary = {}
+## L'IA : comment joue l'acolyte selon son rôle, ses seuils et les raisons affichées, dans data/ia.json.
+var ai: Dictionary = {}
 ## La Tour : étages, ennemis, PV rendus entre deux étages, dans data/tower.json.
 var tower: Dictionary = {}
 ## Le budget de puissance des Destins (data/destins.json), en ajustement des PV et de la puissance (+0,04 = +4 %) :
@@ -21,7 +21,8 @@ var tower: Dictionary = {}
 ## « kit_pairs » pour une paire d'un même kit qui va trop bien (ou trop mal) ensemble ; « kit_triples » pour les trois
 ## compétences ensemble (clé : les trois dans l'ordre alphabétique, ex. « arc_de_foudre+etincelle+nova »).
 ## En duo, le partenaire compte aussi : « duo_items » (un élément selon la classe du partenaire, ex. un Bouclier de mana
-## à côté d'un Guerrier) et « duo_classes » (la composition du duo). Un acolyte, toujours joué par l'IA, a aussi son
+## à côté d'un Guerrier), « duo_classes » (la composition du duo) et « duo_orders » (qui en est le joueur et qui
+## l'acolyte : « mage>guerrier », un Mage avec son acolyte Guerrier). Un acolyte, toujours joué par l'IA, a aussi son
 ## ajustement par classe : « acolyte_classes ».
 var destins: Dictionary = {}
 
@@ -37,7 +38,7 @@ static func load_from_dir(dir: String) -> CombatData:
 	data.statuses = _read_json(dir + "statuses.json")
 	data.synergies = _read_json(dir + "synergies.json")
 	data.rules = _read_json(dir + "rules.json")
-	data.postures = _read_json(dir + "postures.json")
+	data.ai = _read_json(dir + "ia.json")
 	data.tower = _read_json(dir + "tower.json")
 	data.destins = _read_json(dir + "destins.json")
 	var class_ids: Array = _read_json(dir + "classes.json")
@@ -90,6 +91,8 @@ func kit_bonus(skill_ids: Array, passive_id: String, own_class: String = "", par
 	total += float(destins.get("kit_triples", {}).get("+".join(trio), 0.0))
 	if partner_class != "":
 		total += float(destins.get("duo_classes", {}).get(pair_key(own_class, partner_class), 0.0))
+		var order := "%s>%s" % ([partner_class, own_class] if is_acolyte else [own_class, partner_class])
+		total += float(destins.get("duo_orders", {}).get(order, 0.0))
 	if is_acolyte:
 		total += float(destins.get("acolyte_classes", {}).get(own_class, 0.0))
 	return total
@@ -139,13 +142,10 @@ func synergy_description(synergy: Dictionary) -> String:
 	return fill(str(synergy.get("description", "")), synergy.get("params", {}))
 
 
-## Ce que fait un acolyte de cette classe dans une posture (Libre dépend de son rôle), avec les seuils des données.
-func posture_description(posture_id: String, class_id: String) -> String:
-	var info: Dictionary = postures.get("postures", {}).get(posture_id, {})
-	var text := str(info.get("description", ""))
-	if info.has("roles") and classes.has(class_id):
-		text = str(info["roles"].get(str(classes[class_id]["roles"][0]), text))
-	return fill(text, postures.get("thresholds", {}))
+## Comment joue un acolyte de cette classe (selon son rôle), avec les seuils des données.
+func acolyte_rules(class_id: String) -> String:
+	var role := str(classes.get(class_id, {}).get("roles", [""])[0])
+	return fill(str(ai.get("roles", {}).get(role, "")), ai.get("thresholds", {}))
 
 
 func status_name(status_id: String) -> String:

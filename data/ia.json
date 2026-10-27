@@ -1,0 +1,26 @@
+{
+  "roles": {
+    "front": "Dès que tu as perdu des PV, il te protège avec sa protection prête. Sinon il joue sa forte dès qu'elle est prête, sinon il frappe l'ennemi le plus bas.",
+    "degats": "Il frappe l'ennemi le plus bas : forte dès qu'elle est prête, sinon moyenne, sinon basique. Il ne secourt quelqu'un que si l'un de vous passe sous {rescue_below%} de PV.",
+    "soutien": "Il soigne le plus blessé dès que l'un de vous passe sous {heal_below%} de PV, sinon retire un état négatif, sinon joue sa forte dès qu'elle est prête, sinon frappe l'ennemi le plus bas."
+  },
+  "always": "Il relève un allié KO dès qu'il le peut.",
+  "synergy_wait": "Quand sa forte fait Synergie avec une de tes compétences qui revient au tour suivant, il garde sa forte un tour et la joue au tour suivant : joue alors ta compétence avec elle pour déclencher la Synergie. Il n'attend jamais deux tours de suite.",
+  "thresholds": {
+    "heal_below": 0.5,
+    "rescue_below": 0.5
+  },
+  "reasons": {
+    "releve": "relève son allié",
+    "protege": "te protège",
+    "soin": "soigne le plus blessé",
+    "secours": "secourt le plus blessé",
+    "purifie": "retire un état négatif",
+    "forte": "forte prête",
+    "moyenne": "moyenne prête",
+    "basique": "sa basique, sur l'ennemi le plus bas",
+    "synergie": "cherche la Synergie",
+    "avec_toi": "joue la forte qu'il gardait pour votre Synergie",
+    "attend_synergie": "garde sa forte un tour : Synergie {synergy} avec {skill} au prochain tour"
+  }
+}

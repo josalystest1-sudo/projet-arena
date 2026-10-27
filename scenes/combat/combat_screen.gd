@@ -4,14 +4,14 @@
 extends Control
 
 const INTENT_SECONDS := 12.0
-## Quand tu es KO, ton acolyte continue seul : tu as quelques secondes pour changer sa posture.
-const KO_PLAYER_SECONDS := 6.0
+## Quand tu es KO, ton acolyte continue seul : quelques secondes pour lire son annonce.
+const KO_PLAYER_SECONDS := 3.0
 const CLASS_ORDER := ["guerrier", "mage", "pretre"]
 const ROLE_LABELS := {"front": "Front", "degats": "Dégâts", "soutien": "Soutien"}
 const TIER_LABELS := {"basique": "Basique", "moyenne": "Moyenne", "forte": "Forte"}
 const ACOLYTE_NAMES := ["Lys", "Orme", "Saule", "Iris", "Cèdre", "Aube", "Sorel", "Nima"]
 const ENEMY_NAMES := ["Ombre", "Brume", "Cendre", "Givre", "Ronce", "Écume", "Nox", "Bise"]
-## Largeur de la colonne de gauche : sélecteur de posture (en bas) et posture adverse révélée (en haut).
+## Largeur de la colonne de gauche : « Duo adverse » (en haut) et ton acolyte qui joue seul (en bas).
 const SIDE_WIDTH := 150.0
 const BG_COLOR := Color("141826")
 const PANEL_COLOR := Color("1f2538")
@@ -28,7 +28,6 @@ var player_class: String = "guerrier"
 var player_picks: Dictionary = {}
 var acolyte: Dictionary = {}
 var acolyte_name: String = ""
-var posture: String = CombatAI.LIBRE
 var player_id: String = "a1"
 var acolyte_id: String = "a2"
 ## « pvp » : ton duo contre un duo IA ; « tour » : la montée de la Tour (étape 2).
@@ -41,7 +40,7 @@ var time_left: float = 0.0
 var selected_tier: String = ""
 var selected_target: String = ""
 var player_ready: bool = false
-## L'annonce de l'acolyte : {action, rule, held_forte}.
+## L'annonce de l'acolyte : {action, rule, waiting} (waiting : il garde sa forte pour une Synergie au tour suivant).
 var announce: Dictionary = {}
 ## Les Synergies que tu peux construire ce tour avec l'annonce de ton acolyte : palier -> option.
 var synergy_options: Dictionary = {}
@@ -60,9 +59,8 @@ var views: Dictionary = {}
 var enemy_units: HBoxContainer
 var ally_units: HBoxContainer
 var enemy_side: VBoxContainer
-var enemy_posture_label: Label
-var posture_title: Label
-var posture_buttons: Dictionary = {}
+var acolyte_title: Label
+var acolyte_info: Label
 var overlay: IntentOverlay
 var turn_label: Label
 var timer_bar: ProgressBar
@@ -98,7 +96,6 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	player_picks = app.player_picks
 	acolyte = app.acolyte
 	acolyte_name = app.acolyte_name
-	posture = app.posture
 	_build_layout()
 	if str(options.get("mode", "pvp")) == "tour":
 		_start_tower()
@@ -176,7 +173,7 @@ func _build_layout() -> void:
 	sudden_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	root.add_child(sudden_label)
 
-	# Le duo adverse en haut : sa posture révélée à gauche, puis son acolyte et son joueur.
+	# Le duo adverse en haut : son nom à gauche, puis son acolyte et son joueur.
 	var enemy_row := HBoxContainer.new()
 	enemy_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	enemy_row.add_theme_constant_override("separation", 8)
@@ -186,8 +183,7 @@ func _build_layout() -> void:
 	enemy_side.alignment = BoxContainer.ALIGNMENT_CENTER
 	enemy_row.add_child(enemy_side)
 	enemy_side.add_child(_side_label("Duo adverse", 16, Color("ff8787")))
-	enemy_posture_label = _side_label("", 14, Color(0.8, 0.82, 0.9))
-	enemy_side.add_child(enemy_posture_label)
+	enemy_side.add_child(_side_label("Duo IA", 14, Color(0.8, 0.82, 0.9)))
 	enemy_units = HBoxContainer.new()
 	enemy_units.add_theme_constant_override("separation", 6)
 	enemy_row.add_child(enemy_units)
@@ -210,27 +206,21 @@ func _build_layout() -> void:
 	log_label.add_theme_color_override("font_color", Color(0.85, 0.87, 0.95))
 	middle.add_child(log_label)
 
-	# Ton duo : le sélecteur de posture à gauche, puis ton acolyte et toi.
+	# Ton duo : à gauche, ton acolyte qui joue seul (et ce qu'il prépare), puis ton acolyte et toi.
 	var ally_row := HBoxContainer.new()
 	ally_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	ally_row.add_theme_constant_override("separation", 8)
 	root.add_child(ally_row)
-	var posture_panel := VBoxContainer.new()
-	posture_panel.custom_minimum_size = Vector2(SIDE_WIDTH, 0)
-	posture_panel.alignment = BoxContainer.ALIGNMENT_CENTER
-	posture_panel.add_theme_constant_override("separation", 4)
-	ally_row.add_child(posture_panel)
-	posture_title = _side_label("Posture", 15, ACOLYTE_BLUE)
-	posture_panel.add_child(posture_title)
-	for posture_id in app.acolyte_postures():
-		var button := Button.new()
-		button.text = _posture_name(posture_id)
-		button.custom_minimum_size = Vector2(SIDE_WIDTH, 44)
-		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		button.add_theme_font_size_override("font_size", 15)
-		button.pressed.connect(_on_posture_pressed.bind(posture_id))
-		posture_panel.add_child(button)
-		posture_buttons[posture_id] = button
+	var acolyte_panel := VBoxContainer.new()
+	acolyte_panel.custom_minimum_size = Vector2(SIDE_WIDTH, 0)
+	acolyte_panel.alignment = BoxContainer.ALIGNMENT_CENTER
+	acolyte_panel.add_theme_constant_override("separation", 4)
+	ally_row.add_child(acolyte_panel)
+	acolyte_title = _side_label("", 16, ACOLYTE_BLUE)
+	acolyte_panel.add_child(acolyte_title)
+	acolyte_info = _side_label("", 14, Color(0.8, 0.82, 0.9))
+	acolyte_info.custom_minimum_size = Vector2(SIDE_WIDTH, 80)
+	acolyte_panel.add_child(acolyte_info)
 	ally_units = HBoxContainer.new()
 	ally_units.add_theme_constant_override("separation", 6)
 	ally_row.add_child(ally_units)
@@ -453,11 +443,10 @@ func _start_combat(enemy: Array = []) -> void:
 	mode = "pvp"
 	combat = Combat.create(data, team_a, team_b, rng.randi_range(0, 1))
 	_setup_views([combat.acolyte_of(1), combat.leader_of(1)])
-	enemy_posture_label.text = "Posture de %s : ?" % combat.acolyte_of(1).display_name
 	_begin_intent_phase()
 
 
-## Les persos à l'écran. Dans ta rangée : l'acolyte à côté de la colonne des postures, puis toi.
+## Les persos à l'écran. Dans ta rangée : la colonne de ton acolyte, ton acolyte, puis toi.
 func _setup_views(enemies: Array) -> void:
 	player_id = combat.leader_of(0).id
 	acolyte_id = combat.acolyte_of(0).id
@@ -649,7 +638,7 @@ func _begin_intent_phase() -> void:
 	bottom_panel.modulate = Color(1, 1, 1, 1 if player.is_alive() else 0.45)
 	announce = {}
 	_update_announce(true)
-	_refresh_posture_panel()
+	_refresh_acolyte_panel()
 	_refresh_skill_buttons()
 	_refresh_intents()
 
@@ -666,25 +655,19 @@ func _cooldowns_of(unit: CombatUnit) -> Dictionary:
 	return result
 
 
-## L'acolyte (ré)annonce son coup selon sa posture et ton Intention du moment.
+## L'acolyte annonce son coup au début du tour (il ne dépend jamais de ton choix), et les Synergies que tu peux construire.
 func _update_announce(initial: bool) -> void:
 	var aco := _acolyte()
 	synergy_options = {}
 	if aco == null or not aco.is_alive():
 		announce = {}
 		return
-	var previous: CombatAction = announce.get("action")
-	announce = CombatAI.decide_acolyte(combat, aco, posture, _player_action())
-	for option in CombatAI.synergy_options(combat, _player(), aco, posture):
+	announce = CombatAI.decide_acolyte(combat, aco)
+	for option in CombatAI.synergy_options(combat, _player(), aco):
 		synergy_options[option["tier"]] = option
-	var now: CombatAction = announce["action"]
 	if initial:
 		views[acolyte_id].do_announce()
 		sfx.play("clic", 1.6, -6.0)
-	elif previous == null or previous.skill_id != now.skill_id or previous.target_id != now.target_id:
-		views[acolyte_id].do_announce()
-		views[acolyte_id].float_text("Revu", ACOLYTE_BLUE)
-		sfx.play("clic", 1.4)
 
 
 func _process(delta: float) -> void:
@@ -716,22 +699,6 @@ func _player_action() -> CombatAction:
 		return null
 	var player := _player()
 	return CombatAction.make(player.id, player.skills[selected_tier], selected_target)
-
-
-func _on_posture_pressed(posture_id: String) -> void:
-	var aco := _acolyte()
-	if combat == null or phase != "intent" or aco == null or not aco.is_alive():
-		return
-	sfx.play("clic")
-	if posture_id != posture:
-		posture = posture_id
-		app.set_posture(posture_id)
-		views[acolyte_id].float_text(_posture_name(posture_id), ACOLYTE_BLUE)
-		_update_announce(false)
-	_refresh_posture_panel()
-	_refresh_skill_buttons()
-	_refresh_intents()
-	skill_info.text = _posture_text(posture_id)
 
 
 func _on_skill_pressed(tier: String) -> void:
@@ -787,7 +754,7 @@ func _show_unit_info(unit_id: String) -> void:
 		parts.append("%s (%s)" % [data.skill_name(skill_id), state] if tier != "basique" else data.skill_name(skill_id))
 	skill_info.text = "%s : %s. Passif : %s." % [_short_name(unit_id), " · ".join(parts), data.passive_name(unit.passive)]
 	if unit_id == acolyte_id:
-		skill_info.text += " " + _posture_text(posture)
+		skill_info.text += " " + _acolyte_rules_text()
 
 
 func _on_ready_pressed() -> void:
@@ -798,16 +765,21 @@ func _on_ready_pressed() -> void:
 	_refresh_skill_buttons()
 
 
-func _refresh_posture_panel() -> void:
+## La colonne de ton acolyte : il joue seul ; s'il garde sa forte pour une Synergie, il le dit.
+func _refresh_acolyte_panel() -> void:
 	var aco := _acolyte()
-	var active := phase == "intent" and aco != null and aco.is_alive()
-	posture_title.text = "Posture de %s" % acolyte_name if aco == null or aco.is_alive() else "%s est KO" % acolyte_name
-	for posture_id in posture_buttons:
-		var button: Button = posture_buttons[posture_id]
-		var chosen: bool = posture_id == posture
-		button.text = ("» " if chosen else "") + _posture_name(posture_id)
-		button.disabled = not active
-		button.modulate = Color(1.0, 0.9, 0.45) if chosen else Color.WHITE
+	if aco != null and not aco.is_alive():
+		acolyte_title.text = "%s est KO" % acolyte_name
+		acolyte_info.text = ""
+		return
+	acolyte_title.text = acolyte_name
+	var waiting: Dictionary = announce.get("waiting", {})
+	if not waiting.is_empty():
+		acolyte_info.text = "Garde sa forte pour la Synergie %s au prochain tour" % waiting["synergy"]["name"]
+	elif str(announce.get("rule", "")) == "avec_toi":
+		acolyte_info.text = "Joue la forte qu'il gardait : à toi de jouer la Synergie"
+	else:
+		acolyte_info.text = "Joue seul selon son rôle (%s)" % ROLE_LABELS.get(Duo.main_role(data, acolyte.get("class_id", "")), "")
 
 
 func _refresh_skill_buttons() -> void:
@@ -838,8 +810,8 @@ func _refresh_skill_buttons() -> void:
 			if option["targets"].size() < combat.valid_targets(player, skill_id).size():
 				hint = "Synergie %s : vise %s" % [option["synergy"]["name"], _names(option["targets"])]
 			hot = true
-		elif phase == "intent" and tier == "forte" and posture == CombatAI.GARDE_TA_FORTE and bool(announce.get("held_forte", false)) and combat.can_use(player, "forte"):
-			hint = "%s lance %s avec toi" % [acolyte_name, data.skill_name(aco.skills["forte"])]
+		elif phase == "intent" and str(announce.get("waiting", {}).get("skill_id", "")) == skill_id:
+			hint = "Au prochain tour : Synergie %s avec %s" % [announce["waiting"]["synergy"]["name"], acolyte_name]
 			hot = true
 		elif aco != null and aco.is_alive():
 			for aco_tier in CombatUnit.TIERS:
@@ -857,7 +829,7 @@ func _refresh_skill_buttons() -> void:
 		var skill := data.skill(player.skills[selected_tier])
 		skill_info.text = "%s : %s" % [skill["name"], data.skill_description(player.skills[selected_tier])]
 	elif not player.is_alive():
-		skill_info.text = "%s continue seul. Tu peux encore changer sa posture." % acolyte_name
+		skill_info.text = "%s continue seul." % acolyte_name
 	else:
 		skill_info.text = "Lis l'annonce de %s, puis choisis ta compétence. Sans choix : ta basique sur la même cible." % acolyte_name
 	ready_button.disabled = phase != "intent" or player_ready
@@ -927,7 +899,7 @@ func _refresh_intents() -> void:
 	if aco_action != null:
 		var aco_view: UnitView = views[acolyte_id]
 		aco_view.intent_text = data.skill_name(aco_action.skill_id)
-		aco_view.intent_star = bool(announce.get("held_forte", false))
+		aco_view.intent_star = announce.has("waiting")
 		aco_view.intent_alpha = 0.6
 		_add_intent_links(aco_action, Color(0.6, 0.8, 1.0, 0.55), ready)
 	if ready or not synergy_options.is_empty():
@@ -956,7 +928,7 @@ func _add_intent_links(action: CombatAction, color: Color, synergy: bool) -> voi
 		overlay.links.append({"from": view, "to": views[action.target_id], "color": color, "synergy": synergy})
 
 
-## L'annonce de l'acolyte en une phrase : ce qu'il fait, sur qui, et la règle de sa posture qui l'a décidé.
+## L'annonce de l'acolyte en une phrase : ce qu'il fait, sur qui, et la règle qui l'a décidé.
 func _announce_sentence() -> String:
 	var aco := _acolyte()
 	if aco == null or not aco.is_alive():
@@ -964,15 +936,15 @@ func _announce_sentence() -> String:
 	var action: CombatAction = announce.get("action")
 	if action == null:
 		return ""
-	var sentence := "%s (%s) : %s %s" % [acolyte_name, _posture_name(posture), data.skill_name(action.skill_id), _target_phrase(action)]
+	var sentence := "%s : %s %s" % [acolyte_name, data.skill_name(action.skill_id), _target_phrase(action)]
+	var reasons: Dictionary = data.ai.get("reasons", {})
 	var rule := str(announce.get("rule", ""))
-	if rule == "basique" and not combat.is_hostile(action.skill_id):
-		rule = "basique_allie"
-	var reason := str(data.postures.get("reasons", {}).get(rule, ""))
+	var reason := str(reasons.get(rule, "")) if rule != "basique" or combat.is_hostile(action.skill_id) else ""
+	if announce.has("waiting"):
+		var waiting: Dictionary = announce["waiting"]
+		reason = str(reasons.get("attend_synergie", "")).replace("{synergy}", str(waiting["synergy"]["name"])).replace("{skill}", data.skill_name(waiting["skill_id"]))
 	if reason != "":
 		sentence += " — " + reason
-	if bool(announce.get("held_forte", false)):
-		sentence += ". Il garde %s pour ta forte." % data.skill_name(aco.skills["forte"])
 	return sentence
 
 
@@ -991,15 +963,9 @@ func _target_phrase(action: CombatAction) -> String:
 	return "sur " + _short_name(action.target_id)
 
 
-func _posture_name(posture_id: String) -> String:
-	return str(data.postures.get("postures", {}).get(posture_id, {}).get("name", posture_id))
-
-
-## Ce que fait l'acolyte dans une posture, en clair (pour la posture Libre : selon son rôle).
-func _posture_text(posture_id: String) -> String:
-	var info: Dictionary = data.postures.get("postures", {}).get(posture_id, {})
-	var detail := data.posture_description(posture_id, str(acolyte.get("class_id", "")))
-	return "%s — %s %s" % [info.get("name", posture_id), info.get("summary", ""), detail]
+## Comment joue ton acolyte, en clair : les règles de son rôle et la règle d'attente pour les Synergies.
+func _acolyte_rules_text() -> String:
+	return "%s joue seul : %s %s" % [acolyte_name, data.acolyte_rules(str(acolyte.get("class_id", ""))), str(data.ai.get("synergy_wait", ""))]
 
 
 func _names(unit_ids: Array) -> String:
@@ -1026,14 +992,12 @@ func _submit_turn() -> void:
 		actions.append(mine)
 	var aco := _acolyte()
 	if aco != null and aco.is_alive():
-		actions.append(CombatAI.decide_acolyte(combat, aco, posture, mine)["action"])
-	# Le duo adverse : sa posture, l'annonce de son acolyte, puis le choix de son joueur IA. Tu ne vois rien avant la révélation.
-	var plan := CombatAI.plan_team(combat, 1)
-	actions.append_array(plan["actions"])
-	var enemy_acolyte := combat.acolyte_of(1)
-	if enemy_acolyte != null and enemy_acolyte.is_alive():
-		enemy_posture_label.set_meta("next", "Posture de %s : %s" % [enemy_acolyte.display_name, _posture_name(plan["posture"])])
-	_refresh_posture_panel()
+		# Exactement ce qu'il a annoncé au début du tour.
+		var told: CombatAction = announce.get("action")
+		actions.append(told if told != null else CombatAI.decide_acolyte(combat, aco)["action"])
+	# Le duo adverse : l'annonce de son acolyte, puis le choix de son joueur IA. Tu ne vois rien avant la révélation.
+	actions.append_array(CombatAI.choose_team(combat, 1))
+	_refresh_acolyte_panel()
 	_refresh_skill_buttons()
 	var events := combat.resolve_turn(actions)
 	_play_events(events)
@@ -1067,9 +1031,6 @@ func _play_event(event: Dictionary) -> void:
 				view.intent_text = data.skill_name(action_dict["skill"])
 				view.intent_star = false
 				view.intent_alpha = 0.8
-			if enemy_posture_label.has_meta("next"):
-				enemy_posture_label.text = str(enemy_posture_label.get_meta("next"))
-				enemy_posture_label.remove_meta("next")
 			log_label.text = "Révélation : les 4 actions"
 			await _wait(1.1)
 		"order":

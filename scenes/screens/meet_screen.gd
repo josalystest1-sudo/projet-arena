@@ -20,12 +20,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	for skill_id in app.acolyte_skills():
 		UiKit.skill_block(card, app.data, skill_id, UiKit.ACOLYTE_BLUE)
 	UiKit.passive_block(card, app.data, app.acolyte_passive())
-	var how := UiKit.card(column, 6)
-	how.add_child(UiKit.label("Comment il joue", 20, UiKit.GOLD, false))
-	var names: Array = []
-	for posture_id in app.acolyte_postures():
-		names.append(app.posture_name(posture_id))
-	how.add_child(UiKit.label("Tu ne choisis jamais ses sorts. Au début de chaque tour, il annonce son coup au-dessus de lui ; tu choisis le tien en le sachant. Tu peux lui donner une posture, selon son rôle : %s ou %s." % [", ".join(names.slice(0, names.size() - 1)), names.back()], 16, UiKit.SOFT, false))
+	UiKit.acolyte_rules_card(column, app.data, app.acolyte["class_id"], app.acolyte_name)
 	var synergies := app.duo_synergies()
 	if not synergies.is_empty():
 		var syn := UiKit.card(column, 6)

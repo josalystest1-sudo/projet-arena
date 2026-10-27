@@ -137,3 +137,14 @@ static func destin_balance(parent: Node, data: CombatData, skill_ids: Array, pas
 		return
 	var why := "ce kit et ce duo vont moins bien ensemble que d'autres" if percent > 0 else "ce kit et ce duo vont particulièrement bien ensemble"
 	parent.add_child(label("Équilibre du Destin : %s%d %% de PV et de puissance, parce que %s." % ["+" if percent > 0 else "-", absi(percent), why], 14, Color(0.6, 0.65, 0.8), false))
+
+
+## Comment joue l'acolyte : il joue seul selon son rôle, annonce en premier, et attend un tour pour une Synergie.
+static func acolyte_rules_card(parent: Node, data: CombatData, class_id: String, acolyte_name: String) -> void:
+	var how := card(parent, 6)
+	how.add_child(label("Comment il joue", 20, GOLD, false))
+	how.add_child(label("%s joue seul, comme un second joueur : tu ne lui donnes aucun ordre. Au début de chaque tour, il annonce son coup au-dessus de lui ; tu choisis le tien en le sachant." % acolyte_name, 16, SOFT, false))
+	how.add_child(label(data.acolyte_rules(class_id), 16, Color.WHITE, false))
+	how.add_child(label(str(data.ai.get("synergy_wait", "")), 16, Color(1, 0.9, 0.6), false))
+	how.add_child(label(str(data.ai.get("always", "")), 15, SOFT, false))
+

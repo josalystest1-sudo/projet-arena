@@ -65,7 +65,8 @@ PAIR_LIMIT = 0.15
 # Destin : un ajustement de PV et de puissance du perso qui l'a (data/destins.json, « kit_items »).
 ITEM_GAIN = 0.4
 # En duo, un élément n'a pas la même force selon la classe du partenaire (un Bouclier de mana protège mieux un Guerrier
-# qui encaisse) : réglé par « duo_items ». La composition du duo, qui touche les deux membres : « duo_classes ».
+# qui encaisse) : réglé par « duo_items ». La composition du duo, qui touche les deux membres : « duo_classes » ;
+# et qui en est le joueur et qui l'acolyte (« mage>guerrier » : un Mage avec son acolyte Guerrier) : « duo_orders ».
 COMPO_GAIN = 0.25
 # Bornes des chiffres de Synergie : au-delà, une Synergie change de nature (ou ne se joue pas assez pour être réglée
 # par sa force : il faut alors revoir son effet).
@@ -111,7 +112,7 @@ def write_passives(passives):
 
 def write_destins(destins):
     lines = ["{"]
-    sections = ("kit_items", "kit_pairs", "kit_triples", "duo_classes", "acolyte_classes", "duo_items")
+    sections = ("kit_items", "kit_pairs", "kit_triples", "duo_classes", "duo_orders", "acolyte_classes", "duo_items")
     for n, section in enumerate(sections):
         values = destins.get(section, {})
         lines.append(f'  "{section}": {{')
@@ -184,6 +185,7 @@ def measure(files):
                     keys.append("trio:" + "+".join(sorted(row[prefix + t] for t in ("basique", "moyenne", "forte"))))
                 keys += ["syn:" + s for s in filter(None, row["synergies_possibles"].split("+"))]
                 keys.append("compo:" + "+".join(sorted([row["joueur"], row["acolyte"]])))
+                keys.append(f"ordre:{row['joueur']}>{row['acolyte']}")
                 for key in keys:
                     rates[key][0] += won
                     rates[key][1] += 1
@@ -366,6 +368,19 @@ def tune(rates):
         old = compos.get(compo, 0.0)
         compos[compo] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - COMPO_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
         report.append(f"budget du duo {compo} ({deviation:+.1f}) : {old:+.3f} -> {compos[compo]:+.3f}")
+    # Qui est le joueur et qui est l'acolyte, dans une même composition (un Mage avec son acolyte Guerrier, contre un
+    # Guerrier avec son acolyte Mage) : comparé à la composition.
+    orders = destins.setdefault("duo_orders", {})
+    for key, rate in sorted(rates.items()):
+        if not key.startswith("ordre:"):
+            continue
+        order = key.split(":")[1]
+        deviation = rate - rates["compo:" + "+".join(sorted(order.split(">")))]
+        if abs(deviation) < 0.8:
+            continue
+        old = orders.get(order, 0.0)
+        orders[order] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - COMPO_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
+        report.append(f"budget du duo {order} ({deviation:+.1f}) : {old:+.3f} -> {orders[order]:+.3f}")
     write_destins(destins)
     for passive_id, key in PASSIVE_LEVERS.items():
         passive = passives[passive_id]
