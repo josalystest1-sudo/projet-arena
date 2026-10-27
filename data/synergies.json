@@ -8,7 +8,7 @@
     ],
     "same_target": false,
     "params": {
-      "bonus": 0.514
+      "bonus": 0.498
     },
     "description": "Les ennemis provoqués subissent la Nova à +{bonus%}."
   },
@@ -45,7 +45,7 @@
     "same_target": true,
     "params": {
       "extra_turns": 2,
-      "bonus": 0.495
+      "bonus": 0.526
     },
     "description": "Le saignement de la cible dure {extra_turns} tours de plus et fait +{bonus%} de dégâts."
   },
@@ -59,7 +59,7 @@
     "same_target": false,
     "description": "Le Bouclier de mana se pose aussi sur l'autre membre du duo, à {share%} de sa taille.",
     "params": {
-      "share": 0.583
+      "share": 0.584
     }
   },
   {

@@ -21,12 +21,12 @@
   },
   "fendoir": {
     "name": "Fendoir", "class": "guerrier", "tier": "forte", "element": "tranchant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 64}, {"type": "status", "id": "saignement", "turns": 3, "value": 13}],
+    "effects": [{"type": "damage", "power": 65}, {"type": "status", "id": "saignement", "turns": 3, "value": 13}],
     "description": "Gros dégâts tranchants et saignement pendant {turns} tours."
   },
   "cri_de_guerre": {
     "name": "Cri de guerre", "class": "guerrier", "tier": "forte", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 52}, {"type": "status", "id": "cri_de_guerre", "turns": 3, "value": 50, "on": "allies"}],
+    "effects": [{"type": "damage", "power": 51}, {"type": "status", "id": "cri_de_guerre", "turns": 3, "value": 50, "on": "allies"}],
     "description": "Frappe un ennemi ; tout le duo inflige +{value} % de dégâts pendant {turns} tours."
   },
 
@@ -52,12 +52,12 @@
   },
   "nova": {
     "name": "Nova", "class": "mage", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 59}],
+    "effects": [{"type": "damage", "power": 58}],
     "description": "Explosion de feu sur tous les ennemis."
   },
   "bouclier_de_mana": {
     "name": "Bouclier de mana", "class": "mage", "tier": "forte", "element": "", "target": "ally",
-    "effects": [{"type": "barrier", "power": 180, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 182, "turns": 3}],
     "description": "Grosse barrière sur un allié pendant {turns} tours."
   },
 

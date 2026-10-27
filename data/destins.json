@@ -1,8 +1,8 @@
 {
   "kit_items": {
-    "meteorologue": 0.015,
+    "meteorologue": 0.008,
     "rempart": -0.007,
-    "resonance": 0.009
+    "resonance": 0.008
   },
   "kit_pairs": {
     "arc_de_foudre+bouclier_de_mana": 0.017,
@@ -11,6 +11,8 @@
     "brasier+etincelle": 0.01,
     "chatiment+egide": 0.034,
     "chatiment+lumiere_interieure": -0.015,
+    "chatiment+purification": 0.009,
+    "chatiment+restauration": -0.009,
     "chatiment+resurrection": -0.035,
     "colere+provocation": -0.013,
     "colere+rempart": 0.015,
@@ -29,11 +31,22 @@
     "foi+resurrection": -0.016,
     "lumiere_interieure+resurrection": -0.02,
     "nova+trait_de_givre": 0.02,
+    "priere+purification": -0.008,
+    "priere+restauration": 0.009,
     "priere+resurrection": 0.035,
     "provocation+second_souffle": -0.015,
     "provocation+veteran": 0.016,
     "rempart+second_souffle": 0.017,
     "rempart+veteran": -0.017,
     "resurrection+sanctuaire": 0.034
+  },
+  "duo_classes": {
+    "guerrier+mage": -0.005,
+    "guerrier+pretre": 0.005
+  },
+  "duo_items": {
+    "guerrier": {"arc_de_foudre": -0.008, "bouclier_de_mana": -0.014, "egide": -0.023, "focalisation": 0.01, "lumiere_interieure": -0.016, "martyr": 0.022, "nova": 0.017, "resurrection": 0.023, "trait_de_givre": 0.008},
+    "mage": {"cri_de_guerre": -0.027, "egide": 0.023, "fendoir": 0.031, "lumiere_interieure": 0.016, "martyr": -0.023, "peau_de_fer": 0.019, "resurrection": -0.023, "veteran": -0.024},
+    "pretre": {"arc_de_foudre": 0.008, "bouclier_de_mana": 0.016, "cri_de_guerre": 0.029, "fendoir": -0.029, "focalisation": -0.01, "nova": -0.016, "peau_de_fer": -0.019, "trait_de_givre": -0.008, "veteran": 0.025}
   }
 }
