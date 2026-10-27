@@ -4,7 +4,7 @@
 ## Module pur et déterministe : mêmes entrées, même choix.
 ##
 ## Règle commune : un allié KO est relevé dès que possible (le joueur d'abord).
-## Libre          : chacun joue son rôle (Front protège, Dégâts frappe le plus bas, Soutien soigne sous 50 %).
+## Libre          : chacun joue son rôle (Front protège dès que le joueur a perdu des PV, Dégâts frappe le plus bas, Soutien soigne sous 50 %).
 ## Protège-moi    : protections et soins sur le joueur d'abord, sinon il frappe celui qui l'a frappé.
 ## Fonce          : forte, puis moyenne, puis basique de dégâts, toujours sur la cible du joueur.
 ## Garde ta forte : comme Libre, mais la forte ne part que le tour où le joueur joue la sienne (ou une Synergie avec elle).
@@ -207,8 +207,10 @@ static func _libre(combat: Combat, unit: CombatUnit, focus: CombatUnit, hold_for
 	var decision := {}
 	match Duo.main_role(combat.data, unit.class_id):
 		"front":
-			# Il protège l'allié le plus fragile (en duo : le joueur), dès que sa protection est prête.
-			decision = _pick(combat, unit, any_tier, ["protection"], _guarded_ally(combat, unit), enemy, "protege")
+			# Il protège l'allié le plus fragile (en duo : le joueur) dès que celui-ci a perdu des PV et que sa protection est prête.
+			var guarded := _guarded_ally(combat, unit)
+			if guarded.hp < guarded.max_hp:
+				decision = _pick(combat, unit, any_tier, ["protection"], guarded, enemy, "protege")
 			if decision.is_empty():
 				decision = _pick(combat, unit, forte, ["degats", "renfort", "protection"], hurt, enemy, "forte")
 		"soutien":
