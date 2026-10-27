@@ -1,4 +1,4 @@
-## Affichage d'un personnage en combat : sprite animé, nom, PV, états, Intention, prévision, textes flottants.
+## Affichage d'un personnage en combat : sprite animé, nom, PV, recharges, états, Intention, prévision, textes flottants.
 ## Ne contient aucune règle : il lit l'état du moteur et les événements qu'on lui transmet.
 class_name UnitView
 extends Control
@@ -13,8 +13,11 @@ const BUBBLE_HEIGHT := 34.0
 var unit_id: String = ""
 var class_id: String = ""
 var display_name: String = ""
+## Ligne sous le nom : la classe (et « acolyte » pour l'acolyte).
+var subtitle: String = ""
 var team: int = 0
 var is_player: bool = false
+var is_acolyte: bool = false
 var max_hp: int = 1
 var shown_hp: float = 1.0
 var target_hp: int = 1
@@ -25,6 +28,8 @@ var status_tags: Array = []
 ## Intention affichée au-dessus du perso : texte de compétence (vide = rien).
 var intent_text: String = ""
 var intent_alpha: float = 0.55
+## Petite étoile dorée dans la bulle : l'acolyte garde une forte prête (posture Garde ta forte).
+var intent_star: bool = false
 ## Badge au-dessus d'un ennemi quand sa forte est prête (anticipation).
 var threat_text: String = ""
 ## Prévision affichée quand le joueur vise ce perso : {text, color}.
@@ -32,6 +37,12 @@ var preview_text: String = ""
 var preview_color: Color = Color.WHITE
 var targetable: bool = false
 var selected_target: bool = false
+## Cible qui déclencherait une Synergie avec l'annonce de l'acolyte.
+var synergy_mark: bool = false
+## Recharges visibles : {"moyenne": n, "forte": n} ; 0 = prête, -1 = déjà utilisée (une fois par combat).
+var cooldowns: Dictionary = {}
+## Petit effet quand l'acolyte annonce ou révise son coup.
+var announce_pop: float = 0.0
 var order_badge: int = 0
 var lunge: float = 0.0
 var flash: float = 0.0
@@ -48,6 +59,7 @@ func setup(unit: CombatUnit) -> void:
 	display_name = unit.display_name
 	team = unit.team
 	is_player = unit.is_player
+	is_acolyte = unit.is_acolyte
 	max_hp = unit.max_hp
 	shown_hp = unit.hp
 	ghost_hp = unit.hp
@@ -90,6 +102,10 @@ func do_lunge() -> void:
 	tween.tween_property(self, "lunge", 0.0, 0.2)
 
 
+func do_announce() -> void:
+	announce_pop = 1.0
+
+
 func do_hurt(strength: float = 1.0) -> void:
 	flash = 1.0
 	shake = maxf(shake, 7.0 * strength)
@@ -109,6 +125,7 @@ func _process(delta: float) -> void:
 	else:
 		ghost_hp = move_toward(ghost_hp, shown_hp, maxf(absf(ghost_hp - shown_hp), 20.0) * delta * 1.5)
 	flash = maxf(flash - delta * 5.0, 0.0)
+	announce_pop = maxf(announce_pop - delta * 3.0, 0.0)
 	shake = maxf(shake - delta * 30.0, 0.0)
 	for floater in _floaters:
 		floater["t"] += delta
@@ -139,6 +156,10 @@ func _draw() -> void:
 		draw_rect(halo, Color(1, 1, 0.4, pulse) if alive else Color(0.6, 1, 0.6, pulse), false, 3.0)
 	if selected_target:
 		draw_rect(halo.grow(2), Color(1, 0.85, 0.2), false, 4.0)
+	if synergy_mark and alive:
+		var glow := 0.5 + 0.5 * sin(_time * 9.0)
+		draw_rect(halo.grow(5), Color(1, 0.85, 0.2, 0.35 + 0.5 * glow), false, 3.0)
+		_draw_star(Vector2(w / 2.0, BUBBLE_HEIGHT + 2), 11.0, Color(1, 0.85, 0.2, 0.7 + 0.3 * glow))
 
 	# Ombre au sol et sprite (couché s'il est KO).
 	var feet := Vector2(w / 2.0, BUBBLE_HEIGHT + sprite_size + 2)
@@ -157,10 +178,12 @@ func _draw() -> void:
 
 	# Intention (bulle translucide), ou menace d'un ennemi dont la forte est prête.
 	if intent_text != "":
-		var bubble := Rect2(Vector2(4, 0), Vector2(w - 8, BUBBLE_HEIGHT - 4))
+		var bubble := Rect2(Vector2(4, 0), Vector2(w - 8, BUBBLE_HEIGHT - 4)).grow(4.0 * announce_pop)
 		draw_rect(bubble, Color(0.08, 0.1, 0.18, intent_alpha))
-		draw_rect(bubble, Color(team_color, intent_alpha + 0.2), false, 2.0)
+		draw_rect(bubble, Color(team_color, intent_alpha + 0.2).lerp(Color(1, 1, 1), announce_pop), false, 2.0 + 2.0 * announce_pop)
 		_draw_centered(font, intent_text, Vector2(w / 2.0, 22), 17, Color(1, 1, 1, minf(intent_alpha + 0.35, 1.0)))
+		if intent_star:
+			_draw_star(bubble.position + Vector2(bubble.size.x - 10, 10), 8.0, Color(1, 0.85, 0.2))
 	elif threat_text != "" and alive:
 		var pulse_t := 0.55 + 0.3 * sin(_time * 5.0)
 		var tag := Rect2(Vector2(18, 2), Vector2(w - 36, BUBBLE_HEIGHT - 8))
@@ -172,6 +195,19 @@ func _draw() -> void:
 		draw_circle(Vector2(18, BUBBLE_HEIGHT + 16), 14.0, Color(0.1, 0.1, 0.1, 0.85))
 		_draw_centered(font, str(order_badge), Vector2(18, BUBBLE_HEIGHT + 23), 18, Color.WHITE)
 
+	# Recharges de la moyenne et de la forte, sur le côté du sprite : on sait quand la forte revient.
+	if alive and not cooldowns.is_empty():
+		var chip_y := BUBBLE_HEIGHT + 30.0
+		for tier in ["moyenne", "forte"]:
+			var left := int(cooldowns.get(tier, 0))
+			var chip := Rect2(Vector2(w - 34, chip_y), Vector2(30, 22))
+			var ready := left == 0
+			draw_rect(chip, Color("2fbf71", 0.85) if ready else Color(0.1, 0.1, 0.14, 0.85))
+			draw_rect(chip, Color(1, 0.85, 0.2) if ready and tier == "forte" else Color(0, 0, 0, 0.6), false, 1.5)
+			var label := ("M" if tier == "moyenne" else "F") + ("" if ready else ("×" if left < 0 else str(left)))
+			_draw_centered(font, label, chip.position + Vector2(15, 16), 14, Color.WHITE if ready else Color(0.75, 0.75, 0.8))
+			chip_y += 26.0
+
 	# Prévision du coup quand le joueur vise ce perso.
 	if preview_text != "" and targetable:
 		var text_w := font.get_string_size(preview_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x + 14
@@ -182,8 +218,8 @@ func _draw() -> void:
 
 	# Nom et PV.
 	var y := BUBBLE_HEIGHT + sprite_size + 14
-	var name_text := display_name + (" (toi)" if is_player else "")
-	_draw_centered(font, name_text, Vector2(w / 2.0, y + 14), 17, Color(1, 0.9, 0.4) if is_player else Color.WHITE)
+	var name_text := display_name if subtitle == "" else "%s · %s" % [display_name, subtitle]
+	_draw_centered(font, name_text, Vector2(w / 2.0, y + 14), 16, Color(1, 0.9, 0.4) if is_player else (Color("9ad1ff") if is_acolyte and team == 0 else Color.WHITE))
 	var bar := Rect2(Vector2(10, y + 22), Vector2(w - 20, 14))
 	draw_rect(bar, Color(0.15, 0.15, 0.2))
 	var ratio := clampf(shown_hp / float(max_hp), 0.0, 1.0)
@@ -218,6 +254,15 @@ func _draw() -> void:
 		var pos := Vector2(w / 2.0 + float(floater["offset"]), BUBBLE_HEIGHT + 44 - t * 46.0)
 		_draw_centered(font, floater["text"], pos + Vector2(2, 2), font_size, Color(0, 0, 0, alpha))
 		_draw_centered(font, floater["text"], pos, font_size, Color(floater["color"], alpha))
+
+
+func _draw_star(center: Vector2, radius: float, color: Color) -> void:
+	var points := PackedVector2Array()
+	for i in range(10):
+		var r := radius if i % 2 == 0 else radius * 0.45
+		var angle := -PI / 2.0 + float(i) * PI / 5.0
+		points.append(center + Vector2(cos(angle), sin(angle)) * r)
+	draw_colored_polygon(points, color)
 
 
 func _draw_centered(font: Font, text: String, center: Vector2, font_size: int, color: Color) -> void:

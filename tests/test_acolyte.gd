@@ -142,6 +142,14 @@ func test_fonce_forte_des_qu_elle_est_prete() -> void:
 	assert_move(announce(combat, CombatAI.FONCE, action("a1", "boule_de_feu", "b1")), "fendoir", "b1", "Fendoir sur ta cible")
 
 
+func test_fonce_un_soutien_sans_attaque_joue_comme_en_libre() -> void:
+	var combat := duo_combat(["mage", "pretre"], GM, {"pretre": {"basique": 1}})
+	combat.get_unit("a1").hp = 60
+	var decision := announce(combat, CombatAI.FONCE, action("a1", "boule_de_feu", "b1"))
+	assert_move(decision, "restauration", "a1", "Prière et Restauration, aucune attaque : il te soigne comme en Libre")
+	assert_eq(decision["rule"], "sans_attaque", "et il le dit")
+
+
 func test_fonce_un_soutien_ne_soigne_plus() -> void:
 	var combat := duo_combat(["mage", "pretre"], GM)
 	combat.get_unit("a1").hp = 30
