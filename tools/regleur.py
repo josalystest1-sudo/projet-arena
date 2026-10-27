@@ -236,10 +236,25 @@ def tune_pairs(pairs):
         if abs(deviation) < max(1.5, margin):
             continue
         old = values.get(key, 0.0)
-        values[key] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - PAIR_GAIN * deviation / 100.0)), 3)
+        values[key] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - PAIR_GAIN * damp("paire:" + key, deviation) * deviation / 100.0)), 3)
         report.append(f"paire {key} ({deviation:+.1f}) : {old:+.3f} -> {values[key]:+.3f}")
     write_destins(destins)
     return report
+
+
+# Amortissement : un levier dont l'écart change de sens d'une passe à l'autre a dépassé sa cible ; son pas est divisé
+# par deux (et remonte peu à peu tant que l'écart garde le même sens). Sans ça, plusieurs leviers qui corrigent le même
+# écart (une Synergie, les deux membres d'un duo, leurs compétences) le faisaient osciller de ±20 points.
+DAMPING = {}
+
+
+def damp(key, deviation):
+    state = DAMPING.get(key)
+    mult = 1.0
+    if state is not None:
+        mult = state["mult"] * 0.5 if state["dev"] * deviation < 0 else min(1.0, state["mult"] * 1.25)
+    DAMPING[key] = {"dev": deviation, "mult": mult}
+    return mult
 
 
 def step(value, deviation, gain=GAIN):
@@ -272,7 +287,7 @@ def tune(rates):
         # Une classe se règle par sa puissance (qui porte aussi les soins et les barrières). Ses PV ne bougent pas : ils
         # disent son rôle (un réglage par les PV avait fini par donner moins de PV au Guerrier qu'au Prêtre).
         new_hp = hp
-        new_power = int(round(step(power, deviation, CLASS_GAIN)))
+        new_power = int(round(step(power, deviation, CLASS_GAIN * damp("classe:" + class_id, deviation))))
         set_class_stats(class_id, new_hp, new_power)
         report.append(f"classe {class_id} {rates['classe:' + class_id]:.1f} % : PV {hp} -> {new_hp}, puissance {power} -> {new_power}")
     for skill_id, levers in SKILL_LEVERS.items():
@@ -284,7 +299,7 @@ def tune(rates):
             for effect in skill["effects"]:
                 if effect["type"] == effect_type and key in effect:
                     old = effect[key]
-                    effect[key] = step_int(old, deviation)
+                    effect[key] = step_int(old, deviation, GAIN * damp("comp:" + skill_id, deviation))
                     report.append(f"{skill_id} ({deviation:+.1f}) : {key} {old} -> {effect[key]}")
                     break
     destins = load("destins.json")
@@ -296,7 +311,7 @@ def tune(rates):
         if abs(deviation) < 1.0:
             continue
         old = items.get(item_id, 0.0)
-        items[item_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * deviation / 100.0)), 3)
+        items[item_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * damp("budget:" + item_id, deviation) * deviation / 100.0)), 3)
         report.append(f"budget {item_id} ({deviation:+.1f}) : {old:+.3f} -> {items[item_id]:+.3f}")
     duo_items = destins.setdefault("duo_items", {})
     for key, rate in sorted(rates.items()):
@@ -313,7 +328,7 @@ def tune(rates):
             continue
         inner = duo_items.setdefault(partner, {})
         old = inner.get(item_id, 0.0)
-        inner[item_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * deviation / 100.0)), 3)
+        inner[item_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
         report.append(f"budget {item_id} avec un {partner} ({deviation:+.1f}) : {old:+.3f} -> {inner[item_id]:+.3f}")
     # Les trois compétences d'un kit ensemble (un trio qui va trop bien ou trop mal ensemble, au-delà de ses paires).
     triples = destins.setdefault("kit_triples", {})
@@ -326,7 +341,7 @@ def tune(rates):
         if abs(deviation) < max(1.5, margin):
             continue
         old = triples.get(trio, 0.0)
-        triples[trio] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * deviation / 100.0)), 3)
+        triples[trio] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
         report.append(f"budget du trio {trio} ({deviation:+.1f}) : {old:+.3f} -> {triples[trio]:+.3f}")
     # Une classe jouée en acolyte (toujours par l'IA) comparée à la même classe en général.
     acolytes = destins.setdefault("acolyte_classes", {})
@@ -338,7 +353,7 @@ def tune(rates):
         if abs(deviation) < 0.8:
             continue
         old = acolytes.get(class_id, 0.0)
-        acolytes[class_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * deviation / 100.0)), 3)
+        acolytes[class_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
         report.append(f"budget de l'acolyte {class_id} ({deviation:+.1f}) : {old:+.3f} -> {acolytes[class_id]:+.3f}")
     compos = destins.setdefault("duo_classes", {})
     for key, rate in sorted(rates.items()):
@@ -349,7 +364,7 @@ def tune(rates):
             continue
         compo = key.split(":")[1]
         old = compos.get(compo, 0.0)
-        compos[compo] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - COMPO_GAIN * deviation / 100.0)), 3)
+        compos[compo] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - COMPO_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
         report.append(f"budget du duo {compo} ({deviation:+.1f}) : {old:+.3f} -> {compos[compo]:+.3f}")
     write_destins(destins)
     for passive_id, key in PASSIVE_LEVERS.items():
@@ -358,7 +373,8 @@ def tune(rates):
         if abs(deviation) < 1.0:
             continue
         old = passive["params"][key]
-        passive["params"][key] = step_int(old, deviation, PASSIVE_GAIN) if isinstance(old, int) else round(step(old, deviation, PASSIVE_GAIN), 3)
+        gain = PASSIVE_GAIN * damp("passif:" + passive_id, deviation)
+        passive["params"][key] = step_int(old, deviation, gain) if isinstance(old, int) else round(step(old, deviation, gain), 3)
         report.append(f"passif {passive_id} ({deviation:+.1f}) : {key} {old} -> {passive['params'][key]}")
     for synergy in synergies:
         key = SYNERGY_LEVERS.get(synergy["id"])
@@ -371,11 +387,12 @@ def tune(rates):
         if abs(deviation) < 1.5:
             continue
         old = synergy["params"][key]
+        gain = SYNERGY_GAIN * damp("syn:" + synergy["id"], deviation)
         if isinstance(old, int):
-            synergy["params"][key] = step_int(old, deviation, SYNERGY_GAIN)
+            synergy["params"][key] = step_int(old, deviation, gain)
         else:
             low, high = SYNERGY_LIMITS.get(key, (0.0, 10.0))
-            synergy["params"][key] = round(min(high, max(low, step(old, deviation, SYNERGY_GAIN))), 3)
+            synergy["params"][key] = round(min(high, max(low, step(old, deviation, gain))), 3)
         report.append(f"synergie {synergy['id']} ({deviation:+.1f}) : {key} {old} -> {synergy['params'][key]}")
     write_skills(skills)
     write_passives(passives)
@@ -386,6 +403,10 @@ def tune(rates):
 def main():
     rounds = int(sys.argv[1]) if len(sys.argv) > 1 else 5
     count = int(sys.argv[2]) if len(sys.argv) > 2 else 12000
+    state_path = os.path.join(OUT, "amortissement.json")
+    if os.path.exists(state_path):
+        with open(state_path, encoding="utf-8") as f:
+            DAMPING.update(json.load(f))
     for r in range(1, rounds + 1):
         files = simulate(r, count)
         rates = measure(files)
@@ -395,6 +416,9 @@ def main():
         print(f"\n== Réglage {r} : écart max à 50 % = {max(abs(v - 50) for v in spread):.1f} points ; pire paire : {worst_pair:.1f} points")
         for line in tune(rates) + tune_pairs(pairs):
             print("  " + line)
+        os.makedirs(OUT, exist_ok=True)
+        with open(state_path, "w", encoding="utf-8") as f:
+            json.dump(DAMPING, f)
         sys.stdout.flush()
 
 
