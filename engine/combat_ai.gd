@@ -246,7 +246,7 @@ static func _protect_me(combat: Combat, unit: CombatUnit, leader: CombatUnit) ->
 	if decision.is_empty():
 		decision = _pick(combat, unit, ["moyenne", "basique"], ["degats"], leader, attacker, "riposte")
 	if decision.is_empty():
-		decision = _pick(combat, unit, ["basique"], ["soin", "protection", "renfort"], leader, attacker, "basique")
+		decision = _pick(combat, unit, ["basique"], ["soin", "protection", "renfort"], leader, attacker, "basique_toi")
 	return decision
 
 
@@ -257,7 +257,9 @@ static func _fonce(combat: Combat, unit: CombatUnit, leader: CombatUnit, leader_
 	if decision.is_empty():
 		decision = _pick(combat, unit, ["moyenne", "basique"], ["degats"], unit, target, "fonce")
 	if decision.is_empty():
+		# Rien pour frapper (un Soutien qui n'a que des soins) : il joue comme en Libre, et le dit.
 		decision = _libre(combat, unit, target, false)
+		decision["rule"] = "sans_attaque"
 	return decision
 
 
