@@ -6,55 +6,55 @@
   "floors": [
     {
       "budget": 2.5,
-      "hp": 0.659,
-      "power": 0.659
+      "hp": 0.683,
+      "power": 0.683
     },
     {
       "budget": 3.5,
-      "hp": 0.749,
-      "power": 0.76
+      "hp": 0.804,
+      "power": 0.816
     },
     {
       "budget": 4,
-      "hp": 0.823,
-      "power": 0.845
+      "hp": 0.836,
+      "power": 0.86
     },
     {
       "budget": 4.5,
-      "hp": 0.68,
-      "power": 0.707
+      "hp": 0.632,
+      "power": 0.657
     },
     {
       "boss": true,
       "escort": 0,
-      "hp": 0.826,
-      "power": 0.869
+      "hp": 0.85,
+      "power": 0.895
     },
     {
       "budget": 5,
-      "hp": 0.754,
-      "power": 0.8
+      "hp": 0.786,
+      "power": 0.833
     },
     {
       "budget": 5.5,
-      "hp": 0.819,
-      "power": 0.874
+      "hp": 0.844,
+      "power": 0.901
     },
     {
       "budget": 6,
-      "hp": 0.874,
-      "power": 0.939
+      "hp": 0.856,
+      "power": 0.919
     },
     {
       "budget": 6.5,
-      "hp": 0.873,
-      "power": 0.944
+      "hp": 0.892,
+      "power": 0.964
     },
     {
       "boss": true,
       "escort": 2.5,
-      "hp": 1.094,
-      "power": 1.189
+      "hp": 1.097,
+      "power": 1.192
     }
   ],
   "max_monsters": 4
