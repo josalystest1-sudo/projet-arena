@@ -1,0 +1,757 @@
+## Écran de combat du prototype : le joueur contre 5 IA (2 alliés, 3 ennemis).
+## Toute la règle vit dans le moteur (res://engine) ; cet écran affiche, collecte les choix et anime les événements.
+extends Control
+
+const INTENT_SECONDS := 12.0
+const KO_PLAYER_SECONDS := 3.0
+const CLASS_ORDER := ["guerrier", "mage", "pretre"]
+const ROLE_LABELS := {"front": "Front", "degats": "Dégâts", "soutien": "Soutien"}
+const TIER_LABELS := {"basique": "Basique", "moyenne": "Moyenne", "forte": "Forte"}
+const ENEMY_NAMES := ["Ombre", "Brume", "Cendre", "Givre", "Ronce", "Écume"]
+const ALLY_NAMES := ["Lys", "Orme", "Saule", "Iris", "Cèdre", "Aube"]
+const BG_COLOR := Color("141826")
+const PANEL_COLOR := Color("1f2538")
+
+var data: CombatData
+var combat: Combat
+var rng := RandomNumberGenerator.new()
+
+var player_class: String = "guerrier"
+var player_picks: Dictionary = {}
+var player_id: String = "a1"
+
+# État de la phase d'Intention.
+var phase: String = "menu"   # menu, intent, resolve, end
+var time_left: float = 0.0
+var selected_tier: String = ""
+var selected_target: String = ""
+var player_ready: bool = false
+## unit_id -> CombatAction (Intentions des alliés, visibles du joueur)
+var ally_intents: Dictionary = {}
+## unit_id -> secondes avant que l'allié IA ne (re)décide
+var ally_think: Dictionary = {}
+var synergies_fired: int = 0
+
+# Nœuds.
+var views: Dictionary = {}
+var enemy_row: HBoxContainer
+var ally_row: HBoxContainer
+var overlay: IntentOverlay
+var turn_label: Label
+var timer_bar: ProgressBar
+var timer_label: Label
+var sudden_label: Label
+var banner: Label
+var log_label: Label
+var skill_buttons: Dictionary = {}
+var skill_info: Label
+var passive_info: Label
+var ready_button: Button
+var hint_label: Label
+var bottom_panel: PanelContainer
+var menu_layer: Control
+var end_layer: Control
+
+
+func _ready() -> void:
+	rng.randomize()
+	data = CombatData.load_default()
+	theme = _make_theme()
+	_build_layout()
+	_show_menu()
+
+
+# ---------------------------------------------------------------------------
+# Construction de l'interface
+# ---------------------------------------------------------------------------
+
+func _make_theme() -> Theme:
+	var t := Theme.new()
+	t.default_font_size = 20
+	var normal := StyleBoxFlat.new()
+	normal.bg_color = Color("2b3350")
+	normal.set_corner_radius_all(10)
+	normal.set_content_margin_all(8)
+	var hover := normal.duplicate()
+	hover.bg_color = Color("36406a")
+	var pressed := normal.duplicate()
+	pressed.bg_color = Color("4a5590")
+	var disabled := normal.duplicate()
+	disabled.bg_color = Color("1c2033")
+	t.set_stylebox("normal", "Button", normal)
+	t.set_stylebox("hover", "Button", hover)
+	t.set_stylebox("pressed", "Button", pressed)
+	t.set_stylebox("disabled", "Button", disabled)
+	t.set_stylebox("focus", "Button", StyleBoxEmpty.new())
+	t.set_color("font_disabled_color", "Button", Color(0.55, 0.55, 0.6))
+	var panel := StyleBoxFlat.new()
+	panel.bg_color = PANEL_COLOR
+	panel.set_corner_radius_all(14)
+	panel.set_content_margin_all(10)
+	t.set_stylebox("panel", "PanelContainer", panel)
+	return t
+
+
+func _build_layout() -> void:
+	var bg := ColorRect.new()
+	bg.color = BG_COLOR
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(bg)
+
+	var root := VBoxContainer.new()
+	root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	root.offset_left = 10
+	root.offset_right = -10
+	root.offset_top = 10
+	root.offset_bottom = -10
+	root.add_theme_constant_override("separation", 6)
+	add_child(root)
+
+	# Barre du haut : tour, timer, mort subite.
+	var top := HBoxContainer.new()
+	top.add_theme_constant_override("separation", 10)
+	root.add_child(top)
+	turn_label = Label.new()
+	turn_label.text = "Tour 1"
+	turn_label.custom_minimum_size = Vector2(90, 0)
+	turn_label.add_theme_font_size_override("font_size", 24)
+	top.add_child(turn_label)
+	timer_bar = ProgressBar.new()
+	timer_bar.max_value = INTENT_SECONDS
+	timer_bar.show_percentage = false
+	timer_bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	timer_bar.custom_minimum_size = Vector2(0, 26)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = Color("f2c14e")
+	fill.set_corner_radius_all(8)
+	var back := StyleBoxFlat.new()
+	back.bg_color = Color("2b3350")
+	back.set_corner_radius_all(8)
+	timer_bar.add_theme_stylebox_override("fill", fill)
+	timer_bar.add_theme_stylebox_override("background", back)
+	top.add_child(timer_bar)
+	timer_label = Label.new()
+	timer_label.custom_minimum_size = Vector2(44, 0)
+	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	timer_label.add_theme_font_size_override("font_size", 24)
+	top.add_child(timer_label)
+	sudden_label = Label.new()
+	sudden_label.add_theme_color_override("font_color", Color("ff6b6b"))
+	sudden_label.add_theme_font_size_override("font_size", 16)
+	sudden_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	root.add_child(sudden_label)
+
+	# Ennemis en haut.
+	enemy_row = HBoxContainer.new()
+	enemy_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	enemy_row.add_theme_constant_override("separation", 6)
+	root.add_child(enemy_row)
+
+	# Zone centrale : bannière (Synergies, résultat) et journal.
+	var middle := VBoxContainer.new()
+	middle.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	middle.alignment = BoxContainer.ALIGNMENT_CENTER
+	root.add_child(middle)
+	banner = Label.new()
+	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	banner.add_theme_font_size_override("font_size", 26)
+	banner.add_theme_color_override("font_color", Color("ffd43b"))
+	banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	middle.add_child(banner)
+	log_label = Label.new()
+	log_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	log_label.add_theme_font_size_override("font_size", 18)
+	log_label.add_theme_color_override("font_color", Color(0.85, 0.87, 0.95))
+	middle.add_child(log_label)
+
+	# Alliés au milieu.
+	ally_row = HBoxContainer.new()
+	ally_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	ally_row.add_theme_constant_override("separation", 6)
+	root.add_child(ally_row)
+
+	# Bas : les 3 compétences, puis l'aide au choix de cible.
+	bottom_panel = PanelContainer.new()
+	root.add_child(bottom_panel)
+	var bottom := VBoxContainer.new()
+	bottom.add_theme_constant_override("separation", 6)
+	bottom_panel.add_child(bottom)
+	skill_info = Label.new()
+	skill_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	skill_info.add_theme_font_size_override("font_size", 17)
+	skill_info.custom_minimum_size = Vector2(0, 48)
+	bottom.add_child(skill_info)
+	var buttons := HBoxContainer.new()
+	buttons.add_theme_constant_override("separation", 8)
+	bottom.add_child(buttons)
+	for tier in CombatUnit.TIERS:
+		var button := Button.new()
+		button.custom_minimum_size = Vector2(0, 92)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.add_theme_font_size_override("font_size", 18)
+		button.pressed.connect(_on_skill_pressed.bind(tier))
+		buttons.add_child(button)
+		skill_buttons[tier] = button
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	bottom.add_child(row)
+	hint_label = Label.new()
+	hint_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	hint_label.add_theme_font_size_override("font_size", 16)
+	hint_label.add_theme_color_override("font_color", Color("ffd43b"))
+	row.add_child(hint_label)
+	ready_button = Button.new()
+	ready_button.text = "Prêt"
+	ready_button.custom_minimum_size = Vector2(110, 50)
+	ready_button.pressed.connect(_on_ready_pressed)
+	row.add_child(ready_button)
+	passive_info = Label.new()
+	passive_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	passive_info.add_theme_font_size_override("font_size", 15)
+	passive_info.add_theme_color_override("font_color", Color(0.7, 0.75, 0.9))
+	bottom.add_child(passive_info)
+
+	overlay = IntentOverlay.new()
+	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(overlay)
+
+
+func _clear_children(node: Node) -> void:
+	for child in node.get_children():
+		node.remove_child(child)
+		child.queue_free()
+
+
+# ---------------------------------------------------------------------------
+# Menu : choix du personnage (prototype) et écran de fin
+# ---------------------------------------------------------------------------
+
+func _show_menu() -> void:
+	phase = "menu"
+	if menu_layer != null:
+		menu_layer.queue_free()
+	menu_layer = _make_layer()
+	var box: VBoxContainer = menu_layer.get_meta("box")
+	var title := _label("Projet Arena", 40, Color("ffd43b"))
+	box.add_child(title)
+	box.add_child(_label("Prototype de combat 3 contre 3", 20, Color(0.8, 0.85, 1)))
+	box.add_child(_spacer(10))
+	box.add_child(_label("Choisis ton personnage :", 22, Color.WHITE))
+	for class_id in CLASS_ORDER:
+		var cls: Dictionary = data.classes[class_id]
+		var button := Button.new()
+		var roles: Array = cls["roles"]
+		button.text = "%s  ·  %s / %s\n%s" % [cls["name"], ROLE_LABELS[roles[0]], ROLE_LABELS[roles[1]], cls["identity"]]
+		button.custom_minimum_size = Vector2(0, 86)
+		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		button.pressed.connect(_on_class_chosen.bind(class_id))
+		box.add_child(button)
+
+
+func _on_class_chosen(class_id: String) -> void:
+	player_class = class_id
+	player_picks = CombatUnit.random_picks(rng)
+	_show_kit()
+
+
+func _show_kit() -> void:
+	if menu_layer != null:
+		menu_layer.queue_free()
+	menu_layer = _make_layer()
+	var box: VBoxContainer = menu_layer.get_meta("box")
+	var cls: Dictionary = data.classes[player_class]
+	box.add_child(_label(str(cls["name"]), 36, Color("ffd43b")))
+	box.add_child(_label("Ton Destin (tiré au hasard) :", 20, Color(0.8, 0.85, 1)))
+	for tier in CombatUnit.TIERS:
+		var pool: Array = cls["skills"][tier]
+		var skill_id: String = pool[int(player_picks[tier]) % pool.size()]
+		var skill := data.skill(skill_id)
+		box.add_child(_label("%s — %s\n%s" % [TIER_LABELS[tier], skill["name"], skill["description"]], 18, Color.WHITE))
+	var passive_pool: Array = cls["passives"]
+	var passive_id: String = passive_pool[int(player_picks["passive"]) % passive_pool.size()]
+	box.add_child(_label("Passif — %s\n%s" % [data.passive_name(passive_id), data.passives[passive_id]["description"]], 18, Color(0.75, 0.9, 0.75)))
+	box.add_child(_spacer(8))
+	var fight := Button.new()
+	fight.text = "Combattre"
+	fight.custom_minimum_size = Vector2(0, 70)
+	fight.add_theme_font_size_override("font_size", 28)
+	fight.pressed.connect(_start_combat)
+	box.add_child(fight)
+	var reroll := Button.new()
+	reroll.text = "Autre tirage (prototype seulement)"
+	reroll.custom_minimum_size = Vector2(0, 50)
+	reroll.pressed.connect(_on_class_chosen.bind(player_class))
+	box.add_child(reroll)
+	var back := Button.new()
+	back.text = "Changer de classe"
+	back.custom_minimum_size = Vector2(0, 50)
+	back.pressed.connect(_show_menu)
+	box.add_child(back)
+
+
+func _make_layer() -> Control:
+	var layer := ColorRect.new()
+	layer.color = Color(0.05, 0.06, 0.1, 0.94)
+	layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(layer)
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(center)
+	var box := VBoxContainer.new()
+	box.custom_minimum_size = Vector2(480, 0)
+	box.add_theme_constant_override("separation", 12)
+	center.add_child(box)
+	layer.set_meta("box", box)
+	return layer
+
+
+func _label(text: String, font_size: int, color: Color) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.custom_minimum_size = Vector2(460, 0)
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	return label
+
+
+func _spacer(height: float) -> Control:
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(0, height)
+	return spacer
+
+
+# ---------------------------------------------------------------------------
+# Démarrage d'un combat
+# ---------------------------------------------------------------------------
+
+func _start_combat() -> void:
+	if menu_layer != null:
+		menu_layer.queue_free()
+		menu_layer = null
+	if end_layer != null:
+		end_layer.queue_free()
+		end_layer = null
+	synergies_fired = 0
+	# L'équipe du joueur a toujours un Front, un Dégâts et un Soutien (une classe de chaque).
+	var ally_names := ALLY_NAMES.duplicate()
+	var enemy_names := ENEMY_NAMES.duplicate()
+	ally_names.shuffle()
+	enemy_names.shuffle()
+	var team_a: Array = []
+	var team_b: Array = []
+	for i in range(CLASS_ORDER.size()):
+		var class_id: String = CLASS_ORDER[i]
+		var cls_name: String = data.class_name_of(class_id)
+		if class_id == player_class:
+			team_a.append({"class_id": class_id, "picks": player_picks, "name": "Toi", "is_player": true})
+		else:
+			team_a.append({"class_id": class_id, "picks": CombatUnit.random_picks(rng), "name": "%s %s" % [cls_name, ally_names[i]]})
+		team_b.append({"class_id": class_id, "picks": CombatUnit.random_picks(rng), "name": "%s %s" % [cls_name, enemy_names[i]]})
+	combat = Combat.create(data, team_a, team_b, rng.randi_range(0, 1))
+	for unit in combat.units:
+		if unit.is_player:
+			player_id = unit.id
+			unit.display_name = data.class_name_of(unit.class_id)
+
+	views = {}
+	_clear_children(enemy_row)
+	_clear_children(ally_row)
+	for unit in combat.units:
+		var view := UnitView.new()
+		view.setup(unit)
+		view.tapped.connect(_on_unit_tapped)
+		(ally_row if unit.team == 0 else enemy_row).add_child(view)
+		views[unit.id] = view
+		view.sync(unit, data)
+	_begin_intent_phase()
+
+
+func _player() -> CombatUnit:
+	return combat.get_unit(player_id)
+
+
+# ---------------------------------------------------------------------------
+# Phase d'Intention (12 s)
+# ---------------------------------------------------------------------------
+
+func _begin_intent_phase() -> void:
+	phase = "intent"
+	var player := _player()
+	time_left = INTENT_SECONDS if player.is_alive() else KO_PLAYER_SECONDS
+	selected_tier = ""
+	selected_target = ""
+	player_ready = false
+	ally_intents = {}
+	ally_think = {}
+	for ally in combat.team_units(0, true):
+		if ally.id != player_id:
+			ally_think[ally.id] = rng.randf_range(1.0, 4.5) if player.is_alive() else rng.randf_range(0.3, 1.5)
+	for view in views.values():
+		view.intent_text = ""
+		view.order_badge = 0
+		view.selected_target = false
+		view.targetable = false
+		view.sync(combat.get_unit(view.unit_id), data)
+	turn_label.text = "Tour %d" % combat.turn
+	banner.text = ""
+	if combat.is_sudden_death():
+		sudden_label.text = "MORT SUBITE : soins ÷2, dégâts +%d %%  ·  fin au tour %d" % [int(round((combat.sudden_death_damage_mult() - 1.0) * 100.0)), Combat.FORCED_END_TURN]
+	elif combat.turn >= Combat.SUDDEN_DEATH_TURN - 2:
+		sudden_label.text = "Mort subite au tour %d" % Combat.SUDDEN_DEATH_TURN
+	else:
+		sudden_label.text = ""
+	if player.is_alive():
+		log_label.text = "Choisis une compétence, puis une cible."
+	else:
+		log_label.text = "Tu es KO. Tes alliés continuent le combat…"
+	bottom_panel.modulate = Color(1, 1, 1, 1 if player.is_alive() else 0.45)
+	_refresh_skill_buttons()
+	_refresh_intents()
+
+
+func _process(delta: float) -> void:
+	if phase != "intent":
+		return
+	time_left = maxf(time_left - delta, 0.0)
+	timer_bar.value = time_left
+	timer_label.text = "%d" % int(ceil(time_left))
+	# Les alliés IA décident (ou ajustent) leur Intention en voyant les autres.
+	for ally_id in ally_think.keys():
+		ally_think[ally_id] = float(ally_think[ally_id]) - delta
+		if float(ally_think[ally_id]) <= 0.0:
+			ally_think.erase(ally_id)
+			_ally_decide(ally_id)
+	var everyone_decided := ally_think.is_empty() and ally_intents.size() == combat.team_units(0, true).size() - (1 if _player().is_alive() else 0)
+	if time_left <= 0.0 or (player_ready and everyone_decided) or (not _player().is_alive() and everyone_decided and time_left <= KO_PLAYER_SECONDS - 1.5):
+		_submit_turn()
+
+
+func _ally_decide(ally_id: String) -> void:
+	var unit := combat.get_unit(ally_id)
+	if unit == null or not unit.is_alive():
+		return
+	var known: Array = []
+	var mine := _player_action()
+	if mine != null:
+		known.append(mine)
+	for other_id in ally_intents.keys():
+		if other_id != ally_id:
+			known.append(ally_intents[other_id])
+	var choice := CombatAI.choose(combat, unit, known)
+	var previous: CombatAction = ally_intents.get(ally_id)
+	ally_intents[ally_id] = choice
+	if previous != null and (previous.skill_id != choice.skill_id or previous.target_id != choice.target_id):
+		views[ally_id].float_text("Ajuste", Color("9ad1ff"))
+	_refresh_intents()
+
+
+## Les alliés qui ont déjà décidé revoient leur choix peu après un changement d'Intention.
+func _allies_reconsider(except_id: String = "") -> void:
+	for ally_id in ally_intents.keys():
+		if ally_id != except_id and not ally_think.has(ally_id):
+			ally_think[ally_id] = rng.randf_range(0.6, 1.4)
+
+
+func _player_action() -> CombatAction:
+	if selected_tier == "" or selected_target == "":
+		return null
+	var player := _player()
+	return CombatAction.make(player.id, player.skills[selected_tier], selected_target)
+
+
+func _on_skill_pressed(tier: String) -> void:
+	if phase != "intent" or not _player().is_alive():
+		return
+	var player := _player()
+	if not combat.can_use(player, tier):
+		return
+	selected_tier = tier
+	selected_target = ""
+	player_ready = false
+	var skill_id: String = player.skills[tier]
+	var targets := combat.valid_targets(player, skill_id)
+	var target_type := str(data.skill(skill_id).get("target"))
+	if target_type in ["enemies_all", "allies_all", "self"] and not targets.is_empty():
+		selected_target = targets[0].id
+	elif targets.size() == 1:
+		selected_target = targets[0].id
+	_refresh_skill_buttons()
+	_refresh_intents()
+	if selected_target != "":
+		_allies_reconsider()
+
+
+func _on_unit_tapped(unit_id: String) -> void:
+	if phase != "intent" or selected_tier == "":
+		return
+	var player := _player()
+	var skill_id: String = player.skills[selected_tier]
+	var target := combat.get_unit(unit_id)
+	if not combat.valid_targets(player, skill_id).has(target):
+		return
+	selected_target = unit_id
+	player_ready = false
+	_refresh_skill_buttons()
+	_refresh_intents()
+	_allies_reconsider()
+
+
+func _on_ready_pressed() -> void:
+	if phase != "intent":
+		return
+	player_ready = true
+	_refresh_skill_buttons()
+
+
+func _refresh_skill_buttons() -> void:
+	var player := _player()
+	for tier in CombatUnit.TIERS:
+		var button: Button = skill_buttons[tier]
+		var skill_id: String = player.skills[tier]
+		var remaining := combat.cooldown_remaining(player, tier)
+		var label := "%s\n%s" % [data.skill_name(skill_id), TIER_LABELS[tier]]
+		var used_once: bool = bool(data.skill(skill_id).get("once_per_combat", false)) and bool(player.flags.get("used_" + skill_id, false))
+		if used_once:
+			label = "%s\nDéjà utilisée" % data.skill_name(skill_id)
+		elif remaining > 0:
+			if tier == "forte" and combat.turn < Combat.STRONG_AVAILABLE_FROM_TURN and int(player.cooldown_until.get(tier, 0)) <= combat.turn:
+				label = "%s\nDès le tour %d" % [data.skill_name(skill_id), Combat.STRONG_AVAILABLE_FROM_TURN]
+			else:
+				label = "%s\nRecharge : %d" % [data.skill_name(skill_id), remaining]
+		button.text = label
+		button.disabled = phase != "intent" or not combat.can_use(player, tier)
+		button.modulate = Color(1.0, 0.9, 0.45) if tier == selected_tier else Color.WHITE
+	passive_info.text = "Passif : %s — %s" % [data.passive_name(player.passive), data.passives[player.passive]["description"]]
+	if selected_tier != "":
+		var skill := data.skill(player.skills[selected_tier])
+		skill_info.text = "%s : %s" % [skill["name"], skill["description"]]
+	else:
+		skill_info.text = "Pas de choix à la fin du temps : ta basique sur la même cible qu'au tour précédent."
+	ready_button.disabled = phase != "intent" or player_ready or not player.is_alive()
+	ready_button.text = "Validé" if player_ready else "Prêt"
+	if not player.is_alive():
+		hint_label.text = ""
+	elif selected_tier == "":
+		hint_label.text = "1. Choisis une compétence"
+	elif selected_target == "":
+		hint_label.text = "2. Touche une cible (en surbrillance)"
+	else:
+		hint_label.text = "Intention prête. Tu peux encore changer."
+	# Cibles possibles en surbrillance.
+	var valid: Array = []
+	if phase == "intent" and selected_tier != "" and player.is_alive():
+		valid = combat.valid_targets(player, player.skills[selected_tier])
+	for view in views.values():
+		view.targetable = valid.has(combat.get_unit(view.unit_id))
+		view.selected_target = view.unit_id == selected_target and phase == "intent"
+
+
+## Les Intentions alliées : bulle translucide au-dessus de chaque allié et trait vers sa cible.
+func _refresh_intents() -> void:
+	var actions: Array = []
+	var mine := _player_action()
+	if mine != null:
+		actions.append(mine)
+	for action in ally_intents.values():
+		actions.append(action)
+	var synergy_pairs := combat.find_synergies(actions)
+	var synergy_actors := {}
+	var synergy_names: Array = []
+	for pair in synergy_pairs:
+		for actor_id in pair["actors"]:
+			synergy_actors[actor_id] = true
+		synergy_names.append(pair["synergy"]["name"])
+	overlay.links = []
+	for view in views.values():
+		if view.team == 0:
+			view.intent_text = ""
+	for action in actions:
+		var view: UnitView = views[action.actor_id]
+		view.intent_text = data.skill_name(action.skill_id)
+		view.intent_alpha = 0.75 if action.actor_id == player_id else 0.5
+		var color := Color(1, 1, 1, 0.55) if action.actor_id == player_id else Color(0.6, 0.8, 1.0, 0.4)
+		var skill_target := str(data.skill(action.skill_id).get("target"))
+		if skill_target in ["enemies_all", "allies_all"]:
+			for target in combat.valid_targets(combat.get_unit(action.actor_id), action.skill_id):
+				overlay.links.append({"from": view, "to": views[target.id], "color": color, "synergy": synergy_actors.has(action.actor_id)})
+		else:
+			overlay.links.append({"from": view, "to": views[action.target_id], "color": color, "synergy": synergy_actors.has(action.actor_id)})
+	for ally_id in ally_think.keys():
+		if not ally_intents.has(ally_id):
+			views[ally_id].intent_text = "…"
+			views[ally_id].intent_alpha = 0.35
+	banner.text = ("Synergie possible : " + ", ".join(synergy_names)) if not synergy_names.is_empty() else ""
+
+
+# ---------------------------------------------------------------------------
+# Résolution animée
+# ---------------------------------------------------------------------------
+
+func _submit_turn() -> void:
+	phase = "resolve"
+	timer_bar.value = 0
+	timer_label.text = ""
+	var actions: Array = []
+	var mine := _player_action()
+	if mine != null:
+		actions.append(mine)
+	for ally in combat.team_units(0, true):
+		if ally.id == player_id:
+			continue
+		if not ally_intents.has(ally.id):
+			_ally_decide(ally.id)
+		if ally_intents.has(ally.id):
+			actions.append(ally_intents[ally.id])
+	# Les ennemis décident entre eux, sans voir nos Intentions.
+	actions.append_array(CombatAI.choose_team(combat, 1))
+	_refresh_skill_buttons()
+	var events := combat.resolve_turn(actions)
+	_play_events(events)
+
+
+func _play_events(events: Array) -> void:
+	overlay.links = []
+	for view in views.values():
+		view.targetable = false
+		view.selected_target = false
+	for event in events:
+		await _play_event(event)
+	for view in views.values():
+		view.order_badge = 0
+		view.sync(combat.get_unit(view.unit_id), data)
+	if combat.finished:
+		_show_end()
+	else:
+		_begin_intent_phase()
+
+
+func _play_event(event: Dictionary) -> void:
+	match str(event["type"]):
+		"reveal":
+			for action_dict in event["actions"]:
+				var view: UnitView = views[action_dict["actor"]]
+				view.intent_text = data.skill_name(action_dict["skill"])
+				view.intent_alpha = 0.8
+			log_label.text = "Révélation des Intentions"
+			await _wait(1.1)
+		"order":
+			var index := 1
+			for unit_id in event["order"]:
+				views[unit_id].order_badge = index
+				index += 1
+		"action":
+			var actor: UnitView = views[event["actor"]]
+			actor.do_lunge()
+			var targets: Array = event["targets"]
+			var target_text := ""
+			if targets.size() == 1 and targets[0] != event["actor"]:
+				target_text = " sur " + _short_name(targets[0])
+			elif targets.size() > 1:
+				target_text = " (%d cibles)" % targets.size()
+			log_label.text = "%s : %s%s" % [_short_name(event["actor"]), data.skill_name(event["skill"]), target_text]
+			if event.get("redirected", false):
+				log_label.text += " — provoqué !"
+			await _wait(0.45)
+		"damage":
+			var view: UnitView = views[event["target"]]
+			view.set_hp(int(event["hp"]))
+			view.do_flash()
+			var color := Color("ff6b6b")
+			if event["kind"] == "dot":
+				color = Color("ff9f43")
+			elif event["kind"] == "synergie":
+				color = Color("ffd43b")
+			view.float_text("-%d" % int(event["amount"]), color)
+			await _wait(0.22)
+		"heal":
+			if int(event["amount"]) > 0:
+				var view: UnitView = views[event["target"]]
+				view.set_hp(int(event["hp"]))
+				view.float_text("+%d" % int(event["amount"]), Color("51cf66"))
+				await _wait(0.22)
+		"absorbed":
+			views[event["target"]].float_text("Bloqué", Color("9ad1ff"))
+			await _wait(0.2)
+		"status":
+			var view: UnitView = views[event["target"]]
+			var unit := combat.get_unit(event["target"])
+			view.float_text(data.status_name(event["status"]), Color("e599f7"))
+			view.sync(unit, data)
+			view.set_hp(view.target_hp)
+		"taunt":
+			for unit_id in event["targets"]:
+				views[unit_id].float_text("Provoqué", Color("ffa94d"))
+		"push_back":
+			if event.get("effect", false):
+				views[event["target"]].float_text("Repoussé", Color("ffa94d"))
+		"ko":
+			views[event["target"]].set_hp(0)
+			log_label.text = "%s est KO !" % _short_name(event["target"])
+			await _wait(0.5)
+		"revive":
+			var view: UnitView = views[event["target"]]
+			view.set_hp(int(event["hp"]))
+			view.float_text("Relevé !", Color("51cf66"))
+			log_label.text = "%s est relevé !" % _short_name(event["target"])
+			await _wait(0.6)
+		"action_lost":
+			log_label.text = "%s est KO : son action est perdue." % _short_name(event["actor"])
+			await _wait(0.4)
+		"synergy":
+			banner.text = "SYNERGIE : %s !" % event["name"]
+			if combat.get_unit(event["actors"][0]).team == 0:
+				synergies_fired += 1
+			for unit_id in event["actors"]:
+				views[unit_id].float_text("Synergie", Color("ffd43b"))
+			await _wait(0.9)
+		"cooldown_reduced":
+			views[event["target"]].float_text("Recharge -%d" % int(event["amount"]), Color("9ad1ff"))
+		"turn_end":
+			await _wait(0.4)
+
+
+func _short_name(unit_id: String) -> String:
+	var unit := combat.get_unit(unit_id)
+	if unit.is_player:
+		return "Toi"
+	return unit.display_name
+
+
+func _wait(seconds: float) -> void:
+	await get_tree().create_timer(seconds).timeout
+
+
+# ---------------------------------------------------------------------------
+# Fin de combat
+# ---------------------------------------------------------------------------
+
+func _show_end() -> void:
+	phase = "end"
+	end_layer = _make_layer()
+	var box: VBoxContainer = end_layer.get_meta("box")
+	var won := combat.winner == 0
+	box.add_child(_label("Victoire !" if won else "Défaite", 48, Color("ffd43b") if won else Color("ff6b6b")))
+	var reason := "Toute l'équipe adverse est KO." if combat.end_reason == "ko" else "Fin forcée : l'équipe avec le plus de PV l'emporte (%d contre %d)." % [combat.team_total_hp(0), combat.team_total_hp(1)]
+	if combat.end_reason == "ko" and not won:
+		reason = "Toute ton équipe est KO."
+	box.add_child(_label(reason, 20, Color.WHITE))
+	box.add_child(_label("%d tours  ·  %d Synergie%s déclenchée%s par ton équipe" % [combat.turn, synergies_fired, "s" if synergies_fired > 1 else "", "s" if synergies_fired > 1 else ""], 18, Color(0.8, 0.85, 1)))
+	box.add_child(_spacer(10))
+	var again := Button.new()
+	again.text = "Rejouer"
+	again.custom_minimum_size = Vector2(0, 76)
+	again.add_theme_font_size_override("font_size", 30)
+	again.pressed.connect(_start_combat)
+	box.add_child(again)
+	var change := Button.new()
+	change.text = "Changer de personnage"
+	change.custom_minimum_size = Vector2(0, 54)
+	change.pressed.connect(_show_menu)
+	box.add_child(change)

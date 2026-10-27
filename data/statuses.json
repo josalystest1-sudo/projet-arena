@@ -1,0 +1,9 @@
+{
+  "saignement": {"name": "Saignement", "negative": true, "icon": "S", "description": "Perd des PV à chaque fin de tour."},
+  "brulure": {"name": "Brûlure", "negative": true, "icon": "B", "description": "Perd des PV à chaque fin de tour."},
+  "gele": {"name": "Gelé", "negative": true, "icon": "G", "description": "Agit en dernier."},
+  "provoque": {"name": "Provoqué", "negative": true, "icon": "P", "description": "Doit attaquer le Guerrier ce tour."},
+  "cri_de_guerre": {"name": "Cri de guerre", "negative": false, "icon": "+", "description": "+30 % de dégâts."},
+  "rempart": {"name": "Rempart", "negative": false, "icon": "R", "description": "Le prochain coup est absorbé."},
+  "barriere": {"name": "Barrière", "negative": false, "icon": "O", "description": "Absorbe des dégâts."}
+}

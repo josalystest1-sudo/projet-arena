@@ -1,0 +1,16 @@
+{
+  "peau_de_fer": {"name": "Peau de fer", "class": "guerrier", "description": "-15 % de dégâts subis."},
+  "second_souffle": {"name": "Second souffle", "class": "guerrier", "description": "Se soigne de 10 % en passant sous 30 % de PV (une fois par combat)."},
+  "veteran": {"name": "Vétéran", "class": "guerrier", "description": "+1 vitesse par allié KO."},
+  "colere": {"name": "Colère", "class": "guerrier", "description": "+10 % de dégâts par quart de PV manquant."},
+
+  "resonance": {"name": "Résonance", "class": "mage", "description": "Toucher 2 cibles ou plus réduit la recharge de la forte d'un tour."},
+  "focalisation": {"name": "Focalisation", "class": "mage", "description": "+20 % de dégâts sur cible unique."},
+  "brasier": {"name": "Brasier", "class": "mage", "description": "Chaque coup de feu brûle la cible 1 tour."},
+  "meteorologue": {"name": "Météorologue", "class": "mage", "description": "La forte revient 1 tour plus tôt."},
+
+  "foi": {"name": "Foi", "class": "pretre", "description": "Soins +20 % sur un allié sous 40 % de PV."},
+  "martyr": {"name": "Martyr", "class": "pretre", "description": "Encaisse 20 % des dégâts subis par ses alliés."},
+  "lumiere_interieure": {"name": "Lumière intérieure", "class": "pretre", "description": "Se soigne de 5 % de ses PV à chaque fin de tour."},
+  "sanctuaire": {"name": "Sanctuaire", "class": "pretre", "description": "Ses barrières sont 25 % plus grosses."}
+}

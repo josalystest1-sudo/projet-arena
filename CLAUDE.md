@@ -58,3 +58,33 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 ## Choix faits par Claude Code
 
 (À compléter au fil des sessions : une ligne par choix, avec la date et la raison.)
+
+**Technique (2026-10-26, étape 1)**
+
+- Godot **4.5 stable**, rendu « Compatibility » (le seul qui tourne partout sur le web mobile). Export web **sans threads** : GitHub Pages ne permet pas les en-têtes de sécurité qu'exigent les threads.
+- Moteur de règles dans `engine/` (classes `RefCounted`, aucune scène, aucun hasard interne : mêmes entrées, même résultat). Un test (`tests/test_architecture.gd`) fait échouer la CI si le moteur dépend un jour de l'affichage.
+- Tests maison dans `tests/` (pas de bibliothèque externe type GUT) : `godot --headless --path . --script res://tests/run_tests.gd`. Mini-simulateur IA contre IA dans `tools/simulate.gd` (avant-goût de l'étape 3).
+- Données de jeu dans `data/` en JSON : classes, compétences, passifs, états, Synergies.
+- Sprites provisoires dessinés en pixels à partir de grilles de caractères (`scenes/combat/pixel_sprites.gd`), en attendant PixelLab.
+
+**Règles de combat (2026-10-26, prototype : valeurs de départ, à ajuster par le simulateur)**
+
+- Chiffres : Guerrier 330 PV, vitesse 9, puissance 100 ; Mage 230 PV, vitesse 8, puissance 110 ; Prêtre 270 PV, vitesse 7, puissance 100. Dégâts = puissance de la compétence × puissance du perso / 100.
+- Recharges : une moyenne jouée au tour N revient au tour N+3, une forte au tour N+5 ; forte jouable à partir du tour 3.
+- Ordre du tour : la file est calculée au début de la résolution (vitesse + bonus de la compétence + passifs). À vitesse égale, la priorité est **tirée à pile ou face à chaque combat puis alterne à chaque tour** (sans ça, l'équipe prioritaire gagnait 56 % des combats miroirs en simulation).
+- Coup de bouclier : la cible échange sa place avec celle qui la suit dans la file. Trait de givre : la cible passe en fin de file ; si elle a déjà agi, elle agira en dernier au tour suivant.
+- Provocation : la cible choisie et le prochain ennemi à agir sont provoqués ; ne détourne que les compétences offensives (un soin reste un soin).
+- Rempart : protège jusqu'à la fin du tour suivant ou jusqu'au premier coup (les dégâts sur la durée ne le consomment pas). Les barrières ne se cumulent pas : la plus grosse reste.
+- Un perso mis KO avant d'agir perd son action. Un KO perd ses états. Un perso relevé revient à 30 % de ses PV, recharges remises à zéro, et n'agit qu'au tour suivant. On ne peut être relevé qu'une fois par combat, et la Résurrection ne sert qu'une fois par combat.
+- Mort subite au tour 10 (soins ÷2, dégâts +25 % par tour cumulés), fin forcée à la fin du tour 15 : plus de PV totaux, puis plus de dégâts infligés, puis l'équipe prioritaire. Jamais de match nul. En simulation, 100 % des combats finissent entre les tours 8 et 15.
+- 4e passif inventé pour chaque classe (le GDD n'en donne que 3) : Colère (Guerrier, +10 % de dégâts par quart de PV manquant), Météorologue (Mage, forte revient 1 tour plus tôt), Sanctuaire (Prêtre, barrières +25 %).
+- Synergies du prototype : Provocation + Nova (celle du GDD) et trois nouvelles pour couvrir chaque paire de classes : Bastion (Rempart + Prière, le Rempart se reforme), Éclat (Trait de givre + Châtiment sur la même cible, +40 dégâts de lumière), Plaie brûlante (Fendoir + Boule de feu sur la même cible, saignement +2 tours). Une Synergie se déclenche quand la seconde compétence du couple se résout, même si la première est passée avant.
+
+**Écran et IA (2026-10-26, prototype)**
+
+- Le joueur choisit sa classe au lancement et peut retirer son kit (« Autre tirage, prototype seulement ») : c'est volontairement contraire au Destin non modifiable, pour tester les 3 classes et tous les kits. À retirer quand les comptes arrivent (étape 4).
+- Chaque équipe contient toujours un Guerrier, un Mage et un Prêtre (un Front, un Dégâts, un Soutien), kits tirés au hasard.
+- Bouton « Prêt » : la phase d'Intention se termine dès que le joueur est prêt et que ses alliés ont décidé, sans attendre les 12 s.
+- Les alliés IA décident entre 1 et 4,5 s après le début du tour, puis réajustent leur Intention quand le joueur change la sienne. Les ennemis décident entre eux sans voir nos Intentions.
+- Si le joueur est KO, ses alliés continuent ; la phase d'Intention est raccourcie.
+- L'IA joue ses fortes dès qu'elles sont prêtes et utiles (« un cran en dessous d'un bon joueur ») ; elle concentre la cible visée par ses alliés et cherche les Synergies connues.
