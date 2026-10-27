@@ -15,6 +15,8 @@ var muted: bool = false
 var duo: Dictionary = {}
 ## Record à la Tour par classe : étage atteint (GDD : le record est classé par classe).
 var tower_records: Dictionary = {}
+## Les monstres déjà croisés à la Tour (identifiant -> true), pour le bestiaire.
+var monsters_seen: Dictionary = {}
 
 
 static func load_profile() -> PlayerProfile:
@@ -28,6 +30,7 @@ static func load_profile() -> PlayerProfile:
 		profile.muted = bool(cfg.get_value("options", "muted", false))
 		profile.duo = cfg.get_value("duo", "duo", {})
 		profile.tower_records = cfg.get_value("tour", "records", {})
+		profile.monsters_seen = cfg.get_value("tour", "monstres", {})
 	return profile
 
 
@@ -40,6 +43,7 @@ func save() -> void:
 	cfg.set_value("options", "muted", muted)
 	cfg.set_value("duo", "duo", duo)
 	cfg.set_value("tour", "records", tower_records)
+	cfg.set_value("tour", "monstres", monsters_seen)
 	cfg.save(PATH)
 
 
@@ -58,3 +62,10 @@ func record_result(won: bool) -> Dictionary:
 		streak = 0
 	save()
 	return {"previous_streak": previous, "new_record": new_record}
+
+
+## Note un monstre croisé à la Tour (enregistré à la première rencontre).
+func see_monster(monster_id: String) -> void:
+	if not monsters_seen.has(monster_id):
+		monsters_seen[monster_id] = true
+		save()
