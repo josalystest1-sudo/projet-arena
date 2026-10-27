@@ -1,4 +1,4 @@
-## Chargement des données de jeu : classes, compétences, passifs, Synergies, états.
+## Chargement des données de jeu : classes, compétences, passifs, Synergies, états, règles, postures.
 ## Module pur : aucune dépendance aux nœuds de scène. Les données vivent dans res://data/.
 class_name CombatData
 extends RefCounted
@@ -12,6 +12,8 @@ var statuses: Dictionary = {}
 var synergies: Array = []
 ## Règles chiffrées du combat (mort subite, recharges...), dans data/rules.json.
 var rules: Dictionary = {}
+## Postures de l'acolyte : noms, descriptions et seuils de l'IA, dans data/postures.json.
+var postures: Dictionary = {}
 
 
 static func load_default() -> CombatData:
@@ -25,6 +27,7 @@ static func load_from_dir(dir: String) -> CombatData:
 	data.statuses = _read_json(dir + "statuses.json")
 	data.synergies = _read_json(dir + "synergies.json")
 	data.rules = _read_json(dir + "rules.json")
+	data.postures = _read_json(dir + "postures.json")
 	var class_ids: Array = _read_json(dir + "classes.json")
 	for class_id in class_ids:
 		data.classes[class_id] = _read_json(dir + "classes/" + class_id + ".json")

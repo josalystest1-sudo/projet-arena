@@ -23,6 +23,8 @@ var statuses: Array[Dictionary] = []
 ## Drapeaux « une fois par combat » (second_souffle, resurrection, revived...).
 var flags: Dictionary = {}
 var last_target: String = ""
+## Le dernier ennemi qui lui a porté un coup direct (sert à la riposte de l'acolyte en posture Protège-moi).
+var last_hit_by: String = ""
 var is_player: bool = false
 ## Acolyte : second personnage du duo, toujours piloté par l'IA (le joueur ne contrôle jamais ses sorts).
 var is_acolyte: bool = false

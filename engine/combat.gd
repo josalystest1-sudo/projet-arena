@@ -16,15 +16,18 @@ const SECOND_SOUFFLE_THRESHOLD := 0.30
 const SECOND_SOUFFLE_HEAL := 0.10
 const COLERE_PER_QUARTER := 0.10
 const FOCALISATION_BONUS := 0.20
-const BRASIER_BURN := {"turns": 1, "value": 8}
+const BRASIER_BURN := {"turns": 1, "value": 10}
 const FOI_THRESHOLD := 0.40
 const FOI_BONUS := 0.20
 const MARTYR_SHARE := 0.20
 const LUMIERE_INTERIEURE_HEAL := 0.05
 const SANCTUAIRE_BONUS := 0.25
 const SYNERGY_NOVA_BONUS := 0.50
-const SYNERGY_ECLAT_DAMAGE := 40
+const SYNERGY_ECLAT_DAMAGE := 75
 const SYNERGY_PLAIE_EXTRA_TURNS := 2
+const SYNERGY_PLAIE_BLEED_MULT := 1.5
+## Jugement et Courant de vie : le second coup (ou soin) vaut 1,5 fois la compétence.
+const SYNERGY_ECHO_MULT := 1.5
 const ACT_LAST_PENALTY := 1000
 
 var data: CombatData
@@ -615,6 +618,8 @@ func _apply_damage(source: CombatUnit, target: CombatUnit, amount: int, element:
 	target.hp = maxi(target.hp - amount, 0)
 	var source_id := source.id if source != null else ""
 	_emit({"type": "damage", "source": source_id, "target": target.id, "amount": amount, "element": element, "kind": kind, "hp": target.hp})
+	if source != null and source.team != target.team and kind != "dot":
+		target.last_hit_by = source.id
 	if source != null:
 		damage_by_team[source.team] = int(damage_by_team[source.team]) + amount
 		if not _damage_dealt.has(source.id):
@@ -801,6 +806,7 @@ func _synergy_plaie_brulante(second: CombatUnit) -> void:
 	var bleed := target.get_status("saignement")
 	if not bleed.is_empty():
 		bleed["turns"] = int(bleed["turns"]) + SYNERGY_PLAIE_EXTRA_TURNS
+		bleed["value"] = int(round(float(bleed["value"]) * SYNERGY_PLAIE_BLEED_MULT))
 		_emit({"type": "status", "target": target.id, "status": "saignement", "turns": bleed["turns"], "value": bleed["value"]})
 
 
@@ -814,7 +820,7 @@ func _synergy_forteresse(second: CombatUnit, first: CombatUnit) -> void:
 			_add_status(ally, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": _barrier_amount(mage, int(effect.get("power", 0))), "source": mage.id})
 
 
-## Jugement : le Châtiment frappe aussi chaque autre ennemi provoqué par le Guerrier.
+## Jugement : le Châtiment frappe aussi, une fois et demie plus fort, chaque autre ennemi provoqué par le Guerrier.
 func _synergy_jugement(second: CombatUnit, first: CombatUnit) -> void:
 	var guerrier := second if _actions[second.id].skill_id == "provocation" else first
 	var pretre := first if guerrier == second else second
@@ -824,13 +830,13 @@ func _synergy_jugement(second: CombatUnit, first: CombatUnit) -> void:
 		var provoked := enemy.get_status("provoque")
 		if provoked.is_empty() or str(provoked.get("source", "")) != guerrier.id or already.has(enemy.id):
 			continue
-		_apply_damage(pretre, enemy, _damage_amount(pretre, enemy, power, 1.0, true), "lumiere", "synergie")
+		_apply_damage(pretre, enemy, _damage_amount(pretre, enemy, power, SYNERGY_ECHO_MULT, true), "lumiere", "synergie")
 
 
-## Courant de vie : la Prière soigne aussi les autres membres du duo.
+## Courant de vie : la Prière soigne aussi les autres membres du duo, une fois et demie plus fort.
 func _synergy_courant_de_vie(second: CombatUnit, first: CombatUnit) -> void:
 	var pretre := second if _actions[second.id].skill_id == "priere" else first
-	var power := int(_skill_effect("priere", "heal").get("power", 0))
+	var power := int(round(float(_skill_effect("priere", "heal").get("power", 0)) * SYNERGY_ECHO_MULT))
 	var already: Array = _resolved_targets.get(pretre.id, [])
 	for ally in allies_of(pretre, true):
 		if not already.has(ally.id):

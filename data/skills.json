@@ -1,12 +1,12 @@
 {
   "taillade": {
     "name": "Taillade", "class": "guerrier", "tier": "basique", "element": "tranchant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 34}],
+    "effects": [{"type": "damage", "power": 46}],
     "description": "Coup d'épée tranchant sur un ennemi."
   },
   "coup_de_bouclier": {
     "name": "Coup de bouclier", "class": "guerrier", "tier": "basique", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 26}, {"type": "push_back"}],
+    "effects": [{"type": "damage", "power": 35}, {"type": "push_back"}],
     "description": "Coup faible qui repousse l'Intention de la cible d'un cran de vitesse."
   },
   "provocation": {
@@ -21,38 +21,38 @@
   },
   "fendoir": {
     "name": "Fendoir", "class": "guerrier", "tier": "forte", "element": "tranchant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 64}, {"type": "status", "id": "saignement", "turns": 3, "value": 12}],
+    "effects": [{"type": "damage", "power": 73}, {"type": "status", "id": "saignement", "turns": 3, "value": 14}],
     "description": "Gros dégâts tranchants et saignement pendant 3 tours."
   },
   "cri_de_guerre": {
     "name": "Cri de guerre", "class": "guerrier", "tier": "forte", "element": "", "target": "allies_all",
-    "effects": [{"type": "status", "id": "cri_de_guerre", "turns": 3, "value": 30}],
-    "description": "Tous les alliés infligent +30 % de dégâts pendant 3 tours."
+    "effects": [{"type": "status", "id": "cri_de_guerre", "turns": 3, "value": 50}],
+    "description": "Tout le duo inflige +50 % de dégâts pendant 3 tours."
   },
 
   "boule_de_feu": {
     "name": "Boule de feu", "class": "mage", "tier": "basique", "element": "feu", "target": "enemy",
-    "effects": [{"type": "damage", "power": 34}],
+    "effects": [{"type": "damage", "power": 40}],
     "description": "Boule de feu sur un ennemi."
   },
   "etincelle": {
     "name": "Étincelle", "class": "mage", "tier": "basique", "element": "foudre", "target": "enemy", "speed_bonus": 6,
-    "effects": [{"type": "damage", "power": 26}],
+    "effects": [{"type": "damage", "power": 35}],
     "description": "Éclair rapide : le Mage agit tôt dans le tour."
   },
   "trait_de_givre": {
     "name": "Trait de givre", "class": "mage", "tier": "moyenne", "element": "givre", "target": "enemy",
-    "effects": [{"type": "damage", "power": 40}, {"type": "act_last"}],
+    "effects": [{"type": "damage", "power": 54}, {"type": "act_last"}],
     "description": "Dégâts de givre ; la cible agit en dernier."
   },
   "arc_de_foudre": {
     "name": "Arc de foudre", "class": "mage", "tier": "moyenne", "element": "foudre", "target": "enemies_2",
-    "effects": [{"type": "damage", "power": 32}],
+    "effects": [{"type": "damage", "power": 38}],
     "description": "La foudre frappe la cible et un second ennemi."
   },
   "nova": {
     "name": "Nova", "class": "mage", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 55}],
+    "effects": [{"type": "damage", "power": 74}],
     "description": "Explosion de feu sur tous les ennemis."
   },
   "bouclier_de_mana": {
@@ -63,17 +63,17 @@
 
   "chatiment": {
     "name": "Châtiment", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "enemy",
-    "effects": [{"type": "damage", "power": 28}],
+    "effects": [{"type": "damage", "power": 43}],
     "description": "Frappe de lumière sur un ennemi."
   },
   "priere": {
     "name": "Prière", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "heal", "power": 40}],
+    "effects": [{"type": "heal", "power": 44}],
     "description": "Petit soin sur un allié."
   },
   "restauration": {
     "name": "Restauration", "class": "pretre", "tier": "moyenne", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "heal", "power": 85}],
+    "effects": [{"type": "heal", "power": 80}],
     "description": "Gros soin sur un allié."
   },
   "purification": {
