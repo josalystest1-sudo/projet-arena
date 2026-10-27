@@ -26,7 +26,8 @@ var monster_ranks: Dictionary = {}
 ## « kit_pairs » pour une paire d'un même kit qui va trop bien (ou trop mal) ensemble ; « kit_triples » pour les trois
 ## compétences ensemble (clé : les trois dans l'ordre alphabétique, ex. « arc_de_foudre+etincelle+nova »).
 ## En duo, le partenaire compte aussi : « duo_items » (un élément selon la classe du partenaire, ex. un Bouclier de mana
-## à côté d'un Guerrier) et « duo_classes » (la composition du duo). Un acolyte, toujours joué par l'IA, a aussi son
+## à côté d'un Guerrier), « duo_classes » (la composition du duo) et « duo_orders » (qui en est le joueur et qui
+## l'acolyte : « mage>guerrier », un Mage avec son acolyte Guerrier). Un acolyte, toujours joué par l'IA, a aussi son
 ## ajustement par classe : « acolyte_classes ».
 var destins: Dictionary = {}
 
@@ -105,6 +106,8 @@ func kit_bonus(skill_ids: Array, passive_id: String, own_class: String = "", par
 	total += float(destins.get("kit_triples", {}).get("+".join(trio), 0.0))
 	if partner_class != "":
 		total += float(destins.get("duo_classes", {}).get(pair_key(own_class, partner_class), 0.0))
+		var order := "%s>%s" % ([partner_class, own_class] if is_acolyte else [own_class, partner_class])
+		total += float(destins.get("duo_orders", {}).get(order, 0.0))
 	if is_acolyte:
 		total += float(destins.get("acolyte_classes", {}).get(own_class, 0.0))
 	return total

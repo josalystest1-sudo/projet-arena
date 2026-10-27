@@ -52,12 +52,12 @@
   },
   "nova": {
     "name": "Nova", "class": "mage", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 56}],
+    "effects": [{"type": "damage", "power": 57}],
     "description": "Explosion de feu sur tous les ennemis."
   },
   "bouclier_de_mana": {
     "name": "Bouclier de mana", "class": "mage", "tier": "forte", "element": "", "target": "ally",
-    "effects": [{"type": "barrier", "power": 187, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 185, "turns": 3}],
     "description": "Grosse barrière sur un allié pendant {turns} tours."
   },
 
@@ -68,17 +68,17 @@
   },
   "priere": {
     "name": "Prière", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "heal", "power": 52, "overflow_barrier": true, "overflow": 0.5}],
+    "effects": [{"type": "heal", "power": 53, "overflow_barrier": true, "overflow": 0.5}],
     "description": "Petit soin sur un allié ; {overflow%} de ce qui dépasse ses PV max devient une barrière."
   },
   "restauration": {
     "name": "Restauration", "class": "pretre", "tier": "moyenne", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "heal", "power": 70}],
+    "effects": [{"type": "heal", "power": 69}],
     "description": "Gros soin sur un allié."
   },
   "purification": {
     "name": "Purification", "class": "pretre", "tier": "moyenne", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "cleanse"}, {"type": "heal", "power": 58}],
+    "effects": [{"type": "cleanse"}, {"type": "heal", "power": 59}],
     "description": "Retire un état négatif et soigne un peu."
   },
   "egide": {
