@@ -8,7 +8,7 @@
     ],
     "same_target": false,
     "params": {
-      "bonus": 0.421
+      "bonus": 0.392
     },
     "description": "Les ennemis provoqués subissent la Nova à +{bonus%}."
   },
@@ -59,7 +59,7 @@
     "same_target": false,
     "description": "Le Bouclier de mana se pose aussi sur l'autre membre du duo, à {share%} de sa taille.",
     "params": {
-      "share": 0.902
+      "share": 1.0
     }
   },
   {
