@@ -395,7 +395,7 @@ L'univers doit répondre à trois questions que le jeu pose dès l'écran de cr�
 **Proposé dans ce document, à valider**
 
 - [ ] La classe de l'acolyte ne change jamais librement ; seule son évolution (au niveau 30 du joueur) peut déplacer son rôle
-- [ ] Les 4 postures de l'acolyte (Libre, Protège-moi, Fonce, Garde ta forte) et le fait qu'il annonce son action en premier
+- [ ] Les postures de l'acolyte selon son rôle (Libre, deux postures propres au rôle, Garde ta forte) et le fait qu'il annonce son action en premier
 - [ ] Les Expéditions de l'Écho : XP plafonnée pendant l'absence, rapport au retour
 - [ ] À la Tour, 20 % de PV rendus entre deux étages et recharges conservées
 
