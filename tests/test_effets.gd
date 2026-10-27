@@ -213,7 +213,7 @@ func test_martyr_encaisse_une_part() -> void:
 func test_second_souffle_une_seule_fois() -> void:
 	var combat := standard_combat({"guerrier": {"passive": 1}})
 	var guerrier := combat.get_unit("a1")
-	guerrier.hp = 110
+	guerrier.hp = int(guerrier.max_hp * 0.33)
 	combat.resolve_turn([action("b1", "taillade", "a1"), action("b2", "boule_de_feu", "a1"), action("b3", "chatiment", "a1")])
 	assert_true(guerrier.flags.get("second_souffle", false), "Second souffle utilisé")
 	var heals := events_of_type(combat.history, "heal")
@@ -221,7 +221,7 @@ func test_second_souffle_une_seule_fois() -> void:
 	for event in heals:
 		if event["kind"] == "second_souffle":
 			found = true
-			assert_eq(int(event["amount"]), 33, "soin de 10 % des PV max")
+			assert_eq(int(event["amount"]), int(round(guerrier.max_hp * 0.1)), "soin de 10 % des PV max")
 	assert_true(found, "un soin Second souffle")
 
 
@@ -252,10 +252,48 @@ func test_resurrection_une_fois_par_combat() -> void:
 	var events := combat.resolve_turn([action("a3", "resurrection", "a2")])
 	assert_eq(events_of_type(events, "revive").size(), 1, "relevé")
 	assert_true(mage.is_alive(), "le Mage est debout")
-	assert_eq(mage.hp, 69, "30 % de 230")
+	assert_eq(mage.hp, int(round(mage.max_hp * 0.3)), "30 % des PV max")
 	assert_true(mage.flags.get("revived", false), "ne peut plus être relevé")
 	assert_false(combat.can_use(combat.get_unit("a3"), "forte"), "Résurrection utilisée pour le combat")
 	jump_to_turn(combat, 9)
 	assert_false(combat.can_use(combat.get_unit("a3"), "forte"), "toujours indisponible après la recharge")
 	mage.hp = 0
 	assert_false(combat.valid_targets(combat.get_unit("a3"), "resurrection").has(mage), "un perso ne se relève qu'une fois")
+
+
+func test_prevision_egale_les_degats_reels() -> void:
+	var combat := standard_combat({"mage": {"passive": 1}})
+	var mage := combat.get_unit("a2")
+	var target := combat.get_unit("b1")
+	var forecast := combat.preview(mage, "boule_de_feu", target)
+	var hp_before := target.hp
+	var events := combat.resolve_turn([action("a2", "boule_de_feu", "b1")])
+	assert_eq(int(forecast["damage"]), damage_from(events, "a2", "b1"), "la prévision annonce les vrais dégâts")
+	assert_eq(target.hp, hp_before - damage_from_all(events, "b1"), "la prévision ne modifie rien")
+
+
+func test_prevision_coup_fatal_et_rempart() -> void:
+	var combat := standard_combat()
+	var target := combat.get_unit("b2")
+	target.hp = 20
+	assert_true(combat.preview(combat.get_unit("a1"), "taillade", target)["lethal"], "Taillade achève un Mage à 20 PV")
+	target.add_status({"id": "rempart", "turns": 1, "value": 1})
+	var forecast := combat.preview(combat.get_unit("a1"), "taillade", target)
+	assert_true(forecast["blocked"], "le Rempart bloquera le coup")
+	assert_false(forecast["lethal"], "donc pas fatal")
+
+
+func test_partenaires_de_synergie() -> void:
+	var combat := standard_combat()
+	var partners := combat.synergy_partners(combat.get_unit("a1"))
+	var found := false
+	for partner in partners["moyenne"]:
+		if partner["skill_id"] == "nova":
+			found = true
+			assert_eq(partner["ally_id"], "a2", "le Mage allié a la Nova")
+			assert_false(partner["available"], "Nova indisponible au tour 1")
+	assert_true(found, "Provocation trouve la Nova du Mage allié")
+	jump_to_turn(combat, 3)
+	for partner in combat.synergy_partners(combat.get_unit("a1"))["moyenne"]:
+		if partner["skill_id"] == "nova":
+			assert_true(partner["available"], "Nova disponible au tour 3")

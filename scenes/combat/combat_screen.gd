@@ -31,6 +31,14 @@ var ally_intents: Dictionary = {}
 ## unit_id -> secondes avant que l'allié IA ne (re)décide
 var ally_think: Dictionary = {}
 var synergies_fired: int = 0
+## Statistiques du combat en cours, par unit_id : dégâts, soins, KO portés.
+var stats: Dictionary = {}
+## Accélération de la résolution (le joueur touche l'écran).
+var speed: float = 1.0
+var last_tick: int = -1
+var shake_amount: float = 0.0
+var profile: PlayerProfile
+var sfx: Sfx
 
 # Nœuds.
 var views: Dictionary = {}
@@ -51,11 +59,20 @@ var hint_label: Label
 var bottom_panel: PanelContainer
 var menu_layer: Control
 var end_layer: Control
+var stage: Control
+var flash_rect: ColorRect
+var cutin: Label
+var mute_button: Button
+var synergy_labels: Dictionary = {}
 
 
 func _ready() -> void:
 	rng.randomize()
 	data = CombatData.load_default()
+	profile = PlayerProfile.load_profile()
+	sfx = Sfx.new()
+	add_child(sfx)
+	sfx.muted = profile.muted
 	theme = _make_theme()
 	_build_layout()
 	_show_menu()
@@ -99,6 +116,10 @@ func _build_layout() -> void:
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(bg)
 
+	stage = Control.new()
+	stage.set_anchors_preset(Control.PRESET_FULL_RECT)
+	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(stage)
 	var root := VBoxContainer.new()
 	root.set_anchors_preset(Control.PRESET_FULL_RECT)
 	root.offset_left = 10
@@ -106,7 +127,7 @@ func _build_layout() -> void:
 	root.offset_top = 10
 	root.offset_bottom = -10
 	root.add_theme_constant_override("separation", 6)
-	add_child(root)
+	stage.add_child(root)
 
 	# Barre du haut : tour, timer, mort subite.
 	var top := HBoxContainer.new()
@@ -136,6 +157,12 @@ func _build_layout() -> void:
 	timer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	timer_label.add_theme_font_size_override("font_size", 24)
 	top.add_child(timer_label)
+	mute_button = Button.new()
+	mute_button.custom_minimum_size = Vector2(64, 36)
+	mute_button.add_theme_font_size_override("font_size", 15)
+	mute_button.pressed.connect(_on_mute_pressed)
+	top.add_child(mute_button)
+	_refresh_mute_button()
 	sudden_label = Label.new()
 	sudden_label.add_theme_color_override("font_color", Color("ff6b6b"))
 	sudden_label.add_theme_font_size_override("font_size", 16)
@@ -187,14 +214,25 @@ func _build_layout() -> void:
 	buttons.add_theme_constant_override("separation", 8)
 	bottom.add_child(buttons)
 	for tier in CombatUnit.TIERS:
+		var column := VBoxContainer.new()
+		column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		column.add_theme_constant_override("separation", 2)
+		buttons.add_child(column)
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 92)
-		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.custom_minimum_size = Vector2(0, 88)
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.add_theme_font_size_override("font_size", 18)
 		button.pressed.connect(_on_skill_pressed.bind(tier))
-		buttons.add_child(button)
+		column.add_child(button)
 		skill_buttons[tier] = button
+		var synergy_label := Label.new()
+		synergy_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		synergy_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		synergy_label.custom_minimum_size = Vector2(0, 20)
+		synergy_label.add_theme_font_size_override("font_size", 13)
+		synergy_label.add_theme_color_override("font_color", Color("ffd43b"))
+		column.add_child(synergy_label)
+		synergy_labels[tier] = synergy_label
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	bottom.add_child(row)
@@ -217,7 +255,61 @@ func _build_layout() -> void:
 
 	overlay = IntentOverlay.new()
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(overlay)
+	stage.add_child(overlay)
+
+	# Grande annonce (forte, Synergie) et flash d'écran, au-dessus de tout.
+	cutin = Label.new()
+	cutin.set_anchors_preset(Control.PRESET_CENTER)
+	cutin.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cutin.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	cutin.custom_minimum_size = Vector2(520, 80)
+	cutin.position = Vector2(-260, -40)
+	cutin.add_theme_font_size_override("font_size", 46)
+	cutin.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	cutin.add_theme_constant_override("outline_size", 12)
+	cutin.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cutin.modulate = Color(1, 1, 1, 0)
+	add_child(cutin)
+	flash_rect = ColorRect.new()
+	flash_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flash_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flash_rect.color = Color(1, 1, 1, 0)
+	add_child(flash_rect)
+
+
+func _on_mute_pressed() -> void:
+	sfx.muted = not sfx.muted
+	profile.muted = sfx.muted
+	profile.save()
+	_refresh_mute_button()
+	sfx.play("clic")
+
+
+func _refresh_mute_button() -> void:
+	mute_button.text = "Son : non" if sfx.muted else "Son : oui"
+
+
+## Grande annonce au centre de l'écran (nom d'une forte, Synergie...).
+func _show_cutin(text: String, color: Color) -> void:
+	cutin.text = text
+	cutin.add_theme_color_override("font_color", color)
+	cutin.pivot_offset = cutin.size / 2.0
+	cutin.scale = Vector2(1.8, 1.8)
+	cutin.modulate = Color(1, 1, 1, 1)
+	var tween := create_tween()
+	tween.tween_property(cutin, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_interval(0.5 / speed)
+	tween.tween_property(cutin, "modulate:a", 0.0, 0.25)
+
+
+func _flash(color: Color, strength: float = 0.35) -> void:
+	flash_rect.color = Color(color, strength)
+	var tween := create_tween()
+	tween.tween_property(flash_rect, "color:a", 0.0, 0.35)
+
+
+func _shake(amount: float) -> void:
+	shake_amount = maxf(shake_amount, amount)
 
 
 func _clear_children(node: Node) -> void:
@@ -239,6 +331,8 @@ func _show_menu() -> void:
 	var title := _label("Projet Arena", 40, Color("ffd43b"))
 	box.add_child(title)
 	box.add_child(_label("Prototype de combat 3 contre 3", 20, Color(0.8, 0.85, 1)))
+	if profile.wins + profile.losses > 0:
+		box.add_child(_label("%d victoire%s · %d défaite%s · record : %d d'affilée" % [profile.wins, "s" if profile.wins > 1 else "", profile.losses, "s" if profile.losses > 1 else "", profile.best_streak], 17, Color(0.75, 0.9, 0.75)))
 	box.add_child(_spacer(10))
 	box.add_child(_label("Choisis ton personnage :", 22, Color.WHITE))
 	for class_id in CLASS_ORDER:
@@ -253,6 +347,7 @@ func _show_menu() -> void:
 
 
 func _on_class_chosen(class_id: String) -> void:
+	sfx.play("clic")
 	player_class = class_id
 	player_picks = CombatUnit.random_picks(rng)
 	_show_kit()
@@ -274,6 +369,7 @@ func _show_kit() -> void:
 	var passive_pool: Array = cls["passives"]
 	var passive_id: String = passive_pool[int(player_picks["passive"]) % passive_pool.size()]
 	box.add_child(_label("Passif — %s\n%s" % [data.passive_name(passive_id), data.passives[passive_id]["description"]], 18, Color(0.75, 0.9, 0.75)))
+	box.add_child(_label("Astuce : sous tes boutons, une ligne dorée annonce une Synergie avec un allié. Jouez-la le même tour !", 15, Color("ffd43b")))
 	box.add_child(_spacer(8))
 	var fight := Button.new()
 	fight.text = "Combattre"
@@ -339,6 +435,9 @@ func _start_combat() -> void:
 		end_layer.queue_free()
 		end_layer = null
 	synergies_fired = 0
+	stats = {}
+	speed = 1.0
+	sfx.play("clic")
 	# L'équipe du joueur a toujours un Front, un Dégâts et un Soutien (une classe de chaque).
 	var ally_names := ALLY_NAMES.duplicate()
 	var enemy_names := ENEMY_NAMES.duplicate()
@@ -370,6 +469,7 @@ func _start_combat() -> void:
 		(ally_row if unit.team == 0 else enemy_row).add_child(view)
 		views[unit.id] = view
 		view.sync(unit, data)
+		stats[unit.id] = {"damage": 0, "heal": 0, "kos": 0}
 	_begin_intent_phase()
 
 
@@ -392,19 +492,26 @@ func _begin_intent_phase() -> void:
 	ally_think = {}
 	for ally in combat.team_units(0, true):
 		if ally.id != player_id:
-			ally_think[ally.id] = rng.randf_range(1.0, 4.5) if player.is_alive() else rng.randf_range(0.3, 1.5)
+			ally_think[ally.id] = rng.randf_range(0.6, 2.5) if player.is_alive() else rng.randf_range(0.3, 1.2)
+	speed = 1.0
+	last_tick = -1
 	for view in views.values():
 		view.intent_text = ""
 		view.order_badge = 0
 		view.selected_target = false
 		view.targetable = false
+		view.preview_text = ""
 		view.sync(combat.get_unit(view.unit_id), data)
+		# Anticipation : on voit quand la forte d'un ennemi est prête (pas ce qu'il va jouer).
+		var unit := combat.get_unit(view.unit_id)
+		view.threat_text = "FORTE PRÊTE" if unit.team == 1 and combat.can_use(unit, "forte") else ""
 	turn_label.text = "Tour %d" % combat.turn
+	sfx.play("tour")
 	banner.text = ""
 	if combat.is_sudden_death():
-		sudden_label.text = "MORT SUBITE : soins ÷2, dégâts +%d %%  ·  fin au tour %d" % [int(round((combat.sudden_death_damage_mult() - 1.0) * 100.0)), Combat.FORCED_END_TURN]
-	elif combat.turn >= Combat.SUDDEN_DEATH_TURN - 2:
-		sudden_label.text = "Mort subite au tour %d" % Combat.SUDDEN_DEATH_TURN
+		sudden_label.text = "MORT SUBITE : soins ÷2, dégâts +%d %%  ·  fin au tour %d" % [int(round((combat.sudden_death_damage_mult() - 1.0) * 100.0)), combat.forced_end_turn]
+	elif combat.turn >= combat.sudden_death_turn - 2:
+		sudden_label.text = "Mort subite au tour %d" % combat.sudden_death_turn
 	else:
 		sudden_label.text = ""
 	if player.is_alive():
@@ -417,11 +524,24 @@ func _begin_intent_phase() -> void:
 
 
 func _process(delta: float) -> void:
+	# Secousse d'écran.
+	if shake_amount > 0.0:
+		shake_amount = maxf(shake_amount - delta * 40.0, 0.0)
+		stage.position = Vector2(randf_range(-shake_amount, shake_amount), randf_range(-shake_amount, shake_amount))
+	elif stage.position != Vector2.ZERO:
+		stage.position = Vector2.ZERO
 	if phase != "intent":
 		return
 	time_left = maxf(time_left - delta, 0.0)
 	timer_bar.value = time_left
 	timer_label.text = "%d" % int(ceil(time_left))
+	# Les 3 dernières secondes : le timer rougit et fait tic.
+	var seconds := int(ceil(time_left))
+	var urgent := seconds <= 3 and _player().is_alive() and not player_ready
+	(timer_bar.get_theme_stylebox("fill") as StyleBoxFlat).bg_color = Color("ff6b6b") if urgent else Color("f2c14e")
+	if urgent and seconds != last_tick and seconds > 0:
+		last_tick = seconds
+		sfx.play("tic")
 	# Les alliés IA décident (ou ajustent) leur Intention en voyant les autres.
 	for ally_id in ally_think.keys():
 		ally_think[ally_id] = float(ally_think[ally_id]) - delta
@@ -450,6 +570,8 @@ func _ally_decide(ally_id: String) -> void:
 	if previous != null and (previous.skill_id != choice.skill_id or previous.target_id != choice.target_id):
 		views[ally_id].float_text("Ajuste", Color("9ad1ff"))
 	_refresh_intents()
+	if phase == "intent":
+		_refresh_skill_buttons()
 
 
 ## Les alliés qui ont déjà décidé revoient leur choix peu après un changement d'Intention.
@@ -472,6 +594,7 @@ func _on_skill_pressed(tier: String) -> void:
 	var player := _player()
 	if not combat.can_use(player, tier):
 		return
+	sfx.play("clic")
 	selected_tier = tier
 	selected_target = ""
 	player_ready = false
@@ -489,7 +612,10 @@ func _on_skill_pressed(tier: String) -> void:
 
 
 func _on_unit_tapped(unit_id: String) -> void:
-	if phase != "intent" or selected_tier == "":
+	if phase != "intent":
+		return
+	if selected_tier == "":
+		_show_unit_info(unit_id)
 		return
 	var player := _player()
 	var skill_id: String = player.skills[selected_tier]
@@ -498,15 +624,29 @@ func _on_unit_tapped(unit_id: String) -> void:
 		return
 	selected_target = unit_id
 	player_ready = false
+	sfx.play("clic", 1.25)
 	_refresh_skill_buttons()
 	_refresh_intents()
 	_allies_reconsider()
+
+
+## Toucher un perso sans compétence choisie : on voit son kit et ses recharges (jamais ses Intentions).
+func _show_unit_info(unit_id: String) -> void:
+	var unit := combat.get_unit(unit_id)
+	var parts: Array = []
+	for tier in CombatUnit.TIERS:
+		var skill_id: String = unit.skills[tier]
+		var remaining := combat.cooldown_remaining(unit, tier)
+		var state: String = "prête" if combat.can_use(unit, tier) else ("dans %d tour%s" % [remaining, "s" if remaining > 1 else ""] if remaining > 0 else "utilisée")
+		parts.append("%s (%s)" % [data.skill_name(skill_id), state] if tier != "basique" else data.skill_name(skill_id))
+	skill_info.text = "%s : %s. Passif : %s." % [_short_name(unit_id), " · ".join(parts), data.passive_name(unit.passive)]
 
 
 func _on_ready_pressed() -> void:
 	if phase != "intent":
 		return
 	player_ready = true
+	sfx.play("clic", 0.8)
 	_refresh_skill_buttons()
 
 
@@ -521,13 +661,33 @@ func _refresh_skill_buttons() -> void:
 		if used_once:
 			label = "%s\nDéjà utilisée" % data.skill_name(skill_id)
 		elif remaining > 0:
-			if tier == "forte" and combat.turn < Combat.STRONG_AVAILABLE_FROM_TURN and int(player.cooldown_until.get(tier, 0)) <= combat.turn:
-				label = "%s\nDès le tour %d" % [data.skill_name(skill_id), Combat.STRONG_AVAILABLE_FROM_TURN]
+			if tier == "forte" and combat.turn < combat.strong_available_from_turn and int(player.cooldown_until.get(tier, 0)) <= combat.turn:
+				label = "%s\nDès le tour %d" % [data.skill_name(skill_id), combat.strong_available_from_turn]
 			else:
 				label = "%s\nRecharge : %d" % [data.skill_name(skill_id), remaining]
 		button.text = label
 		button.disabled = phase != "intent" or not combat.can_use(player, tier)
 		button.modulate = Color(1.0, 0.9, 0.45) if tier == selected_tier else Color.WHITE
+		# Synergies : avec quel allié cette compétence se combine, et s'il la prépare déjà.
+		var hint := ""
+		var hot := false
+		for partner in combat.synergy_partners(player).get(tier, []):
+			var intent: CombatAction = ally_intents.get(partner["ally_id"])
+			if intent != null and intent.skill_id == partner["skill_id"] and combat.can_use(player, tier):
+				var synergy := data.find_synergy(skill_id, partner["skill_id"])
+				var ally_name: String = _short_name(partner["ally_id"]).split(" ")[0]
+				if bool(synergy.get("same_target", false)):
+					hint = "%s prépare %s : vise %s !" % [ally_name, data.skill_name(partner["skill_id"]), _short_name(intent.target_id)]
+				else:
+					hint = "%s prépare %s !" % [ally_name, data.skill_name(partner["skill_id"])]
+				hot = true
+				break
+			hint = "Synergie : %s" % data.skill_name(partner["skill_id"])
+		var synergy_label: Label = synergy_labels[tier]
+		synergy_label.text = hint
+		synergy_label.add_theme_color_override("font_color", Color("ffd43b") if hot else Color(1, 0.83, 0.23, 0.6))
+		if hot and not button.disabled and tier != selected_tier:
+			button.modulate = Color(1.0, 0.95, 0.7)
 	passive_info.text = "Passif : %s — %s" % [data.passive_name(player.passive), data.passives[player.passive]["description"]]
 	if selected_tier != "":
 		var skill := data.skill(player.skills[selected_tier])
@@ -544,13 +704,36 @@ func _refresh_skill_buttons() -> void:
 		hint_label.text = "2. Touche une cible (en surbrillance)"
 	else:
 		hint_label.text = "Intention prête. Tu peux encore changer."
+		var target_unit := combat.get_unit(selected_target)
+		var forecast := combat.preview(player, player.skills[selected_tier], target_unit)
+		if forecast["lethal"]:
+			hint_label.text = "Coup fatal si personne ne le soigne avant !"
 	# Cibles possibles en surbrillance.
 	var valid: Array = []
 	if phase == "intent" and selected_tier != "" and player.is_alive():
 		valid = combat.valid_targets(player, player.skills[selected_tier])
 	for view in views.values():
-		view.targetable = valid.has(combat.get_unit(view.unit_id))
+		var unit := combat.get_unit(view.unit_id)
+		view.targetable = valid.has(unit)
 		view.selected_target = view.unit_id == selected_target and phase == "intent"
+		view.preview_text = ""
+		if view.targetable:
+			var forecast := combat.preview(player, player.skills[selected_tier], unit)
+			if forecast["revive"]:
+				view.preview_text = "Relever"
+				view.preview_color = Color("51cf66")
+			elif forecast["blocked"]:
+				view.preview_text = "Bloqué"
+				view.preview_color = Color("9ad1ff")
+			elif forecast["lethal"]:
+				view.preview_text = "KO !"
+				view.preview_color = Color("ff6b6b")
+			elif int(forecast["damage"]) > 0:
+				view.preview_text = "-%d" % int(forecast["damage"])
+				view.preview_color = Color("ffa94d")
+			elif int(forecast["heal"]) > 0:
+				view.preview_text = "+%d" % int(forecast["heal"])
+				view.preview_color = Color("51cf66")
 
 
 ## Les Intentions alliées : bulle translucide au-dessus de chaque allié et trait vers sa cible.
@@ -618,9 +801,12 @@ func _submit_turn() -> void:
 
 func _play_events(events: Array) -> void:
 	overlay.links = []
+	hint_label.text = "Touche l'écran pour accélérer"
 	for view in views.values():
 		view.targetable = false
 		view.selected_target = false
+		view.preview_text = ""
+		view.threat_text = ""
 	for event in events:
 		await _play_event(event)
 	for view in views.values():
@@ -649,6 +835,11 @@ func _play_event(event: Dictionary) -> void:
 		"action":
 			var actor: UnitView = views[event["actor"]]
 			actor.do_lunge()
+			if event["tier"] == "forte":
+				sfx.play("forte")
+				_show_cutin(data.skill_name(event["skill"]).to_upper() + " !", Color("ffa94d") if combat.get_unit(event["actor"]).team == 1 else Color("9ad1ff"))
+				_shake(6.0)
+				await _wait(0.35)
 			var targets: Array = event["targets"]
 			var target_text := ""
 			if targets.size() == 1 and targets[0] != event["actor"]:
@@ -661,23 +852,38 @@ func _play_event(event: Dictionary) -> void:
 			await _wait(0.45)
 		"damage":
 			var view: UnitView = views[event["target"]]
+			var amount := int(event["amount"])
+			var big: bool = amount >= 45 or str(event["kind"]) == "synergie"
 			view.set_hp(int(event["hp"]))
-			view.do_flash()
+			view.do_hurt(1.6 if big else 1.0)
 			var color := Color("ff6b6b")
 			if event["kind"] == "dot":
 				color = Color("ff9f43")
 			elif event["kind"] == "synergie":
 				color = Color("ffd43b")
-			view.float_text("-%d" % int(event["amount"]), color)
-			await _wait(0.22)
+			view.float_text("-%d" % amount, color, big)
+			sfx.play("gros_coup" if big else "coup", randf_range(0.9, 1.1))
+			if big:
+				_shake(5.0)
+			var source := str(event.get("source", ""))
+			if stats.has(source):
+				stats[source]["damage"] += amount
+				if int(event["hp"]) <= 0:
+					stats[source]["kos"] += 1
+			await _wait(0.24)
 		"heal":
 			if int(event["amount"]) > 0:
 				var view: UnitView = views[event["target"]]
 				view.set_hp(int(event["hp"]))
 				view.float_text("+%d" % int(event["amount"]), Color("51cf66"))
+				sfx.play("soin", randf_range(0.95, 1.05), -4.0)
+				var healer := str(event.get("source", ""))
+				if stats.has(healer):
+					stats[healer]["heal"] += int(event["amount"])
 				await _wait(0.22)
 		"absorbed":
 			views[event["target"]].float_text("Bloqué", Color("9ad1ff"))
+			sfx.play("bloque")
 			await _wait(0.2)
 		"status":
 			var view: UnitView = views[event["target"]]
@@ -693,24 +899,35 @@ func _play_event(event: Dictionary) -> void:
 				views[event["target"]].float_text("Repoussé", Color("ffa94d"))
 		"ko":
 			views[event["target"]].set_hp(0)
+			views[event["target"]].float_text("KO", Color("ff6b6b"), true)
 			log_label.text = "%s est KO !" % _short_name(event["target"])
-			await _wait(0.5)
+			sfx.play("ko")
+			_shake(9.0)
+			_flash(Color(1, 0.3, 0.3), 0.25)
+			await _wait(0.6)
 		"revive":
 			var view: UnitView = views[event["target"]]
 			view.set_hp(int(event["hp"]))
-			view.float_text("Relevé !", Color("51cf66"))
+			view.float_text("Relevé !", Color("51cf66"), true)
 			log_label.text = "%s est relevé !" % _short_name(event["target"])
+			sfx.play("releve")
+			_flash(Color(0.5, 1, 0.6), 0.3)
 			await _wait(0.6)
 		"action_lost":
 			log_label.text = "%s est KO : son action est perdue." % _short_name(event["actor"])
 			await _wait(0.4)
 		"synergy":
+			var ours: bool = combat.get_unit(str(event["actors"][0])).team == 0
 			banner.text = "SYNERGIE : %s !" % event["name"]
-			if combat.get_unit(event["actors"][0]).team == 0:
+			if ours:
 				synergies_fired += 1
 			for unit_id in event["actors"]:
-				views[unit_id].float_text("Synergie", Color("ffd43b"))
-			await _wait(0.9)
+				views[unit_id].float_text("Synergie", Color("ffd43b"), true)
+			sfx.play("synergie")
+			_show_cutin("SYNERGIE !\n" + str(event["name"]), Color("ffd43b") if ours else Color("ff8787"))
+			_flash(Color("ffd43b") if ours else Color("ff6b6b"), 0.35)
+			_shake(7.0)
+			await _wait(1.0)
 		"cooldown_reduced":
 			views[event["target"]].float_text("Recharge -%d" % int(event["amount"]), Color("9ad1ff"))
 		"turn_end":
@@ -725,7 +942,14 @@ func _short_name(unit_id: String) -> String:
 
 
 func _wait(seconds: float) -> void:
-	await get_tree().create_timer(seconds).timeout
+	await get_tree().create_timer(seconds / speed).timeout
+
+
+## Pendant la résolution, toucher l'écran accélère l'animation du tour.
+func _input(event: InputEvent) -> void:
+	if phase == "resolve" and event is InputEventMouseButton and event.pressed:
+		speed = 3.0
+		hint_label.text = "Accéléré"
 
 
 # ---------------------------------------------------------------------------
@@ -737,15 +961,42 @@ func _show_end() -> void:
 	end_layer = _make_layer()
 	var box: VBoxContainer = end_layer.get_meta("box")
 	var won := combat.winner == 0
+	var result := profile.record_result(won)
+	sfx.play("victoire" if won else "defaite")
 	box.add_child(_label("Victoire !" if won else "Défaite", 48, Color("ffd43b") if won else Color("ff6b6b")))
 	var reason := "Toute l'équipe adverse est KO." if combat.end_reason == "ko" else "Fin forcée : l'équipe avec le plus de PV l'emporte (%d contre %d)." % [combat.team_total_hp(0), combat.team_total_hp(1)]
 	if combat.end_reason == "ko" and not won:
 		reason = "Toute ton équipe est KO."
 	box.add_child(_label(reason, 20, Color.WHITE))
 	box.add_child(_label("%d tours  ·  %d Synergie%s déclenchée%s par ton équipe" % [combat.turn, synergies_fired, "s" if synergies_fired > 1 else "", "s" if synergies_fired > 1 else ""], 18, Color(0.8, 0.85, 1)))
+	# Ta part du combat, et le meilleur des 6.
+	var mine: Dictionary = stats.get(player_id, {"damage": 0, "heal": 0, "kos": 0})
+	box.add_child(_label("Toi : %d dégâts · %d soins · %d KO" % [mine["damage"], mine["heal"], mine["kos"]], 18, Color.WHITE))
+	var best_id := player_id
+	var best_score := -1.0
+	for unit_id in stats:
+		var score := float(stats[unit_id]["damage"]) + float(stats[unit_id]["heal"]) + 40.0 * float(stats[unit_id]["kos"])
+		if score > best_score:
+			best_score = score
+			best_id = unit_id
+	var best_text := "Meilleur du combat : toi !" if best_id == player_id else "Meilleur du combat : %s" % _short_name(best_id)
+	box.add_child(_label(best_text, 18, Color("ffd43b") if best_id == player_id else Color(0.8, 0.85, 1)))
+	# La série : la raison de relancer.
+	var streak_text := ""
+	if won:
+		streak_text = "Série : %d victoire%s d'affilée" % [profile.streak, "s" if profile.streak > 1 else ""]
+		if result["new_record"]:
+			streak_text += " — nouveau record !"
+		else:
+			streak_text += " (record : %d)" % profile.best_streak
+	elif int(result["previous_streak"]) > 0:
+		streak_text = "Série brisée après %d victoire%s. Record : %d" % [result["previous_streak"], "s" if int(result["previous_streak"]) > 1 else "", profile.best_streak]
+	else:
+		streak_text = "Record : %d victoire%s d'affilée" % [profile.best_streak, "s" if profile.best_streak > 1 else ""]
+	box.add_child(_label(streak_text, 20, Color("51cf66") if won else Color("ffa94d")))
 	box.add_child(_spacer(10))
 	var again := Button.new()
-	again.text = "Rejouer"
+	again.text = "Rejouer" if not won else "Combat suivant"
 	again.custom_minimum_size = Vector2(0, 76)
 	again.add_theme_font_size_override("font_size", 30)
 	again.pressed.connect(_start_combat)

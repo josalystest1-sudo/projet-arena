@@ -77,6 +77,16 @@ func damage_from(events: Array, source_id: String, target_id: String, kind: Stri
 	return total
 
 
+## Remet tout le monde à fond de PV (pour tester une règle sans que personne ne tombe).
+func heal_all(combat: Combat) -> void:
+	for unit in combat.units:
+		unit.hp = unit.max_hp
+
+
+func damage_from_all(events: Array, target_id: String) -> int:
+	return damage_to(events, target_id)
+
+
 func events_of_type(events: Array, type: String) -> Array:
 	var result := []
 	for event in events:
