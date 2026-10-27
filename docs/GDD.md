@@ -195,7 +195,7 @@ Chaque classe a au moins une Synergie avec chaque classe qui peut lui servir d'a
 - Un KO peut être relevé par un Soutien (une fois par perso et par combat).
 - **Mort subite** : à partir d'un tour donné, les soins sont divisés par deux et tous les dégâts augmentent de 25 % par tour. Quelques tours plus tard, fin forcée : le duo avec le plus de PV totaux gagne. Jamais de match nul. Les tours seront fixés par le simulateur, avec une cible : 90 % des combats finis entre le tour 8 et le tour 15.
 
-**La Tour (PvE).** Même moteur, même tour par tour. Le duo affronte à chaque étage un groupe de 2 à 3 ennemis construits à partir des classes du jeu (des Échos d'autres joueurs, ou des monstres qui en réutilisent les kits). Les PV et les recharges ne se réinitialisent pas entièrement entre deux étages (20 % de PV rendus, recharges conservées), donc chaque étage est aussi une gestion de ce qu'on garde pour le suivant. Pas de mort subite à la Tour : un étage se perd quand le duo tombe, et la montée s'arrête là. Le record (étage atteint) est classé par classe et par saison.
+**La Tour (PvE).** Même moteur, même tour par tour. Le duo affronte à chaque étage un groupe de 1 à 4 monstres tirés d'un bestiaire (familles de monstres avec leurs propres compétences, et des Gardiens aux étages clés ; décision du 27 octobre). Les PV et les recharges ne se réinitialisent pas entièrement entre deux étages (20 % de PV rendus, recharges conservées), donc chaque étage est aussi une gestion de ce qu'on garde pour le suivant. Pas de mort subite à la Tour : un étage se perd quand le duo tombe, et la montée s'arrête là. Le record (étage atteint) est classé par classe et par saison.
 
 ## Matchmaking et Échos
 

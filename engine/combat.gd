@@ -87,9 +87,15 @@ static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_
 			if member.has("name"):
 				picks = picks.duplicate()
 				picks["name"] = member["name"]
-			# En duo, le budget du Destin dépend aussi de la classe du partenaire.
-			var partner_class := str(members[1 - slot]["class_id"]) if members.size() == 2 else ""
-			var unit := CombatUnit.from_class(p_data, member["class_id"], picks, unit_id, team, slot, partner_class, bool(member.get("is_acolyte", false)))
+			var unit: CombatUnit
+			if member.has("monster_id"):
+				unit = CombatUnit.from_monster(p_data, member["monster_id"], unit_id, team, slot)
+				if member.has("name"):
+					unit.display_name = str(member["name"])
+			else:
+				# En duo, le budget du Destin dépend aussi de la classe du partenaire.
+				var partner_class := str(members[1 - slot].get("class_id", "")) if members.size() == 2 else ""
+				unit = CombatUnit.from_class(p_data, member["class_id"], picks, unit_id, team, slot, partner_class, bool(member.get("is_acolyte", false)))
 			unit.is_player = bool(member.get("is_player", false))
 			if member.has("max_hp_mult"):
 				unit.max_hp = maxi(1, int(round(float(unit.max_hp) * float(member["max_hp_mult"]))))
@@ -523,6 +529,9 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 				var dealt := _deal_damage(actor, target, int(effect["power"]), element, mult, bool(context["single_target"]))
 				if dealt > 0:
 					_current_hits[target.id] = true
+				# Vol de vie (Dévorer, Drain d'âme) : une part des dégâts infligés soigne l'attaquant.
+				if dealt > 0 and effect.has("lifesteal"):
+					_self_heal(actor, int(round(float(dealt) * float(effect["lifesteal"]))), str(context["skill_id"]))
 				if actor.passive == "brasier" and element == "feu" and target.is_alive():
 					_add_status(target, {"id": "brulure", "turns": int(_pp("brasier", "turns", 1)), "value": int(_pp("brasier", "value", 10)), "source": actor.id})
 		"heal":
@@ -583,6 +592,10 @@ func _damage_amount(source: CombatUnit, target: CombatUnit, base_power: int, mul
 		amount *= 1.0 + _pp("focalisation", "bonus", 0.2)
 	if source.passive == "veteran":
 		amount *= 1.0 + _pp("veteran", "damage", 0.1) * _veteran_mult(source)
+	if source.passive == "meute":
+		amount *= 1.0 + _pp("meute", "bonus", 0.1) * float(allies_of(source, true).size() - 1)
+	if source.has_status("affaibli"):
+		amount *= maxf(0.0, 1.0 - float(source.get_status("affaibli")["value"]) / 100.0)
 	amount *= sudden_death_damage_mult()
 	if target.passive == "peau_de_fer":
 		amount *= 1.0 - _pp("peau_de_fer", "reduction", 0.15)
@@ -675,6 +688,14 @@ func _heal(source: CombatUnit, target: CombatUnit, base_power: int, kind: String
 	target.hp += healed
 	_emit({"type": "heal", "source": source.id, "target": target.id, "amount": healed, "kind": kind, "hp": target.hp})
 	return healed
+
+
+## Un soin qu'une unité se donne par ses propres effets (vol de vie, Régénération) : comme ses autres soins, il suit
+## son multiplicateur de soins et s'arrête quand son camp est épuisé (ennemis de la Tour).
+func _self_heal(unit: CombatUnit, amount: int, kind: String) -> int:
+	if is_exhausted(unit):
+		return 0
+	return _heal(unit, unit, int(round(float(amount) * unit.heal_mult)), kind, true)
 
 
 ## Prière : une part (ratio) du soin qui dépasse les PV max devient une barrière (un petit soin n'est jamais perdu).
@@ -914,6 +935,8 @@ func _end_of_turn() -> void:
 				_apply_damage(source, unit, amount, status_id, "dot")
 		if unit.is_alive() and unit.passive == "lumiere_interieure" and unit.hp < unit.max_hp:
 			_heal(unit, unit, int(round(float(unit.max_hp) * _pp("lumiere_interieure", "heal", 0.05))), "lumiere_interieure", true)
+		if unit.is_alive() and unit.passive == "regeneration" and unit.hp < unit.max_hp:
+			_self_heal(unit, int(round(float(unit.max_hp) * _pp("regeneration", "heal", 0.05))), "regeneration")
 
 	# Les états avancent d'un tour.
 	for unit in units:

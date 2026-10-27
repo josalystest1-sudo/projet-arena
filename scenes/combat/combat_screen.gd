@@ -461,7 +461,12 @@ func _setup_views(enemies: Array) -> void:
 	for unit in order:
 		var view := UnitView.new()
 		view.setup(unit)
-		view.subtitle = data.class_name_of(unit.class_id)
+		# Un monstre porte déjà son nom d'espèce ; une classe s'écrit à côté du nom du perso.
+		view.subtitle = "" if unit.is_monster else data.class_name_of(unit.class_id)
+		if unit.team == 1 and enemies.size() >= 4:
+			view.set_size_mode("compact")
+		elif unit.team == 1 and enemies.size() == 1:
+			view.set_size_mode("big")
 		view.tapped.connect(_on_unit_tapped)
 		(ally_units if unit.team == 0 else enemy_units).add_child(view)
 		views[unit.id] = view
@@ -490,12 +495,15 @@ func _start_floor() -> void:
 	stats = {}
 	speed = 1.0
 	mode = "tour"
+	var family := str(data.monster_families.get(tower.planned_family(rng), ""))
 	combat = tower.create_combat(rng)
 	_setup_views(combat.team_units(1))
+	for unit in combat.team_units(1):
+		profile.see_monster(unit.class_id)
 	if tower.is_boss_floor():
-		_show_cutin("ÉTAGE %d : GARDIEN" % tower.current_floor, Color("ffa94d"))
+		_show_cutin("ÉTAGE %d : %s" % [tower.current_floor, combat.team_units(1)[0].display_name.to_upper()], Color("ffa94d"))
 	else:
-		_show_cutin("ÉTAGE %d" % tower.current_floor, GOLD)
+		_show_cutin("ÉTAGE %d : %s" % [tower.current_floor, family.to_upper()], GOLD)
 	_begin_intent_phase()
 
 
@@ -522,7 +530,7 @@ func _show_floor_end() -> void:
 				text = "%s : KO, relevé avec %d PV" % [_short_name(unit.id), int(line["after"])]
 			box.add_child(_label(text, 19, Color.WHITE if unit.is_player else ACOLYTE_BLUE))
 		var next := tower.current_floor
-		box.add_child(_label("Étage %d : %d ennemis%s" % [next, int(tower.floor_info()["enemies"]), ", dont un Gardien" if tower.is_boss_floor() else ""], 17, Color("ffa94d")))
+		box.add_child(_label("Étage %d : %s" % [next, _floor_preview()], 17, Color("ffa94d")))
 		box.add_child(_spacer(8))
 		var climb := Button.new()
 		climb.text = "Monter à l'étage %d" % next
@@ -537,6 +545,17 @@ func _show_floor_end() -> void:
 		box.add_child(stop)
 		return
 	_end_climb()
+
+
+## Les monstres de l'étage à venir, annoncés entre deux étages : « Gardien : Liche, avec Squelette et Goule ».
+func _floor_preview() -> String:
+	var names: Array = []
+	for enemy in tower.plan_floor(rng):
+		names.append(str(enemy["name"]))
+	if tower.is_boss_floor():
+		var rest := names.slice(1)
+		return "Gardien : %s%s" % [names[0], (", avec " + ", ".join(rest)) if not rest.is_empty() else ", seul"]
+	return "%s — %s" % [str(data.monster_families.get(tower.planned_family(rng), "")), ", ".join(names)]
 
 
 ## La montée est finie (tombé, sommet franchi ou abandon) : l'étage atteint, et le record de ta classe.
@@ -752,7 +771,11 @@ func _show_unit_info(unit_id: String) -> void:
 		var remaining := combat.cooldown_remaining(unit, tier)
 		var state: String = "prête" if combat.can_use(unit, tier) else ("dans %d tour%s" % [remaining, "s" if remaining > 1 else ""] if remaining > 0 else "utilisée")
 		parts.append("%s (%s)" % [data.skill_name(skill_id), state] if tier != "basique" else data.skill_name(skill_id))
-	skill_info.text = "%s : %s. Passif : %s." % [_short_name(unit_id), " · ".join(parts), data.passive_name(unit.passive)]
+	skill_info.text = "%s : %s." % [_short_name(unit_id), " · ".join(parts)]
+	if unit.passive != "":
+		skill_info.text += " Passif : %s." % data.passive_name(unit.passive)
+	if unit.is_monster:
+		skill_info.text = "%s (%s). %s" % [skill_info.text, data.monster_rank_name(unit.class_id), str(data.monsters[unit.class_id].get("description", ""))]
 	if unit_id == acolyte_id:
 		skill_info.text += " " + _acolyte_rules_text()
 

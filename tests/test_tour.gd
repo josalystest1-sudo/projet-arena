@@ -21,20 +21,56 @@ func end_floor(combat: Combat, won: bool) -> void:
 	combat.resolve_turn([])
 
 
-func test_dix_etages_de_deux_ou_trois_ennemis() -> void:
+func test_dix_etages_de_un_a_quatre_monstres() -> void:
 	var tower := new_tower()
 	assert_eq(tower.floor_count(), 10, "10 étages")
-	var rng := seeded(1)
-	for number in range(1, 11):
-		tower.current_floor = number
-		var enemies := tower.floor_enemies(rng)
-		assert_eq(enemies.size(), int(tower.floor_info()["enemies"]), "étage %d : nombre d'ennemis" % number)
-		assert_between(enemies.size(), 2, 3, "étage %d : 2 ou 3 ennemis" % number)
-		for enemy in enemies:
-			assert_true(data.classes.has(enemy["class_id"]), "les ennemis sont construits avec les classes du jeu")
-		if tower.is_boss_floor():
-			assert_true(str(enemies[0]["name"]).begins_with("Gardien"), "étage %d : un Gardien" % number)
-			assert_true(float(enemies[0]["max_hp_mult"]) > float(enemies[1]["max_hp_mult"]), "le Gardien a plus de PV")
+	var sizes := {}
+	for seed_value in range(1, 30):
+		var rng := seeded(seed_value)
+		for number in range(1, 11):
+			tower.current_floor = number
+			var enemies := tower.floor_enemies(rng)
+			assert_between(enemies.size(), 1, 4, "étage %d : de 1 à 4 monstres" % number)
+			sizes[enemies.size()] = true
+			var family := str(data.monsters[enemies[0]["monster_id"]]["family"])
+			for enemy in enemies:
+				assert_true(data.monsters.has(enemy["monster_id"]), "des monstres du bestiaire")
+				assert_eq(str(data.monsters[enemy["monster_id"]]["family"]), family, "étage %d : une seule famille" % number)
+			if tower.is_boss_floor():
+				assert_eq(str(data.monsters[enemies[0]["monster_id"]]["rank"]), "gardien", "étage %d : un Gardien" % number)
+			else:
+				var total := 0.0
+				for enemy in enemies:
+					assert_false(str(data.monsters[enemy["monster_id"]]["rank"]) == "gardien", "pas de Gardien hors des étages 5 et 10")
+					total += float(data.monsters[enemy["monster_id"]]["menace"])
+				# Au plus près du budget : une famille n'a pas toujours de quoi tomber pile.
+				assert_between(total, float(tower.floor_info()["budget"]) - 0.75, float(tower.floor_info()["budget"]) + Tower.BUDGET_SLACK, "étage %d : la menace tombe près du budget" % number)
+	assert_eq(sizes.keys().size(), 4, "on croise des étages de 1, 2, 3 et 4 monstres")
+
+
+func test_l_etage_5_un_gardien_seul_l_etage_10_avec_escorte() -> void:
+	var tower := new_tower()
+	tower.current_floor = 5
+	assert_eq(tower.floor_enemies(seeded(4)).size(), 1, "étage 5 : le Gardien seul")
+	tower.current_floor = 10
+	var enemies := tower.floor_enemies(seeded(4))
+	assert_true(enemies.size() >= 2, "étage 10 : le Gardien et son escorte")
+	for enemy in enemies.slice(1):
+		assert_eq(str(data.monsters[enemy["monster_id"]]["family"]), str(data.monsters[enemies[0]["monster_id"]]["family"]), "une escorte de sa famille")
+
+
+func test_l_etage_annonce_est_celui_qu_on_combat() -> void:
+	var tower := new_tower()
+	var rng := seeded(8)
+	var announced := tower.plan_floor(rng).duplicate(true)
+	var combat := tower.create_combat(rng)
+	var fought: Array = []
+	for unit in combat.team_units(1):
+		fought.append(unit.class_id)
+	var expected: Array = []
+	for enemy in announced:
+		expected.append(enemy["monster_id"])
+	assert_eq(fought, expected, "les monstres annoncés entre deux étages sont ceux du combat")
 
 
 func test_meme_graine_meme_tour() -> void:
@@ -48,8 +84,11 @@ func test_les_ennemis_suivent_la_force_de_l_etage() -> void:
 	var combat := tower.create_combat(seeded(2))
 	var info := tower.floor_info()
 	for enemy in combat.team_units(1):
-		var base := int(data.classes[enemy.class_id]["stats"]["max_hp"])
+		assert_true(enemy.is_monster, "un monstre")
+		var base := int(data.monsters[enemy.class_id]["stats"]["max_hp"])
 		assert_eq(enemy.max_hp, int(round(base * float(info["hp"]))), "PV réglés par l'étage")
+		var power := int(data.monsters[enemy.class_id]["stats"]["power"])
+		assert_eq(enemy.power, int(round(power * float(info["power"]))), "puissance réglée par l'étage")
 		assert_eq(enemy.hp, enemy.max_hp, "les ennemis commencent à fond")
 
 
