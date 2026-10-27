@@ -15,8 +15,10 @@ func assert_move(decision: Dictionary, skill: String, target: String, message: S
 
 # --- Libre : chacun joue son rôle ----------------------------------------------
 
-func test_libre_un_front_te_protege_des_que_possible() -> void:
+func test_libre_un_front_te_protege_des_que_tu_as_perdu_des_pv() -> void:
 	var combat := duo_combat(["mage", "guerrier"], GM, {"guerrier": {"moyenne": 1}})
+	assert_eq(announce(combat, CombatAI.LIBRE)["action"].skill_id, "taillade", "tu as tous tes PV : il frappe")
+	combat.get_unit("a1").hp = 160
 	var decision := announce(combat, CombatAI.LIBRE)
 	assert_move(decision, "rempart", "a1", "le Guerrier pose son Rempart sur toi")
 	assert_eq(decision["rule"], "protege", "règle : il te protège")
@@ -26,6 +28,7 @@ func test_libre_un_front_te_protege_des_que_possible() -> void:
 
 func test_libre_un_front_provoque_puis_joue_sa_forte_puis_frappe_le_plus_bas() -> void:
 	var combat := duo_combat(["mage", "guerrier"], ["guerrier", "pretre"])
+	combat.get_unit("a1").hp = 160
 	combat.get_unit("b2").hp = 150
 	assert_move(announce(combat, CombatAI.LIBRE), "provocation", "b2", "Provocation sur l'ennemi le plus bas")
 	jump_to_turn(combat, 3)

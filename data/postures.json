@@ -5,7 +5,7 @@
       "name": "Libre",
       "summary": "Il joue son rôle.",
       "roles": {
-        "front": "Il te protège dès que sa moyenne est prête, joue sa forte dès qu'elle est prête, sinon frappe l'ennemi le plus bas.",
+        "front": "Dès que tu as perdu des PV, il te protège avec sa moyenne (si elle est prête). Sinon il joue sa forte dès qu'elle est prête, sinon il frappe l'ennemi le plus bas.",
         "degats": "Il frappe l'ennemi le plus bas : forte dès qu'elle est prête, sinon moyenne, sinon basique. Il ne te secourt que si l'un de vous passe sous 50 % de PV.",
         "soutien": "Il soigne le plus blessé dès que l'un de vous passe sous 50 % de PV, sinon joue sa forte dès qu'elle est prête, sinon frappe l'ennemi le plus bas."
       }
