@@ -347,6 +347,9 @@ func resolve_turn(actions: Array) -> Array[Dictionary]:
 			if not _actions.has(unit.id):
 				_actions[unit.id] = default_action(unit)
 			_queue.append(unit)
+			# L'acolyte qui garde sa forte pour une Synergie : retenu, pour qu'il n'attende jamais deux tours de suite.
+			if _actions[unit.id] != null and _actions[unit.id].waits_for_synergy:
+				unit.flags["waited_for_synergy"] = turn
 		else:
 			_acted[unit.id] = true
 	_queue.sort_custom(_compare_speed)
@@ -650,7 +653,6 @@ func _apply_damage(source: CombatUnit, target: CombatUnit, amount: int, element:
 	_emit({"type": "damage", "source": source_id, "target": target.id, "amount": amount, "element": element, "kind": kind, "hp": target.hp})
 	if source != null and source.team != target.team and kind != "dot":
 		target.last_hit_by = source.id
-		target.damage_taken_from[source.id] = int(target.damage_taken_from.get(source.id, 0)) + amount
 	if source != null:
 		damage_by_team[source.team] = int(damage_by_team[source.team]) + amount
 		if not _damage_dealt.has(source.id):

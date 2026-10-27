@@ -32,8 +32,6 @@ var player_class: String = ""
 var player_picks: Dictionary = {}
 var acolyte: Dictionary = {}
 var acolyte_name: String = ""
-## La posture que l'acolyte prend au début de chaque combat (on la change aussi pendant le combat).
-var posture: String = CombatAI.LIBRE
 
 var content: Control
 var nav_bar: HBoxContainer
@@ -54,12 +52,9 @@ func _ready() -> void:
 	sfx = Sfx.new()
 	add_child(sfx)
 	sfx.muted = profile.muted
-	posture = profile.posture
 	theme = UiKit.make_theme()
 	_build_layout()
-	var has_duo := load_saved_duo()
-	_check_posture()
-	show_screen("home" if has_duo else "creation")
+	show_screen("home" if load_saved_duo() else "creation")
 
 
 func _seed_from_url() -> int:
@@ -164,20 +159,6 @@ func create_character(class_id: String) -> void:
 func draw_acolyte() -> void:
 	acolyte = Duo.draw_acolyte(data, player_class, player_picks, rng)
 	acolyte_name = ACOLYTE_NAMES[rng.randi_range(0, ACOLYTE_NAMES.size() - 1)]
-	_check_posture()
-
-
-## Les postures de ton acolyte : elles dépendent de son rôle (Libre, les deux de son rôle, Garde ta forte).
-func acolyte_postures() -> Array:
-	if acolyte.is_empty():
-		return [CombatAI.LIBRE, CombatAI.GARDE_TA_FORTE]
-	return CombatAI.postures_for(data, acolyte["class_id"])
-
-
-## Une posture gardée qui n'existe pas pour ce rôle (autre acolyte, ancienne sauvegarde) redevient Libre.
-func _check_posture() -> void:
-	if not acolyte_postures().has(posture):
-		set_posture(CombatAI.LIBRE)
 
 
 ## Prototype seulement : un autre tirage pour le joueur. L'acolyte reste s'il fait toujours Synergie avec lui.
@@ -193,12 +174,6 @@ func reroll_player() -> void:
 func reroll_acolyte() -> void:
 	draw_acolyte()
 	save_duo()
-
-
-func set_posture(posture_id: String) -> void:
-	posture = posture_id
-	profile.posture = posture_id
-	profile.save()
 
 
 ## Le duo pour le moteur : toi, puis ton acolyte.
@@ -235,12 +210,3 @@ func duo_synergies() -> Array[Dictionary]:
 func class_label(class_id: String) -> String:
 	var cls: Dictionary = data.classes[class_id]
 	return "%s · %s" % [cls["name"], UiKit.ROLE_LABELS[cls["roles"][0]]]
-
-
-## Le texte d'une posture pour cet acolyte (en Libre, la règle dépend de son rôle).
-func posture_text(posture_id: String) -> String:
-	return data.posture_description(posture_id, str(acolyte.get("class_id", "")))
-
-
-func posture_name(posture_id: String) -> String:
-	return str(data.postures.get("postures", {}).get(posture_id, {}).get("name", posture_id))

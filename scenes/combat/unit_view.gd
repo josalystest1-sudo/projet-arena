@@ -28,7 +28,7 @@ var status_tags: Array = []
 ## Intention affichée au-dessus du perso : texte de compétence (vide = rien).
 var intent_text: String = ""
 var intent_alpha: float = 0.55
-## Petite étoile dorée dans la bulle : l'acolyte garde une forte prête (posture Garde ta forte).
+## Petite étoile dorée dans la bulle : l'acolyte garde sa forte un tour pour une Synergie avec le joueur.
 var intent_star: bool = false
 ## Badge au-dessus d'un ennemi quand sa forte est prête (anticipation).
 var threat_text: String = ""

@@ -1,5 +1,5 @@
 ## Ce que le jeu retient entre deux combats, sur l'appareil du joueur : victoires, série, record, son,
-## le duo (son perso et son acolyte, avec la dernière posture donnée) et les records de la Tour.
+## le duo (son perso et son acolyte) et les records de la Tour.
 ## (En attendant les comptes de l'étape 5, tout reste en local.)
 class_name PlayerProfile
 extends RefCounted
@@ -13,7 +13,6 @@ var best_streak: int = 0
 var muted: bool = false
 ## Le duo : {player_class, player_picks, acolyte_class, acolyte_picks, acolyte_name} (vide tant qu'aucun duo n'est créé).
 var duo: Dictionary = {}
-var posture: String = "libre"
 ## Record à la Tour par classe : étage atteint (GDD : le record est classé par classe).
 var tower_records: Dictionary = {}
 
@@ -28,7 +27,6 @@ static func load_profile() -> PlayerProfile:
 		profile.best_streak = int(cfg.get_value("stats", "best_streak", 0))
 		profile.muted = bool(cfg.get_value("options", "muted", false))
 		profile.duo = cfg.get_value("duo", "duo", {})
-		profile.posture = str(cfg.get_value("duo", "posture", "libre"))
 		profile.tower_records = cfg.get_value("tour", "records", {})
 	return profile
 
@@ -41,7 +39,6 @@ func save() -> void:
 	cfg.set_value("stats", "best_streak", best_streak)
 	cfg.set_value("options", "muted", muted)
 	cfg.set_value("duo", "duo", duo)
-	cfg.set_value("duo", "posture", posture)
 	cfg.set_value("tour", "records", tower_records)
 	cfg.save(PATH)
 
