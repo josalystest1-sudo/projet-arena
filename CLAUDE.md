@@ -59,7 +59,7 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 
 - Univers : trois pistes dans le GDD (La Veille, Le Tissage, La Foire des Dieux oubliés). Nécessaire à partir de l'écran de création (étape 6). L'acolyte doit y trouver sa place.
 - Nom définitif du jeu.
-- Équipement : en discussion (loot permanent, loot neutralisé en PvP, ou Reliques temporaires par montée de Tour). Ne rien implémenter tant que ce n'est pas tranché dans le GDD.
+- Équipement et économie : orientation retenue dans les grandes lignes (voir GDD, « Encore ouvert ») mais **mis de côté** ; rien à implémenter avant que Gautier ne le remette à l'ordre du jour.
 - Chiffres (PV, dégâts, vitesses, tours de mort subite) : valeurs de départ libres au prototype, puis simulateur.
 
 ## Choix faits par Claude Code

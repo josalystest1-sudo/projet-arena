@@ -402,7 +402,7 @@ L'univers doit répondre à trois questions que le jeu pose dès l'écran de cr�
 
 - [ ] L'univers : choisir une des trois pistes ci-dessus, puis nommer la cité (l'acolyte doit y trouver sa place : qui est-il, d'où vient-il ?)
 - [ ] Le nom définitif du jeu
-- [ ] L'équipement : Gautier propose du loot à la Diablo (casque, torse, mains, bottes, bijoux, mêmes objets avec des tirages de stats différents) pour rendre la Tour intéressante. En discussion : loot permanent qui compte en PvP (contredit « tous les Destins se valent »), loot permanent neutralisé en PvP, ou Reliques temporaires par montée de Tour
+- [ ] L'équipement et l'économie, mis de côté le 27 octobre pour plus tard, orientation retenue dans les grandes lignes : loot à la Diablo (casque, torse, mains, bottes, bijou) obtenu à la Tour, budget de stats fixe par pièce et proportions tirées, niveau aligné en PvP, lié quand équipé. Pas d'or : monnaie unique l'Orbe de Refonte (retire les proportions d'une pièce, donc se consomme), jamais vendue par le jeu, rendements décroissants par jour. V1 : objets liés au compte, pas d'échange. V2 : hôtel des ventes en Orbes (or non transférable, prix encadrés, taxe détruite, attestation d'appareil), donjons de guilde, thermostat sur un indice de prix
 - [ ] Les noms et les kits des 30 évolutions (après le prototype)
 - [ ] Les kits complets des 10 classes : 6 actives et 4 passifs chacune (fixés dans le prototype)
 - [ ] Les chiffres : PV, dégâts, vitesses, courbe d'XP, tours de mort subite (prototype puis simulateur)
