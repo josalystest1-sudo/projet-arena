@@ -6,7 +6,7 @@ extends RefCounted
 
 ## Rôle principal d'une classe : front, degats ou soutien.
 static func main_role(data: CombatData, class_id: String) -> String:
-	return str(data.classes[class_id]["roles"][0])
+	return data.role_of(class_id)
 
 
 ## Les classes qui peuvent servir d'acolyte : celles dont le rôle principal complète celui du joueur.

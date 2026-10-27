@@ -16,6 +16,7 @@ const SCREENS := {
 	"acolyte": preload("res://scenes/screens/acolyte_screen.gd"),
 	"skills": preload("res://scenes/screens/skills_screen.gd"),
 	"tower": preload("res://scenes/screens/tower_screen.gd"),
+	"bestiaire": preload("res://scenes/screens/bestiary_screen.gd"),
 	"profile": preload("res://scenes/screens/profile_screen.gd"),
 	"settings": preload("res://scenes/screens/settings_screen.gd"),
 	"versus": preload("res://scenes/screens/versus_screen.gd"),
@@ -111,14 +112,16 @@ func show_screen(screen: String, options: Dictionary = {}) -> void:
 		current.queue_free()
 	var node: Control = SCREENS[screen].new()
 	node.set_anchors_preset(Control.PRESET_FULL_RECT)
-	var with_nav := nav_buttons.has(screen)
+	# Le bestiaire s'ouvre depuis La Tour : la barre du bas reste là, sur l'onglet La Tour.
+	var nav_key := "tower" if screen == "bestiaire" else screen
+	var with_nav := nav_buttons.has(nav_key)
 	(nav_bar.get_parent() as Control).visible = with_nav
 	content.offset_bottom = -NAV_HEIGHT if with_nav else 0.0
 	content.add_child(node)
 	current = node
 	current_name = screen
 	for key in nav_buttons:
-		(nav_buttons[key] as Button).modulate = Color(1.0, 0.85, 0.3) if key == screen else Color.WHITE
+		(nav_buttons[key] as Button).modulate = Color(1.0, 0.85, 0.3) if key == nav_key else Color.WHITE
 	node.call("setup", self, options)
 
 

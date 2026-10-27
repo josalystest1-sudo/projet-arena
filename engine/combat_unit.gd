@@ -30,6 +30,8 @@ var last_hit_by: String = ""
 var is_player: bool = false
 ## Acolyte : second personnage du duo, toujours piloté par l'IA (le joueur ne contrôle jamais ses sorts).
 var is_acolyte: bool = false
+## Monstre de la Tour (data/bestiaire.json) : class_id est alors l'identifiant du monstre.
+var is_monster: bool = false
 
 
 ## Construit une unité depuis une classe et des choix de kit (index par palier et index de passif).
@@ -60,6 +62,26 @@ static func from_class(data: CombatData, p_class_id: String, picks: Dictionary, 
 		unit.max_hp = maxi(1, int(round(float(unit.max_hp) * (1.0 + bonus))))
 		unit.hp = unit.max_hp
 		unit.power = maxi(1, int(round(float(unit.power) * (1.0 + bonus))))
+	return unit
+
+
+## Construit un monstre du bestiaire : ses stats et son kit sont fixes (pas de Destin).
+static func from_monster(data: CombatData, monster_id: String, p_id: String, p_team: int, p_slot: int) -> CombatUnit:
+	var monster: Dictionary = data.monsters[monster_id]
+	var unit := CombatUnit.new()
+	unit.id = p_id
+	unit.class_id = monster_id
+	unit.is_monster = true
+	unit.display_name = str(monster["name"])
+	unit.team = p_team
+	unit.slot = p_slot
+	unit.max_hp = int(monster["stats"]["max_hp"])
+	unit.hp = unit.max_hp
+	unit.base_speed = int(monster["stats"]["speed"])
+	unit.power = int(monster["stats"]["power"])
+	for tier in TIERS:
+		unit.skills[tier] = str(monster["skills"][tier])
+	unit.passive = str(monster.get("passive", ""))
 	return unit
 
 

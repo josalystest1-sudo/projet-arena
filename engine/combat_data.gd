@@ -16,6 +16,11 @@ var rules: Dictionary = {}
 var ai: Dictionary = {}
 ## La Tour : étages, ennemis, PV rendus entre deux étages, dans data/tower.json.
 var tower: Dictionary = {}
+## Le bestiaire de la Tour (data/bestiaire.json) : les monstres, leurs familles et leurs rangs. Leurs compétences et
+## leurs passifs propres sont rangés avec les autres (skills, passives), marqués « monster ».
+var monsters: Dictionary = {}
+var monster_families: Dictionary = {}
+var monster_ranks: Dictionary = {}
 ## Le budget de puissance des Destins (data/destins.json), en ajustement des PV et de la puissance (+0,04 = +4 %) :
 ## « kit_items » pour un élément seul qui n'a pas de chiffre à régler (Rempart, Résonance, Météorologue) ;
 ## « kit_pairs » pour une paire d'un même kit qui va trop bien (ou trop mal) ensemble ; « kit_triples » pour les trois
@@ -44,6 +49,16 @@ static func load_from_dir(dir: String) -> CombatData:
 	var class_ids: Array = _read_json(dir + "classes.json")
 	for class_id in class_ids:
 		data.classes[class_id] = _read_json(dir + "classes/" + class_id + ".json")
+	var bestiary: Dictionary = _read_json(dir + "bestiaire.json")
+	data.monsters = bestiary.get("monsters", {})
+	data.monster_families = bestiary.get("families", {})
+	data.monster_ranks = bestiary.get("ranks", {})
+	for skill_id in bestiary.get("skills", {}):
+		data.skills[skill_id] = bestiary["skills"][skill_id]
+		data.skills[skill_id]["monster"] = true
+	for passive_id in bestiary.get("passives", {}):
+		data.passives[passive_id] = bestiary["passives"][passive_id]
+		data.passives[passive_id]["monster"] = true
 	return data
 
 
@@ -144,7 +159,7 @@ func synergy_description(synergy: Dictionary) -> String:
 
 ## Comment joue un acolyte de cette classe (selon son rôle), avec les seuils des données.
 func acolyte_rules(class_id: String) -> String:
-	var role := str(classes.get(class_id, {}).get("roles", [""])[0])
+	var role := role_of(class_id)
 	return fill(str(ai.get("roles", {}).get(role, "")), ai.get("thresholds", {}))
 
 
@@ -157,7 +172,39 @@ func is_negative_status(status_id: String) -> bool:
 
 
 func class_name_of(class_id: String) -> String:
+	if monsters.has(class_id):
+		return str(monsters[class_id]["name"])
 	return str(classes.get(class_id, {}).get("name", class_id))
+
+
+func is_monster(class_id: String) -> bool:
+	return monsters.has(class_id)
+
+
+## Le rôle principal d'une classe ou d'un monstre (front, degats, soutien) : c'est lui que suit l'IA.
+func role_of(class_id: String) -> String:
+	if monsters.has(class_id):
+		return str(monsters[class_id]["role"])
+	return str(classes.get(class_id, {}).get("roles", [""])[0])
+
+
+## Le rang d'un monstre, en toutes lettres (Sbire, Soldat, Élite, Gardien).
+func monster_rank_name(monster_id: String) -> String:
+	return str(monster_ranks.get(str(monsters.get(monster_id, {}).get("rank", "")), ""))
+
+
+## Les monstres d'une famille (ou tous), Gardiens compris ou non, dans un ordre fixe.
+func monsters_of(family: String = "", with_guardians: bool = true) -> Array[String]:
+	var result: Array[String] = []
+	for monster_id in monsters:
+		var monster: Dictionary = monsters[monster_id]
+		if family != "" and str(monster["family"]) != family:
+			continue
+		if not with_guardians and str(monster["rank"]) == "gardien":
+			continue
+		result.append(monster_id)
+	result.sort()
+	return result
 
 
 ## Retourne la Synergie reliant deux compétences, ou un dictionnaire vide.

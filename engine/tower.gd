@@ -1,10 +1,13 @@
-## La Tour (PvE, GDD) : le duo grimpe des étages générés, face à 2 ou 3 ennemis construits avec les classes du jeu.
+## La Tour (PvE) : le duo grimpe des étages générés, face à des monstres du bestiaire (de 1 à 4 par étage).
 ## Entre deux étages, le duo garde ses PV et ses recharges, et récupère 20 % de ses PV max (un KO revient avec 20 %).
 ## Pas de mort subite : un étage se perd seulement quand le duo tombe. Pour éviter les combats sans fin, les ennemis
 ## s'épuisent au bout de quelques tours (plus de soins ni de barrières) et abandonnent à la limite de tours.
 ## Module pur : le hasard vient d'un générateur fourni par l'appelant (même graine, même Tour).
 class_name Tower
 extends RefCounted
+
+## De combien la menace d'un groupe peut dépasser le budget de l'étage (ou tomber en dessous) pour être acceptée.
+const BUDGET_SLACK := 0.35
 
 var data: CombatData
 ## Étage en cours (1 = le premier).
@@ -15,6 +18,8 @@ var finished: bool = false
 ## Étage atteint : celui où le duo est tombé, ou le dernier s'il a tout franchi. C'est le record du GDD.
 var reached: int = 1
 var cleared_all: bool = false
+## Les monstres de l'étage à venir, tirés d'avance pour pouvoir les annoncer entre deux étages.
+var planned: Array = []
 
 
 static func start(p_data: CombatData, duo_members: Array) -> Tower:
@@ -39,33 +44,104 @@ func is_boss_floor(number: int = -1) -> bool:
 	return bool(floor_info(number).get("boss", false))
 
 
-## Les ennemis de l'étage en cours : classe et kit tirés au hasard, force réglée par l'étage (data/tower.json).
-## Sur un étage de Gardien, le premier ennemi est le Gardien, avec plus de PV.
+## Les monstres de l'étage en cours (data/bestiaire.json), de 1 à 4 (data/tower.json, « max_monsters »).
+## Un étage ordinaire tire une famille, puis des monstres de cette famille jusqu'à son budget de menace : beaucoup de
+## petits ou peu de gros. Un étage de Gardien tire un Gardien, avec une escorte de sa famille si l'étage en prévoit une.
+## La force de l'étage (PV et puissance en multiplicateurs) s'applique à tous ses monstres.
 func floor_enemies(rng: RandomNumberGenerator) -> Array:
 	var info := floor_info()
-	var classes: Array = data.classes.keys()
-	classes.sort()
-	var names: Dictionary = data.tower.get("names", {})
+	var max_count := int(data.tower.get("max_monsters", 4))
+	var group: Array[String] = []
+	var family := ""
+	var budget := float(info.get("budget", 2))
+	if is_boss_floor():
+		var guardians: Array[String] = []
+		for monster_id in data.monsters_of():
+			if str(data.monsters[monster_id]["rank"]) == "gardien":
+				guardians.append(monster_id)
+		var guardian: String = guardians[rng.randi_range(0, guardians.size() - 1)]
+		group.append(guardian)
+		family = str(data.monsters[guardian]["family"])
+		budget = float(info.get("escort", 0))
+	else:
+		var families: Array = data.monster_families.keys()
+		families.sort()
+		family = str(families[rng.randi_range(0, families.size() - 1)])
+	if budget > 0.0:
+		group.append_array(_fill(data.monsters_of(family, false), budget, max_count - group.size(), rng))
 	var enemies: Array = []
 	var seen := {}
-	for i in range(int(info.get("enemies", 2))):
-		var class_id: String = classes[rng.randi_range(0, classes.size() - 1)]
-		var name := str(names.get(class_id, data.class_name_of(class_id)))
-		seen[name] = int(seen.get(name, 0)) + 1
-		if int(seen[name]) > 1:
-			name += " %d" % int(seen[name])
-		var hp_mult := float(info.get("hp", 1.0))
-		if i == 0 and is_boss_floor():
-			name = "%s %s" % [data.tower.get("boss_name", "Gardien"), name]
-			hp_mult *= float(data.tower.get("boss_hp", 1.5))
-		enemies.append({"class_id": class_id, "picks": CombatUnit.random_picks(rng), "name": name,
-			"max_hp_mult": hp_mult, "power_mult": float(info.get("power", 1.0)), "heal_mult": float(data.tower.get("enemy_heal", 1.0))})
+	for monster_id in group:
+		var name := data.class_name_of(monster_id)
+		seen[monster_id] = int(seen.get(monster_id, 0)) + 1
+		if int(seen[monster_id]) > 1:
+			name += " %d" % int(seen[monster_id])
+		enemies.append({"monster_id": monster_id, "name": name, "max_hp_mult": float(info.get("hp", 1.0)),
+			"power_mult": float(info.get("power", 1.0)), "heal_mult": float(data.tower.get("enemy_heal", 1.0))})
 	return enemies
+
+
+## Un groupe tiré au hasard parmi des monstres, dont la menace totale tombe sur le budget (au plus près si aucun
+## tirage n'y arrive), sans dépasser max_count monstres ni un soigneur. Les plus menaçants passent devant (plus lisible à l'écran).
+func _fill(candidates: Array[String], budget: float, max_count: int, rng: RandomNumberGenerator) -> Array[String]:
+	var best: Array[String] = []
+	var best_gap := INF
+	for attempt in range(60):
+		var group: Array[String] = []
+		var left := budget
+		while group.size() < max_count:
+			var affordable: Array[String] = []
+			for monster_id in candidates:
+				if _menace(monster_id) <= left + BUDGET_SLACK and not (_is_support(monster_id) and _has_support(group)):
+					affordable.append(monster_id)
+			if affordable.is_empty():
+				break
+			var pick: String = affordable[rng.randi_range(0, affordable.size() - 1)]
+			group.append(pick)
+			left -= _menace(pick)
+		var gap := absf(left)
+		if gap < best_gap:
+			best = group
+			best_gap = gap
+		if gap <= BUDGET_SLACK:
+			break
+	best.sort_custom(func(a, b): return _menace(a) > _menace(b) or (_menace(a) == _menace(b) and a < b))
+	return best
+
+
+## Au plus un soigneur par étage : à plusieurs, ils se soignent entre eux et l'étage s'éternise.
+func _is_support(monster_id: String) -> bool:
+	return str(data.monsters[monster_id]["role"]) == "soutien"
+
+
+func _has_support(group: Array[String]) -> bool:
+	for monster_id in group:
+		if _is_support(monster_id):
+			return true
+	return false
+
+
+func _menace(monster_id: String) -> float:
+	return float(data.monsters[monster_id].get("menace", 1))
+
+
+## Les monstres de l'étage en cours, tirés une seule fois (le même tirage sert à l'annonce et au combat).
+func plan_floor(rng: RandomNumberGenerator) -> Array:
+	if planned.is_empty():
+		planned = floor_enemies(rng)
+	return planned
+
+
+## La famille des monstres de l'étage en cours (celle du Gardien sur un étage de Gardien).
+func planned_family(rng: RandomNumberGenerator) -> String:
+	return str(data.monsters[plan_floor(rng)[0]["monster_id"]]["family"])
 
 
 ## Le combat de l'étage en cours : pas de mort subite, limite de tours, recharges conservées.
 func create_combat(rng: RandomNumberGenerator) -> Combat:
-	var combat := Combat.create(data, duo, floor_enemies(rng), rng.randi_range(0, 1))
+	var enemies := plan_floor(rng)
+	planned = []
+	var combat := Combat.create(data, duo, enemies, rng.randi_range(0, 1))
 	combat.sudden_death_enabled = false
 	combat.forced_end_turn = int(data.tower.get("turn_limit", 30))
 	# Un étage ne se perd que si le duo tombe (GDD) : à la limite de tours, les ennemis épuisés abandonnent.

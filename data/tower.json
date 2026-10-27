@@ -3,65 +3,59 @@
   "turn_limit": 24,
   "exhaustion_turn": 12,
   "enemy_heal": 0.5,
-  "names": {
-    "guerrier": "Sentinelle",
-    "mage": "Arcaniste",
-    "pretre": "Oracle"
-  },
-  "boss_name": "Gardien",
-  "boss_hp": 1.6,
   "floors": [
     {
-      "enemies": 2,
-      "hp": 0.405,
-      "power": 0.625
+      "budget": 2.5,
+      "hp": 0.683,
+      "power": 0.683
     },
     {
-      "enemies": 2,
-      "hp": 0.495,
-      "power": 0.688
+      "budget": 3.5,
+      "hp": 0.804,
+      "power": 0.816
     },
     {
-      "enemies": 2,
-      "hp": 0.54,
-      "power": 0.775
+      "budget": 4,
+      "hp": 0.836,
+      "power": 0.86
     },
     {
-      "enemies": 3,
-      "hp": 0.36,
-      "power": 0.562
+      "budget": 4.5,
+      "hp": 0.632,
+      "power": 0.657
     },
     {
-      "enemies": 2,
-      "hp": 0.585,
-      "power": 0.875,
-      "boss": true
+      "boss": true,
+      "escort": 0,
+      "hp": 0.85,
+      "power": 0.895
     },
     {
-      "enemies": 3,
-      "hp": 0.432,
-      "power": 0.7
+      "budget": 5,
+      "hp": 0.786,
+      "power": 0.833
     },
     {
-      "enemies": 2,
-      "hp": 0.72,
-      "power": 1.025
+      "budget": 5.5,
+      "hp": 0.844,
+      "power": 0.901
     },
     {
-      "enemies": 3,
-      "hp": 0.495,
-      "power": 0.8
+      "budget": 6,
+      "hp": 0.856,
+      "power": 0.919
     },
     {
-      "enemies": 3,
-      "hp": 0.54,
-      "power": 0.875
+      "budget": 6.5,
+      "hp": 0.892,
+      "power": 0.964
     },
     {
-      "enemies": 3,
-      "hp": 0.594,
-      "power": 0.95,
-      "boss": true
+      "boss": true,
+      "escort": 2.5,
+      "hp": 1.097,
+      "power": 1.192
     }
-  ]
+  ],
+  "max_monsters": 4
 }

@@ -48,6 +48,10 @@ var lunge: float = 0.0
 var flash: float = 0.0
 var shake: float = 0.0
 var ko_angle: float = 0.0
+## Taille d'un pixel du sprite : plus petit quand 4 monstres se partagent la rangée, plus grand pour un Gardien seul.
+var pixel: float = SPRITE_PIXEL
+## Taille du nom (plus petite en rangée de 4).
+var name_size: int = 16
 var _floaters: Array = []
 var _time: float = 0.0
 var _phase: float = 0.0
@@ -67,6 +71,22 @@ func setup(unit: CombatUnit) -> void:
 	_phase = float(unit.slot) * 1.7 + float(unit.team) * 0.9
 	custom_minimum_size = Vector2(160, 236)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+
+
+## « compact » : 4 monstres dans la rangée (le téléphone fait 540 de large) ; « big » : un Gardien seul.
+func set_size_mode(mode: String) -> void:
+	match mode:
+		"compact":
+			pixel = 5.0
+			name_size = 13
+			custom_minimum_size = Vector2(126, 220)
+		"big":
+			pixel = 8.0
+			custom_minimum_size = Vector2(200, 268)
+		_:
+			pixel = SPRITE_PIXEL
+			name_size = 16
+			custom_minimum_size = Vector2(160, 236)
 
 
 func sync(unit: CombatUnit, data: CombatData) -> void:
@@ -113,7 +133,7 @@ func do_hurt(strength: float = 1.0) -> void:
 
 ## Point d'ancrage des traits d'Intention (centre du sprite), en coordonnées globales.
 func anchor_global() -> Vector2:
-	return global_position + Vector2(size.x / 2.0, BUBBLE_HEIGHT + 52.0)
+	return global_position + Vector2(size.x / 2.0, BUBBLE_HEIGHT + pixel * PixelSprites.GRID / 2.0 + 4.0)
 
 
 func _process(delta: float) -> void:
@@ -143,7 +163,7 @@ func _draw() -> void:
 	var font := ThemeDB.fallback_font
 	var team_color := ALLY_COLOR if team == 0 else ENEMY_COLOR
 	var w := size.x
-	var sprite_size := SPRITE_PIXEL * PixelSprites.GRID
+	var sprite_size := pixel * PixelSprites.GRID
 	var dir := -1.0 if team == 0 else 1.0
 	var bob: float = 0.0 if not alive else round(sin(_time * 2.6 + _phase) * 1.5) * 2.0
 	var jitter: Vector2 = Vector2(randf_range(-shake, shake), 0.0) if shake > 0.0 else Vector2.ZERO
@@ -163,14 +183,14 @@ func _draw() -> void:
 
 	# Ombre au sol et sprite (couché s'il est KO).
 	var feet := Vector2(w / 2.0, BUBBLE_HEIGHT + sprite_size + 2)
-	draw_circle(feet, 30.0 - 3.0 * bob / 2.0, Color(0, 0, 0, 0.25))
+	draw_circle(feet, pixel * 5.0 - 3.0 * bob / 2.0, Color(0, 0, 0, 0.25))
 	if ko_angle > 0.0:
 		var angle := -dir * ko_angle * PI / 2.0 * 0.92
 		draw_set_transform(feet, angle, Vector2.ONE)
-		PixelSprites.draw(self, class_id, sprite_origin - feet, SPRITE_PIXEL, team_color, team == 1, true)
+		PixelSprites.draw(self, class_id, sprite_origin - feet, pixel, team_color, team == 1, true)
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
 	else:
-		PixelSprites.draw(self, class_id, sprite_origin, SPRITE_PIXEL, team_color, team == 1, false)
+		PixelSprites.draw(self, class_id, sprite_origin, pixel, team_color, team == 1, false)
 		if flash > 0.0:
 			draw_rect(Rect2(sprite_origin, Vector2(sprite_size, sprite_size)), Color(1, 1, 1, flash * 0.7))
 	if not alive:
@@ -219,7 +239,7 @@ func _draw() -> void:
 	# Nom et PV.
 	var y := BUBBLE_HEIGHT + sprite_size + 14
 	var name_text := display_name if subtitle == "" else "%s · %s" % [display_name, subtitle]
-	_draw_centered(font, name_text, Vector2(w / 2.0, y + 14), 16, Color(1, 0.9, 0.4) if is_player else (Color("9ad1ff") if is_acolyte and team == 0 else Color.WHITE))
+	_draw_centered(font, name_text, Vector2(w / 2.0, y + 14), name_size, Color(1, 0.9, 0.4) if is_player else (Color("9ad1ff") if is_acolyte and team == 0 else Color.WHITE))
 	var bar := Rect2(Vector2(10, y + 22), Vector2(w - 20, 14))
 	draw_rect(bar, Color(0.15, 0.15, 0.2))
 	var ratio := clampf(shown_hp / float(max_hp), 0.0, 1.0)
