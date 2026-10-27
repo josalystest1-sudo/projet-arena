@@ -8,7 +8,7 @@
     ],
     "same_target": false,
     "params": {
-      "bonus": 0.486
+      "bonus": 0.467
     },
     "description": "Les ennemis provoqués subissent la Nova à +{bonus%}."
   },
@@ -31,7 +31,7 @@
     ],
     "same_target": true,
     "params": {
-      "damage": 29
+      "damage": 30
     },
     "description": "La cible gelée subit {damage} dégâts de lumière supplémentaires."
   },
@@ -45,7 +45,7 @@
     "same_target": true,
     "params": {
       "extra_turns": 2,
-      "bonus": 0.506
+      "bonus": 0.514
     },
     "description": "Le saignement de la cible dure {extra_turns} tours de plus et fait +{bonus%} de dégâts."
   },
@@ -59,7 +59,7 @@
     "same_target": false,
     "description": "Le Bouclier de mana se pose aussi sur l'autre membre du duo, à {share%} de sa taille.",
     "params": {
-      "share": 0.669
+      "share": 0.734
     }
   },
   {
@@ -71,7 +71,7 @@
     ],
     "same_target": false,
     "params": {
-      "mult": 1.388
+      "mult": 1.352
     },
     "description": "Le Châtiment frappe aussi l'autre ennemi provoqué, à {mult%} de sa force."
   },
@@ -84,7 +84,7 @@
     ],
     "same_target": false,
     "params": {
-      "mult": 1.288
+      "mult": 1.217
     },
     "description": "La Prière soigne aussi l'autre membre du duo, à {mult%} de sa force ; comme pour la Prière, une part de ce qui dépasse ses PV max devient une barrière."
   }

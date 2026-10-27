@@ -21,18 +21,18 @@
   },
   "fendoir": {
     "name": "Fendoir", "class": "guerrier", "tier": "forte", "element": "tranchant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 65}, {"type": "status", "id": "saignement", "turns": 3, "value": 14}],
+    "effects": [{"type": "damage", "power": 66}, {"type": "status", "id": "saignement", "turns": 3, "value": 14}],
     "description": "Gros dégâts tranchants et saignement pendant {turns} tours."
   },
   "cri_de_guerre": {
     "name": "Cri de guerre", "class": "guerrier", "tier": "forte", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 51}, {"type": "status", "id": "cri_de_guerre", "turns": 3, "value": 50, "on": "allies"}],
+    "effects": [{"type": "damage", "power": 50}, {"type": "status", "id": "cri_de_guerre", "turns": 3, "value": 50, "on": "allies"}],
     "description": "Frappe un ennemi ; tout le duo inflige +{value} % de dégâts pendant {turns} tours."
   },
 
   "boule_de_feu": {
     "name": "Boule de feu", "class": "mage", "tier": "basique", "element": "feu", "target": "enemy",
-    "effects": [{"type": "damage", "power": 40}],
+    "effects": [{"type": "damage", "power": 41}],
     "description": "Boule de feu sur un ennemi."
   },
   "etincelle": {
@@ -42,12 +42,12 @@
   },
   "trait_de_givre": {
     "name": "Trait de givre", "class": "mage", "tier": "moyenne", "element": "givre", "target": "enemy",
-    "effects": [{"type": "damage", "power": 48}, {"type": "act_last"}],
+    "effects": [{"type": "damage", "power": 50}, {"type": "act_last"}],
     "description": "Dégâts de givre ; la cible agit en dernier."
   },
   "arc_de_foudre": {
     "name": "Arc de foudre", "class": "mage", "tier": "moyenne", "element": "foudre", "target": "enemies_2",
-    "effects": [{"type": "damage", "power": 44}],
+    "effects": [{"type": "damage", "power": 42}],
     "description": "La foudre frappe la cible et un second ennemi."
   },
   "nova": {
@@ -57,18 +57,18 @@
   },
   "bouclier_de_mana": {
     "name": "Bouclier de mana", "class": "mage", "tier": "forte", "element": "", "target": "ally",
-    "effects": [{"type": "barrier", "power": 185, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 187, "turns": 3}],
     "description": "Grosse barrière sur un allié pendant {turns} tours."
   },
 
   "chatiment": {
     "name": "Châtiment", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "enemy",
-    "effects": [{"type": "damage", "power": 34}],
+    "effects": [{"type": "damage", "power": 35}],
     "description": "Frappe de lumière sur un ennemi."
   },
   "priere": {
     "name": "Prière", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "heal", "power": 54, "overflow_barrier": true, "overflow": 0.5}],
+    "effects": [{"type": "heal", "power": 52, "overflow_barrier": true, "overflow": 0.5}],
     "description": "Petit soin sur un allié ; {overflow%} de ce qui dépasse ses PV max devient une barrière."
   },
   "restauration": {
@@ -83,12 +83,12 @@
   },
   "egide": {
     "name": "Égide", "class": "pretre", "tier": "forte", "element": "lumiere", "target": "allies_all",
-    "effects": [{"type": "barrier", "power": 66, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 64, "turns": 3}],
     "description": "Barrière sur tout le duo pendant {turns} tours."
   },
   "resurrection": {
     "name": "Résurrection", "class": "pretre", "tier": "forte", "element": "lumiere", "target": "ally_ko", "once_per_combat": true,
-    "effects": [{"type": "revive", "percent": 26}],
+    "effects": [{"type": "revive", "percent": 27}],
     "description": "Relève un allié KO à {percent} % de ses PV. Une fois par combat."
   }
 }
