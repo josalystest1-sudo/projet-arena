@@ -18,7 +18,7 @@ Ce fichier est lu au début de chaque session. Il résume ce qu'il faut savoir p
 - Combat tour par tour **simultané** : 12 s pour choisir, puis résolution par ordre de vitesse. Système classique : 3 compétences à **recharge** (basique sans recharge ; moyenne 2 tours ; forte 4 tours, disponible à partir du tour 3). Pas de mana en V1, pas de Tempo, pas de Garde/Brèche, pas de timing en temps réel : ne pas les réintroduire.
 - Un seul personnage par compte. Son **Destin** (arbre de 45 nœuds, 30 points, généré aléatoirement, unique au monde, non modifiable) détermine ses 3 compétences actives, son passif et ses bonus.
 - **L'acolyte** : un second personnage fixe, piloté par l'IA, attribué au premier combat, de classe complémentaire (un Soutien reçoit un Front ou un Dégâts, etc.). Même niveau que le joueur, mini-Destin de 15 nœuds auto-attribué, 3 actives + 1 passif. Le joueur ne contrôle jamais ses sorts.
-- L'acolyte **annonce son action en premier** au début des 12 s ; le joueur choisit en le sachant. Le joueur lui donne une **posture** qui dure jusqu'à nouvel ordre. Une posture change l'ordre de ses priorités, jamais sa classe, donc elles dépendent de son rôle : Front → Libre, Tiens la ligne, Cogne ; Dégâts → Libre, Même cible que moi, Achève ; Soutien → Libre, Soigne d'abord, Affaiblis-les ; plus Garde ta forte pour tous. L'IA de l'acolyte doit être **prévisible plutôt que brillante**.
+- L'acolyte **annonce son action en premier** au début des 12 s ; le joueur choisit en le sachant. **Plus de postures (décision du 27 octobre, 14 h) :** le joueur ne lui donne aucun ordre, il joue seul comme un second joueur, selon des règles fixes par rôle (celles de l'ancienne posture « Libre »). Une seule règle pour les Synergies : s'il existe une Synergie entre sa forte et une compétence que le joueur aura au tour suivant, il attend un tour, jamais plus. L'IA de l'acolyte doit être **prévisible plutôt que brillante**.
 - **10 classes de base** : Guerrier, Mage, Voleur, Archer, Prêtre, Alchimiste, Invocateur, Barde, Diplomate, Pugiliste. Trois rôles : Front, Dégâts, Soutien ; chaque classe a un rôle principal et un secondaire.
 - Chaque classe : pool de **6 actives** (2 basiques, 2 moyennes, 2 fortes) et **4 passifs** ; un personnage tire **une active de chaque palier + 1 passif**.
 - **Synergies** : couples de compétences joueur + acolyte jouées le même tour → effet bonus unique par couple. Au moins une Synergie entre chaque classe et chaque classe qui peut lui servir d'acolyte.
@@ -31,7 +31,7 @@ Ce fichier est lu au début de chaque session. Il résume ce qu'il faut savoir p
 
 - **Godot 4, GDScript**, un seul projet pour iOS, Android et web.
 - **Règle d'architecture n°1** : le moteur de règles du combat (recharges, Synergies, résolution d'un tour, ordre de vitesse, mort subite, KO et relève) est un **module pur, sans affichage, sans dépendance aux nœuds de scène**, couvert par des tests automatiques. Il sert au serveur (version qui fait foi), au client (affichage et prévision), à l'IA (acolyte, Échos, ennemis de la Tour) et au simulateur d'équilibrage. Le moteur doit accepter des camps de taille variable (2 contre 2 en PvP, 2 contre 2 ou 3 à la Tour).
-- **Une seule IA** pour l'acolyte, les Échos, les ennemis de la Tour et le simulateur, paramétrée par les postures.
+- **Une seule IA** pour l'acolyte, les Échos, les ennemis de la Tour et le simulateur, avec des règles fixes par rôle (plus de postures).
 - Données de jeu (classes, compétences, passifs, Synergies, nœuds de Destin, étages de la Tour) dans des fichiers de données lisibles (JSON ou .tres), jamais codées en dur dans la logique.
 - Serveur prévu : Nakama + PostgreSQL (étape 5 de la feuille de route). Pas avant.
 - Art : PixelLab via MCP (étape 6). Sprites provisoires d'ici là.
@@ -40,7 +40,7 @@ Ce fichier est lu au début de chaque session. Il résume ce qu'il faut savoir p
 
 ## Feuille de route (ordre impératif)
 
-1. **Prototype de combat en duo (web).** Reprendre le moteur de l'étape 1 (3v3) et le passer en duo : l'acolyte avec ses postures (selon son rôle) et son annonce, le duo du joueur contre un duo IA, 3 classes. **Critère de sortie : on a envie de relancer un combat.**
+1. **Prototype de combat en duo (web).** Reprendre le moteur de l'étape 1 (3v3) et le passer en duo : l'acolyte (sans postures) et son annonce, le duo du joueur contre un duo IA, 3 classes. **Critère de sortie : on a envie de relancer un combat.**
 2. **La Tour en prototype** : 10 étages générés, gestion des PV et recharges entre étages. Critère : on veut battre son record.
 3. Les 10 classes complètes, le générateur de Destin (budget de puissance), le mini-Destin de l'acolyte, les Synergies joueur-acolyte.
 4. Le simulateur d'équilibrage (moteur sans interface, centaines de milliers de combats en duo, taux de victoire par classe / compétence / nœud, réglage de la mort subite).
