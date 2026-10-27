@@ -42,7 +42,7 @@
   },
   "trait_de_givre": {
     "name": "Trait de givre", "class": "mage", "tier": "moyenne", "element": "givre", "target": "enemy",
-    "effects": [{"type": "damage", "power": 47}, {"type": "act_last"}],
+    "effects": [{"type": "damage", "power": 48}, {"type": "act_last"}],
     "description": "Dégâts de givre ; la cible agit en dernier."
   },
   "arc_de_foudre": {
@@ -52,7 +52,7 @@
   },
   "nova": {
     "name": "Nova", "class": "mage", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 58}],
+    "effects": [{"type": "damage", "power": 57}],
     "description": "Explosion de feu sur tous les ennemis."
   },
   "bouclier_de_mana": {
@@ -73,12 +73,12 @@
   },
   "restauration": {
     "name": "Restauration", "class": "pretre", "tier": "moyenne", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "heal", "power": 71}],
+    "effects": [{"type": "heal", "power": 70}],
     "description": "Gros soin sur un allié."
   },
   "purification": {
     "name": "Purification", "class": "pretre", "tier": "moyenne", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "cleanse"}, {"type": "heal", "power": 57}],
+    "effects": [{"type": "cleanse"}, {"type": "heal", "power": 58}],
     "description": "Retire un état négatif et soigne un peu."
   },
   "egide": {
