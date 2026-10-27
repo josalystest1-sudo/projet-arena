@@ -120,6 +120,16 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 - Record = étage atteint (celui où le duo tombe, ou 10), gardé par classe sur l'appareil. On peut abandonner la montée entre deux étages.
 - Réglage au simulateur (`tools/simulate_tour.gd`, l'IA joue les deux camps) : la plupart des montées s'arrêtent entre les étages 4 et 8, 6 % atteignent le sommet, 8,5 tours par étage, 1,5 % des étages finissent par abandon. Étage moyen selon la classe du joueur : Guerrier 6,4, Mage 6,3, Prêtre 7,8 (le Prêtre gère mieux l'usure ; le record étant par classe, ce n'est pas bloquant).
 
+**Interface générale (2026-10-27, demandée par Gautier)**
+
+- `scenes/app/app.gd` (scène de démarrage `scenes/app/app.tscn`) garde le profil et le duo, affiche un écran à la fois et la barre de navigation du bas (Accueil, Acolyte, Compétences, La Tour, Profil). Les écrans sont dans `scenes/screens/`, les briques communes (thème, boutons, cartes, portraits animés) dans `scenes/ui/`. Tout est construit en code, comme l'écran de combat.
+- Premier lancement : **Création** (choix de la classe, puis le Destin se dévoile compétence après compétence) → **Rencontre de l'acolyte** (il arrive, se présente, vos Synergies) → **Vitrine**. Ensuite, on arrive directement sur la Vitrine : le duo en grand, deux gros boutons Combattre et La Tour, la série et le record.
+- **Combattre** passe par un **face-à-face** (« Recherche d'un adversaire… », puis les deux duos ; le duo d'en face est marqué « Duo IA », pour ne jamais mentir au joueur, comme le veut le GDD pour les Échos).
+- **Acolyte** : sa fiche, ses compétences, ses 4 postures expliquées pour son rôle, et la **posture de départ** (celle qu'il prend au début de chaque combat ; changée en combat, elle est gardée).
+- **Compétences** : tes 3 actives et ton passif, leurs recharges, tes Synergies avec l'acolyte. **La Tour** : règles, ton record, records par classe, bouton pour monter. **Profil** : duels (victoires, série) et records de la Tour. **Paramètres** (depuis la Vitrine) : son, et les outils du prototype (autre tirage, autre acolyte, nouveau personnage, effacer ses données avec confirmation).
+- En combat, un bouton **Quitter** (deux appuis) : en duel, ça compte comme une défaite ; à la Tour, la montée s'arrête. Pas pendant l'animation d'un tour.
+- Les descriptions des compétences, passifs et Synergies se remplissent avec les chiffres des données (`{percent}`, `{bonus%}`…) : elles restent justes quand l'équilibrage change un chiffre.
+
 **Écran (2026-10-26, prototype ; passé en duo le 2026-10-27)**
 
 - Le joueur choisit sa classe au lancement et peut retirer son kit ou son acolyte (« Autre tirage pour toi », « Autre acolyte », prototype seulement) : c'est volontairement contraire au Destin non modifiable, pour tester les 3 classes et tous les kits. À retirer quand les comptes arrivent (étape 5). Un nouveau tirage du joueur garde l'acolyte s'il fait toujours Synergie avec lui.

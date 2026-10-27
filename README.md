@@ -13,7 +13,10 @@ Le projet est entièrement développé avec Claude Code.
 | --- | --- |
 | `engine/` | Le moteur de règles du combat : module pur, sans affichage, réutilisé par le client, le serveur, l'IA et le simulateur. |
 | `data/` | Les données de jeu en JSON : classes, compétences, passifs, états, Synergies. |
-| `scenes/combat/` | L'écran de combat du prototype (affichage uniquement, aucune règle). |
+| `scenes/app/` | L'application : profil, duo, navigation entre les écrans (scène de démarrage). |
+| `scenes/screens/` | Les écrans : création, rencontre de l'acolyte, Vitrine, Acolyte, Compétences, La Tour, Profil, Paramètres, face-à-face. |
+| `scenes/ui/` | Les briques communes de l'interface : thème, boutons, cartes, portraits animés. |
+| `scenes/combat/` | L'écran de combat (affichage uniquement, aucune règle). |
 | `tests/` | Les tests automatiques du moteur, lancés en CI à chaque PR. |
 | `tools/` | Les simulateurs (duo contre duo, montées de la Tour) et le générateur de bruitages provisoires. |
 | `.github/workflows/` | Tests à chaque PR, export web publié sur GitHub Pages à chaque fusion sur `main`. |

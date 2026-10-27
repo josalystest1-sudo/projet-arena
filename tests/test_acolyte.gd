@@ -53,9 +53,9 @@ func test_libre_un_degats_frappe_le_plus_bas_forte_puis_moyenne_puis_basique() -
 func test_libre_un_degats_ne_te_secourt_que_sous_la_moitie_de_tes_pv() -> void:
 	var combat := duo_combat(GM, GM, {"mage": {"forte": 1}})
 	jump_to_turn(combat, 3)
-	combat.get_unit("a1").hp = 140
+	set_ratio(combat, "a1", 0.56)
 	assert_eq(announce(combat, CombatAI.LIBRE)["action"].skill_id, "trait_de_givre", "à 56 % de PV, il attaque")
-	combat.get_unit("a1").hp = 110
+	set_ratio(combat, "a1", 0.44)
 	var decision := announce(combat, CombatAI.LIBRE)
 	assert_move(decision, "bouclier_de_mana", "a1", "sous 50 %, son Bouclier de mana va sur toi")
 	assert_eq(decision["rule"], "secours", "règle : secours")
@@ -240,9 +240,9 @@ func test_le_joueur_ia_frappe_la_cible_de_son_acolyte() -> void:
 func test_le_joueur_ia_choisit_la_posture_de_son_acolyte() -> void:
 	var combat := duo_combat(GM, GM)
 	assert_eq(CombatAI.choose_posture(combat, 1), CombatAI.LIBRE, "par défaut : Libre")
-	combat.get_unit("a2").hp = 50
+	set_ratio(combat, "a2", 0.3)
 	assert_eq(CombatAI.choose_posture(combat, 1), CombatAI.FONCE, "un adversaire sous 35 % : Fonce")
-	combat.get_unit("b1").hp = 80
+	set_ratio(combat, "b1", 0.3)
 	assert_eq(CombatAI.choose_posture(combat, 1), CombatAI.PROTEGE_MOI, "lui-même sous 40 % : Protège-moi")
 	heal_all(combat)
 	jump_to_turn(combat, 3)

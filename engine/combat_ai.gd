@@ -395,6 +395,9 @@ static func _wasted(combat: Combat, unit: CombatUnit, skill_id: String, target: 
 						useless = false
 				return useless
 			"heal":
+				if bool(effect.get("overflow_barrier", false)):
+					# Un soin qui déborde en barrière n'est inutile que si la cible a déjà une barrière au moins aussi grosse.
+					return target.hp >= target.max_hp and target.barrier_amount() >= int(effect["power"])
 				return target.hp >= target.max_hp and not _has_effect(combat, skill_id, "cleanse")
 	return false
 

@@ -1,16 +1,16 @@
 {
-  "peau_de_fer": {"name": "Peau de fer", "class": "guerrier", "description": "-15 % de dégâts subis."},
-  "second_souffle": {"name": "Second souffle", "class": "guerrier", "description": "Se soigne de 10 % en passant sous 30 % de PV (une fois par combat)."},
-  "veteran": {"name": "Vétéran", "class": "guerrier", "description": "+1 vitesse par allié KO."},
-  "colere": {"name": "Colère", "class": "guerrier", "description": "+10 % de dégâts par quart de PV manquant."},
+  "peau_de_fer": {"name": "Peau de fer", "class": "guerrier", "params": {"reduction": 0.121}, "description": "-{reduction%} de dégâts subis."},
+  "second_souffle": {"name": "Second souffle", "class": "guerrier", "params": {"threshold": 0.3, "heal": 0.24}, "description": "Se soigne de {heal%} de ses PV en passant sous {threshold%} (une fois par combat)."},
+  "veteran": {"name": "Vétéran", "class": "guerrier", "params": {"speed": 1, "damage": 0.073, "ko_mult": 2}, "description": "+{damage%} de dégâts. Quand son allié est KO : ce bonus est multiplié par {ko_mult}, et +{speed} vitesse."},
+  "colere": {"name": "Colère", "class": "guerrier", "params": {"per_quarter": 0.095}, "description": "+{per_quarter%} de dégâts par quart de PV manquant."},
 
   "resonance": {"name": "Résonance", "class": "mage", "description": "Toucher 2 cibles ou plus réduit la recharge de la forte d'un tour."},
-  "focalisation": {"name": "Focalisation", "class": "mage", "description": "+20 % de dégâts sur cible unique."},
-  "brasier": {"name": "Brasier", "class": "mage", "description": "Chaque coup de feu brûle la cible 1 tour."},
+  "focalisation": {"name": "Focalisation", "class": "mage", "params": {"bonus": 0.09}, "description": "+{bonus%} de dégâts sur cible unique."},
+  "brasier": {"name": "Brasier", "class": "mage", "params": {"value": 9, "turns": 1}, "description": "Chaque coup de feu brûle la cible : {value} dégâts en fin de tour."},
   "meteorologue": {"name": "Météorologue", "class": "mage", "description": "La forte revient 1 tour plus tôt."},
 
-  "foi": {"name": "Foi", "class": "pretre", "description": "Soins +20 % sur un allié sous 40 % de PV."},
-  "martyr": {"name": "Martyr", "class": "pretre", "description": "Encaisse 20 % des dégâts subis par ses alliés."},
-  "lumiere_interieure": {"name": "Lumière intérieure", "class": "pretre", "description": "Se soigne de 5 % de ses PV à chaque fin de tour."},
-  "sanctuaire": {"name": "Sanctuaire", "class": "pretre", "description": "Ses barrières sont 25 % plus grosses."}
+  "foi": {"name": "Foi", "class": "pretre", "params": {"threshold": 0.4, "bonus": 0.22}, "description": "Soins +{bonus%} sur un allié sous {threshold%} de PV."},
+  "martyr": {"name": "Martyr", "class": "pretre", "params": {"share": 0.081}, "description": "Encaisse {share%} des dégâts subis par son allié."},
+  "lumiere_interieure": {"name": "Lumière intérieure", "class": "pretre", "params": {"heal": 0.06}, "description": "Se soigne de {heal%} de ses PV à chaque fin de tour."},
+  "sanctuaire": {"name": "Sanctuaire", "class": "pretre", "params": {"bonus": 0.357}, "description": "Ses barrières sont {bonus%} plus grosses."}
 }

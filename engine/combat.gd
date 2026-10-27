@@ -10,24 +10,7 @@
 class_name Combat
 extends RefCounted
 
-## Valeurs des passifs et effets (chiffres de départ du prototype).
-const PEAU_DE_FER_REDUCTION := 0.15
-const SECOND_SOUFFLE_THRESHOLD := 0.30
-const SECOND_SOUFFLE_HEAL := 0.10
-const COLERE_PER_QUARTER := 0.10
-const FOCALISATION_BONUS := 0.20
-const BRASIER_BURN := {"turns": 1, "value": 10}
-const FOI_THRESHOLD := 0.40
-const FOI_BONUS := 0.20
-const MARTYR_SHARE := 0.20
-const LUMIERE_INTERIEURE_HEAL := 0.05
-const SANCTUAIRE_BONUS := 0.25
-const SYNERGY_NOVA_BONUS := 0.50
-const SYNERGY_ECLAT_DAMAGE := 75
-const SYNERGY_PLAIE_EXTRA_TURNS := 2
-const SYNERGY_PLAIE_BLEED_MULT := 1.5
-## Jugement et Courant de vie : le second coup (ou soin) vaut 1,5 fois la compétence.
-const SYNERGY_ECHO_MULT := 1.5
+## Les chiffres des passifs et des Synergies vivent dans data/passives.json et data/synergies.json (« params »).
 const ACT_LAST_PENALTY := 1000
 
 var data: CombatData
@@ -413,10 +396,8 @@ func effective_speed(unit: CombatUnit) -> int:
 	var action: CombatAction = _actions.get(unit.id)
 	if action != null:
 		speed += int(data.skill(action.skill_id).get("speed_bonus", 0))
-	if unit.passive == "veteran":
-		for ally in allies_of(unit):
-			if ally != unit and not ally.is_alive():
-				speed += 1
+	if unit.passive == "veteran" and _veteran_mult(unit) > 1.0:
+		speed += int(_pp("veteran", "speed", 1))
 	if unit.has_status("gele"):
 		speed -= ACT_LAST_PENALTY
 	return speed
@@ -460,10 +441,22 @@ func _execute_action(actor: CombatUnit, action: CombatAction) -> void:
 	}
 	_current_hits = {}
 	for effect in skill.get("effects", []):
-		_apply_effect(actor, effect, targets, skill, context)
+		_apply_effect(actor, effect, _effect_targets(actor, effect, targets), skill, context)
 
 	if actor.passive == "resonance" and _current_hits.size() >= 2:
 		_reduce_cooldown(actor, "forte", 1, "resonance")
+
+
+## Un effet peut viser autre chose que la cible de la compétence : « on: allies » (tout le duo), « on: self ».
+## Ex. Cri de guerre : il frappe un ennemi, et le bonus de dégâts va à tout le duo.
+func _effect_targets(actor: CombatUnit, effect: Dictionary, targets: Array[CombatUnit]) -> Array[CombatUnit]:
+	match str(effect.get("on", "")):
+		"allies":
+			return allies_of(actor, true)
+		"self":
+			var only_self: Array[CombatUnit] = [actor]
+			return only_self
+	return targets
 
 
 func _resolve_targets(actor: CombatUnit, action: CombatAction) -> Array[CombatUnit]:
@@ -522,15 +515,19 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 			for target in targets:
 				var mult := 1.0
 				if "provocation_nova" in context["synergies"] and skill.get("tier") == "forte" and target.has_status("provoque"):
-					mult += SYNERGY_NOVA_BONUS
+					mult += _sp("provocation_nova", "bonus", 0.5)
 				var dealt := _deal_damage(actor, target, int(effect["power"]), element, mult, bool(context["single_target"]))
 				if dealt > 0:
 					_current_hits[target.id] = true
 				if actor.passive == "brasier" and element == "feu" and target.is_alive():
-					_add_status(target, {"id": "brulure", "turns": BRASIER_BURN["turns"], "value": BRASIER_BURN["value"], "source": actor.id})
+					_add_status(target, {"id": "brulure", "turns": int(_pp("brasier", "turns", 1)), "value": int(_pp("brasier", "value", 10)), "source": actor.id})
 		"heal":
 			for target in targets:
-				_heal(actor, target, int(effect["power"]), str(context["skill_id"]))
+				var expected := _heal_amount(actor, target, int(effect["power"])) if target.is_alive() else 0
+				var healed := _heal(actor, target, int(effect["power"]), str(context["skill_id"]))
+				# Prière : le soin qui dépasse les PV max devient une barrière (un petit soin n'est jamais perdu).
+				if bool(effect.get("overflow_barrier", false)) and target.is_alive() and expected > healed:
+					_add_status(target, {"id": "barriere", "turns": 2, "value": expected - healed, "source": actor.id})
 		"status":
 			for target in targets:
 				if target.is_alive():
@@ -578,20 +575,22 @@ func _damage_amount(source: CombatUnit, target: CombatUnit, base_power: int, mul
 		amount *= 1.0 + float(source.get_status("cri_de_guerre")["value"]) / 100.0
 	if source.passive == "colere":
 		var missing_quarters := int(floor((1.0 - source.hp_ratio()) * 4.0))
-		amount *= 1.0 + COLERE_PER_QUARTER * float(missing_quarters)
+		amount *= 1.0 + _pp("colere", "per_quarter", 0.1) * float(missing_quarters)
 	if source.passive == "focalisation" and single_target:
-		amount *= 1.0 + FOCALISATION_BONUS
+		amount *= 1.0 + _pp("focalisation", "bonus", 0.2)
+	if source.passive == "veteran":
+		amount *= 1.0 + _pp("veteran", "damage", 0.1) * _veteran_mult(source)
 	amount *= sudden_death_damage_mult()
 	if target.passive == "peau_de_fer":
-		amount *= 1.0 - PEAU_DE_FER_REDUCTION
+		amount *= 1.0 - _pp("peau_de_fer", "reduction", 0.15)
 	return int(round(amount))
 
 
 ## Montant d'un soin de compétence (avant plafond des PV max).
 func _heal_amount(source: CombatUnit, target: CombatUnit, base_power: int) -> int:
 	var amount := float(base_power) * float(source.power) / 100.0
-	if source.passive == "foi" and target.hp_ratio() < FOI_THRESHOLD:
-		amount *= 1.0 + FOI_BONUS
+	if source.passive == "foi" and target.hp_ratio() < _pp("foi", "threshold", 0.4):
+		amount *= 1.0 + _pp("foi", "bonus", 0.2)
 	amount *= source.heal_mult * sudden_death_heal_mult()
 	if is_exhausted(source):
 		amount = 0.0
@@ -604,7 +603,7 @@ func _barrier_amount(source: CombatUnit, base_power: int) -> int:
 		return 0
 	var amount := float(base_power) * float(source.power) / 100.0
 	if source.passive == "sanctuaire":
-		amount *= 1.0 + SANCTUAIRE_BONUS
+		amount *= 1.0 + _pp("sanctuaire", "bonus", 0.25)
 	return int(round(amount))
 
 
@@ -617,7 +616,7 @@ func _deal_damage(source: CombatUnit, target: CombatUnit, base_power: int, eleme
 	# Martyr : un Prêtre allié de la cible encaisse une part des dégâts.
 	for ally in allies_of(target, true):
 		if ally != target and ally.passive == "martyr":
-			var share := int(round(float(total) * MARTYR_SHARE))
+			var share := int(round(float(total) * _pp("martyr", "share", 0.2)))
 			if share > 0:
 				total -= share
 				_apply_damage(source, ally, share, element, "martyr")
@@ -659,9 +658,9 @@ func _apply_damage(source: CombatUnit, target: CombatUnit, amount: int, element:
 	if target.hp <= 0:
 		target.statuses.clear()
 		_emit({"type": "ko", "target": target.id})
-	elif target.passive == "second_souffle" and not target.flags.get("second_souffle", false) and target.hp_ratio() < SECOND_SOUFFLE_THRESHOLD:
+	elif target.passive == "second_souffle" and not target.flags.get("second_souffle", false) and target.hp_ratio() < _pp("second_souffle", "threshold", 0.3):
 		target.flags["second_souffle"] = true
-		_heal(target, target, int(round(float(target.max_hp) * SECOND_SOUFFLE_HEAL)), "second_souffle", true)
+		_heal(target, target, int(round(float(target.max_hp) * _pp("second_souffle", "heal", 0.1))), "second_souffle", true)
 	return amount
 
 
@@ -804,7 +803,7 @@ func _synergy_provocation_nova(second: CombatUnit, first: CombatUnit) -> void:
 	var dealt: Dictionary = _damage_dealt.get(mage.id, {})
 	for enemy in enemies_of(second, true):
 		if enemy.has_status("provoque") and dealt.has(enemy.id):
-			var bonus := int(round(float(dealt[enemy.id]) * SYNERGY_NOVA_BONUS))
+			var bonus := int(round(float(dealt[enemy.id]) * _sp("provocation_nova", "bonus", 0.5)))
 			_apply_damage(mage, enemy, bonus, "feu", "synergie")
 
 
@@ -826,7 +825,7 @@ func _synergy_eclat(second: CombatUnit, first: CombatUnit) -> void:
 	var pretre := second if _actions[second.id].skill_id == "chatiment" else first
 	var target := get_unit(_actions[second.id].target_id)
 	if target != null and target.is_alive() and target.team != pretre.team:
-		var amount := int(round(float(SYNERGY_ECLAT_DAMAGE) * sudden_death_damage_mult()))
+		var amount := int(round(_sp("trait_de_givre_chatiment", "damage", 40) * sudden_death_damage_mult()))
 		_apply_damage(pretre, target, amount, "lumiere", "synergie")
 
 
@@ -836,8 +835,7 @@ func _synergy_plaie_brulante(second: CombatUnit) -> void:
 		return
 	var bleed := target.get_status("saignement")
 	if not bleed.is_empty():
-		bleed["turns"] = int(bleed["turns"]) + SYNERGY_PLAIE_EXTRA_TURNS
-		bleed["value"] = int(round(float(bleed["value"]) * SYNERGY_PLAIE_BLEED_MULT))
+		bleed["turns"] = int(bleed["turns"]) + int(_sp("fendoir_boule_de_feu", "extra_turns", 2))
 		_emit({"type": "status", "target": target.id, "status": "saignement", "turns": bleed["turns"], "value": bleed["value"]})
 
 
@@ -861,13 +859,13 @@ func _synergy_jugement(second: CombatUnit, first: CombatUnit) -> void:
 		var provoked := enemy.get_status("provoque")
 		if provoked.is_empty() or str(provoked.get("source", "")) != guerrier.id or already.has(enemy.id):
 			continue
-		_apply_damage(pretre, enemy, _damage_amount(pretre, enemy, power, SYNERGY_ECHO_MULT, true), "lumiere", "synergie")
+		_apply_damage(pretre, enemy, _damage_amount(pretre, enemy, power, _sp("provocation_chatiment", "mult", 1.0), true), "lumiere", "synergie")
 
 
 ## Courant de vie : la Prière soigne aussi les autres membres du duo, une fois et demie plus fort.
 func _synergy_courant_de_vie(second: CombatUnit, first: CombatUnit) -> void:
 	var pretre := second if _actions[second.id].skill_id == "priere" else first
-	var power := int(round(float(_skill_effect("priere", "heal").get("power", 0)) * SYNERGY_ECHO_MULT))
+	var power := int(round(float(_skill_effect("priere", "heal").get("power", 0)) * _sp("arc_de_foudre_priere", "mult", 1.0)))
 	var already: Array = _resolved_targets.get(pretre.id, [])
 	for ally in allies_of(pretre, true):
 		if not already.has(ally.id):
@@ -898,7 +896,7 @@ func _end_of_turn() -> void:
 				var amount := int(round(float(status["value"]) * sudden_death_damage_mult()))
 				_apply_damage(source, unit, amount, status_id, "dot")
 		if unit.is_alive() and unit.passive == "lumiere_interieure" and unit.hp < unit.max_hp:
-			_heal(unit, unit, int(round(float(unit.max_hp) * LUMIERE_INTERIEURE_HEAL)), "lumiere_interieure", true)
+			_heal(unit, unit, int(round(float(unit.max_hp) * _pp("lumiere_interieure", "heal", 0.05))), "lumiere_interieure", true)
 
 	# Les états avancent d'un tour.
 	for unit in units:
@@ -950,6 +948,23 @@ func _tie_break() -> int:
 # ---------------------------------------------------------------------------
 # Utilitaires
 # ---------------------------------------------------------------------------
+
+## Un chiffre d'un passif ou d'une Synergie, lu dans les données.
+func _pp(passive_id: String, key: String, fallback: float) -> float:
+	return data.passive_param(passive_id, key, fallback)
+
+
+func _sp(synergy_id: String, key: String, fallback: float) -> float:
+	return data.synergy_param(synergy_id, key, fallback)
+
+
+## Vétéran : ses bonus sont multipliés quand son allié est KO.
+func _veteran_mult(unit: CombatUnit) -> float:
+	for ally in allies_of(unit):
+		if ally != unit and not ally.is_alive():
+			return _pp("veteran", "ko_mult", 2.0)
+	return 1.0
+
 
 func _emit(event: Dictionary) -> void:
 	_events.append(event)

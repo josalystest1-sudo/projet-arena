@@ -58,6 +58,50 @@ func passive_name(passive_id: String) -> String:
 	return str(passives.get(passive_id, {}).get("name", passive_id))
 
 
+## Un chiffre d'un passif (data/passives.json, « params »).
+func passive_param(passive_id: String, key: String, fallback: float) -> float:
+	return float(passives.get(passive_id, {}).get("params", {}).get(key, fallback))
+
+
+## Un chiffre d'une Synergie (data/synergies.json, « params »).
+func synergy_param(synergy_id: String, key: String, fallback: float) -> float:
+	for synergy in synergies:
+		if synergy["id"] == synergy_id:
+			return float(synergy.get("params", {}).get(key, fallback))
+	return fallback
+
+
+## Remplace les {clé} d'une description par les chiffres : {clé%} donne un pourcentage (0,15 → 15 %),
+## {clé} un nombre (1,5 → « 1,5 »).
+static func fill(text: String, params: Dictionary) -> String:
+	for key in params:
+		var value := float(params[key])
+		text = text.replace("{%s%%}" % key, "%d %%" % int(round(value * 100.0)))
+		var plain := str(int(value)) if is_equal_approx(value, round(value)) else ("%.1f" % value).replace(".", ",")
+		text = text.replace("{%s}" % key, plain)
+	return text
+
+
+## Description d'une compétence, avec ses chiffres du moment : {percent}, {turns}, {value}... sont lus dans ses effets.
+func skill_description(skill_id: String) -> String:
+	var skill_data := skill(skill_id)
+	var params := {}
+	for effect in skill_data.get("effects", []):
+		for key in effect:
+			if not params.has(key) and (effect[key] is int or effect[key] is float):
+				params[key] = effect[key]
+	return fill(str(skill_data.get("description", "")), params)
+
+
+func passive_description(passive_id: String) -> String:
+	var passive: Dictionary = passives.get(passive_id, {})
+	return fill(str(passive.get("description", "")), passive.get("params", {}))
+
+
+func synergy_description(synergy: Dictionary) -> String:
+	return fill(str(synergy.get("description", "")), synergy.get("params", {}))
+
+
 func status_name(status_id: String) -> String:
 	return str(statuses.get(status_id, {}).get("name", status_id))
 

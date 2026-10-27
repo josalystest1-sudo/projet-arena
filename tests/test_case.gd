@@ -64,6 +64,21 @@ func skill_power(skill_id: String, effect_type: String = "damage") -> int:
 	return 0
 
 
+## Un chiffre de passif ou de Synergie, lu dans les données (ils bougent avec l'équilibrage).
+func pp(passive_id: String, key: String) -> float:
+	return data.passive_param(passive_id, key, 0.0)
+
+
+func sp(synergy_id: String, key: String) -> float:
+	return data.synergy_param(synergy_id, key, 0.0)
+
+
+## Met un perso à un pourcentage de ses PV max (les PV de chaque classe bougent avec l'équilibrage).
+func set_ratio(combat: Combat, unit_id: String, ratio: float) -> void:
+	var unit := combat.get_unit(unit_id)
+	unit.hp = maxi(1, int(floor(float(unit.max_hp) * ratio)))
+
+
 ## Puissance d'une classe, en multiplicateur (le Mage frappe plus fort que les autres).
 func class_power(class_id: String) -> float:
 	return float(data.classes[class_id]["stats"]["power"]) / 100.0
