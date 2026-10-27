@@ -31,9 +31,9 @@ OUT = os.environ.get("EQUILIBRAGE_DIR", "/tmp/equilibrage")
 GAIN = 1.0
 # Un passif ou une Synergie bouge moins le taux de victoire qu'une compétence : on les corrige plus fort.
 PASSIVE_GAIN = 2.5
-SYNERGY_GAIN = 1.2
+SYNERGY_GAIN = 0.8
 CLASS_GAIN = 0.6
-MAX_STEP = 0.15
+MAX_STEP = 0.10
 
 # Le chiffre principal de chaque compétence : (type d'effet, clé). Rempart n'a pas de chiffre : il n'est pas réglé.
 SKILL_LEVERS = {
@@ -63,7 +63,7 @@ PAIR_GAIN = 0.5
 PAIR_LIMIT = 0.15
 # Une compétence ou un passif sans chiffre à régler (Rempart, Résonance, Météorologue) se règle par le budget du
 # Destin : un ajustement de PV et de puissance du perso qui l'a (data/destins.json, « kit_items »).
-ITEM_GAIN = 0.5
+ITEM_GAIN = 0.4
 # En duo, un élément n'a pas la même force selon la classe du partenaire (un Bouclier de mana protège mieux un Guerrier
 # qui encaisse) : réglé par « duo_items ». La composition du duo, qui touche les deux membres : « duo_classes ».
 COMPO_GAIN = 0.25
@@ -272,7 +272,7 @@ def tune(rates):
         # Une classe se règle par sa puissance (qui porte aussi les soins et les barrières). Ses PV ne bougent pas : ils
         # disent son rôle (un réglage par les PV avait fini par donner moins de PV au Guerrier qu'au Prêtre).
         new_hp = hp
-        new_power = int(round(step(power, deviation, 2 * CLASS_GAIN)))
+        new_power = int(round(step(power, deviation, CLASS_GAIN)))
         set_class_stats(class_id, new_hp, new_power)
         report.append(f"classe {class_id} {rates['classe:' + class_id]:.1f} % : PV {hp} -> {new_hp}, puissance {power} -> {new_power}")
     for skill_id, levers in SKILL_LEVERS.items():

@@ -68,8 +68,8 @@
   },
   "priere": {
     "name": "Prière", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "heal", "power": 54, "overflow_barrier": true}],
-    "description": "Petit soin sur un allié ; ce qui dépasse ses PV max devient une barrière."
+    "effects": [{"type": "heal", "power": 54, "overflow_barrier": true, "overflow": 0.5}],
+    "description": "Petit soin sur un allié ; {overflow%} de ce qui dépasse ses PV max devient une barrière."
   },
   "restauration": {
     "name": "Restauration", "class": "pretre", "tier": "moyenne", "element": "lumiere", "target": "ally",

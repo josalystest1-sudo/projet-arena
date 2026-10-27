@@ -525,7 +525,7 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 		"heal":
 			for target in targets:
 				if bool(effect.get("overflow_barrier", false)):
-					_heal_with_overflow(actor, target, int(effect["power"]), str(context["skill_id"]))
+					_heal_with_overflow(actor, target, int(effect["power"]), str(context["skill_id"]), float(effect.get("overflow", 1.0)))
 				else:
 					_heal(actor, target, int(effect["power"]), str(context["skill_id"]))
 		"status":
@@ -675,14 +675,15 @@ func _heal(source: CombatUnit, target: CombatUnit, base_power: int, kind: String
 	return healed
 
 
-## Prière : le soin qui dépasse les PV max devient une barrière (un petit soin n'est jamais perdu).
-func _heal_with_overflow(source: CombatUnit, target: CombatUnit, base_power: int, kind: String) -> void:
+## Prière : une part (ratio) du soin qui dépasse les PV max devient une barrière (un petit soin n'est jamais perdu).
+func _heal_with_overflow(source: CombatUnit, target: CombatUnit, base_power: int, kind: String, ratio: float) -> void:
 	if not target.is_alive():
 		return
 	var expected := _heal_amount(source, target, base_power)
 	var healed := _heal(source, target, base_power, kind)
-	if expected > healed:
-		_add_status(target, {"id": "barriere", "turns": 2, "value": expected - healed, "source": source.id})
+	var barrier := int(round(float(expected - healed) * ratio))
+	if barrier > 0:
+		_add_status(target, {"id": "barriere", "turns": 2, "value": barrier, "source": source.id})
 
 
 func _revive(actor: CombatUnit, target: CombatUnit, percent: int) -> void:
@@ -883,7 +884,7 @@ func _synergy_courant_de_vie(second: CombatUnit, first: CombatUnit) -> void:
 	var already: Array = _resolved_targets.get(pretre.id, [])
 	for ally in allies_of(pretre, true):
 		if not already.has(ally.id):
-			_heal_with_overflow(pretre, ally, power, "synergie")
+			_heal_with_overflow(pretre, ally, power, "synergie", float(_skill_effect("priere", "heal").get("overflow", 1.0)))
 
 
 ## Le premier effet d'un type donné dans une compétence (ex. la barrière du Bouclier de mana).

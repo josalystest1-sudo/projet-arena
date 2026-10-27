@@ -86,6 +86,6 @@
     "params": {
       "mult": 1.288
     },
-    "description": "La Prière soigne aussi l'autre membre du duo, à {mult%} de sa force ; ce qui dépasse ses PV max devient une barrière."
+    "description": "La Prière soigne aussi l'autre membre du duo, à {mult%} de sa force ; comme pour la Prière, une part de ce qui dépasse ses PV max devient une barrière."
   }
 ]

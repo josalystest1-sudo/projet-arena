@@ -218,7 +218,7 @@ func test_courant_de_vie_sur_un_allie_a_fond_pose_une_barriere() -> void:
 	combat.resolve_turn([action("a1", "arc_de_foudre", "b1"), action("a2", "priere", "a2"), action("b1", "taillade", "a2"), action("b2", "boule_de_feu", "a2")])
 	var expected := int(round(round(skill_power("priere", "heal") * sp("arc_de_foudre_priere", "mult")) * class_power("pretre")))
 	assert_eq(combat.get_unit("a1").hp, combat.get_unit("a1").max_hp, "le Mage avait tous ses PV")
-	assert_eq(combat.get_unit("a1").barrier_amount(), expected, "le soin du Courant de vie devient une barrière")
+	assert_eq(combat.get_unit("a1").barrier_amount(), int(round(expected * overflow_ratio())), "une part du soin du Courant de vie devient une barrière")
 
 
 func test_le_budget_du_destin_ajuste_pv_et_puissance() -> void:
@@ -276,7 +276,8 @@ func test_priere_le_surplus_devient_une_barriere() -> void:
 	combat.get_unit("a1").hp = combat.get_unit("a1").max_hp - 10
 	combat.resolve_turn([action("a2", "priere", "a1"), action("b1", "taillade", "a2"), action("b2", "boule_de_feu", "a2")])
 	assert_eq(combat.get_unit("a1").hp, combat.get_unit("a1").max_hp, "10 PV soignés")
-	assert_eq(combat.get_unit("a1").barrier_amount(), int(round(skill_power("priere", "heal") * class_power("pretre"))) - 10, "le reste devient une barrière")
+	var surplus := int(round(skill_power("priere", "heal") * class_power("pretre"))) - 10
+	assert_eq(combat.get_unit("a1").barrier_amount(), int(round(surplus * overflow_ratio())), "une part du reste devient une barrière")
 
 
 func test_cri_de_guerre_frappe_et_renforce_le_duo() -> void:
@@ -439,3 +440,11 @@ func test_partenaires_de_synergie() -> void:
 	for partner in combat.synergy_partners(combat.get_unit("a1"))["moyenne"]:
 		if partner["skill_id"] == "nova":
 			assert_true(partner["available"], "Nova disponible au tour 3")
+
+
+## La part du soin en trop de la Prière qui devient une barrière (dans les données).
+func overflow_ratio() -> float:
+	for effect in data.skill("priere")["effects"]:
+		if effect["type"] == "heal":
+			return float(effect.get("overflow", 1.0))
+	return 1.0
