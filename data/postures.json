@@ -52,9 +52,9 @@
   },
   "always": "Quelle que soit sa posture, il relève un allié KO dès qu'il le peut.",
   "thresholds": {
-    "libre_heal_below": 0.5,
+    "libre_heal_below": 0.6,
     "libre_rescue_below": 0.5,
-    "heal_first_below": 0.6,
+    "heal_first_below": 0.7,
     "cogne_protect_below": 0.3,
     "urgent_below": 0.3,
     "ai_leader_protect_below": 0.4,
