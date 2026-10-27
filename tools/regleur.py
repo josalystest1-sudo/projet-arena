@@ -110,7 +110,7 @@ def write_passives(passives):
 
 def write_destins(destins):
     lines = ["{"]
-    sections = ("kit_items", "kit_pairs", "kit_triples", "duo_classes", "duo_items")
+    sections = ("kit_items", "kit_pairs", "kit_triples", "duo_classes", "acolyte_classes", "duo_items")
     for n, section in enumerate(sections):
         values = destins.get(section, {})
         lines.append(f'  "{section}": {{')
@@ -178,6 +178,8 @@ def measure(files):
                     keys += ["comp:" + row[prefix + t] for t in ("basique", "moyenne", "forte")]
                     keys += [f"duo:{row[partner]}:{row[prefix + t]}" for t in ("basique", "moyenne", "forte", "passif")]
                     keys.append(f"duoclasse:{row[partner]}:{cls}")
+                    if side == "acolyte":
+                        keys.append("acolyte:" + cls)
                     keys.append("trio:" + "+".join(sorted(row[prefix + t] for t in ("basique", "moyenne", "forte"))))
                 keys += ["syn:" + s for s in filter(None, row["synergies_possibles"].split("+"))]
                 keys.append("compo:" + "+".join(sorted([row["joueur"], row["acolyte"]])))
@@ -324,6 +326,18 @@ def tune(rates):
         old = triples.get(trio, 0.0)
         triples[trio] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * deviation / 100.0)), 3)
         report.append(f"budget du trio {trio} ({deviation:+.1f}) : {old:+.3f} -> {triples[trio]:+.3f}")
+    # Une classe jouée en acolyte (toujours par l'IA) comparée à la même classe en général.
+    acolytes = destins.setdefault("acolyte_classes", {})
+    for key, rate in sorted(rates.items()):
+        if not key.startswith("acolyte:"):
+            continue
+        class_id = key.split(":")[1]
+        deviation = rate - rates["classe:" + class_id]
+        if abs(deviation) < 0.8:
+            continue
+        old = acolytes.get(class_id, 0.0)
+        acolytes[class_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * deviation / 100.0)), 3)
+        report.append(f"budget de l'acolyte {class_id} ({deviation:+.1f}) : {old:+.3f} -> {acolytes[class_id]:+.3f}")
     compos = destins.setdefault("duo_classes", {})
     for key, rate in sorted(rates.items()):
         if not key.startswith("compo:"):

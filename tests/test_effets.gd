@@ -238,11 +238,11 @@ func test_le_budget_du_destin_ajuste_pv_et_puissance() -> void:
 
 
 func test_en_duo_le_budget_depend_du_partenaire() -> void:
-	data.destins = {"duo_items": {"guerrier": {"bouclier_de_mana": -0.05}}, "duo_classes": {CombatData.pair_key("guerrier", "mage"): 0.02}}
+	data.destins = {"duo_items": {"guerrier": {"bouclier_de_mana": -0.05}}, "duo_classes": {CombatData.pair_key("guerrier", "mage"): 0.02}, "acolyte_classes": {"mage": 0.01}}
 	var combat := duo_combat(GM, MP, {"mage": {"forte": 1}}, {"mage": {"forte": 1}})
 	var stats: Dictionary = data.classes["mage"]["stats"]
 	assert_eq(combat.get_unit("a2").skills["forte"], "bouclier_de_mana", "kit tiré")
-	assert_eq(combat.get_unit("a2").max_hp, int(round(float(stats["max_hp"]) * 0.97)), "Bouclier de mana à côté d'un Guerrier : -5 %, duo Guerrier + Mage : +2 %")
+	assert_eq(combat.get_unit("a2").max_hp, int(round(float(stats["max_hp"]) * 0.98)), "Bouclier de mana à côté d'un Guerrier : -5 %, duo Guerrier + Mage : +2 %, acolyte Mage : +1 %")
 	assert_eq(combat.get_unit("a1").max_hp, int(round(float(data.classes["guerrier"]["stats"]["max_hp"]) * 1.02)), "le Guerrier : +2 % pour la composition")
 	assert_eq(combat.get_unit("b1").max_hp, int(stats["max_hp"]), "le même Mage à côté d'un Prêtre : rien")
 	data.destins = {"kit_pairs": {}}

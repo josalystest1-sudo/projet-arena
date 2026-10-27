@@ -21,7 +21,8 @@ var tower: Dictionary = {}
 ## « kit_pairs » pour une paire d'un même kit qui va trop bien (ou trop mal) ensemble ; « kit_triples » pour les trois
 ## compétences ensemble (clé : les trois dans l'ordre alphabétique, ex. « arc_de_foudre+etincelle+nova »).
 ## En duo, le partenaire compte aussi : « duo_items » (un élément selon la classe du partenaire, ex. un Bouclier de mana
-## à côté d'un Guerrier) et « duo_classes » (la composition du duo).
+## à côté d'un Guerrier) et « duo_classes » (la composition du duo). Un acolyte, toujours joué par l'IA, a aussi son
+## ajustement par classe : « acolyte_classes ».
 var destins: Dictionary = {}
 
 
@@ -73,7 +74,7 @@ static func pair_key(a: String, b: String) -> String:
 
 ## L'ajustement de PV et de puissance d'un kit (3 compétences + 1 passif) : ses éléments, ses paires, et en duo
 ## (partner_class non vide) ses éléments selon la classe du partenaire et la composition du duo.
-func kit_bonus(skill_ids: Array, passive_id: String, own_class: String = "", partner_class: String = "") -> float:
+func kit_bonus(skill_ids: Array, passive_id: String, own_class: String = "", partner_class: String = "", is_acolyte: bool = false) -> float:
 	var singles: Dictionary = destins.get("kit_items", {})
 	var pairs: Dictionary = destins.get("kit_pairs", {})
 	var with_partner: Dictionary = destins.get("duo_items", {}).get(partner_class, {})
@@ -89,6 +90,8 @@ func kit_bonus(skill_ids: Array, passive_id: String, own_class: String = "", par
 	total += float(destins.get("kit_triples", {}).get("+".join(trio), 0.0))
 	if partner_class != "":
 		total += float(destins.get("duo_classes", {}).get(pair_key(own_class, partner_class), 0.0))
+	if is_acolyte:
+		total += float(destins.get("acolyte_classes", {}).get(own_class, 0.0))
 	return total
 
 

@@ -33,8 +33,9 @@ var is_acolyte: bool = false
 
 
 ## Construit une unité depuis une classe et des choix de kit (index par palier et index de passif).
-## partner_class : la classe de l'autre membre du duo (vide hors duo), pour le budget de puissance du Destin.
-static func from_class(data: CombatData, p_class_id: String, picks: Dictionary, p_id: String, p_team: int, p_slot: int, partner_class: String = "") -> CombatUnit:
+## partner_class : la classe de l'autre membre du duo (vide hors duo) ; is_acolyte : un acolyte (joué par l'IA).
+## Les deux servent au budget de puissance du Destin.
+static func from_class(data: CombatData, p_class_id: String, picks: Dictionary, p_id: String, p_team: int, p_slot: int, partner_class: String = "", p_is_acolyte: bool = false) -> CombatUnit:
 	var cls: Dictionary = data.classes[p_class_id]
 	var unit := CombatUnit.new()
 	unit.id = p_id
@@ -53,7 +54,8 @@ static func from_class(data: CombatData, p_class_id: String, picks: Dictionary, 
 	unit.passive = passive_pool[int(picks.get("passive", 0)) % passive_pool.size()]
 	# Budget de puissance du Destin : un kit dont les pièces vont trop bien ensemble a un peu moins de PV et de
 	# puissance, et inversement (data/destins.json).
-	var bonus := data.kit_bonus(unit.skills.values(), unit.passive, p_class_id, partner_class)
+	unit.is_acolyte = p_is_acolyte
+	var bonus := data.kit_bonus(unit.skills.values(), unit.passive, p_class_id, partner_class, p_is_acolyte)
 	if bonus != 0.0:
 		unit.max_hp = maxi(1, int(round(float(unit.max_hp) * (1.0 + bonus))))
 		unit.hp = unit.max_hp
