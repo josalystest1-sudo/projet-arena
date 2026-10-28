@@ -3,7 +3,7 @@
   "name": "Voleur",
   "roles": ["degats", "soutien"],
   "identity": "Burst, poison et disparition.",
-  "stats": {"max_hp": 185, "speed": 11, "power": 94},
+  "stats": {"max_hp": 185, "speed": 11, "power": 93},
   "skills": {
     "basique": ["dague", "lancer"],
     "moyenne": ["voile", "poison"],
