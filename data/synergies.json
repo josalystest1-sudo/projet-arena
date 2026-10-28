@@ -14,7 +14,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.387
+      "bonus": 0.392
     },
     "description": "Les ennemis provoqués subissent la Nova à +{bonus%}."
   },
@@ -52,7 +52,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 30
+      "damage": 31
     },
     "description": "La cible gelée subit {damage} dégâts de lumière supplémentaires."
   },
@@ -71,7 +71,7 @@
     "lever": "bonus",
     "params": {
       "extra_turns": 2,
-      "bonus": 0.505
+      "bonus": 0.498
     },
     "description": "Le saignement de la cible dure {extra_turns} tours de plus et fait +{bonus%} de dégâts."
   },
@@ -108,7 +108,7 @@
     },
     "lever": "mult",
     "params": {
-      "mult": 1.362
+      "mult": 1.366
     },
     "description": "Le Châtiment frappe aussi l'autre ennemi provoqué, à {mult%} de sa force."
   },
@@ -126,7 +126,7 @@
     },
     "lever": "mult",
     "params": {
-      "mult": 1.215
+      "mult": 1.203
     },
     "description": "La Prière soigne aussi l'autre membre du duo, à {mult%} de sa force ; comme pour la Prière, une part de ce qui dépasse ses PV max devient une barrière."
   },
@@ -260,7 +260,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.383
+      "bonus": 0.387
     },
     "description": "Le Fendoir fait +{bonus%} de dégâts sur la cible marquée."
   },
@@ -281,7 +281,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 4,
+      "value": 3,
       "turns": 2
     },
     "description": "Le duo, galvanisé derrière son piège, prend de vitesse : +{value} vitesse pendant {turns} tours."
@@ -335,7 +335,7 @@
     },
     "lever": "share",
     "params": {
-      "share": 0.301
+      "share": 0.3
     },
     "description": "Le sang versé revigore le duo : {share%} des dégâts du couple soignent le plus blessé."
   },
@@ -411,7 +411,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 36
+      "damage": 34
     },
     "description": "La cible sonnée subit {damage} dégâts de lumière supplémentaires."
   },
@@ -428,7 +428,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 24
+      "power": 26
     },
     "description": "Chaque coup est une prière : tout le duo se soigne."
   },
@@ -449,7 +449,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 20,
+      "value": 19,
       "turns": 2
     },
     "description": "L'acide gicle sur tous les ennemis provoqués : ils infligent {value} % de dégâts en moins pendant {turns} tours."
@@ -468,7 +468,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 35
+      "power": 36
     },
     "description": "Derrière la fumée et le Rempart, tout le duo reçoit une barrière."
   },
@@ -487,7 +487,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 28
+      "damage": 25
     },
     "description": "Le poing enflammé : {damage} dégâts de feu de plus sur la cible."
   },
@@ -508,7 +508,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 15,
+      "value": 17,
       "turns": 2
     },
     "description": "L'élixir monte à la tête : tout le duo inflige +{value} % de dégâts pendant {turns} tours."
@@ -609,7 +609,7 @@
     "lever": "bonus",
     "params": {
       "extra_turns": 1,
-      "bonus": 0.5
+      "bonus": 0.483
     },
     "description": "L'acide creuse la Marque : elle dure {extra_turns} tour de plus et vaut +{bonus%}."
   },
@@ -664,7 +664,7 @@
     "lever": "bonus",
     "params": {
       "extra_turns": 1,
-      "bonus": 0.5
+      "bonus": 0.51
     },
     "description": "La cible, affaiblie et tailladée, le reste {extra_turns} tour de plus et {bonus%} plus fort."
   },
@@ -683,7 +683,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 30
+      "damage": 29
     },
     "description": "L'uppercut tombe à contretemps : {damage} dégâts de plus sur la cible."
   },
@@ -704,7 +704,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 15,
+      "value": 18,
       "turns": 2
     },
     "description": "La Nova porte la Dissonance partout : tous les ennemis infligent {value} % de dégâts en moins pendant {turns} tours."
@@ -724,7 +724,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.4
+      "bonus": 0.388
     },
     "description": "Le Coup bas fait +{bonus%} de dégâts sur la cible affaiblie."
   },
@@ -746,7 +746,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 20,
+      "value": 19,
       "turns": 2
     },
     "description": "La cible, affaiblie et saignante, est marquée : +{value} % de dégâts subis pendant {turns} tours."
@@ -801,7 +801,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 20,
+      "value": 17,
       "turns": 1
     },
     "description": "Sommés de toutes parts, les ennemis infligent {value} % de dégâts en moins ce tour."
@@ -820,7 +820,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 30
+      "power": 33
     },
     "description": "Une trêve garantie par le Rempart : barrière sur tout le duo."
   },
@@ -838,7 +838,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.3
+      "bonus": 0.323
     },
     "description": "La Nova, haranguée, fait +{bonus%} de dégâts."
   },
@@ -877,7 +877,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 25
+      "damage": 21
     },
     "description": "La dague appuie l'argument : {damage} dégâts perforants de plus sur la cible."
   },
@@ -895,7 +895,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.5
+      "bonus": 0.597
     },
     "description": "Le Lancer, encouragé, fait +{bonus%} de dégâts."
   },
@@ -917,7 +917,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 15,
+      "value": 12,
       "turns": 1
     },
     "description": "Persuadée par la canne et la flèche, la cible inflige {value} % de dégâts en moins ce tour."
@@ -939,7 +939,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 2,
+      "value": 5,
       "turns": 2
     },
     "description": "Le duo prend de l'élan : +{value} vitesse pendant {turns} tours."
@@ -957,7 +957,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 45
+      "power": 41
     },
     "description": "Dans le souffle de la Nova, le Spectre frappe aussitôt la cible ({power} de puissance)."
   },
@@ -974,7 +974,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 40
+      "power": 43
     },
     "description": "Le mana soude la pierre : le Golem récupère des PV ({power} de puissance de l'Invocateur)."
   },
@@ -993,7 +993,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 28
+      "damage": 27
     },
     "description": "Prise en tenaille entre la créature et la dague : {damage} dégâts perforants de plus sur la cible."
   },
@@ -1011,7 +1011,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.5
+      "bonus": 0.514
     },
     "description": "Deux lames d'ombre : le Lancer fait +{bonus%} de dégâts."
   },
@@ -1050,7 +1050,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 40
+      "power": 41
     },
     "description": "La créature liée se jette sur la cible de la flèche ({power} de puissance)."
   },
@@ -1067,7 +1067,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 35
+      "power": 40
     },
     "description": "La Prière soigne aussi le Golem ({power} de puissance de l'Invocateur)."
   },
@@ -1084,7 +1084,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 42
+      "power": 37
     },
     "description": "Le Spectre frappe aussitôt la cible du Châtiment ({power} de puissance)."
   },
@@ -1118,7 +1118,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 25,
+      "value": 22,
       "turns": 2
     },
     "description": "L'explosion répand l'Acide sur tous les ennemis : ils infligent {value} % de dégâts en moins pendant {turns} tours."
@@ -1154,7 +1154,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 40
+      "power": 36
     },
     "description": "Le Spectre répond à la Dissonance : il frappe aussitôt sa cible ({power} de puissance)."
   },
@@ -1172,7 +1172,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.5
+      "bonus": 0.55
     },
     "description": "Encouragé, l'Invocateur commande mieux : l'Ordre fait +{bonus%} de dégâts."
   },
@@ -1191,7 +1191,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 26
+      "damage": 22
     },
     "description": "L'ombre s'enroule sur la canne : {damage} dégâts d'ombre de plus sur la cible."
   }

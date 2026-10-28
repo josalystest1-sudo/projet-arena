@@ -4,7 +4,7 @@
   "roles": ["degats", "soutien"],
   "identity": "Les éléments en zone.",
   "elements": ["feu", "givre", "foudre"],
-  "stats": {"max_hp": 175, "speed": 8, "power": 104},
+  "stats": {"max_hp": 175, "speed": 8, "power": 102},
   "skills": {
     "basique": ["boule_de_feu", "etincelle"],
     "moyenne": ["trait_de_givre", "arc_de_foudre"],

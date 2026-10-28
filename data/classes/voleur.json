@@ -4,7 +4,7 @@
   "roles": ["degats", "soutien"],
   "identity": "Burst, poison et disparition.",
   "elements": ["ombre", "perforant"],
-  "stats": {"max_hp": 185, "speed": 11, "power": 93},
+  "stats": {"max_hp": 185, "speed": 11, "power": 92},
   "skills": {
     "basique": ["dague", "lancer"],
     "moyenne": ["voile", "poison"],

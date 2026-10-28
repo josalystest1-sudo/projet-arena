@@ -4,7 +4,7 @@
   "roles": ["front", "degats"],
   "identity": "Il ne combat pas seul : sa créature encaisse à sa place.",
   "elements": ["contondant", "ombre"],
-  "stats": {"max_hp": 235, "speed": 7, "power": 95},
+  "stats": {"max_hp": 235, "speed": 7, "power": 83},
   "skills": {
     "basique": ["fouet_d_ombre", "ordre"],
     "moyenne": ["golem", "spectre"],
