@@ -55,6 +55,15 @@ var ordre_classes: Array[String] = []
 ## Ce qui ne va pas dans les données : une ligne par problème (vide si tout est connu et cohérent).
 var erreurs: Array[String] = []
 
+static var _defaut: Donnees = null
+
+
+## Les données de res://data/, chargées une seule fois.
+static func defaut() -> Donnees:
+	if _defaut == null:
+		_defaut = charger()
+	return _defaut
+
 
 static func charger(dossier: String = DOSSIER) -> Donnees:
 	var donnees := Donnees.new()

@@ -21,13 +21,6 @@ const POSE_PAR := {
 	"affaiblissement": ["archer", "pretre", "alchimiste", "barde", "diplomate"],
 }
 
-var donnees: Donnees
-
-
-func setup() -> void:
-	donnees = Donnees.charger()
-
-
 # 1. Chaque classe a 5 voies de 4 nœuds (rangs 1 à 4, dans l'ordre) et un moyeu ; les 3 premières sont celles de l'acolyte.
 func test_01_chaque_classe_a_cinq_voies_de_quatre_noeuds_et_un_moyeu() -> void:
 	assert_eq(donnees.ordre_classes.size(), 10, "dix classes")
@@ -116,8 +109,3 @@ func _etat_pose(effet: Dictionary) -> String:
 		"gardien", "barriere", "renfort", "affaiblissement", "egare":
 			return str(effet["type"])
 	return ""
-
-
-func assert_almost(actual: float, expected: float, message: String) -> void:
-	if absf(actual - expected) > 0.001:
-		failures.append("%s : attendu %s, obtenu %s" % [message, str(expected), str(actual)])

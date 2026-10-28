@@ -12,8 +12,8 @@ Le projet est entièrement développé avec Claude Code.
 
 | Dossier | Contenu |
 | --- | --- |
-| `engine/` | Le moteur de règles du combat : module pur, sans affichage, réutilisé par le client, le serveur, l'IA et le simulateur. |
-| `data/` | Les données de jeu en JSON : classes, compétences, passifs, états, Synergies, IA, la Tour et son bestiaire de monstres. |
+| `engine/` | Le moteur de règles du combat V2 (`docs/SPEC-COMBAT-V2.md`) : données (`donnees.gd`), budget (`budget.gd`), Destin (`destin.gd`), état d'un combat (`etat_combat.gd`), règles du tour (`regles.gd`). Module pur, sans affichage, réutilisé par le client, le serveur, l'IA et le simulateur. |
+| `data/` | Les données de jeu en JSON : règles (`rules.json`), états (`etats.json`), textes (`textes.json`), les 10 classes et leurs roues (`classes/`). |
 | `scenes/app/` | L'application : profil, duo, navigation entre les écrans (scène de démarrage). |
 | `scenes/screens/` | Les écrans : création, rencontre de l'acolyte, Vitrine, Acolyte, Compétences, La Tour, Bestiaire, Profil, Paramètres, face-à-face. |
 | `scenes/ui/` | Les briques communes de l'interface : thème, boutons, cartes, portraits animés. |
