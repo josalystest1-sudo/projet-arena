@@ -135,7 +135,8 @@ func do_hurt(strength: float = 1.0) -> void:
 
 ## Point d'ancrage des traits d'Intention (centre du sprite), en coordonnées globales.
 func anchor_global() -> Vector2:
-	return global_position + Vector2(size.x / 2.0, BUBBLE_HEIGHT + pixel * PixelSprites.GRID / 2.0 + 4.0)
+	# Par la transformation complète : l'écran de combat peut être mis à l'échelle pour tenir sur un petit téléphone.
+	return get_global_transform() * Vector2(size.x / 2.0, BUBBLE_HEIGHT + pixel * PixelSprites.GRID / 2.0 + 4.0)
 
 
 func _process(delta: float) -> void:

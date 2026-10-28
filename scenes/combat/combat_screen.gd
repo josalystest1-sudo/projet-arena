@@ -85,6 +85,8 @@ var help_button: Button
 var menu_layer: Control
 var end_layer: Control
 var stage: Control
+## La colonne de l'écran de combat, mise à l'échelle pour tenir en entier dans la hauteur disponible.
+var layout_root: VBoxContainer
 var flash_rect: ColorRect
 var cutin: Label
 var mute_button: Button
@@ -132,13 +134,11 @@ func _build_layout() -> void:
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(stage)
 	var root := VBoxContainer.new()
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.offset_left = 10
-	root.offset_right = -10
-	root.offset_top = 10
-	root.offset_bottom = -10
 	root.add_theme_constant_override("separation", 6)
 	stage.add_child(root)
+	layout_root = root
+	# Tout l'écran tient dans la hauteur du téléphone : s'il manque de place, il se réduit au lieu de déborder.
+	stage.resized.connect(_fit_layout)
 
 	# Barre du haut : tour, timer, son.
 	var top := HBoxContainer.new()
@@ -208,7 +208,7 @@ func _build_layout() -> void:
 	middle.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	root.add_child(middle)
 	story_panel = PanelContainer.new()
-	story_panel.custom_minimum_size = Vector2(500, 108)
+	story_panel.custom_minimum_size = Vector2(500, 132)
 	middle.add_child(story_panel)
 	var story := VBoxContainer.new()
 	story.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -219,7 +219,9 @@ func _build_layout() -> void:
 	story_main = _story_label(21, Color.WHITE)
 	story.add_child(story_main)
 	story_sub = _story_label(15, Color(0.8, 0.84, 0.95))
+	story_sub.max_lines_visible = 3
 	story.add_child(story_sub)
+	story_main.max_lines_visible = 2
 	_style_story("normal")
 
 	# Ton duo : ton acolyte à gauche, toi à droite.
@@ -305,6 +307,22 @@ func _build_layout() -> void:
 	flash_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	flash_rect.color = Color(1, 1, 1, 0)
 	add_child(flash_rect)
+
+
+## Met la colonne de l'écran à l'échelle de l'écran : sur un téléphone peu haut (barres du navigateur visibles),
+## tout rapetisse un peu, et rien ne passe sous le bas de l'écran.
+func _fit_layout() -> void:
+	if layout_root == null:
+		return
+	var margin := 10.0
+	var available := stage.size - Vector2(margin, margin) * 2.0
+	if available.x <= 0.0 or available.y <= 0.0:
+		return
+	var needed := layout_root.get_combined_minimum_size()
+	var k := minf(1.0, minf(available.y / maxf(needed.y, 1.0), available.x / maxf(needed.x, 1.0)))
+	layout_root.scale = Vector2(k, k)
+	layout_root.position = Vector2(margin, margin)
+	layout_root.size = available / k
 
 
 func _story_label(font_size: int, color: Color) -> Label:
@@ -419,9 +437,15 @@ func _make_layer(separation: int = 12) -> Control:
 	layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	layer.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(layer)
+	# Centrée quand elle tient dans l'écran, elle défile au doigt sinon.
+	var scroll := ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	layer.add_child(scroll)
 	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	layer.add_child(center)
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.custom_minimum_size = Vector2(0, get_viewport_rect().size.y)
+	scroll.add_child(center)
 	var box := VBoxContainer.new()
 	box.custom_minimum_size = Vector2(480, 0)
 	box.add_theme_constant_override("separation", separation)
@@ -502,6 +526,7 @@ func _setup_views(enemies: Array) -> void:
 		views[unit.id] = view
 		view.sync(unit, data)
 		stats[unit.id] = {"damage": 0, "heal": 0, "kos": 0}
+	_fit_layout.call_deferred()
 
 
 # ---------------------------------------------------------------------------
