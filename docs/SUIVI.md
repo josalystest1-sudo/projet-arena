@@ -1,6 +1,6 @@
 # Suivi du projet
 
-Mis à jour le **28 octobre 2026** (fin de matinée). Ce fichier dit où en est le projet, ce qui attend Gautier et ce qui vient ensuite. Il est lu au début de chaque session (avec `CLAUDE.md`) et mis à jour à la fin de chaque PR. Les règles du jeu sont dans `docs/GDD.md`, les choix techniques et les chiffres dans `CLAUDE.md` (« Choix faits par Claude Code »).
+Mis à jour le **28 octobre 2026** (fin de journée). Ce fichier dit où en est le projet, ce qui attend Gautier et ce qui vient ensuite. Il est lu au début de chaque session (avec `CLAUDE.md`) et mis à jour à la fin de chaque PR. Les règles du jeu sont dans `docs/GDD.md`, les choix techniques et les chiffres dans `CLAUDE.md` (« Choix faits par Claude Code »).
 
 ## Où on en est
 
@@ -22,7 +22,9 @@ Les prototypes des étapes 1 à 3 sont jouables sur téléphone : le **combat en
 
 ## En attente de Gautier
 
-1. **Les critères de sortie** (le GDD dit de ne pas passer à l'étape suivante sans avoir testé la précédente sur téléphone) : après quelques combats, as-tu envie d'en relancer un ? À la Tour, as-tu envie de battre ton record ?
+1. **Les critères de sortie** (le GDD dit de ne pas passer à l'étape suivante sans avoir testé la précédente sur téléphone) : après quelques combats, as-tu envie d'en relancer un ? À la Tour, as-tu envie de battre ton record ? Les 10 classes et le Destin sont maintenant jouables et équilibrés : c'est le bon moment pour tester.
+2. **Les kits qui ne frappent presque pas** (Diplomate Encouragement + Trêve + Discours, Alchimiste Élixir + Fumigène + Catalyseur…) perdent deux combats sur trois malgré leur ajustement au plafond. Faut-il qu'une compétence de Soutien porte toujours un petit coup (comme Prière, Cri de guerre et Encouragement aujourd'hui), ou garder des kits « purs » mais faibles ? Tant que tu n'as pas tranché, les kits restent entre 31 et 65 %.
+3. **La Tour selon la classe** : un Prêtre monte en moyenne à l'étage 9, un Barde à l'étage 5. Le record est par classe, donc ce n'est pas bloquant ; veux-tu quand même que la Tour soit aussi dure pour toutes les classes ?
 
 Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape 3 (28 octobre).
 
@@ -104,6 +106,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | #29 | 28 oct | Les Synergies mesurées par rapport aux deux kits du duo ; le joueur IA ne joue plus une protection ou un soin pour une Synergie sans besoin (Golem + Prière nuisait) ; outil de diagnostic d'une Synergie ; reréglage. |
 | #30 | 28 oct | Un ajustement par paire de kits qui a une Synergie possible (`synergy_pairs`, plafonné à ±10 %), réglé sur l'écart de la Synergie aux kits ; reréglage. |
 | #31 | 28 oct | La Tour revérifiée et reréglée après les réglages de la journée (6,0 % au sommet). |
+| #32 | 28 oct | Suivi de fin de journée : questions à poser à Gautier (kits qui ne frappent pas, Tour selon la classe). |
 
 ## Reprendre le travail (pour Claude Code)
 
