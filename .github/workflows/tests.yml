@@ -3,7 +3,8 @@ name: Tests du moteur de règles
 on:
   pull_request:
   push:
-    branches: [main]
+    # combat-v2 : quand ses tests passent après une fusion, l'export web de main publie aussi son aperçu sous /v2/.
+    branches: [main, combat-v2]
   workflow_dispatch:
 
 env:
