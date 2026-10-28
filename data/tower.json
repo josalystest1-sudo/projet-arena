@@ -3,7 +3,7 @@
   "turn_limit": 24,
   "exhaustion_turn": 12,
   "enemy_heal": 0.5,
-  "level_scale": 0.015,
+  "level_scale": 0.022,
   "floors": [
     {
       "budget": 2.5,

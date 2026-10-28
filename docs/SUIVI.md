@@ -15,7 +15,7 @@ Les prototypes des étapes 1 à 3 sont jouables sur téléphone : le **combat en
 | 1. Prototype de combat en duo | **Fait, à valider** | PR #5 à #8, #10, #12, #14. Critère de sortie (« on a envie de relancer un combat ») pas encore confirmé par Gautier. |
 | 2. La Tour en prototype | **Fait, à valider** | PR #9, #13 (monstres et bestiaire). Critère (« on veut battre son record ») pas encore confirmé. |
 | 3. 10 classes, Destin, mini-Destin, Synergies | **Fait, à valider** | PR #17 à #23. Équilibrage des 10 classes et de la Tour vérifié sur des combats neufs (PR #23). |
-| 4. Simulateur d'équilibrage | **En cours** | Duels et Tour : `tools/equilibrage.gd`, `tools/regleur.py`, `tools/simulate_tour.gd`, `tools/menace.py`, `tools/regleur_tour.py`, `tools/profil.gd`. Fait : les nœuds du Destin mesurés et réglés (PR #24). Reste : la Tour selon le niveau (branche `tour-niveau`, à calibrer), la mort subite (17,6 % des combats finissent avant le tour 8, cible 90 % entre 8 et 15). |
+| 4. Simulateur d'équilibrage | **En cours** | Duels et Tour : `tools/equilibrage.gd`, `tools/regleur.py`, `tools/simulate_tour.gd`, `tools/menace.py`, `tools/regleur_tour.py`, `tools/profil.gd`. Fait : les nœuds du Destin mesurés et réglés (PR #24). La Tour suit le niveau (PR #25). Reste : la mort subite (17,6 % des combats finissent avant le tour 8, cible 90 % entre 8 et 15). |
 | 5. Serveur, comptes, PvP réel, Échos | À faire | Pas avant l'étape 4. |
 | 6. Art PixelLab et les 13 écrans | À faire | Sprites provisoires d'ici là. Les écrans existent déjà en version simple (création, rencontre, Vitrine, Acolyte, Compétences, La Tour, Bestiaire, Profil, Paramètres). |
 | 7 à 10. Évolutions, boutique, bêta, lancement | À faire | |
@@ -34,7 +34,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
    - les 7 classes manquantes, par groupes : ~~Voleur, Archer, Pugiliste~~ (PR #19) ; ~~Alchimiste, Barde, Diplomate~~ (PR #20) ; ~~l'Invocateur et sa créature~~ (PR #21) ; 6 actives et 4 passifs chacune, leurs Synergies (au moins une entre chaque classe et chaque classe qui peut lui servir d'acolyte, et chaque kit a une Synergie possible), avec tests ;
    - ~~le générateur de Destin (arbre de 45 nœuds, 30 points, budget de puissance), le mini-Destin de l'acolyte (15 nœuds, auto-attribué) et l'écran de l'arbre~~ (PR #22) ;
    - ~~un nouveau passage du régleur (duel et Tour) sur les 10 classes~~ (PR #23).
-3. **Étape 4**, en plusieurs PR : ~~le simulateur avec Destin et le régleur des valeurs des nœuds~~ (PR #24) ; la Tour qui suit le niveau du duo (branche `tour-niveau`, à calibrer) ; la mort subite (durée des combats) ; les Synergies et compositions encore hors fourchette (voir « Limites connues »).
+3. **Étape 4**, en plusieurs PR : ~~le simulateur avec Destin et le régleur des valeurs des nœuds~~ (PR #24) ; ~~la Tour qui suit le niveau du duo~~ (PR #25) ; la mort subite (durée des combats) ; les Synergies et compositions encore hors fourchette (voir « Limites connues »).
 
 ## Limites connues
 
@@ -97,6 +97,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | #22 | 28 oct | Le Destin : arbre de 45 nœuds et 30 points, mini-Destin de l'acolyte (15 nœuds), niveaux et XP, écran de l'arbre. |
 | #23 | 28 oct | Équilibrage des 10 classes et de la Tour (sur le PC de Gautier) ; régleur simplifié et trois pièges corrigés ; plafond ±25 % ; Encouragement frappe aussi ; simulateur 3,4 fois plus rapide. |
 | #24 | 28 oct | Le simulateur avec Destin (niveau, points placés au hasard, nœuds pris dans le CSV), le régleur des valeurs des nœuds, les valeurs réglées, bouton « Réglage du Destin » sur GitHub. |
+| #25 | 28 oct | La Tour suit le niveau du duo : monstres renforcés de 2,2 % par niveau, calibré au simulateur (même part au sommet du niveau 0 au niveau 30). |
 
 ## Reprendre le travail (pour Claude Code)
 
