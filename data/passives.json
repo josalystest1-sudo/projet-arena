@@ -1,6 +1,6 @@
 {
   "peau_de_fer": {"name": "Peau de fer", "class": "guerrier", "lever": "reduction", "params": {"reduction": 0.155}, "description": "-{reduction%} de dégâts subis."},
-  "second_souffle": {"name": "Second souffle", "class": "guerrier", "lever": "souffle_heal", "params": {"souffle_threshold": 0.3, "souffle_heal": 0.285}, "description": "Se soigne de {souffle_heal%} de ses PV en passant sous {souffle_threshold%} (une fois par combat)."},
+  "second_souffle": {"name": "Second souffle", "class": "guerrier", "lever": "souffle_heal", "params": {"souffle_threshold": 0.3, "souffle_heal": 0.293}, "description": "Se soigne de {souffle_heal%} de ses PV en passant sous {souffle_threshold%} (une fois par combat)."},
   "veteran": {"name": "Vétéran", "class": "guerrier", "lever": "damage_bonus", "params": {"ko_speed": 1, "damage_bonus": 0.043, "ko_mult": 2}, "description": "+{damage_bonus%} de dégâts. Quand son allié est KO : ce bonus est multiplié par {ko_mult}, et +{ko_speed} vitesse."},
   "colere": {"name": "Colère", "class": "guerrier", "lever": "per_quarter", "params": {"per_quarter": 0.087}, "description": "+{per_quarter%} de dégâts par quart de PV manquant."},
 

@@ -50,11 +50,11 @@ func test_coup_bas_double_sur_une_cible_qui_n_a_pas_agi() -> void:
 	var combat := duo_combat(VG, GM)
 	jump_to_turn(combat, 3)
 	var events := combat.resolve_turn([action("a1", "coup_bas", "b2")])
-	assert_eq(damage_from(events, "a1", "b2"), int(round(skill_power("coup_bas") * 2.0)), "le Voleur (vitesse 11) frappe avant le Mage : doublé")
+	assert_eq(damage_from(events, "a1", "b2"), int(round(skill_power("coup_bas") * 2.0 * class_power("voleur"))), "le Voleur (vitesse 11) frappe avant le Mage : doublé")
 	var slow := duo_combat(VG, GM, {}, {"mage": {"basique": 1}})
 	jump_to_turn(slow, 3)
 	var late := slow.resolve_turn([action("a1", "coup_bas", "b2"), action("b2", "etincelle", "a2")])
-	assert_eq(damage_from(late, "a1", "b2"), skill_power("coup_bas"), "le Mage à l'Étincelle a déjà agi : dégâts normaux")
+	assert_eq(damage_from(late, "a1", "b2"), int(round(skill_power("coup_bas") * class_power("voleur"))), "le Mage à l'Étincelle a déjà agi : dégâts normaux")
 
 
 func test_sabotage_renvoie_la_forte_adverse_en_recharge() -> void:
@@ -70,7 +70,7 @@ func test_opportuniste_fuite_doigts_agiles_mise_a_mort() -> void:
 	# Opportuniste : +30 % sur une cible déjà touchée ce tour (le Mage à l'Étincelle frappe avant lui).
 	var combat := duo_combat(["voleur", "mage"], GM, {"mage": {"basique": 1}})
 	var events := combat.resolve_turn([action("a1", "dague", "b2"), action("a2", "etincelle", "b2")])
-	assert_eq(damage_from(events, "a1", "b2"), int(round(skill_power("dague") * (1.0 + pp("opportuniste", "hit_target_bonus")))), "Opportuniste")
+	assert_eq(damage_from(events, "a1", "b2"), int(round(skill_power("dague") * class_power("voleur") * (1.0 + pp("opportuniste", "hit_target_bonus")))), "Opportuniste")
 	# Fuite : la première attaque du combat est esquivée.
 	var fleeing := duo_combat(VG, GM, {"voleur": {"passive": 1}})
 	var dodge := fleeing.resolve_turn([action("b1", "taillade", "a1"), action("b2", "boule_de_feu", "a1")])
@@ -86,7 +86,7 @@ func test_opportuniste_fuite_doigts_agiles_mise_a_mort() -> void:
 	var killer := duo_combat(VG, GM, {"voleur": {"passive": 3}})
 	set_ratio(killer, "b2", 0.3)
 	var kill := killer.resolve_turn([action("a1", "dague", "b2")])
-	assert_eq(damage_from(kill, "a1", "b2"), int(round(skill_power("dague") * (1.0 + pp("mise_a_mort", "execute_bonus")))), "Mise à mort")
+	assert_eq(damage_from(kill, "a1", "b2"), int(round(skill_power("dague") * class_power("voleur") * (1.0 + pp("mise_a_mort", "execute_bonus")))), "Mise à mort")
 
 
 # --- L'Archer -------------------------------------------------------------------
@@ -131,12 +131,12 @@ func test_oeil_de_faucon_calme_sang_froid_traqueur() -> void:
 	var combat := duo_combat(AG, GM)
 	combat.get_unit("b2").add_status({"id": "marque", "turns": 2, "value": 25})
 	var events := combat.resolve_turn([action("a1", "tir", "b2")])
-	assert_eq(damage_from(events, "a1", "b2"), int(round(skill_power("tir") * (1.0 + pp("oeil_de_faucon", "marked_target_bonus")) * 1.25)), "Œil de faucon et la Marque")
+	assert_eq(damage_from(events, "a1", "b2"), int(round(skill_power("tir") * class_power("archer") * (1.0 + pp("oeil_de_faucon", "marked_target_bonus")) * 1.25)), "Œil de faucon et la Marque")
 	# Calme : agit en dernier, +25 %.
 	var calm := duo_combat(AG, GM, {"archer": {"passive": 1}})
 	var late := calm.resolve_turn([action("a1", "tir", "b2")])
 	assert_eq(action_order(late)[3], "a1", "l'Archer calme agit en dernier")
-	assert_eq(damage_from(late, "a1", "b2"), int(round(skill_power("tir") * (1.0 + pp("calme", "act_last_bonus")))), "+25 % de dégâts")
+	assert_eq(damage_from(late, "a1", "b2"), int(round(skill_power("tir") * class_power("archer") * (1.0 + pp("calme", "act_last_bonus")))), "Calme : des dégâts en plus")
 	# Sang-froid : ni gelé, ni repoussé.
 	var cool := duo_combat(AG, GM, {"archer": {"passive": 2}}, {"guerrier": {"basique": 1}})
 	var controls := cool.resolve_turn([action("b2", "trait_de_givre", "a1"), action("b1", "coup_de_bouclier", "a1")])
@@ -146,7 +146,7 @@ func test_oeil_de_faucon_calme_sang_froid_traqueur() -> void:
 	var tracker := duo_combat(AG, GM, {"archer": {"passive": 3}})
 	tracker.get_unit("b2").add_status({"id": "saignement", "turns": 2, "value": 5, "source": "a2"})
 	var track := tracker.resolve_turn([action("a1", "tir", "b2")])
-	assert_eq(damage_from(track, "a1", "b2", "hit"), int(round(skill_power("tir") * (1.0 + pp("traqueur", "dot_target_bonus")))), "Traqueur")
+	assert_eq(damage_from(track, "a1", "b2", "hit"), int(round(skill_power("tir") * class_power("archer") * (1.0 + pp("traqueur", "dot_target_bonus")))), "Traqueur")
 
 
 # --- Le Pugiliste ---------------------------------------------------------------
@@ -157,7 +157,7 @@ func test_jab_puis_crochet() -> void:
 	assert_eq(action_order(first)[0], "a1", "le Jab part en premier")
 	heal_all(combat)
 	var second := combat.resolve_turn([action("a1", "crochet", "b2")])
-	assert_eq(damage_from(second, "a1", "b2"), int(round(skill_power("crochet") * 2.0 * class_power("pugiliste"))), "Crochet doublé après un Jab qui a touché")
+	assert_eq(damage_from(second, "a1", "b2"), int(round(skill_power("crochet") * (1.0 + float(data.skill("crochet")["effects"][0]["bonus_after_value"])) * class_power("pugiliste"))), "Crochet renforcé après un Jab qui a touché")
 	var cold := duo_combat(PM, GM, {"pugiliste": {"moyenne": 1}})
 	var plain := cold.resolve_turn([action("a1", "crochet", "b2")])
 	assert_eq(damage_from(plain, "a1", "b2"), int(round(skill_power("crochet") * class_power("pugiliste"))), "sans Jab au tour d'avant : dégâts normaux")
