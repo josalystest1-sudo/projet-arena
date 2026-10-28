@@ -59,6 +59,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | 28 oct | « On ne peut pas faire défiler un écran vers le bas » | PR #14 : défilement au doigt partout, écran de combat qui tient sur un téléphone peu haut. |
 | 28 oct | « C'est beaucoup plus clair » | Prochaines étapes proposées. |
 | 28 oct | Feu vert : Destins par côté, puis l'étape 3 ; « avance au maximum » | PR #16 (Destins par côté), puis l'étape 3 en plusieurs PR. |
+| 28 oct | « Il me reste 22 $ de crédit, ça continue de baisser » | Les machines de GitHub sont gratuites, mais chaque échange avec Claude coûte, d'autant plus que la conversation est longue. Session arrêtée ; la suite est écrite ci-dessous pour une conversation courte. |
 | 28 oct | « Pas de crédits cloud : la solution la plus rapide, performante et gratuite » | Un seul Claude à la fois (plus d'agents en parallèle) ; les simulations longues sur les machines de GitHub, gratuites pour un dépôt public (PR #18). |
 
 ## Historique des PR
@@ -89,6 +90,8 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | #22 | 28 oct | Le Destin : arbre de 45 nœuds et 30 points, mini-Destin de l'acolyte (15 nœuds), niveaux et XP, écran de l'arbre. |
 
 ## Reprendre le travail (pour Claude Code)
+
+**À faire en premier (reste de l'étape 3, environ 15 minutes, PR #23)** : le réglage des 10 classes a tourné sur GitHub (Actions → « Réglage de l'équilibrage », run 2, 6 passes de 400 000 combats) et a publié la branche `reglage-2` (données réglées + rapport dans le résumé du run). Étapes : (1) `git merge origin/reglage-2` dans la branche de travail (seul `data/` change) ; (2) lancer Actions → « Réglage de la Tour » sur cette branche (4 passes, 20 000 montées, 12 machines ; environ 10 minutes) puis fusionner la branche `reglage-tour-<numéro>` qu'il publie ; (3) copier les chiffres du rapport (classes, compositions, kits par côté, durée des combats, Tour : part au sommet, étage moyen par classe) dans `CLAUDE.md` (section « Équilibrage ») et ici (« Limites connues », tableau des PR), tests, PR, fusion. Faire peu d'échanges : ne pas surveiller GitHub en boucle (chaque vérification coûte), lancer puis revenir plus tard.
 
 - **Branche de travail** : celle indiquée par la session. Le force-push est refusé : pour se mettre à jour, `git merge origin/main` (pas de rebase). Les PR se fusionnent en « squash » avec le SHA complet (40 caractères) de leur dernier commit.
 - **Godot 4.5** : s'il manque dans le conteneur, l'installer comme la CI (`.github/workflows/tests.yml`, dans `~/godot/godot`) ; pour l'export web, les modèles d'export comme dans `.github/workflows/web.yml`.
