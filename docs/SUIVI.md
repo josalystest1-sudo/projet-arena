@@ -14,7 +14,7 @@ Les prototypes des étapes 1 et 2 de la feuille de route sont jouables sur tél�
 | --- | --- | --- |
 | 1. Prototype de combat en duo | **Fait, à valider** | PR #5 à #8, #10, #12, #14. Critère de sortie (« on a envie de relancer un combat ») pas encore confirmé par Gautier. |
 | 2. La Tour en prototype | **Fait, à valider** | PR #9, #13 (monstres et bestiaire). Critère (« on veut battre son record ») pas encore confirmé. |
-| 3. 10 classes, Destin, mini-Destin, Synergies | **En cours** | En plusieurs PR (voir « Prochaines tâches »). |
+| 3. 10 classes, Destin, mini-Destin, Synergies | **Fait, à équilibrer** | PR #17 à #22. Reste le passage du régleur sur les 10 classes (PR d'équilibrage). |
 | 4. Simulateur d'équilibrage | **En partie** | Déjà là pour 3 classes : `tools/equilibrage.gd`, `tools/regleur.py`, `tools/simulate_tour.gd`, `tools/menace.py`, `tools/regleur_tour.py`. À étendre aux 10 classes, aux nœuds de Destin et à la mort subite. |
 | 5. Serveur, comptes, PvP réel, Échos | À faire | Pas avant l'étape 4. |
 | 6. Art PixelLab et les 13 écrans | À faire | Sprites provisoires d'ici là. Les écrans existent déjà en version simple (création, rencontre, Vitrine, Acolyte, Compétences, La Tour, Bestiaire, Profil, Paramètres). |
@@ -32,7 +32,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 2. **Étape 3**, en plusieurs PR :
    - ~~le moteur rendu générique~~ fait (PR #17) ;
    - les 7 classes manquantes, par groupes : ~~Voleur, Archer, Pugiliste~~ (PR #19) ; ~~Alchimiste, Barde, Diplomate~~ (PR #20) ; ~~l'Invocateur et sa créature~~ (PR #21) ; 6 actives et 4 passifs chacune, leurs Synergies (au moins une entre chaque classe et chaque classe qui peut lui servir d'acolyte, et chaque kit a une Synergie possible), avec tests ;
-   - le générateur de Destin (arbre de 45 nœuds, 30 points, budget de puissance), le mini-Destin de l'acolyte (15 nœuds, auto-attribué) et l'écran de l'arbre ;
+   - ~~le générateur de Destin (arbre de 45 nœuds, 30 points, budget de puissance), le mini-Destin de l'acolyte (15 nœuds, auto-attribué) et l'écran de l'arbre~~ (PR #22) ;
    - un nouveau passage du régleur (duel et Tour) sur les 10 classes.
 
 ## Limites connues
@@ -41,7 +41,8 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 - **Le pilier « le duo gagne »** n'est pas encore démontré au simulateur : un joueur IA qui lit l'annonce de son acolyte gagne 52,9 % contre un qui l'ignore. Il faudra une IA qui prépare ses coups sur plusieurs tours (étape 4), et surtout le ressenti de Gautier.
 - **La Tour selon la classe** : étage moyen atteint, Mage 6,2, Guerrier 6,3, Prêtre 8,1. Le record étant par classe, ce n'est pas bloquant.
 - **La règle d'attente de l'acolyte** (garder sa forte un tour pour une Synergie) ne sert que dans environ 2 combats sur 100 avec 3 classes ; elle prendra de l'importance avec les 10 classes.
-- **Ce qui est provisoire** : sprites en pixels dessinés en code (PixelLab à l'étape 6), bruitages synthétiques, noms des monstres et de l'acolyte (en attente de l'univers), données gardées sur l'appareil (comptes à l'étape 5).
+- **Ce qui est provisoire** : sprites en pixels dessinés en code (PixelLab à l'étape 6), bruitages synthétiques, noms des monstres et de l'acolyte (en attente de l'univers), données gardées sur l'appareil (comptes à l'étape 5), courbe d'XP rapide et bouton « Gagner un niveau » (pour tester l'arbre du Destin).
+- **Les valeurs des nœuds du Destin** sont fixées à la main (`data/destin_nodes.json`) : le simulateur de l'étape 4 doit mesurer le taux de victoire par type de nœud et corriger.
 - **Ce qui est contraire au GDD, pour le prototype seulement** (à retirer à l'étape 5) : refaire le tirage de son perso ou de son acolyte, recréer un personnage (Paramètres).
 
 ## Retours de Gautier et ce qu'on en a fait
@@ -85,12 +86,13 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | #19 | 28 oct | Voleur, Archer, Pugiliste : 3 classes, 16 Synergies, réglage sur GitHub. |
 | #20 | 28 oct | Alchimiste, Barde, Diplomate : 3 Soutiens, 26 Synergies. |
 | #21 | 28 oct | L'Invocateur et sa créature (Golem, Spectre) : la 10e classe, 14 Synergies ; bouton de réglage de la Tour sur GitHub. |
+| #22 | 28 oct | Le Destin : arbre de 45 nœuds et 30 points, mini-Destin de l'acolyte (15 nœuds), niveaux et XP, écran de l'arbre. |
 
 ## Reprendre le travail (pour Claude Code)
 
 - **Branche de travail** : celle indiquée par la session. Le force-push est refusé : pour se mettre à jour, `git merge origin/main` (pas de rebase). Les PR se fusionnent en « squash » avec le SHA complet (40 caractères) de leur dernier commit.
 - **Godot 4.5** : s'il manque dans le conteneur, l'installer comme la CI (`.github/workflows/tests.yml`, dans `~/godot/godot`) ; pour l'export web, les modèles d'export comme dans `.github/workflows/web.yml`.
-- **Tests** (159 au 28 octobre) : `~/godot/godot --headless --path . --script res://tests/run_tests.gd`.
+- **Tests** (168 au 28 octobre) : `~/godot/godot --headless --path . --script res://tests/run_tests.gd`.
 - **Voir le jeu comme Gautier** : exporter (`~/godot/godot --headless --path . --export-release "Web" build/web/index.html`), servir `build/web` (`python3 -m http.server 8765`), puis piloter et capturer avec `node tools/navigateur.js` (souris ou doigt, hauteur de téléphone réglable ; mode d'emploi en tête du fichier). Ajouter `?graine=7` à l'adresse rejoue toujours les mêmes tirages.
 - **Équilibrage** : de préférence sur GitHub (onglet Actions → « Réglage de l'équilibrage », choisir la branche de départ ; à la fin, une branche `reglage-<numéro>` porte les données réglées et le résumé du run donne le rapport ; même chose pour la Tour avec « Réglage de la Tour », branche `reglage-tour-<numéro>`). En local, commandes dans le `README.md` ; faire tourner le régleur dans une copie (`git worktree`), puis recopier `data/`. Pour arrêter un processus, éviter `pkill -f` (il se tue lui-même) : passer par `ps aux | grep "[n]om"`.
 - **Chaque retour de Gautier** : l'ajouter au tableau « Retours » ci-dessus ; chaque choix fait sans le GDD : une ligne dans `CLAUDE.md`.
