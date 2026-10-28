@@ -182,3 +182,26 @@ func test_une_montee_complete_par_l_ia() -> void:
 			floors += 1
 		assert_between(tower.reached, 1, 10, "un étage atteint")
 	assert_true(floors > 5, "les duos franchissent des étages")
+
+
+func test_les_monstres_suivent_le_niveau_du_duo() -> void:
+	# Au niveau 0, rien ne change ; au niveau 30, les monstres ont 1 + level_scale x 30 fois leurs PV et leur puissance.
+	var scale := float(data.tower.get("level_scale", 0.0))
+	assert_true(scale > 0.0, "data/tower.json donne level_scale")
+	var low := Tower.start(data, duo_team(GM), 0)
+	assert_eq(low.level_multiplier(), 1.0, "niveau 0 : x1")
+	var high := Tower.start(data, duo_team(GM), 30)
+	assert_eq(high.level_multiplier(), 1.0 + scale * 30.0, "niveau 30")
+	low.current_floor = 3
+	high.current_floor = 3
+	var weak := low.floor_enemies(seeded(5))
+	var strong := high.floor_enemies(seeded(5))
+	assert_eq(weak.size(), strong.size(), "même tirage de monstres")
+	for i in range(weak.size()):
+		assert_eq(float(strong[i]["max_hp_mult"]), float(weak[i]["max_hp_mult"]) * high.level_multiplier(), "PV renforcés")
+		assert_eq(float(strong[i]["power_mult"]), float(weak[i]["power_mult"]) * high.level_multiplier(), "puissance renforcée")
+	var combat := high.create_combat(seeded(5))
+	var monster := combat.team_units(1)[0]
+	var base: Dictionary = data.monsters[monster.class_id]["stats"]
+	assert_eq(monster.max_hp, maxi(1, int(round(float(base["max_hp"]) * float(strong[0]["max_hp_mult"])))), "le monstre en combat a ces PV")
+	assert_eq(Tower.start(data, duo_team(GM), -4).level, 0, "jamais de niveau négatif")

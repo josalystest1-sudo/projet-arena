@@ -66,17 +66,8 @@ func _give_destin(data: CombatData, member: Dictionary, level: int, is_mini: boo
 	if not _trees.has(key):
 		_trees[key] = Destin.generate(data, member["class_id"], picks, rng.randi(), is_mini)
 	var tree: Dictionary = _trees[key]
-	var points := mini(level / 2, int(data.destin_nodes.get("mini_points", 15))) if is_mini else mini(level, int(data.destin_nodes.get("points", 30)))
-	var taken: Array = []
-	for p in range(points):
-		var next := Destin.random_take(tree, taken, rng)
-		if next < 0:
-			break
-		taken.append(next)
+	var taken := Destin.random_points(tree, Destin.points_for_level(data, level, is_mini), rng)
 	var mods := Destin.mods_for(tree, taken)
 	member["mods"] = mods["mods"]
 	member["skill_mods"] = mods["skill_mods"]
-	var labels: Array = []
-	for node_id in taken:
-		labels.append(Destin.template_of(Destin.node_of(tree, node_id)))
-	return "+".join(labels)
+	return Destin.labels_of(tree, taken)

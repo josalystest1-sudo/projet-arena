@@ -337,6 +337,44 @@ static func available(tree: Dictionary, taken: Array) -> Array:
 	return result
 
 
+## Les points de Destin d'un personnage à un niveau donné : un par niveau pour le joueur (30 au plus), un tous les
+## deux niveaux pour le mini-Destin de l'acolyte (15 au plus).
+static func points_for_level(data: CombatData, level: int, is_mini: bool) -> int:
+	if is_mini:
+		return mini(maxi(level, 0) / 2, int(data.destin_nodes.get("mini_points", 15)))
+	return mini(maxi(level, 0), int(data.destin_nodes.get("points", 30)))
+
+
+## Place des points au hasard (simulateurs) : les nœuds pris, dans l'ordre.
+static func random_points(tree: Dictionary, points: int, rng: RandomNumberGenerator) -> Array:
+	var taken: Array = []
+	for p in range(points):
+		var next := random_take(tree, taken, rng)
+		if next < 0:
+			break
+		taken.append(next)
+	return taken
+
+
+## Place des points seuls (l'acolyte, le duo IA d'en face) : le nœud disponible qui vaut le plus, jusqu'au compte.
+static func auto_points(tree: Dictionary, taken: Array, points: int) -> Array:
+	var result: Array = taken.duplicate()
+	while result.size() < points:
+		var next := auto_take(tree, result)
+		if next < 0:
+			break
+		result.append(next)
+	return result
+
+
+## Les étiquettes des modèles des nœuds pris (« stat:pv+evolution:power+… »), pour les CSV des simulateurs.
+static func labels_of(tree: Dictionary, taken: Array) -> String:
+	var labels: Array = []
+	for node_id in taken:
+		labels.append(template_of(node_of(tree, node_id)))
+	return "+".join(labels)
+
+
 ## Le placement au hasard (simulateur d'équilibrage) : un nœud disponible tiré au sort, pour que chaque modèle de
 ## nœud soit mesuré, pas seulement les plus précieux.
 static func random_take(tree: Dictionary, taken: Array, rng: RandomNumberGenerator) -> int:
