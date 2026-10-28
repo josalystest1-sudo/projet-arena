@@ -41,6 +41,15 @@ python3 tools/regleur.py 8 16000   # règle les chiffres de data/ par passes suc
 
 Le même réglage sur les machines de GitHub, en parallèle et gratuitement : onglet Actions → « Réglage de l'équilibrage (simulation sur GitHub) » → « Run workflow » (passes, combats par passe, machines, branche de départ). À la fin, la branche `reglage-<numéro>` porte les données réglées et le résumé du run donne le rapport. La Tour a son propre bouton, « Réglage de la Tour (simulation sur GitHub) » (passes, montées par passe, machines, branche) : il règle la menace des monstres et la difficulté des étages, et publie la branche `reglage-tour-<numéro>`.
 
+Le Destin (valeurs des nœuds, étape 4) : les mêmes combats avec un niveau (`alea` : les deux duos au même niveau tiré entre 1 et 30, points de Destin placés au hasard ; ou un niveau fixe), puis le régleur des valeurs de `data/destin_nodes.json` :
+
+```
+godot --headless --path . --script res://tools/equilibrage.gd -- 20000 1 /tmp/destin.csv alea
+python3 tools/equilibrage.py /tmp/destin.csv        # sections « Nœuds du Destin pris »
+python3 tools/regleur_destin.py 4 8000               # 4 passes (4 processus Godot), puis recalibrage de best_value
+godot --headless --path . --script res://tools/calibrer_destin.gd -- 120   # la valeur naturelle des arbres neufs
+```
+
 La Tour (menace de chaque monstre, puis difficulté de chaque étage) :
 
 ```

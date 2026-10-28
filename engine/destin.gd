@@ -217,7 +217,7 @@ static func _fill_evolution(data: CombatData, node: Dictionary, element: String,
 			node["mods"] = template["mods"].duplicate()
 			node["name"] = str(template["name"]).replace("{passive}", passive_name)
 			node["description"] = str(template["description"]).replace("{passive}", passive_name).replace("{n}", str(int(round(float(template["mods"]["power_pct"]) * 100.0))))
-		node["template"] = "passive"
+		node["template"] = "passive" if lever != "" else "passive_flat"
 		node["value"] = float(template["value"])
 		return
 	var skill := data.skill(element)
@@ -334,6 +334,37 @@ static func available(tree: Dictionary, taken: Array) -> Array:
 	for node in tree.get("nodes", []):
 		if can_take(tree, taken, int(node["id"])):
 			result.append(int(node["id"]))
+	return result
+
+
+## Le placement au hasard (simulateur d'équilibrage) : un nœud disponible tiré au sort, pour que chaque modèle de
+## nœud soit mesuré, pas seulement les plus précieux.
+static func random_take(tree: Dictionary, taken: Array, rng: RandomNumberGenerator) -> int:
+	var choices := available(tree, taken)
+	if choices.is_empty():
+		return -1
+	return int(choices[rng.randi_range(0, choices.size() - 1)])
+
+
+## L'étiquette du modèle d'un nœud (« stat:pv », « evolution:power », « pivot:solide », « cle:zone ») : c'est par
+## modèle que le simulateur mesure les nœuds et que tools/regleur_destin.py règle leurs valeurs.
+static func template_of(node: Dictionary) -> String:
+	return "%s:%s" % [str(node.get("type", "")), str(node.get("template", ""))]
+
+
+## Toutes les étiquettes de modèle que les données connaissent (data/destin_nodes.json).
+static func template_ids(data: CombatData) -> Array[String]:
+	var config: Dictionary = data.destin_nodes
+	var result: Array[String] = []
+	for template in config.get("stats", []):
+		result.append("stat:" + str(template["id"]))
+	for kind in config.get("evolutions", {}):
+		result.append("evolution:" + str(kind))
+	for role in config.get("pivots", {}):
+		for template in config["pivots"][role]:
+			result.append("pivot:" + str(template["id"]))
+	for template in config.get("cles", []):
+		result.append("cle:" + str(template["id"]))
 	return result
 
 
