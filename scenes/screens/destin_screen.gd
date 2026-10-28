@@ -17,6 +17,8 @@ var info_title: Label
 var info_text: Label
 var take_button: Button
 var header: Label
+var scroll_box: ScrollContainer
+var _centered := false
 var _time: float = 0.0
 
 
@@ -49,8 +51,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	canvas.gui_input.connect(_on_canvas_input)
 	scroll.add_child(canvas)
 	_layout()
-	# À l'ouverture, la racine est au milieu de l'écran (l'arbre peut être plus large que lui).
-	scroll.ready.connect(func(): scroll.set_deferred("scroll_horizontal", int((canvas.custom_minimum_size.x - scroll.size.x) / 2.0)))
+	scroll_box = scroll
 	# Le nœud choisi, et le bouton pour y placer un point.
 	var panel := PanelContainer.new()
 	column.add_child(panel)
@@ -110,6 +111,11 @@ func _refresh_header() -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
+	# À l'ouverture, la racine est au milieu de l'écran (l'arbre peut être plus large que lui) : dès que la zone
+	# qui défile connaît sa largeur.
+	if not _centered and scroll_box != null and scroll_box.get_h_scroll_bar().max_value > scroll_box.size.x:
+		scroll_box.scroll_horizontal = int((canvas.custom_minimum_size.x - scroll_box.size.x) / 2.0)
+		_centered = true
 	if canvas != null:
 		canvas.queue_redraw()
 
