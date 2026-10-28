@@ -39,6 +39,8 @@ python3 tools/equilibrage.py /tmp/equilibrage.csv
 python3 tools/regleur.py 8 16000   # règle les chiffres de data/ par passes successives (4 processus Godot)
 ```
 
+Pour tester une Synergie précise (un duo donné contre des duos au hasard, avec puis sans elle) : `godot --headless --path . --script res://tools/essai_synergie.gd -- 1500 golem_priere invocateur 0 0 0 0 pretre 1 0 0 0` (classe puis index de la basique, de la moyenne, de la forte et du passif, pour le joueur puis l'acolyte).
+
 Pour savoir où va le temps du simulateur (tirage des duos, IA, résolution) : `godot --headless --path . --script res://tools/profil.gd -- 200`.
 
 Le même réglage sur les machines de GitHub, en parallèle et gratuitement : onglet Actions → « Réglage de l'équilibrage (simulation sur GitHub) » → « Run workflow » (passes, combats par passe, machines, branche de départ). À la fin, la branche `reglage-<numéro>` porte les données réglées et le résumé du run donne le rapport. La Tour a son propre bouton, « Réglage de la Tour (simulation sur GitHub) » (passes, montées par passe, machines, branche) : il règle la menace des monstres et la difficulté des étages, et publie la branche `reglage-tour-<numéro>`.

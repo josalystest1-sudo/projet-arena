@@ -273,6 +273,16 @@ static func _synergy_with(combat: Combat, unit: CombatUnit, partner_action: Comb
 		var synergy := combat.data.find_synergy(skill_id, partner_action.skill_id)
 		if synergy.is_empty():
 			continue
+		# Une protection ou un soin ne se joue pour une Synergie que s'il servirait de toute façon (quelqu'un a perdu des
+		# PV, pas de créature déjà là) : l'Invocateur relançait son Golem à chaque Prière annoncée, même sans besoin, et
+		# perdait ses tours d'attaque (le duo Golem + Prière gagnait 9 points de moins avec sa Synergie que sans).
+		var kind := skill_kind(combat.data, skill_id)
+		if kind in ["protection", "soin"]:
+			var hurt := _lowest_ally(combat, unit)
+			if hurt == null or hurt.hp_ratio() >= 1.0:
+				continue
+			if unit.has_creature() and _has_effect(combat, skill_id, "summon"):
+				continue
 		var valid := combat.valid_targets(unit, skill_id)
 		if bool(synergy.get("same_target", false)):
 			var shared := combat.get_unit(partner_action.target_id)
