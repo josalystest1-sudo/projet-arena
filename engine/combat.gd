@@ -648,7 +648,12 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 		"status":
 			for target in targets:
 				if target.is_alive():
-					_add_status(target, {"id": effect["id"], "turns": int(effect["turns"]) + int(actor.skill_mod(skill_id, "turns_bonus")), "value": int(effect.get("value", 0)), "source": actor.id})
+					var status := {"id": effect["id"], "turns": int(effect["turns"]) + int(actor.skill_mod(skill_id, "turns_bonus")), "value": int(effect.get("value", 0)), "source": actor.id}
+					# Les autres chiffres de l'effet suivent l'état (ex. « counter » : la contre-attaque de la Garde haute).
+					for key in effect:
+						if not key in ["type", "id", "turns", "value", "on"]:
+							status[key] = effect[key]
+					_add_status(target, status)
 		"barrier":
 			for target in targets:
 				_add_status(target, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": _barrier_amount(actor, _effect_power(actor, skill_id, effect)), "source": actor.id})
@@ -1212,11 +1217,13 @@ func _apply_synergy(synergy: Dictionary, second: CombatUnit, first: CombatUnit) 
 			for ally in allies_of(second, true):
 				_add_status(ally, {"id": "barriere", "turns": int(effect.get("turns", 2)), "value": _barrier_amount(second, int(_sp(id, "power", 30))), "source": second.id})
 		"cleanse_duo":
+			# Un état négatif retiré à chaque membre du duo.
 			for ally in allies_of(second, true):
 				for status_id in ally.status_ids():
 					if data.is_negative_status(status_id):
 						ally.remove_status(status_id)
 						_emit({"type": "status_removed", "target": ally.id, "status": status_id})
+						break
 		"lifesteal":
 			# Les dégâts du couple ce tour soignent le duo (le plus blessé d'abord).
 			var total := 0

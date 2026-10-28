@@ -1,0 +1,13 @@
+{
+  "id": "pugiliste",
+  "name": "Pugiliste",
+  "roles": ["front", "degats"],
+  "identity": "Combos et contres : chaque coup prépare le suivant.",
+  "stats": {"max_hp": 230, "speed": 10, "power": 85},
+  "skills": {
+    "basique": ["jab", "direct"],
+    "moyenne": ["garde_haute", "crochet"],
+    "forte": ["uppercut", "enchainement"]
+  },
+  "passives": ["cardio", "machoire_d_acier", "esquive", "enchaineur"]
+}

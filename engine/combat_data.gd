@@ -6,6 +6,8 @@ extends RefCounted
 const DATA_DIR := "res://data/"
 
 var classes: Dictionary = {}
+## Les classes dans l'ordre des données (data/classes.json) : celui des écrans.
+var class_ids: Array[String] = []
 var skills: Dictionary = {}
 var passives: Dictionary = {}
 var statuses: Dictionary = {}
@@ -52,8 +54,8 @@ static func load_from_dir(dir: String) -> CombatData:
 	data.ai = _read_json(dir + "ia.json")
 	data.tower = _read_json(dir + "tower.json")
 	data.destins = _read_json(dir + "destins.json")
-	var class_ids: Array = _read_json(dir + "classes.json")
-	for class_id in class_ids:
+	for class_id in _read_json(dir + "classes.json"):
+		data.class_ids.append(str(class_id))
 		data.classes[class_id] = _read_json(dir + "classes/" + class_id + ".json")
 	var bestiary: Dictionary = _read_json(dir + "bestiaire.json")
 	data.monsters = bestiary.get("monsters", {})
@@ -158,6 +160,8 @@ func synergy_param(synergy_id: String, key: String, fallback: float) -> float:
 ## {clé} un nombre (1,5 → « 1,5 »).
 static func fill(text: String, params: Dictionary) -> String:
 	for key in params:
+		if not (params[key] is float or params[key] is int):
+			continue
 		var value := float(params[key])
 		text = text.replace("{%s%%}" % key, "%d %%" % int(round(value * 100.0)))
 		var plain := str(int(value)) if is_equal_approx(value, round(value)) else ("%.1f" % value).replace(".", ",")

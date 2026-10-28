@@ -129,5 +129,307 @@
       "mult": 1.198
     },
     "description": "La Prière soigne aussi l'autre membre du duo, à {mult%} de sa force ; comme pour la Prière, une part de ce qui dépasse ses PV max devient une barrière."
+  },
+  {
+    "id": "poison_fendoir",
+    "name": "Lame souillée",
+    "skills": [
+      "poison",
+      "fendoir"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "amplify",
+      "skill": "fendoir",
+      "vs_status": "poison"
+    },
+    "lever": "bonus",
+    "params": {
+      "bonus": 0.5
+    },
+    "description": "Le Fendoir fait +{bonus%} de dégâts sur la cible empoisonnée."
+  },
+  {
+    "id": "voile_cri_de_guerre",
+    "name": "Embuscade",
+    "skills": [
+      "voile",
+      "cri_de_guerre"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "cooldown_minus",
+      "skill": "voile",
+      "tier": "forte"
+    },
+    "params": {
+      "amount": 1
+    },
+    "description": "Caché pendant que le Guerrier hurle, le Voleur prépare son coup : sa forte revient {amount} tour plus tôt."
+  },
+  {
+    "id": "coup_bas_chatiment",
+    "name": "Accablement",
+    "skills": [
+      "coup_bas",
+      "chatiment"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "add_status",
+      "skill": "coup_bas",
+      "to": "skill_target",
+      "status": "affaibli",
+      "turns": 2,
+      "value": 25
+    },
+    "lever": "value",
+    "params": {
+      "value": 25,
+      "turns": 2
+    },
+    "description": "La cible, accablée, inflige {value} % de dégâts en moins pendant {turns} tours."
+  },
+  {
+    "id": "sabotage_priere",
+    "name": "Larcin",
+    "skills": [
+      "sabotage",
+      "priere"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "cooldown_minus",
+      "skill": "priere",
+      "tier": "moyenne"
+    },
+    "params": {
+      "amount": 1
+    },
+    "description": "Ce que le Voleur vole, le Prêtre le rend : la moyenne du Prêtre revient {amount} tour plus tôt."
+  },
+  {
+    "id": "dague_crochet",
+    "name": "Une-deux",
+    "skills": [
+      "dague",
+      "crochet"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "extra_damage",
+      "skill": "crochet",
+      "element": "contondant"
+    },
+    "lever": "damage",
+    "params": {
+      "damage": 30
+    },
+    "description": "La dague ouvre, le crochet conclut : {damage} dégâts contondants de plus sur la cible."
+  },
+  {
+    "id": "lancer_garde_haute",
+    "name": "Couverture",
+    "skills": [
+      "lancer",
+      "garde_haute"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "spread_to_duo",
+      "skill": "garde_haute"
+    },
+    "lever": "share",
+    "params": {
+      "share": 0.5
+    },
+    "description": "Le Pugiliste couvre aussi le Voleur : il reçoit une garde à {share%} de la sienne."
+  },
+  {
+    "id": "marque_fendoir",
+    "name": "Proie",
+    "skills": [
+      "marque",
+      "fendoir"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "amplify",
+      "skill": "fendoir",
+      "vs_status": "marque"
+    },
+    "lever": "bonus",
+    "params": {
+      "bonus": 0.4
+    },
+    "description": "Le Fendoir fait +{bonus%} de dégâts sur la cible marquée."
+  },
+  {
+    "id": "piege_cri_de_guerre",
+    "name": "Guet-apens",
+    "skills": [
+      "piege",
+      "cri_de_guerre"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "to": "duo",
+      "status": "vif",
+      "turns": 2,
+      "value": 3
+    },
+    "lever": "value",
+    "params": {
+      "value": 3,
+      "turns": 2
+    },
+    "description": "Le duo, galvanisé derrière son piège, prend de vitesse : +{value} vitesse pendant {turns} tours."
+  },
+  {
+    "id": "tir_chatiment",
+    "name": "Révélation",
+    "skills": [
+      "tir",
+      "chatiment"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "add_status",
+      "skill": "tir",
+      "to": "skill_target",
+      "status": "marque",
+      "turns": 2,
+      "value": 20
+    },
+    "lever": "value",
+    "params": {
+      "value": 20,
+      "turns": 2
+    },
+    "description": "La lumière désigne la cible : elle est marquée (+{value} % de dégâts subis) pendant {turns} tours."
+  },
+  {
+    "id": "tir_rapide_priere",
+    "name": "Purge",
+    "skills": [
+      "tir_rapide",
+      "priere"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "cleanse_duo"
+    },
+    "description": "La prière, portée par la flèche, retire un état négatif à chaque membre du duo."
+  },
+  {
+    "id": "fleche_barbelee_jab",
+    "name": "Hallali",
+    "skills": [
+      "fleche_barbelee",
+      "jab"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "lifesteal"
+    },
+    "lever": "share",
+    "params": {
+      "share": 0.3
+    },
+    "description": "Le sang versé revigore le duo : {share%} des dégâts du couple soignent le plus blessé."
+  },
+  {
+    "id": "pluie_de_fleches_direct",
+    "name": "Déluge",
+    "skills": [
+      "pluie_de_fleches",
+      "direct"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "to": "enemies",
+      "status": "gele",
+      "turns": 2
+    },
+    "params": {
+      "turns": 2
+    },
+    "description": "Sous le déluge, tous les ennemis agissent en dernier au tour suivant."
+  },
+  {
+    "id": "crochet_trait_de_givre",
+    "name": "Givre brisé",
+    "skills": [
+      "crochet",
+      "trait_de_givre"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "add_status",
+      "skill": "crochet",
+      "to": "skill_target",
+      "status": "etourdi",
+      "turns": 2
+    },
+    "params": {
+      "turns": 2
+    },
+    "description": "La cible gelée est étourdie : elle perd son action du tour suivant."
+  },
+  {
+    "id": "garde_haute_arc_de_foudre",
+    "name": "Paratonnerre",
+    "skills": [
+      "garde_haute",
+      "arc_de_foudre"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "barrier_duo",
+      "turns": 2
+    },
+    "lever": "power",
+    "params": {
+      "power": 40
+    },
+    "description": "La foudre crépite autour de la garde : barrière sur tout le duo."
+  },
+  {
+    "id": "uppercut_chatiment",
+    "name": "Coup du ciel",
+    "skills": [
+      "uppercut",
+      "chatiment"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "extra_damage",
+      "skill": "chatiment",
+      "element": "lumiere"
+    },
+    "lever": "damage",
+    "params": {
+      "damage": 35
+    },
+    "description": "La cible sonnée subit {damage} dégâts de lumière supplémentaires."
+  },
+  {
+    "id": "enchainement_priere",
+    "name": "Litanie",
+    "skills": [
+      "enchainement",
+      "priere"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "heal_duo"
+    },
+    "lever": "power",
+    "params": {
+      "power": 25
+    },
+    "description": "Chaque coup est une prière : tout le duo se soigne."
   }
 ]

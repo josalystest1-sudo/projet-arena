@@ -1,0 +1,13 @@
+{
+  "id": "voleur",
+  "name": "Voleur",
+  "roles": ["degats", "soutien"],
+  "identity": "Burst, poison et disparition.",
+  "stats": {"max_hp": 185, "speed": 11, "power": 94},
+  "skills": {
+    "basique": ["dague", "lancer"],
+    "moyenne": ["voile", "poison"],
+    "forte": ["coup_bas", "sabotage"]
+  },
+  "passives": ["opportuniste", "fuite", "doigts_agiles", "mise_a_mort"]
+}

@@ -6,5 +6,13 @@
   "galvanise": {"name": "Galvanisé", "negative": false, "kind": "renfort", "icon": "+", "description": "Inflige plus de dégâts."},
   "affaibli": {"name": "Affaibli", "negative": true, "icon": "-", "description": "Inflige moins de dégâts."},
   "rempart": {"name": "Rempart", "negative": false, "kind": "protection", "icon": "R", "description": "Le prochain coup est absorbé."},
-  "barriere": {"name": "Barrière", "negative": false, "kind": "protection", "icon": "O", "description": "Absorbe des dégâts."}
+  "barriere": {"name": "Barrière", "negative": false, "kind": "protection", "icon": "O", "description": "Absorbe des dégâts."},
+  "poison": {"name": "Empoisonné", "negative": true, "dot": true, "icon": "V", "description": "Perd des PV à chaque fin de tour."},
+  "marque": {"name": "Marqué", "negative": true, "icon": "M", "description": "Subit plus de dégâts."},
+  "vif": {"name": "Vif", "negative": false, "kind": "renfort", "icon": ">", "description": "Agit plus tôt dans le tour."},
+  "celerite": {"name": "Célérité", "negative": false, "kind": "renfort", "icon": ">>", "description": "Agit en premier au prochain tour."},
+  "voile": {"name": "Voilé", "negative": false, "kind": "protection", "untargetable": true, "icon": "~", "description": "On ne peut pas le viser ce tour."},
+  "etourdi": {"name": "Étourdi", "negative": true, "control": true, "icon": "*", "description": "Perd sa prochaine action."},
+  "garde": {"name": "En garde", "negative": false, "kind": "protection", "icon": "][", "description": "Subit moins de dégâts et contre-attaque au contact."},
+  "piege": {"name": "Piégé", "negative": false, "kind": "protection", "icon": "^", "description": "Le prochain ennemi qui le frappe est étourdi."}
 }
