@@ -1,5 +1,5 @@
 ## Le moteur de règles du combat, tour par tour simultané. Les camps sont de taille variable :
-## 2 contre 2 en PvP (un joueur et son acolyte de chaque côté), 2 contre 2 ou 3 à la Tour.
+## 2 contre 2 en PvP (un joueur et son acolyte de chaque côté), 2 contre 1 à 4 monstres à la Tour.
 ## Module pur : aucune dépendance aux nœuds de scène, aucun affichage, aucun hasard.
 ## Il est réutilisé tel quel par le client, le serveur, l'IA des Échos et le simulateur.
 ##
@@ -7,11 +7,21 @@
 ##   var combat := Combat.create(data, team_a, team_b)
 ##   ... chaque tour : collecter une CombatAction par unité vivante, puis
 ##   var events := combat.resolve_turn(actions)   # liste d'événements pour l'affichage
+##
+## Tout ce qui est chiffré vit dans les données : les effets des compétences (data/skills.json), les paramètres des
+## passifs (data/passives.json, lus par clé : un passif « reduction » réduit les dégâts subis, quel que soit son nom),
+## les états (data/statuses.json : négatif, contrôle, dégâts sur la durée, intouchable) et les Synergies
+## (data/synergies.json : un type d'effet et ses chiffres). Les nœuds de Destin ajoutent leurs modificateurs sur
+## l'unité (CombatUnit.mods) avec les mêmes clés que les passifs.
 class_name Combat
 extends RefCounted
 
-## Les chiffres des passifs et des Synergies vivent dans data/passives.json et data/synergies.json (« params »).
 const ACT_LAST_PENALTY := 1000
+## Célérité (Voile, Hymne…) : l'unité agit avant tout le monde, les vitesses normales restant sous 100.
+const ACT_FIRST_BONUS := 100
+## Les types de dégâts du GDD, par famille (pour les réductions physiques ou élémentaires).
+const PHYSICAL := ["tranchant", "contondant", "perforant"]
+const ELEMENTAL := ["feu", "givre", "foudre", "ombre", "lumiere"]
 
 var data: CombatData
 var units: Array[CombatUnit] = []
@@ -53,8 +63,10 @@ var _resolved: Dictionary = {}         # unit_id -> true si l'action a bien ét�
 var _resolved_targets: Dictionary = {} # unit_id -> identifiants des cibles réellement touchées par son action
 var _queue: Array[CombatUnit] = []     # file d'attente du tour : qui agit ensuite
 var _damage_dealt: Dictionary = {}     # actor_id -> {target_id: dégâts infligés ce tour}
+var _hits_taken: Dictionary = {}       # target_id -> nombre de coups directs reçus ce tour
 var _synergy_pairs: Array[Dictionary] = []
 var _current_hits: Dictionary = {}     # cibles distinctes touchées par l'action en cours
+var _team_first: Dictionary = {}       # camp -> true si l'un de ses membres joue une compétence « tout le duo agit en premier »
 
 
 # ---------------------------------------------------------------------------
@@ -62,10 +74,10 @@ var _current_hits: Dictionary = {}     # cibles distinctes touchées par l'actio
 # ---------------------------------------------------------------------------
 
 ## team_a et team_b : listes de dictionnaires {class_id, picks, name, is_player, is_acolyte} (seuls class_id et picks sont obligatoires).
-## Un camp peut compter autant de membres qu'on veut : 2 en PvP (le joueur puis son acolyte), 2 ou 3 à la Tour.
-## Pour la Tour, un membre peut aussi porter : max_hp_mult et power_mult (ennemis plus ou moins forts),
-## heal_mult (soins plus faibles des ennemis de la Tour), hp (PV de départ, gardés d'un étage à l'autre)
-## et cooldowns ({palier: tours restants}, recharges conservées).
+## Un camp peut compter autant de membres qu'on veut : 2 en PvP (le joueur puis son acolyte), 1 à 4 monstres à la Tour.
+## Un membre peut aussi porter : mods et skill_mods (les nœuds de son Destin), et pour la Tour max_hp_mult et power_mult
+## (ennemis plus ou moins forts), heal_mult (soins plus faibles des ennemis de la Tour), hp (PV de départ, gardés
+## d'un étage à l'autre) et cooldowns ({palier: tours restants}, recharges conservées).
 ## p_priority_team : équipe qui agit en premier à vitesse égale au tour 1 (0 ou 1).
 static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_team: int = 0) -> Combat:
 	var combat := Combat.new()
@@ -97,6 +109,8 @@ static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_
 				var partner_class := str(members[1 - slot].get("class_id", "")) if members.size() == 2 else ""
 				unit = CombatUnit.from_class(p_data, member["class_id"], picks, unit_id, team, slot, partner_class, bool(member.get("is_acolyte", false)))
 			unit.is_player = bool(member.get("is_player", false))
+			if member.has("mods") or member.has("skill_mods"):
+				unit.apply_mods(p_data, member.get("mods", {}), member.get("skill_mods", {}))
 			if member.has("max_hp_mult"):
 				unit.max_hp = maxi(1, int(round(float(unit.max_hp) * float(member["max_hp_mult"]))))
 				unit.hp = unit.max_hp
@@ -156,6 +170,14 @@ func enemies_of(unit: CombatUnit, alive_only: bool = false) -> Array[CombatUnit]
 	return team_units(1 - unit.team, alive_only)
 
 
+## L'autre membre du duo (null s'il n'y en a pas ou s'il est KO).
+func partner_of(unit: CombatUnit) -> CombatUnit:
+	for ally in allies_of(unit, true):
+		if ally != unit:
+			return ally
+	return null
+
+
 func team_total_hp(team: int) -> int:
 	var total := 0
 	for unit in team_units(team, true):
@@ -200,6 +222,9 @@ func can_use(unit: CombatUnit, tier: String) -> bool:
 		return false
 	if cooldown_remaining(unit, tier) > 0:
 		return false
+	# Chantage : la forte est interdite tant que l'état dure.
+	if tier == "forte" and unit.has_status("chantage"):
+		return false
 	var skill_id: String = unit.skills.get(tier, "")
 	if bool(data.skill(skill_id).get("once_per_combat", false)) and unit.flags.get("used_" + skill_id, false):
 		return false
@@ -210,12 +235,24 @@ func is_hostile(skill_id: String) -> bool:
 	return str(data.skill(skill_id).get("target", "enemy")) in ["enemy", "enemies_2", "enemies_all"]
 
 
+## Un ennemi qu'on ne peut pas viser ce tour-ci (Voile, Fumigène).
+func is_untargetable(unit: CombatUnit) -> bool:
+	for status_id in unit.status_ids():
+		if data.status_flag(status_id, "untargetable"):
+			return true
+	return false
+
+
 ## Les cibles qu'un joueur peut choisir pour cette compétence.
 func valid_targets(unit: CombatUnit, skill_id: String) -> Array[CombatUnit]:
 	var target_type := str(data.skill(skill_id).get("target", "enemy"))
 	match target_type:
 		"enemy", "enemies_2", "enemies_all":
-			return enemies_of(unit, true)
+			var result: Array[CombatUnit] = []
+			for enemy in enemies_of(unit, true):
+				if not is_untargetable(enemy):
+					result.append(enemy)
+			return result
 		"ally", "allies_all":
 			return allies_of(unit, true)
 		"self":
@@ -294,13 +331,14 @@ func preview(actor: CombatUnit, skill_id: String, target: CombatUnit) -> Diction
 	for effect in skill.get("effects", []):
 		match str(effect["type"]):
 			"damage":
-				result["damage"] = int(result["damage"]) + _damage_amount(actor, target, int(effect["power"]), 1.0, single)
+				var hits := int(effect.get("hits", 1))
+				result["damage"] = int(result["damage"]) + hits * _damage_amount(actor, target, _effect_power(actor, skill_id, effect), _effect_mult(actor, target, effect, skill_id), single, str(skill.get("element", "")))
 			"heal":
-				result["heal"] = int(result["heal"]) + mini(_heal_amount(actor, target, int(effect["power"])), target.max_hp - target.hp)
+				result["heal"] = int(result["heal"]) + mini(_heal_amount(actor, target, _effect_power(actor, skill_id, effect)), target.max_hp - target.hp)
 			"revive":
 				result["revive"] = not target.is_alive()
 	if int(result["damage"]) > 0:
-		result["blocked"] = target.has_status("rempart")
+		result["blocked"] = target.has_status("rempart") or _would_dodge(actor, target)
 		result["lethal"] = not result["blocked"] and int(result["damage"]) >= target.hp + target.barrier_amount()
 	return result
 
@@ -338,7 +376,9 @@ func resolve_turn(actions: Array) -> Array[Dictionary]:
 	_resolved_targets = {}
 	_queue = []
 	_damage_dealt = {}
+	_hits_taken = {}
 	_synergy_pairs = []
+	_team_first = {}
 
 	_emit({"type": "turn_start", "turn": turn, "sudden_death": is_sudden_death()})
 
@@ -353,9 +393,14 @@ func resolve_turn(actions: Array) -> Array[Dictionary]:
 			if not _actions.has(unit.id):
 				_actions[unit.id] = default_action(unit)
 			_queue.append(unit)
-			# L'acolyte qui garde sa forte pour une Synergie : retenu, pour qu'il n'attende jamais deux tours de suite.
-			if _actions[unit.id] != null and _actions[unit.id].waits_for_synergy:
-				unit.flags["waited_for_synergy"] = turn
+			var action: CombatAction = _actions[unit.id]
+			if action != null:
+				# L'acolyte qui garde sa forte pour une Synergie : retenu, pour qu'il n'attende jamais deux tours de suite.
+				if action.waits_for_synergy:
+					unit.flags["waited_for_synergy"] = turn
+				# Hymne : tout le camp agit avant les ennemis ce tour.
+				if _has_effect(action.skill_id, "team_first"):
+					_team_first[unit.team] = true
 		else:
 			_acted[unit.id] = true
 	_queue.sort_custom(_compare_speed)
@@ -379,7 +424,11 @@ func resolve_turn(actions: Array) -> Array[Dictionary]:
 		if action == null:
 			continue
 		if not actor.is_alive():
-			_emit({"type": "action_lost", "actor": actor.id, "skill": action.skill_id})
+			_emit({"type": "action_lost", "actor": actor.id, "skill": action.skill_id, "reason": "ko"})
+			continue
+		if actor.has_status("etourdi"):
+			# Étourdi (Berceuse, Piège…) : son action est perdue, sa compétence n'est pas dépensée.
+			_emit({"type": "action_lost", "actor": actor.id, "skill": action.skill_id, "reason": "etourdi"})
 			continue
 		_execute_action(actor, action)
 		_resolved[actor.id] = true
@@ -399,15 +448,31 @@ func remaining_order() -> Array[CombatUnit]:
 	return _queue.duplicate()
 
 
-## Vitesse utilisée pour trier la file en début de tour : stat, bonus de la compétence,
-## passifs, et malus « agit en dernier » pour une unité gelée.
+## Vitesse utilisée pour trier la file en début de tour : stat, bonus de la compétence, passifs et modificateurs,
+## états (Vif, Célérité, Gelé), Hymne du camp, « agit en dernier » (Calme).
 func effective_speed(unit: CombatUnit) -> int:
-	var speed := unit.base_speed
+	var speed := unit.base_speed + int(round(_pv(unit, "speed_bonus")))
 	var action: CombatAction = _actions.get(unit.id)
 	if action != null:
 		speed += int(data.skill(action.skill_id).get("speed_bonus", 0))
-	if unit.passive == "veteran" and _veteran_mult(unit) > 1.0:
-		speed += int(_pp("veteran", "speed", 1))
+	if _pv(unit, "ko_speed") > 0.0 and _ko_mult(unit) > 1.0:
+		speed += int(_pv(unit, "ko_speed"))
+	# Cardio : +1 vitesse par tour sans être touché (jusqu'à un plafond), remis à zéro au premier coup.
+	if _pv(unit, "speed_per_quiet_turn") > 0.0:
+		speed += mini(int(unit.flags.get("quiet_turns", 0)), int(_pv(unit, "quiet_turns_max", 4))) * int(_pv(unit, "speed_per_quiet_turn"))
+	# Réseau : +vitesse par ennemi sous un de ses états.
+	if _pv(unit, "speed_per_marked_enemy") > 0.0:
+		for enemy in enemies_of(unit, true):
+			for status in enemy.statuses:
+				if str(status.get("source", "")) == unit.id:
+					speed += int(_pv(unit, "speed_per_marked_enemy"))
+					break
+	if unit.has_status("vif"):
+		speed += int(unit.get_status("vif")["value"])
+	if unit.has_status("celerite") or _team_first.get(unit.team, false):
+		speed += ACT_FIRST_BONUS
+	if _pv(unit, "act_last") > 0.0:
+		speed -= ACT_FIRST_BONUS
 	if unit.has_status("gele"):
 		speed -= ACT_LAST_PENALTY
 	return speed
@@ -453,12 +518,24 @@ func _execute_action(actor: CombatUnit, action: CombatAction) -> void:
 	for effect in skill.get("effects", []):
 		_apply_effect(actor, effect, _effect_targets(actor, effect, targets), skill, context)
 
-	if actor.passive == "resonance" and _current_hits.size() >= 2:
-		_reduce_cooldown(actor, "forte", 1, "resonance")
+	# Résonance : toucher plusieurs cibles rend un tour de recharge de la forte.
+	if _pv(actor, "multi_hit_forte_minus") > 0.0 and _current_hits.size() >= 2:
+		_reduce_cooldown(actor, "forte", int(_pv(actor, "multi_hit_forte_minus")), "resonance")
+	# Enchaîneur : les coups consécutifs sur la même cible se renforcent ; changer de cible remet le compte à zéro.
+	if _pv(actor, "combo_bonus") > 0.0 and is_hostile(action.skill_id):
+		var first_target: String = targets[0].id
+		if _current_hits.has(first_target) and actor.flags.get("combo_target", "") == first_target:
+			actor.flags["combo"] = mini(int(actor.flags.get("combo", 0)) + 1, int(_pv(actor, "combo_max", 3)))
+		else:
+			actor.flags["combo"] = 1 if _current_hits.has(first_target) else 0
+		actor.flags["combo_target"] = first_target
+	# Jab, puis Crochet : le moteur retient à quel tour chaque compétence a touché.
+	if not _current_hits.is_empty():
+		actor.flags["hit_turn_" + action.skill_id] = turn
 
 
-## Un effet peut viser autre chose que la cible de la compétence : « on: allies » (tout le duo), « on: self ».
-## Ex. Cri de guerre : il frappe un ennemi, et le bonus de dégâts va à tout le duo.
+## Un effet peut viser autre chose que la cible de la compétence : « on: allies » (tout le duo), « on: self »,
+## « on: partner » (l'autre membre du duo). Ex. Cri de guerre : il frappe un ennemi, et le bonus de dégâts va à tout le duo.
 func _effect_targets(actor: CombatUnit, effect: Dictionary, targets: Array[CombatUnit]) -> Array[CombatUnit]:
 	match str(effect.get("on", "")):
 		"allies":
@@ -466,6 +543,12 @@ func _effect_targets(actor: CombatUnit, effect: Dictionary, targets: Array[Comba
 		"self":
 			var only_self: Array[CombatUnit] = [actor]
 			return only_self
+		"partner":
+			var partner := partner_of(actor)
+			var only_partner: Array[CombatUnit] = []
+			if partner != null:
+				only_partner.append(partner)
+			return only_partner
 	return targets
 
 
@@ -479,16 +562,19 @@ func _resolve_targets(actor: CombatUnit, action: CombatAction) -> Array[CombatUn
 			var provoker := _provoker_of(actor)
 			if provoker != null:
 				chosen = provoker
-			elif chosen == null or not chosen.is_alive() or chosen.team == actor.team:
-				chosen = _first_alive(enemies_of(actor, true))
+			elif chosen == null or not chosen.is_alive() or chosen.team == actor.team or is_untargetable(chosen):
+				chosen = _first_targetable(enemies_of(actor, true))
 			if chosen != null:
+				chosen = _charisma_redirect(actor, chosen, target_type == "enemy")
 				result.append(chosen)
 			if target_type == "enemies_2":
 				for enemy in enemies_of(actor, true):
-					if enemy != chosen and result.size() < 2:
+					if enemy != chosen and result.size() < 2 and not is_untargetable(enemy):
 						result.append(enemy)
 		"enemies_all":
-			result = enemies_of(actor, true)
+			for enemy in enemies_of(actor, true):
+				if not is_untargetable(enemy):
+					result.append(enemy)
 		"ally":
 			if chosen == null or not chosen.is_alive() or chosen.team != actor.team:
 				chosen = _lowest_hp(allies_of(actor, true))
@@ -502,6 +588,21 @@ func _resolve_targets(actor: CombatUnit, action: CombatAction) -> Array[CombatUn
 			if chosen != null and chosen.team == actor.team and not chosen.is_alive():
 				result.append(chosen)
 	return result
+
+
+## Charisme : un coup sur N visant son allié vise le Diplomate à la place (compte tenu par ennemi).
+func _charisma_redirect(actor: CombatUnit, chosen: CombatUnit, single: bool) -> CombatUnit:
+	if not single:
+		return chosen
+	for ally in allies_of(chosen, true):
+		if ally == chosen or _pv(ally, "redirect_every") <= 0.0 or is_untargetable(ally):
+			continue
+		var count := int(actor.flags.get("charisme_" + ally.id, 0)) + 1
+		actor.flags["charisme_" + ally.id] = count
+		if count % int(_pv(ally, "redirect_every")) == 0:
+			_emit({"type": "redirected", "actor": actor.id, "from": chosen.id, "to": ally.id, "by": "charisme"})
+			return ally
+	return chosen
 
 
 func _is_redirected(actor: CombatUnit, action: CombatAction, targets: Array[CombatUnit]) -> bool:
@@ -520,33 +621,37 @@ func _provoker_of(unit: CombatUnit) -> CombatUnit:
 
 func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatUnit], skill: Dictionary, context: Dictionary) -> void:
 	var element := str(skill.get("element", ""))
+	var skill_id := str(context["skill_id"])
 	match str(effect["type"]):
 		"damage":
+			var hits := int(effect.get("hits", 1))
 			for target in targets:
-				var mult := 1.0
-				if "provocation_nova" in context["synergies"] and skill.get("tier") == "forte" and target.has_status("provoque"):
-					mult += _sp("provocation_nova", "bonus", 0.5)
-				var dealt := _deal_damage(actor, target, int(effect["power"]), element, mult, bool(context["single_target"]))
-				if dealt > 0:
-					_current_hits[target.id] = true
-				# Vol de vie (Dévorer, Drain d'âme) : une part des dégâts infligés soigne l'attaquant.
-				if dealt > 0 and effect.has("lifesteal"):
-					_self_heal(actor, int(round(float(dealt) * float(effect["lifesteal"]))), str(context["skill_id"]))
-				if actor.passive == "brasier" and element == "feu" and target.is_alive():
-					_add_status(target, {"id": "brulure", "turns": int(_pp("brasier", "turns", 1)), "value": int(_pp("brasier", "value", 10)), "source": actor.id})
+				for hit in range(hits):
+					var mult := _effect_mult(actor, target, effect, skill_id)
+					for synergy_id in context["synergies"]:
+						mult += _synergy_amplify(synergy_id, skill_id, target)
+					var dealt := _deal_damage(actor, target, _effect_power(actor, skill_id, effect), element, mult, bool(context["single_target"]), skill_id)
+					if dealt > 0:
+						_current_hits[target.id] = true
+					# Vol de vie (Dévorer, Drain d'âme) : une part des dégâts infligés soigne l'attaquant.
+					if dealt > 0 and effect.has("lifesteal"):
+						_self_heal(actor, int(round(float(dealt) * float(effect["lifesteal"]))), skill_id)
+					# Brasier : chaque coup de feu brûle la cible.
+					if _pv(actor, "burn_value") > 0.0 and element == "feu" and target.is_alive():
+						_add_status(target, {"id": "brulure", "turns": int(_pv(actor, "burn_turns", 1)), "value": int(_pv(actor, "burn_value")), "source": actor.id})
 		"heal":
 			for target in targets:
 				if bool(effect.get("overflow_barrier", false)):
-					_heal_with_overflow(actor, target, int(effect["power"]), str(context["skill_id"]), float(effect.get("overflow", 1.0)))
+					_heal_with_overflow(actor, target, _effect_power(actor, skill_id, effect), skill_id, float(effect.get("overflow", 1.0)))
 				else:
-					_heal(actor, target, int(effect["power"]), str(context["skill_id"]))
+					_heal(actor, target, _effect_power(actor, skill_id, effect), skill_id)
 		"status":
 			for target in targets:
 				if target.is_alive():
-					_add_status(target, {"id": effect["id"], "turns": int(effect["turns"]), "value": int(effect.get("value", 0)), "source": actor.id})
+					_add_status(target, {"id": effect["id"], "turns": int(effect["turns"]) + int(actor.skill_mod(skill_id, "turns_bonus")), "value": int(effect.get("value", 0)), "source": actor.id})
 		"barrier":
 			for target in targets:
-				_add_status(target, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": _barrier_amount(actor, int(effect["power"])), "source": actor.id})
+				_add_status(target, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": _barrier_amount(actor, _effect_power(actor, skill_id, effect)), "source": actor.id})
 		"absorb_next_hit":
 			for target in targets:
 				_add_status(target, {"id": "rempart", "turns": int(effect.get("turns", 2)), "value": 1, "source": actor.id})
@@ -557,15 +662,7 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 				_push_back(target)
 		"act_last":
 			for target in targets:
-				if not target.is_alive():
-					continue
-				if _acted.get(target.id, false):
-					# Elle a déjà agi : elle agira en dernier au tour suivant.
-					_add_status(target, {"id": "gele", "turns": 2, "value": 0, "source": actor.id})
-				else:
-					_queue.erase(target)
-					_queue.append(target)
-					_add_status(target, {"id": "gele", "turns": 1, "value": 0, "source": actor.id})
+				_act_last(actor, target)
 		"cleanse":
 			for target in targets:
 				for status_id in target.status_ids():
@@ -576,37 +673,107 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 		"revive":
 			for target in targets:
 				_revive(actor, target, int(effect.get("percent", 30)))
+		"delay_cooldown":
+			# Sabotage : la compétence du palier donné repart en recharge, comme si la cible venait de la jouer.
+			for target in targets:
+				_delay_cooldown(actor, target, str(effect.get("tier", "forte")))
+		"reset_cooldowns":
+			# Catalyseur : toutes les recharges d'un allié sont remises à zéro.
+			for target in targets:
+				if target.is_alive():
+					target.cooldown_until = {}
+					_emit({"type": "cooldowns_reset", "source": actor.id, "target": target.id})
+		"team_first":
+			pass  # Pris en compte au tri de la file (voir resolve_turn).
+
+
+## Multiplicateur propre à un effet de dégâts : doublé si la cible n'a pas encore agi (Coup bas), si une autre
+## compétence a touché au tour précédent (Crochet après Jab), plus fort à chaque tour écoulé (Crescendo).
+func _effect_mult(actor: CombatUnit, target: CombatUnit, effect: Dictionary, skill_id: String) -> float:
+	var mult := 1.0
+	if effect.has("bonus_if_not_acted") and (not _acted.get(target.id, false) or _condition_forced(actor, skill_id)):
+		mult += float(effect["bonus_if_not_acted"])
+	if effect.has("bonus_after"):
+		var previous := str(effect["bonus_after"])
+		if int(actor.flags.get("hit_turn_" + previous, -10)) == turn - 1:
+			mult += float(effect.get("bonus_after_value", 1.0))
+	if effect.has("per_turn"):
+		mult += float(effect["per_turn"]) * float(turn - 1)
+	return mult
+
+
+## Puissance d'un effet, avec l'évolution de compétence du Destin (power_bonus : +10 % = 0,1).
+func _effect_power(actor: CombatUnit, skill_id: String, effect: Dictionary) -> int:
+	var power := int(effect.get("power", 0))
+	var bonus := actor.skill_mod(skill_id, "power_bonus")
+	if bonus != 0.0:
+		power = int(round(float(power) * (1.0 + bonus)))
+	return power
 
 
 # --- Dégâts et soins -------------------------------------------------------
 
-## Montant des dégâts d'une compétence, avant Martyr, Rempart et barrière.
-func _damage_amount(source: CombatUnit, target: CombatUnit, base_power: int, mult: float, single_target: bool) -> int:
+## Montant des dégâts d'une compétence, avant Martyr, Rempart et barrière. Dans l'ordre : la puissance de l'attaquant,
+## ses états et passifs (Galvanisé, Colère, Focalisation, Vétéran, Meute, Affaibli, bonus de situation), la mort subite,
+## puis ce que subit la cible (Peau de fer, Mâchoire d'acier, Peau de mercure, Marque).
+func _damage_amount(source: CombatUnit, target: CombatUnit, base_power: int, mult: float, single_target: bool, element: String = "") -> int:
 	var amount := float(base_power) * float(source.power) / 100.0 * mult
-	if source.has_status("cri_de_guerre"):
-		amount *= 1.0 + float(source.get_status("cri_de_guerre")["value"]) / 100.0
-	if source.passive == "colere":
+	if source.has_status("galvanise"):
+		amount *= 1.0 + float(source.get_status("galvanise")["value"]) / 100.0
+	if _pv(source, "per_quarter") > 0.0:
 		var missing_quarters := int(floor((1.0 - source.hp_ratio()) * 4.0))
-		amount *= 1.0 + _pp("colere", "per_quarter", 0.1) * float(missing_quarters)
-	if source.passive == "focalisation" and single_target:
-		amount *= 1.0 + _pp("focalisation", "bonus", 0.2)
-	if source.passive == "veteran":
-		amount *= 1.0 + _pp("veteran", "damage", 0.1) * _veteran_mult(source)
-	if source.passive == "meute":
-		amount *= 1.0 + _pp("meute", "bonus", 0.1) * float(allies_of(source, true).size() - 1)
+		amount *= 1.0 + _pv(source, "per_quarter") * float(missing_quarters)
+	if single_target and _pv(source, "single_target_bonus") > 0.0:
+		amount *= 1.0 + _pv(source, "single_target_bonus")
+	if _pv(source, "damage_bonus") > 0.0:
+		amount *= 1.0 + _pv(source, "damage_bonus") * _ko_mult(source)
+	if _pv(source, "per_ally_bonus") > 0.0:
+		amount *= 1.0 + _pv(source, "per_ally_bonus") * float(allies_of(source, true).size() - 1)
+	if element != "" and _pv(source, element + "_bonus") > 0.0:
+		amount *= 1.0 + _pv(source, element + "_bonus")
+	amount *= _situation_mult(source, target)
 	if source.has_status("affaibli"):
 		amount *= maxf(0.0, 1.0 - float(source.get_status("affaibli")["value"]) / 100.0)
 	amount *= sudden_death_damage_mult()
-	if target.passive == "peau_de_fer":
-		amount *= 1.0 - _pp("peau_de_fer", "reduction", 0.15)
+	if _pv(target, "reduction") > 0.0:
+		amount *= 1.0 - _pv(target, "reduction")
+	if element in PHYSICAL and _pv(target, "physical_reduction") > 0.0:
+		amount *= 1.0 - _pv(target, "physical_reduction")
+	if element in ELEMENTAL and _pv(target, "elemental_reduction") > 0.0:
+		amount *= 1.0 - _pv(target, "elemental_reduction")
+	if target.has_status("marque"):
+		amount *= 1.0 + float(target.get_status("marque")["value"]) / 100.0
+	if target.has_status("garde"):
+		amount *= maxf(0.0, 1.0 - float(target.get_status("garde")["value"]) / 100.0)
 	return int(round(amount))
+
+
+## Les bonus de situation de l'attaquant : cible déjà touchée ce tour (Opportuniste), cible sous un seuil (Mise à mort),
+## cible qui saigne ou s'empoisonne (Traqueur), cible marquée (Œil de faucon), coups consécutifs (Enchaîneur), Calme.
+func _situation_mult(source: CombatUnit, target: CombatUnit) -> float:
+	var mult := 1.0
+	if _pv(source, "hit_target_bonus") > 0.0 and int(_hits_taken.get(target.id, 0)) > 0:
+		mult *= 1.0 + _pv(source, "hit_target_bonus")
+	if _pv(source, "execute_bonus") > 0.0 and target.hp_ratio() < _pv(source, "execute_threshold", 0.35):
+		mult *= 1.0 + _pv(source, "execute_bonus")
+	if _pv(source, "dot_target_bonus") > 0.0 and _has_dot(target):
+		mult *= 1.0 + _pv(source, "dot_target_bonus")
+	if _pv(source, "marked_target_bonus") > 0.0 and target.has_status("marque"):
+		mult *= 1.0 + _pv(source, "marked_target_bonus")
+	if _pv(source, "combo_bonus") > 0.0 and str(source.flags.get("combo_target", "")) == target.id:
+		mult *= 1.0 + _pv(source, "combo_bonus") * float(int(source.flags.get("combo", 0)))
+	if _pv(source, "act_last_bonus") > 0.0:
+		mult *= 1.0 + _pv(source, "act_last_bonus")
+	return mult
 
 
 ## Montant d'un soin de compétence (avant plafond des PV max).
 func _heal_amount(source: CombatUnit, target: CombatUnit, base_power: int) -> int:
 	var amount := float(base_power) * float(source.power) / 100.0
-	if source.passive == "foi" and target.hp_ratio() < _pp("foi", "threshold", 0.4):
-		amount *= 1.0 + _pp("foi", "bonus", 0.2)
+	if _pv(source, "foi_bonus") > 0.0 and target.hp_ratio() < _pv(source, "foi_threshold", 0.4):
+		amount *= 1.0 + _pv(source, "foi_bonus")
+	if _pv(source, "heal_bonus") > 0.0:
+		amount *= 1.0 + _pv(source, "heal_bonus")
 	amount *= source.heal_mult * sudden_death_heal_mult()
 	if is_exhausted(source):
 		amount = 0.0
@@ -618,26 +785,83 @@ func _barrier_amount(source: CombatUnit, base_power: int) -> int:
 	if is_exhausted(source):
 		return 0
 	var amount := float(base_power) * float(source.power) / 100.0
-	if source.passive == "sanctuaire":
-		amount *= 1.0 + _pp("sanctuaire", "bonus", 0.25)
+	if _pv(source, "barrier_bonus") > 0.0:
+		amount *= 1.0 + _pv(source, "barrier_bonus")
 	return int(round(amount))
 
 
 ## Calcule et inflige des dégâts d'une compétence. Renvoie les PV réellement perdus par la cible.
-func _deal_damage(source: CombatUnit, target: CombatUnit, base_power: int, element: String, mult: float, single_target: bool) -> int:
+func _deal_damage(source: CombatUnit, target: CombatUnit, base_power: int, element: String, mult: float, single_target: bool, skill_id: String = "") -> int:
 	if not target.is_alive():
 		return 0
-	var total := _damage_amount(source, target, base_power, mult, single_target)
+	var total := _damage_amount(source, target, base_power, mult, single_target, element)
 
-	# Martyr : un Prêtre allié de la cible encaisse une part des dégâts.
+	# Esquive, Fuite : la première attaque du combat est annulée.
+	if _would_dodge(source, target):
+		target.flags["dodges"] = int(target.flags.get("dodges", 0)) + 1
+		_emit({"type": "dodged", "source": source.id, "target": target.id, "amount": total})
+		return 0
+
+	# Martyr : un allié de la cible encaisse une part des dégâts.
 	for ally in allies_of(target, true):
-		if ally != target and ally.passive == "martyr":
-			var share := int(round(float(total) * _pp("martyr", "share", 0.2)))
+		if ally != target and _pv(ally, "martyr_share") > 0.0:
+			var share := int(round(float(total) * _pv(ally, "martyr_share")))
 			if share > 0:
 				total -= share
 				_apply_damage(source, ally, share, element, "martyr")
 			break
-	return _apply_damage(source, target, total, element, "hit")
+	var dealt := _apply_damage(source, target, total, element, "hit")
+	_after_hit(source, target, dealt, element, skill_id)
+	return dealt
+
+
+## Esquive, Fuite : une attaque ennemie directe est annulée tant qu'il reste des esquives (une par combat, et une de
+## plus à partir d'un tour donné pour certains passifs).
+func _would_dodge(source: CombatUnit, target: CombatUnit) -> bool:
+	if source == null or source.team == target.team or _pv(target, "dodges") <= 0.0:
+		return false
+	var allowed := int(_pv(target, "dodges"))
+	if _pv(target, "dodge_again_from_turn") > 0.0 and turn >= int(_pv(target, "dodge_again_from_turn")):
+		allowed += 1
+	return int(target.flags.get("dodges", 0)) < allowed
+
+
+## Après un coup direct d'un ennemi : ripostes (Garde haute, Ultimatum, Sang acide), piège, compteurs de situation.
+func _after_hit(source: CombatUnit, target: CombatUnit, dealt: int, element: String, skill_id: String) -> void:
+	if source == null or source.team == target.team:
+		return
+	_hits_taken[target.id] = int(_hits_taken.get(target.id, 0)) + 1
+	target.flags["quiet_turns"] = 0
+	target.flags["hit_this_turn"] = turn
+	var contact := data.is_contact(skill_id)
+	# Garde haute : la cible contre-attaque celui qui la frappe (au contact).
+	var garde := target.get_status("garde")
+	if not garde.is_empty() and contact and source.is_alive():
+		_riposte(target, source, int(garde.get("counter", 0)), "garde")
+	# Ultimatum : celui qui a été forcé d'attaquer le Diplomate le paie.
+	var ultimatum := source.get_status("ultimatum")
+	if not ultimatum.is_empty() and str(ultimatum.get("source", "")) == target.id and source.is_alive():
+		_riposte(target, source, int(ultimatum.get("value", 0)), "ultimatum")
+		var extra := get_unit(str(ultimatum.get("extra_counter", "")))
+		if extra != null and extra.is_alive() and source.is_alive():
+			var extra_garde := extra.get_status("garde")
+			_riposte(extra, source, int(extra_garde.get("counter", 0)), "garde")
+	# Sang acide : les attaquants au contact subissent des dégâts.
+	if _pv(target, "contact_riposte") > 0.0 and contact and source.is_alive():
+		_riposte(target, source, int(_pv(target, "contact_riposte")), "sang_acide")
+	# Piège : le premier ennemi qui agit sur l'allié piégé est étourdi au tour suivant.
+	if target.has_status("piege") and source.is_alive():
+		target.remove_status("piege")
+		_emit({"type": "trapped", "source": target.id, "target": source.id})
+		_add_status(source, {"id": "etourdi", "turns": 2, "value": 0, "source": target.id})
+
+
+## Une riposte : des dégâts proportionnels à la puissance de celui qui riposte, sans riposte en retour.
+func _riposte(defender: CombatUnit, attacker: CombatUnit, power: int, kind: String) -> void:
+	if power <= 0:
+		return
+	var amount := int(round(float(power) * float(defender.power) / 100.0 * sudden_death_damage_mult()))
+	_apply_damage(defender, attacker, amount, "", kind)
 
 
 ## Applique des dégâts bruts (après multiplicateurs) : Rempart, barrière, PV, KO, Second souffle.
@@ -653,7 +877,9 @@ func _apply_damage(source: CombatUnit, target: CombatUnit, amount: int, element:
 		return 0
 	var barrier := target.get_status("barriere")
 	if not barrier.is_empty():
-		var absorbed := mini(int(barrier["value"]), amount)
+		# Vibrato : une part des dégâts passe à travers la barrière.
+		var pierced := int(round(float(amount) * _pv(source, "barrier_pierce"))) if source != null else 0
+		var absorbed := mini(int(barrier["value"]), amount - pierced)
 		barrier["value"] = int(barrier["value"]) - absorbed
 		amount -= absorbed
 		if int(barrier["value"]) <= 0:
@@ -674,9 +900,9 @@ func _apply_damage(source: CombatUnit, target: CombatUnit, amount: int, element:
 	if target.hp <= 0:
 		target.statuses.clear()
 		_emit({"type": "ko", "target": target.id})
-	elif target.passive == "second_souffle" and not target.flags.get("second_souffle", false) and target.hp_ratio() < _pp("second_souffle", "threshold", 0.3):
+	elif _pv(target, "souffle_heal") > 0.0 and not target.flags.get("second_souffle", false) and target.hp_ratio() < _pv(target, "souffle_threshold", 0.3):
 		target.flags["second_souffle"] = true
-		_heal(target, target, int(round(float(target.max_hp) * _pp("second_souffle", "heal", 0.1))), "second_souffle", true)
+		_heal(target, target, int(round(float(target.max_hp) * _pv(target, "souffle_heal"))), "second_souffle", true)
 	return amount
 
 
@@ -739,13 +965,18 @@ func _apply_taunt(actor: CombatUnit, targets: Array[CombatUnit], count: int) -> 
 			break
 		if not provoked.has(enemy):
 			provoked.append(enemy)
+	var applied: Array[CombatUnit] = []
 	for enemy in provoked:
-		_add_status(enemy, {"id": "provoque", "turns": 1, "value": 0, "source": actor.id})
-	_emit({"type": "taunt", "actor": actor.id, "targets": _ids(provoked)})
+		if _add_status(enemy, {"id": "provoque", "turns": 1, "value": 0, "source": actor.id}):
+			applied.append(enemy)
+	_emit({"type": "taunt", "actor": actor.id, "targets": _ids(applied)})
 
 
 ## Repousse l'Intention de la cible d'un cran : elle passe juste derrière l'unité qui la suivait.
 func _push_back(target: CombatUnit) -> void:
+	if target.is_immune("push_back"):
+		_emit({"type": "immune", "target": target.id, "status": "push_back"})
+		return
 	if _acted.get(target.id, false) or not target.is_alive():
 		_emit({"type": "push_back", "target": target.id, "effect": false})
 		return
@@ -759,9 +990,35 @@ func _push_back(target: CombatUnit) -> void:
 	_emit({"type": "push_back", "target": target.id, "effect": true, "behind": follower.id})
 
 
-func _add_status(target: CombatUnit, status: Dictionary) -> void:
+## Trait de givre, Engloutir : la cible passe en fin de file ; si elle a déjà agi, elle agira en dernier au tour suivant.
+func _act_last(actor: CombatUnit, target: CombatUnit) -> void:
+	if not target.is_alive():
+		return
+	if target.is_immune("gele"):
+		_emit({"type": "immune", "target": target.id, "status": "gele"})
+		return
+	if _acted.get(target.id, false):
+		_add_status(target, {"id": "gele", "turns": 2, "value": 0, "source": actor.id})
+	else:
+		_queue.erase(target)
+		_queue.append(target)
+		_add_status(target, {"id": "gele", "turns": 1, "value": 0, "source": actor.id})
+
+
+## Pose un état, sauf immunité (Impassible, Sang-froid) ; les états posés par une unité « dont les états durent un tour
+## de plus » (Distillation, Virtuose) sont prolongés. Renvoie vrai si l'état a été posé.
+func _add_status(target: CombatUnit, status: Dictionary) -> bool:
+	var status_id := str(status["id"])
+	if target.is_immune(status_id):
+		_emit({"type": "immune", "target": target.id, "status": status_id})
+		return false
+	var source := get_unit(str(status.get("source", "")))
+	if source != null and source != target and _pv(source, "status_turns_bonus") > 0.0 and int(status.get("turns", 0)) > 0:
+		status = status.duplicate()
+		status["turns"] = int(status["turns"]) + int(_pv(source, "status_turns_bonus"))
 	target.add_status(status)
-	_emit({"type": "status", "target": target.id, "status": status["id"], "turns": status.get("turns", 0), "value": status.get("value", 0)})
+	_emit({"type": "status", "target": target.id, "status": status_id, "turns": status.get("turns", 0), "value": status.get("value", 0)})
+	return true
 
 
 # --- Recharges ---------------------------------------------------------------
@@ -770,9 +1027,9 @@ func _start_cooldown(unit: CombatUnit, tier: String) -> void:
 	var cooldown := int(cooldown_by_tier.get(tier, 0))
 	if cooldown <= 0:
 		return
-	if tier == "forte" and unit.passive == "meteorologue":
-		cooldown -= 1
-	unit.cooldown_until[tier] = turn + cooldown + 1
+	# Météorologue, Rythme, Doigts agiles, nœuds de Destin : une recharge plus courte.
+	cooldown -= int(_pv(unit, tier + "_minus")) + int(unit.skill_mod(unit.skills[tier], "cooldown_minus"))
+	unit.cooldown_until[tier] = turn + maxi(cooldown, 1) + 1
 
 
 func _reduce_cooldown(unit: CombatUnit, tier: String, amount: int, reason: String) -> void:
@@ -781,6 +1038,16 @@ func _reduce_cooldown(unit: CombatUnit, tier: String, amount: int, reason: Strin
 		return
 	unit.cooldown_until[tier] = until - amount
 	_emit({"type": "cooldown_reduced", "target": unit.id, "tier": tier, "amount": amount, "reason": reason})
+
+
+## Sabotage : la compétence du palier repart en recharge complète (au plus tard de sa recharge actuelle).
+func _delay_cooldown(actor: CombatUnit, target: CombatUnit, tier: String) -> void:
+	if not target.is_alive():
+		return
+	var until := turn + int(cooldown_by_tier.get(tier, 0)) + 1
+	if until > int(target.cooldown_until.get(tier, 0)):
+		target.cooldown_until[tier] = until
+	_emit({"type": "cooldown_delayed", "source": actor.id, "target": target.id, "tier": tier, "remaining": cooldown_remaining(target, tier)})
 
 
 # --- Synergies ---------------------------------------------------------------
@@ -803,7 +1070,37 @@ func _partner_in(pair: Dictionary, actor: CombatUnit) -> String:
 	return ""
 
 
-## La seconde compétence du couple vient de se résoudre : la Synergie se déclenche.
+func _synergy_pair(synergy_id: String) -> Dictionary:
+	for pair in _synergy_pairs:
+		if pair["synergy"]["id"] == synergy_id:
+			return pair
+	return {}
+
+
+## Le bonus de dégâts d'une Synergie « amplify » déjà active (sa première compétence s'est résolue) sur la compétence
+## qui s'exécute : +bonus, éventuellement seulement sur les cibles portant un état (Piège de feu : les provoqués).
+func _synergy_amplify(synergy_id: String, skill_id: String, target: CombatUnit) -> float:
+	var synergy := data.synergy_by_id(synergy_id)
+	var effect: Dictionary = synergy.get("effect", {})
+	if str(effect.get("type", "")) != "amplify" or str(effect.get("skill", "")) != skill_id:
+		return 0.0
+	var vs_status := str(effect.get("vs_status", ""))
+	if vs_status != "" and not target.has_status(vs_status):
+		return 0.0
+	return _sp(synergy_id, "bonus", 0.5)
+
+
+## Marque + Coup bas : la condition du Coup bas est tenue pour vraie quand la Synergie est active.
+func _condition_forced(actor: CombatUnit, skill_id: String) -> bool:
+	for synergy_id in _active_synergy_ids(actor):
+		var effect: Dictionary = data.synergy_by_id(synergy_id).get("effect", {})
+		if str(effect.get("type", "")) == "force_condition" and str(effect.get("skill", "")) == skill_id:
+			return true
+	return false
+
+
+## La seconde compétence du couple vient de se résoudre : la Synergie se déclenche. Son effet est décrit dans les
+## données (type et chiffres), le moteur n'a qu'une poignée de types génériques.
 func _fire_synergies(actor: CombatUnit) -> void:
 	for pair in _synergy_pairs:
 		var partner_id := _partner_in(pair, actor)
@@ -813,109 +1110,168 @@ func _fire_synergies(actor: CombatUnit) -> void:
 		var synergy: Dictionary = pair["synergy"]
 		var partner := get_unit(partner_id)
 		_emit({"type": "synergy", "id": synergy["id"], "name": synergy["name"], "actors": pair["actors"]})
-		match str(synergy["id"]):
-			"provocation_nova":
-				_synergy_provocation_nova(actor, partner)
-			"rempart_priere":
-				_synergy_rempart_priere(actor, partner)
-			"trait_de_givre_chatiment":
-				_synergy_eclat(actor, partner)
-			"fendoir_boule_de_feu":
-				_synergy_plaie_brulante(actor)
-			"cri_de_guerre_bouclier_de_mana":
-				_synergy_forteresse(actor, partner)
-			"provocation_chatiment":
-				_synergy_jugement(actor, partner)
-			"arc_de_foudre_priere":
-				_synergy_courant_de_vie(actor, partner)
+		_apply_synergy(synergy, actor, partner)
+		# Inspiration : chaque Synergie du duo galvanise l'équipe.
+		for ally in allies_of(actor, true):
+			if _pv(ally, "synergy_team_bonus") > 0.0:
+				for member in allies_of(actor, true):
+					_add_status(member, {"id": "galvanise", "turns": 2, "value": int(round(_pv(ally, "synergy_team_bonus") * 100.0)), "source": ally.id})
 
 
-func _synergy_provocation_nova(second: CombatUnit, first: CombatUnit) -> void:
-	# Si la Nova s'est résolue avant la Provocation, le bonus est appliqué maintenant.
-	if _actions[second.id].skill_id != "provocation":
-		return
-	var mage := first
-	var dealt: Dictionary = _damage_dealt.get(mage.id, {})
-	for enemy in enemies_of(second, true):
-		if enemy.has_status("provoque") and dealt.has(enemy.id):
-			var bonus := int(round(float(dealt[enemy.id]) * _sp("provocation_nova", "bonus", 0.5)))
-			_apply_damage(mage, enemy, bonus, "feu", "synergie")
-
-
-## Bastion : le Rempart se reforme, avec une protection de plus (même s'il avait déjà servi).
-func _synergy_rempart_priere(second: CombatUnit, first: CombatUnit) -> void:
-	var guerrier := second if _actions[second.id].skill_id == "rempart" else first
-	var protected := get_unit(_actions[guerrier.id].target_id)
-	if protected == null or not protected.is_alive():
-		return
-	var rempart := protected.get_status("rempart")
-	if rempart.is_empty():
-		_add_status(protected, {"id": "rempart", "turns": 2, "value": 1, "source": guerrier.id})
-	else:
-		rempart["value"] = int(rempart["value"]) + 1
-		_emit({"type": "status", "target": protected.id, "status": "rempart", "turns": rempart.get("turns", 0), "value": rempart["value"]})
-
-
-func _synergy_eclat(second: CombatUnit, first: CombatUnit) -> void:
-	var pretre := second if _actions[second.id].skill_id == "chatiment" else first
+## second : celui qui vient d'agir ; first : son partenaire, qui a agi avant. « actor_of(skill) » retrouve lequel des
+## deux joue telle compétence du couple.
+func _apply_synergy(synergy: Dictionary, second: CombatUnit, first: CombatUnit) -> void:
+	var id := str(synergy["id"])
+	var effect: Dictionary = synergy.get("effect", {})
+	var skill_id := str(effect.get("skill", ""))
+	var owner := _actor_of(skill_id, second, first)
+	var other := first if owner == second else second
 	var target := get_unit(_actions[second.id].target_id)
-	if target != null and target.is_alive() and target.team != pretre.team:
-		var amount := int(round(_sp("trait_de_givre_chatiment", "damage", 40) * sudden_death_damage_mult()))
-		_apply_damage(pretre, target, amount, "lumiere", "synergie")
+	match str(effect.get("type", "")):
+		"amplify":
+			# Si la compétence amplifiée s'est résolue avant l'autre, le bonus s'applique maintenant sur ce qu'elle a fait.
+			if owner == first:
+				var dealt: Dictionary = _damage_dealt.get(first.id, {})
+				var vs_status := str(effect.get("vs_status", ""))
+				for enemy in enemies_of(second, true):
+					if dealt.has(enemy.id) and (vs_status == "" or enemy.has_status(vs_status)):
+						_apply_damage(first, enemy, int(round(float(dealt[enemy.id]) * _sp(id, "bonus", 0.5))), str(data.skill(skill_id).get("element", "")), "synergie")
+		"force_condition":
+			# Coup bas résolu avant la Marque : le double s'applique après coup.
+			if owner == first:
+				var dealt: Dictionary = _damage_dealt.get(first.id, {})
+				var bonus := float(_skill_effect(skill_id, "damage").get("bonus_if_not_acted", 1.0))
+				for enemy in enemies_of(second, true):
+					if dealt.has(enemy.id) and _acted.get(enemy.id, false) and enemy.id == _actions[first.id].target_id:
+						_apply_damage(first, enemy, int(round(float(dealt[enemy.id]) * bonus)), str(data.skill(skill_id).get("element", "")), "synergie")
+		"extra_damage":
+			# Des dégâts fixes d'un élément sur la cible (de la seconde compétence, ou de la compétence nommée).
+			if skill_id != "":
+				target = get_unit(_actions[owner.id].target_id)
+			if target != null and target.is_alive() and target.team != second.team:
+				_apply_damage(owner if skill_id != "" else second, target, int(round(_sp(id, "damage", 30) * sudden_death_damage_mult())), str(effect.get("element", "")), "synergie")
+		"extend_status":
+			# Un état de la cible dure plus longtemps et frappe plus fort (Plaie brûlante : le saignement).
+			if target == null or not target.is_alive():
+				return
+			var status := target.get_status(str(effect.get("status", "")))
+			if not status.is_empty():
+				status["turns"] = int(status["turns"]) + int(_sp(id, "extra_turns", 2))
+				status["value"] = int(round(float(status["value"]) * (1.0 + _sp(id, "bonus", 0.0))))
+				_emit({"type": "status", "target": target.id, "status": status["id"], "turns": status["turns"], "value": status["value"]})
+		"add_status":
+			# Un état posé : sur la cible de la compétence nommée (« to: skill_target »), sur tout le duo ou sur tous les
+			# ennemis. « stack » : un Rempart déjà posé gagne une protection de plus au lieu d'être remplacé.
+			var status := {"id": str(effect.get("status", "")), "turns": int(_sp(id, "turns", float(effect.get("turns", 2)))), "value": int(_sp(id, "value", float(effect.get("value", 0)))), "source": owner.id}
+			for unit in _synergy_targets(str(effect.get("to", "skill_target")), owner, second):
+				if not unit.is_alive():
+					continue
+				var existing := unit.get_status(status["id"])
+				if bool(effect.get("stack", false)) and not existing.is_empty():
+					existing["value"] = int(existing["value"]) + maxi(int(status["value"]), 1)
+					_emit({"type": "status", "target": unit.id, "status": status["id"], "turns": existing.get("turns", 0), "value": existing["value"]})
+				else:
+					_add_status(unit, status)
+		"spread_to_duo":
+			# La barrière, le soin ou le renfort de la compétence nommée se pose aussi sur les autres membres du duo.
+			var skill_effect := _first_effect(skill_id, ["barrier", "heal", "status"])
+			var already: Array = _resolved_targets.get(owner.id, [])
+			var share := _sp(id, "share", _sp(id, "mult", 1.0))
+			for ally in allies_of(owner, true):
+				if already.has(ally.id):
+					continue
+				match str(skill_effect.get("type", "")):
+					"barrier":
+						_add_status(ally, {"id": "barriere", "turns": int(skill_effect.get("turns", 3)), "value": int(round(float(_barrier_amount(owner, int(skill_effect.get("power", 0)))) * share)), "source": owner.id})
+					"heal":
+						_heal_with_overflow(owner, ally, int(round(float(skill_effect.get("power", 0)) * share)), "synergie", float(skill_effect.get("overflow", 1.0)))
+					"status":
+						_add_status(ally, {"id": skill_effect["id"], "turns": int(skill_effect["turns"]), "value": int(round(float(skill_effect.get("value", 0)) * share)), "source": owner.id})
+		"spread_to_enemies":
+			# Les dégâts de la compétence nommée touchent aussi les autres ennemis (ceux sous l'état posé par le partenaire).
+			var power := int(_skill_effect(skill_id, "damage").get("power", 0))
+			var already: Array = _resolved_targets.get(owner.id, [])
+			var vs_status := str(effect.get("vs_status", ""))
+			for enemy in enemies_of(owner, true):
+				if already.has(enemy.id) or is_untargetable(enemy):
+					continue
+				if vs_status != "":
+					var marked := enemy.get_status(vs_status)
+					if marked.is_empty() or str(marked.get("source", "")) != other.id:
+						continue
+				_apply_damage(owner, enemy, _damage_amount(owner, enemy, power, _sp(id, "mult", 1.0), true, str(data.skill(skill_id).get("element", ""))), str(data.skill(skill_id).get("element", "")), "synergie")
+		"cooldown_minus":
+			# Une recharge du partenaire (ou des deux) revient plus tôt (Hymne + une forte).
+			var tier := str(effect.get("tier", "forte"))
+			for unit in ([first, second] if str(effect.get("who", "owner")) == "both" else [owner]):
+				_reduce_cooldown(unit, tier, int(_sp(id, "amount", 1)), "synergie")
+		"heal_duo":
+			for ally in allies_of(second, true):
+				_heal(second, ally, int(_sp(id, "power", 30)), "synergie")
+		"barrier_duo":
+			for ally in allies_of(second, true):
+				_add_status(ally, {"id": "barriere", "turns": int(effect.get("turns", 2)), "value": _barrier_amount(second, int(_sp(id, "power", 30))), "source": second.id})
+		"cleanse_duo":
+			for ally in allies_of(second, true):
+				for status_id in ally.status_ids():
+					if data.is_negative_status(status_id):
+						ally.remove_status(status_id)
+						_emit({"type": "status_removed", "target": ally.id, "status": status_id})
+		"lifesteal":
+			# Les dégâts du couple ce tour soignent le duo (le plus blessé d'abord).
+			var total := 0
+			for unit in [first, second]:
+				for amount in _damage_dealt.get(unit.id, {}).values():
+					total += int(amount)
+			var healed := _lowest_hp(allies_of(second, true))
+			if healed != null and total > 0:
+				_heal(second, healed, int(round(float(total) * _sp(id, "share", 0.3))), "synergie", true)
+		"extra_counter":
+			# Ultimatum + Garde haute : l'ennemi forcé d'attaquer subit aussi la contre-attaque du partenaire.
+			var guard := _actor_of(str(effect.get("guard", "")), second, first)
+			var forced := get_unit(_actions[_actor_of(skill_id, second, first).id].target_id)
+			if forced != null and forced.has_status("ultimatum"):
+				forced.get_status("ultimatum")["extra_counter"] = guard.id
 
 
-func _synergy_plaie_brulante(second: CombatUnit) -> void:
-	var target := get_unit(_actions[second.id].target_id)
-	if target == null or not target.is_alive():
-		return
-	var bleed := target.get_status("saignement")
-	if not bleed.is_empty():
-		bleed["turns"] = int(bleed["turns"]) + int(_sp("fendoir_boule_de_feu", "extra_turns", 2))
-		bleed["value"] = int(round(float(bleed["value"]) * (1.0 + _sp("fendoir_boule_de_feu", "bonus", 0.0))))
-		_emit({"type": "status", "target": target.id, "status": "saignement", "turns": bleed["turns"], "value": bleed["value"]})
+## Les unités visées par un état de Synergie : « skill_target » (la cible de la compétence nommée), « duo », « enemies ».
+func _synergy_targets(to: String, owner: CombatUnit, second: CombatUnit) -> Array[CombatUnit]:
+	var result: Array[CombatUnit] = []
+	match to:
+		"duo":
+			return allies_of(second, true)
+		"enemies":
+			for enemy in enemies_of(second, true):
+				if not is_untargetable(enemy):
+					result.append(enemy)
+			return result
+	var target := get_unit(_actions[owner.id].target_id)
+	if target != null:
+		result.append(target)
+	return result
 
 
-## Forteresse : le Bouclier de mana se pose aussi sur les autres membres du duo (à une part de sa taille).
-func _synergy_forteresse(second: CombatUnit, first: CombatUnit) -> void:
-	var mage := second if _actions[second.id].skill_id == "bouclier_de_mana" else first
-	var effect := _skill_effect("bouclier_de_mana", "barrier")
-	var already: Array = _resolved_targets.get(mage.id, [])
-	for ally in allies_of(mage, true):
-		if not already.has(ally.id):
-			var amount := int(round(float(_barrier_amount(mage, int(effect.get("power", 0)))) * _sp("cri_de_guerre_bouclier_de_mana", "share", 1.0)))
-			_add_status(ally, {"id": "barriere", "turns": int(effect.get("turns", 3)), "value": amount, "source": mage.id})
-
-
-## Jugement : le Châtiment frappe aussi chaque autre ennemi provoqué par le Guerrier (force réglée dans les données).
-func _synergy_jugement(second: CombatUnit, first: CombatUnit) -> void:
-	var guerrier := second if _actions[second.id].skill_id == "provocation" else first
-	var pretre := first if guerrier == second else second
-	var power := int(_skill_effect("chatiment", "damage").get("power", 0))
-	var already: Array = _resolved_targets.get(pretre.id, [])
-	for enemy in enemies_of(pretre, true):
-		var provoked := enemy.get_status("provoque")
-		if provoked.is_empty() or str(provoked.get("source", "")) != guerrier.id or already.has(enemy.id):
-			continue
-		_apply_damage(pretre, enemy, _damage_amount(pretre, enemy, power, _sp("provocation_chatiment", "mult", 1.0), true), "lumiere", "synergie")
-
-
-## Courant de vie : la Prière soigne aussi les autres membres du duo (force réglée dans les données) ; comme la Prière,
-## ce qui dépasse leurs PV max devient une barrière.
-func _synergy_courant_de_vie(second: CombatUnit, first: CombatUnit) -> void:
-	var pretre := second if _actions[second.id].skill_id == "priere" else first
-	var power := int(round(float(_skill_effect("priere", "heal").get("power", 0)) * _sp("arc_de_foudre_priere", "mult", 1.0)))
-	var already: Array = _resolved_targets.get(pretre.id, [])
-	for ally in allies_of(pretre, true):
-		if not already.has(ally.id):
-			_heal_with_overflow(pretre, ally, power, "synergie", float(_skill_effect("priere", "heal").get("overflow", 1.0)))
+## Lequel des deux membres du couple joue cette compétence (le second par défaut).
+func _actor_of(skill_id: String, second: CombatUnit, first: CombatUnit) -> CombatUnit:
+	if skill_id != "" and _actions[first.id].skill_id == skill_id:
+		return first
+	return second
 
 
 ## Le premier effet d'un type donné dans une compétence (ex. la barrière du Bouclier de mana).
 func _skill_effect(skill_id: String, effect_type: String) -> Dictionary:
+	return _first_effect(skill_id, [effect_type])
+
+
+func _first_effect(skill_id: String, types: Array) -> Dictionary:
 	for effect in data.skill(skill_id).get("effects", []):
-		if str(effect["type"]) == effect_type:
+		if str(effect["type"]) in types:
 			return effect
 	return {}
+
+
+func _has_effect(skill_id: String, effect_type: String) -> bool:
+	return not _skill_effect(skill_id, effect_type).is_empty()
 
 
 # ---------------------------------------------------------------------------
@@ -923,20 +1279,36 @@ func _skill_effect(skill_id: String, effect_type: String) -> Dictionary:
 # ---------------------------------------------------------------------------
 
 func _end_of_turn() -> void:
-	# Effets sur la durée.
+	# Effets sur la durée (saignement, brûlure, poison : les états marqués « dot » dans les données).
 	for unit in units:
 		if not unit.is_alive():
 			continue
-		for status_id in ["saignement", "brulure"]:
+		for status_id in data.dot_statuses():
 			var status := unit.get_status(status_id)
 			if not status.is_empty() and unit.is_alive():
 				var source := get_unit(str(status.get("source", "")))
 				var amount := int(round(float(status["value"]) * sudden_death_damage_mult()))
 				_apply_damage(source, unit, amount, status_id, "dot")
-		if unit.is_alive() and unit.passive == "lumiere_interieure" and unit.hp < unit.max_hp:
-			_heal(unit, unit, int(round(float(unit.max_hp) * _pp("lumiere_interieure", "heal", 0.05))), "lumiere_interieure", true)
-		if unit.is_alive() and unit.passive == "regeneration" and unit.hp < unit.max_hp:
-			_self_heal(unit, int(round(float(unit.max_hp) * _pp("regeneration", "heal", 0.05))), "regeneration")
+		# Régénérations : Lumière intérieure, Régénération ; Baume soigne l'allié le plus blessé.
+		if unit.is_alive() and _pv(unit, "regen") > 0.0 and unit.hp < unit.max_hp:
+			_self_heal(unit, int(round(float(unit.max_hp) * _pv(unit, "regen"))), "regeneration")
+		if unit.is_alive() and _pv(unit, "ally_regen") > 0.0:
+			var hurt := _lowest_hp(allies_of(unit, true))
+			if hurt != null and hurt.hp < hurt.max_hp:
+				_heal(unit, hurt, int(round(float(hurt.max_hp) * _pv(unit, "ally_regen"))), "baume", true)
+		# Protocole : un état de contrôle de l'allié est retiré en fin de tour.
+		if unit.is_alive() and _pv(unit, "cleanse_ally_control") > 0.0:
+			for ally in allies_of(unit, true):
+				if ally == unit:
+					continue
+				for status_id in ally.status_ids():
+					if data.status_flag(status_id, "control"):
+						ally.remove_status(status_id)
+						_emit({"type": "status_removed", "target": ally.id, "status": status_id})
+						break
+		# Cardio : un tour sans être touché.
+		if unit.is_alive() and int(unit.flags.get("hit_this_turn", 0)) != turn:
+			unit.flags["quiet_turns"] = int(unit.flags.get("quiet_turns", 0)) + 1
 
 	# Les états avancent d'un tour.
 	for unit in units:
@@ -989,9 +1361,12 @@ func _tie_break() -> int:
 # Utilitaires
 # ---------------------------------------------------------------------------
 
-## Un chiffre d'un passif ou d'une Synergie, lu dans les données.
-func _pp(passive_id: String, key: String, fallback: float) -> float:
-	return data.passive_param(passive_id, key, fallback)
+## Un chiffre d'une unité : le paramètre de son passif (data/passives.json) plus ses modificateurs (nœuds de Destin),
+## sous la même clé. 0 (ou fallback) si rien ne le définit.
+func _pv(unit: CombatUnit, key: String, fallback: float = 0.0) -> float:
+	if unit.mods.has(key):
+		return data.passive_param(unit.passive, key, 0.0) + float(unit.mods[key])
+	return data.passive_param(unit.passive, key, fallback)
 
 
 func _sp(synergy_id: String, key: String, fallback: float) -> float:
@@ -999,11 +1374,20 @@ func _sp(synergy_id: String, key: String, fallback: float) -> float:
 
 
 ## Vétéran : ses bonus sont multipliés quand son allié est KO.
-func _veteran_mult(unit: CombatUnit) -> float:
+func _ko_mult(unit: CombatUnit) -> float:
+	if _pv(unit, "ko_mult") <= 0.0:
+		return 1.0
 	for ally in allies_of(unit):
 		if ally != unit and not ally.is_alive():
-			return _pp("veteran", "ko_mult", 2.0)
+			return _pv(unit, "ko_mult")
 	return 1.0
+
+
+func _has_dot(unit: CombatUnit) -> bool:
+	for status_id in unit.status_ids():
+		if data.status_flag(status_id, "dot"):
+			return true
+	return false
 
 
 func _emit(event: Dictionary) -> void:
@@ -1017,9 +1401,9 @@ func _ids(list: Array[CombatUnit]) -> Array:
 	return ids
 
 
-func _first_alive(list: Array[CombatUnit]) -> CombatUnit:
+func _first_targetable(list: Array[CombatUnit]) -> CombatUnit:
 	for unit in list:
-		if unit.is_alive():
+		if unit.is_alive() and not is_untargetable(unit):
 			return unit
 	return null
 

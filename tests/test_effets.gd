@@ -26,7 +26,7 @@ func test_degats_de_base_et_peau_de_fer() -> void:
 func test_focalisation_et_cible_unique() -> void:
 	var combat := duo_combat(GM, GM, {"mage": {"passive": 1}})
 	var events := combat.resolve_turn([action("a2", "boule_de_feu", "b2")])
-	assert_eq(damage_from(events, "a2", "b2"), int(round(skill_power("boule_de_feu") * mage_power * (1.0 + pp("focalisation", "bonus")))), "Focalisation")
+	assert_eq(damage_from(events, "a2", "b2"), int(round(skill_power("boule_de_feu") * mage_power * (1.0 + pp("focalisation", "single_target_bonus")))), "Focalisation")
 
 
 func test_provocation_redirige_tout_le_duo_adverse() -> void:
@@ -255,7 +255,7 @@ func test_brasier_brule_un_tour() -> void:
 	for event in events_of_type(events, "damage"):
 		if event["kind"] == "dot" and event["target"] == "b2":
 			burn += int(event["amount"])
-	assert_eq(burn, int(data.passive_param("brasier", "value", 10)), "brûlure en fin de tour")
+	assert_eq(burn, int(data.passive_param("brasier", "burn_value", 10)), "brûlure en fin de tour")
 	assert_false(combat.get_unit("b2").has_status("brulure"), "brûlure terminée après 1 tour")
 
 
@@ -285,7 +285,7 @@ func test_cri_de_guerre_frappe_et_renforce_le_duo() -> void:
 	jump_to_turn(combat_hit, 3)
 	var hit_events := combat_hit.resolve_turn([action("a1", "cri_de_guerre", "b2")])
 	assert_eq(damage_from(hit_events, "a1", "b2"), int(round(skill_power("cri_de_guerre") * class_power("guerrier"))), "le Cri de guerre frappe sa cible")
-	assert_true(combat_hit.get_unit("a2").has_status("cri_de_guerre"), "l'acolyte reçoit le bonus")
+	assert_true(combat_hit.get_unit("a2").has_status("galvanise"), "l'acolyte reçoit le bonus")
 
 
 func test_cri_de_guerre_augmente_les_degats_trois_tours() -> void:
@@ -318,7 +318,7 @@ func test_soins_restauration_et_foi() -> void:
 	for event in events_of_type(events, "heal"):
 		if event["target"] == "a1":
 			healed += int(event["amount"])
-	assert_eq(healed, int(round(skill_power("restauration", "heal") * class_power("pretre") * (1.0 + pp("foi", "bonus")))), "Restauration renforcée par Foi sous le seuil de PV")
+	assert_eq(healed, int(round(skill_power("restauration", "heal") * class_power("pretre") * (1.0 + pp("foi", "foi_bonus")))), "Restauration renforcée par Foi sous le seuil de PV")
 
 
 func test_egide_pose_une_barriere_sur_tout_le_duo() -> void:
@@ -337,7 +337,7 @@ func test_bouclier_de_mana_et_sanctuaire() -> void:
 	heal_all(combat)
 	combat.resolve_turn([action("a1", "bouclier_de_mana", "a2"), action("a2", "egide", "a2")])
 	# Le Bouclier de mana et l'Égide avec Sanctuaire : la plus grosse reste.
-	var egide := int(round(skill_power("egide", "barrier") * class_power("pretre") * (1.0 + pp("sanctuaire", "bonus"))))
+	var egide := int(round(skill_power("egide", "barrier") * class_power("pretre") * (1.0 + pp("sanctuaire", "barrier_bonus"))))
 	assert_true(combat.get_unit("a2").barrier_amount() <= maxi(int(round(skill_power("bouclier_de_mana", "barrier") * mage_power)), egide), "barrière plafonnée à la plus grosse")
 	assert_true(combat.get_unit("a1").barrier_amount() <= egide, "Égide renforcée par Sanctuaire")
 
@@ -346,7 +346,7 @@ func test_martyr_encaisse_une_part() -> void:
 	var combat := duo_combat(MP, GM, {"pretre": {"passive": 1}})
 	var events := combat.resolve_turn([action("b1", "taillade", "a1")])
 	var hit := int(round(skill_power("taillade") * class_power("guerrier")))
-	var share := int(round(hit * pp("martyr", "share")))
+	var share := int(round(hit * pp("martyr", "martyr_share")))
 	assert_eq(damage_from(events, "b1", "a1"), hit - share, "le Mage prend le reste")
 	assert_eq(damage_from(events, "b1", "a2", "martyr"), share, "le Prêtre Martyr prend sa part")
 
@@ -354,14 +354,14 @@ func test_martyr_encaisse_une_part() -> void:
 func test_second_souffle_une_seule_fois() -> void:
 	var combat := duo_combat(GM, GM, {"guerrier": {"passive": 1}})
 	var guerrier := combat.get_unit("a1")
-	guerrier.hp = int(guerrier.max_hp * (pp("second_souffle", "threshold") + 0.03))
+	guerrier.hp = int(guerrier.max_hp * (pp("second_souffle", "souffle_threshold") + 0.03))
 	combat.resolve_turn([action("b1", "taillade", "a1"), action("b2", "boule_de_feu", "a1")])
 	assert_true(guerrier.flags.get("second_souffle", false), "Second souffle utilisé")
 	var found := false
 	for event in events_of_type(combat.history, "heal"):
 		if event["kind"] == "second_souffle":
 			found = true
-			assert_eq(int(event["amount"]), int(round(guerrier.max_hp * pp("second_souffle", "heal"))), "soin d'une part des PV max")
+			assert_eq(int(event["amount"]), int(round(guerrier.max_hp * pp("second_souffle", "souffle_heal"))), "soin d'une part des PV max")
 	assert_true(found, "un soin Second souffle")
 
 
@@ -382,7 +382,7 @@ func test_veteran_gagne_de_la_vitesse() -> void:
 	var combat := duo_combat(GM, GM, {"guerrier": {"passive": 2}})
 	combat.get_unit("a2").hp = 0
 	combat._actions = {}
-	assert_eq(combat.effective_speed(combat.get_unit("a1")), 9 + int(data.passive_param("veteran", "speed", 1)), "bonus de vitesse quand l'acolyte est KO")
+	assert_eq(combat.effective_speed(combat.get_unit("a1")), 9 + int(data.passive_param("veteran", "ko_speed", 1)), "bonus de vitesse quand l'acolyte est KO")
 	combat.get_unit("a2").hp = 10
 	assert_eq(combat.effective_speed(combat.get_unit("a1")), 9, "pas de bonus de vitesse tant que l'acolyte est debout")
 

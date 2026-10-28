@@ -10,6 +10,7 @@ var skills: Dictionary = {}
 var passives: Dictionary = {}
 var statuses: Dictionary = {}
 var synergies: Array = []
+var _synergy_by_id: Dictionary = {}
 ## Règles chiffrées du combat (mort subite, recharges...), dans data/rules.json.
 var rules: Dictionary = {}
 ## L'IA : comment joue l'acolyte selon son rôle, ses seuils et les raisons affichées, dans data/ia.json.
@@ -45,6 +46,8 @@ static func load_from_dir(dir: String) -> CombatData:
 	data.passives = _read_json(dir + "passives.json")
 	data.statuses = _read_json(dir + "statuses.json")
 	data.synergies = _read_json(dir + "synergies.json")
+	for synergy in data.synergies:
+		data._synergy_by_id[str(synergy["id"])] = synergy
 	data.rules = _read_json(dir + "rules.json")
 	data.ai = _read_json(dir + "ia.json")
 	data.tower = _read_json(dir + "tower.json")
@@ -126,17 +129,29 @@ static func kit_key(class_id: String, skill_ids: Array, passive_id: String) -> S
 	return "%s:%s" % [class_id, "+".join(items)]
 
 
-## Un chiffre d'un passif (data/passives.json, « params »).
+## Un chiffre d'un passif (data/passives.json, « params »). Les clés disent ce que fait le passif, quel que soit son
+## nom (« reduction » : moins de dégâts subis ; « forte_minus » : forte qui revient plus tôt ; « regen » : se soigne
+## en fin de tour…) : le moteur ne connaît que les clés, jamais les noms.
 func passive_param(passive_id: String, key: String, fallback: float) -> float:
-	return float(passives.get(passive_id, {}).get("params", {}).get(key, fallback))
+	var value: Variant = passives.get(passive_id, {}).get("params", {}).get(key, fallback)
+	return float(value) if value is float or value is int else fallback
+
+
+## Une liste d'un passif (ex. « immune » : les états contre lesquels il immunise).
+func passive_list(passive_id: String, key: String) -> Array:
+	var value: Variant = passives.get(passive_id, {}).get("params", {}).get(key, [])
+	return value if value is Array else []
+
+
+## Le chiffre que le régleur fait bouger pour un passif ou une Synergie (« lever » dans les données ; vide : pas de
+## chiffre, il se règle par le budget du Destin).
+func lever_of(entry: Dictionary) -> String:
+	return str(entry.get("lever", ""))
 
 
 ## Un chiffre d'une Synergie (data/synergies.json, « params »).
 func synergy_param(synergy_id: String, key: String, fallback: float) -> float:
-	for synergy in synergies:
-		if synergy["id"] == synergy_id:
-			return float(synergy.get("params", {}).get(key, fallback))
-	return fallback
+	return float(synergy_by_id(synergy_id).get("params", {}).get(key, fallback))
 
 
 ## Remplace les {clé} d'une description par les chiffres : {clé%} donne un pourcentage (0,15 → 15 %),
@@ -181,7 +196,34 @@ func status_name(status_id: String) -> String:
 
 
 func is_negative_status(status_id: String) -> bool:
-	return bool(statuses.get(status_id, {}).get("negative", false))
+	return status_flag(status_id, "negative")
+
+
+## Un drapeau d'un état (data/statuses.json) : « negative », « control » (Provoqué, Gelé, Étourdi… retirés par
+## Protocole, bloqués par Impassible), « dot » (dégâts en fin de tour), « untargetable » (on ne peut pas le viser).
+func status_flag(status_id: String, flag: String) -> bool:
+	return bool(statuses.get(status_id, {}).get(flag, false))
+
+
+## Ce que fait un état pour l'IA (« kind » : protection, renfort, controle), vide si rien n'est dit.
+func status_kind(status_id: String) -> String:
+	return str(statuses.get(status_id, {}).get("kind", ""))
+
+
+## Les états qui font des dégâts en fin de tour, dans l'ordre des données (saignement, brûlure, poison…).
+func dot_statuses() -> Array[String]:
+	var result: Array[String] = []
+	for status_id in statuses:
+		if status_flag(status_id, "dot"):
+			result.append(str(status_id))
+	return result
+
+
+## Un coup au contact (épée, poing, canne…) : un type de dégâts physique et pas « à distance » (flèche, dague lancée).
+## Les sorts (feu, givre, foudre, ombre, lumière) ne sont jamais au contact. Sert aux ripostes (Garde haute, Sang acide).
+func is_contact(skill_id: String) -> bool:
+	var skill_data := skill(skill_id)
+	return str(skill_data.get("element", "")) in Combat.PHYSICAL and not bool(skill_data.get("ranged", false))
 
 
 func class_name_of(class_id: String) -> String:
@@ -220,10 +262,27 @@ func monsters_of(family: String = "", with_guardians: bool = true) -> Array[Stri
 	return result
 
 
-## Retourne la Synergie reliant deux compétences, ou un dictionnaire vide.
+## Retourne la Synergie reliant deux compétences, ou un dictionnaire vide. Un membre du couple peut être un joker
+## de palier (« *forte » : n'importe quelle forte d'une autre classe, ex. Hymne + n'importe quelle forte).
 func find_synergy(skill_a: String, skill_b: String) -> Dictionary:
+	if skill_a == skill_b:
+		return {}
 	for synergy in synergies:
 		var pair: Array = synergy["skills"]
-		if (pair[0] == skill_a and pair[1] == skill_b) or (pair[0] == skill_b and pair[1] == skill_a):
+		if (_matches(pair[0], skill_a, skill_b) and _matches(pair[1], skill_b, skill_a)) \
+				or (_matches(pair[0], skill_b, skill_a) and _matches(pair[1], skill_a, skill_b)):
 			return synergy
 	return {}
+
+
+## La compétence correspond-elle à un membre du couple ? Un joker « *palier » accepte toute compétence de ce palier
+## d'une autre classe que l'autre membre du couple.
+func _matches(pattern: String, skill_id: String, other_id: String) -> bool:
+	if not pattern.begins_with("*"):
+		return pattern == skill_id
+	var candidate := skill(skill_id)
+	return str(candidate.get("tier", "")) == pattern.substr(1) and str(candidate.get("class", "")) != str(skill(other_id).get("class", "?"))
+
+
+func synergy_by_id(synergy_id: String) -> Dictionary:
+	return _synergy_by_id.get(synergy_id, {})
