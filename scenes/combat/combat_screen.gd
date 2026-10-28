@@ -1273,7 +1273,9 @@ func _play_event(event: Dictionary) -> void:
 			_flash(Color(0.5, 1, 0.6), 0.3)
 			await _wait(0.6)
 		"action_lost":
-			_set_story("ACTION PERDUE", "%s est KO" % _short_name(event["actor"]), "Tombé avant d'agir : son action est perdue.", "off")
+			story_note = "Tombé avant d'agir : son action est perdue."
+			story_results = []
+			_set_story("ACTION PERDUE", "%s est KO" % _short_name(event["actor"]), story_note, "off")
 			await _wait(0.4)
 		"synergy":
 			# Ta Synergie : grande annonce dorée et son effet. Celle d'en face : en rouge, pour qu'on ne confonde jamais.
