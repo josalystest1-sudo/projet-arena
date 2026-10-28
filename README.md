@@ -39,6 +39,8 @@ python3 tools/equilibrage.py /tmp/equilibrage.csv
 python3 tools/regleur.py 8 16000   # règle les chiffres de data/ par passes successives (4 processus Godot)
 ```
 
+Pour savoir où va le temps du simulateur (tirage des duos, IA, résolution) : `godot --headless --path . --script res://tools/profil.gd -- 200`.
+
 Le même réglage sur les machines de GitHub, en parallèle et gratuitement : onglet Actions → « Réglage de l'équilibrage (simulation sur GitHub) » → « Run workflow » (passes, combats par passe, machines, branche de départ). À la fin, la branche `reglage-<numéro>` porte les données réglées et le résumé du run donne le rapport. La Tour a son propre bouton, « Réglage de la Tour (simulation sur GitHub) » (passes, montées par passe, machines, branche) : il règle la menace des monstres et la difficulté des étages, et publie la branche `reglage-tour-<numéro>`.
 
 Le Destin (valeurs des nœuds, étape 4) : les mêmes combats avec un niveau (`alea` : les deux duos au même niveau tiré entre 1 et 30, points de Destin placés au hasard ; ou un niveau fixe), puis le régleur des valeurs de `data/destin_nodes.json` :

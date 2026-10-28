@@ -4,7 +4,7 @@
   "roles": ["soutien", "front"],
   "identity": "Il gagne sans frapper : il négocie, impose, retourne.",
   "elements": ["lumiere", "contondant"],
-  "stats": {"max_hp": 225, "speed": 7, "power": 110},
+  "stats": {"max_hp": 225, "speed": 7, "power": 101},
   "skills": {
     "basique": ["argument", "encouragement"],
     "moyenne": ["ultimatum", "treve"],
