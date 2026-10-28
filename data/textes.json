@@ -1,0 +1,76 @@
+{
+  "formes": {
+    "diffuse": {"m": "diffus", "f": "diffuse", "mp": "diffus", "fp": "diffuses"},
+    "concentree": {"m": "concentré", "f": "concentrée", "mp": "concentrés", "fp": "concentrées"},
+    "persistante": {"m": "persistant", "f": "persistante", "mp": "persistants", "fp": "persistantes"},
+    "vive": {"m": "vif", "f": "vive", "mp": "vifs", "fp": "vives"}
+  },
+  "ligne": {
+    "cibles": {"un_ennemi": "un ennemi", "tous_les_ennemis": "tous", "un_allie": "un allié", "soi": "soi", "duo": "le duo"},
+    "effets": {
+      "degats": "{valeur} à {cible}",
+      "soin": "+{valeur} PV à {cible}",
+      "barriere": "barrière {valeur} sur {cible}",
+      "dot": "{par_tour}×{tours} {etat}",
+      "gardien": "{par_tour}×{tours} {etat}",
+      "renfort": "+{pourcent} % {etat} {tours} t",
+      "affaiblissement": "−{pourcent} % {etat} {tours} t",
+      "etat": "{etat} {tours}",
+      "egare": "{etat}",
+      "purge": "Purge",
+      "dissipe": "Dissipe"
+    },
+    "separateur": " + "
+  },
+  "phrase": {
+    "cibles": {"un_ennemi": "un ennemi", "tous_les_ennemis": "tous les ennemis", "un_allie": "un allié", "duo": "le duo"},
+    "verbes": {
+      "degats": "frappe",
+      "soin": "soigne",
+      "barriere": "protège",
+      "gardien": "soigne peu à peu",
+      "renfort": "renforce",
+      "affaiblissement": "affaiblit",
+      "purge": "purifie",
+      "dissipe": "dépouille",
+      "egare": "égare",
+      "saignement": "fait saigner",
+      "brulure": "brûle",
+      "poison": "empoisonne",
+      "familier": "harcèle",
+      "etourdi": "étourdit",
+      "gele": "gèle",
+      "silencie": "réduit au silence",
+      "enracine": "enracine",
+      "aveugle": "aveugle",
+      "desarme": "désarme",
+      "provoque": "provoque"
+    },
+    "soi": {
+      "soin": "se soigne",
+      "barriere": "se protège",
+      "gardien": "se soigne peu à peu",
+      "renfort": "se renforce",
+      "purge": "se purifie"
+    },
+    "et": " et ",
+    "virgule": ", ",
+    "fin": "."
+  },
+  "fiche": {
+    "rang": "{voie} · {rang} / 4",
+    "cle": "{voie} · Clé",
+    "moyeu": "Moyeu",
+    "jouable_maintenant": "Jouable maintenant",
+    "jouable_prochain_tour": "Jouable au prochain tour",
+    "jouable_dans": "Jouable dans {n} tours",
+    "eteint_encore": "Éteint encore {n} tours",
+    "eteint_encore_1": "Éteint encore 1 tour",
+    "pour_l_empecher": "Pour l'empêcher",
+    "aucune_reponse": "Aucune réponse en main ce tour",
+    "apres": "Après",
+    "cle_remet": "Clé : remet la voie à zéro",
+    "eclat_cle": "(+{pourcent} % éclat)",
+    "etat": "{etat} : {texte}"
+  }
+}

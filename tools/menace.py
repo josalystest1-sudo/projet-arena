@@ -17,8 +17,8 @@ import sys
 from collections import defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BESTIARY = os.path.join(ROOT, "data", "bestiaire.json")
-TOWER = os.path.join(ROOT, "data", "tower.json")
+BESTIARY = os.path.join(ROOT, "data", "v1", "bestiaire.json")
+TOWER = os.path.join(ROOT, "data", "v1", "tower.json")
 
 
 def solve(matrix, vector):

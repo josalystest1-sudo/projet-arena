@@ -1,14 +1,227 @@
 {
   "id": "guerrier",
-  "name": "Guerrier",
-  "roles": ["front", "degats"],
-  "identity": "Le mur qui frappe : il tient la ligne et choisit qui on attaque.",
-  "elements": ["tranchant", "contondant"],
-  "stats": {"max_hp": 288, "speed": 9, "power": 84},
-  "skills": {
-    "basique": ["taillade", "coup_de_bouclier"],
-    "moyenne": ["provocation", "rempart"],
-    "forte": ["fendoir", "cri_de_guerre"]
+  "nom": "Guerrier",
+  "genre": "m",
+  "role": "front",
+  "pv": 1400,
+  "k": 0.85,
+  "acolyte": "pretre",
+  "moyeu": {
+    "nom": "Taillade",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
   },
-  "passives": ["peau_de_fer", "second_souffle", "veteran", "colere"]
+  "voies": [
+    {
+      "id": "sang",
+      "nom": "Voie du Sang",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Entaille",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 45, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 12, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Déchirure",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 21, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Hémorragie",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 30, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 28, "tours": 4, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Exsangue",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 30, "tours": 4, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rempart",
+      "nom": "Voie du Rempart",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Garde haute",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Provocation",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Mur de fer",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 154, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Rempart vivant",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 180, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 52, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "charge",
+      "nom": "Voie de la Charge",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Élan",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Charge",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Fracas",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Coup de grâce",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tonnerre",
+      "nom": "Voie du Tonnerre",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Balayage",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 54, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Onde de choc",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 77, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Tremblement",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 73, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Séisme",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 120, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cri",
+      "nom": "Voie du Cri",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Cri de guerre",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Second souffle",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 110, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Rage",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Dernier rempart",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 150, "cible": "soi"},
+            {"type": "barriere", "valeur": 135, "cible": "soi"}
+          ]
+        }
+      ]
+    }
+  ]
 }

@@ -1,0 +1,14 @@
+{
+  "id": "barde",
+  "name": "Barde",
+  "roles": ["soutien", "degats"],
+  "identity": "Le métronome de l'équipe.",
+  "elements": ["foudre"],
+  "stats": {"max_hp": 236, "speed": 9, "power": 97},
+  "skills": {
+    "basique": ["note", "refrain"],
+    "moyenne": ["hymne", "dissonance"],
+    "forte": ["crescendo", "berceuse"]
+  },
+  "passives": ["rythme", "inspiration", "virtuose", "vibrato"]
+}

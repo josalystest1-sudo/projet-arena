@@ -1,14 +1,226 @@
 {
   "id": "voleur",
-  "name": "Voleur",
-  "roles": ["degats", "soutien"],
-  "identity": "Burst, poison et disparition.",
-  "elements": ["ombre", "perforant"],
-  "stats": {"max_hp": 213, "speed": 11, "power": 95},
-  "skills": {
-    "basique": ["dague", "lancer"],
-    "moyenne": ["voile", "poison"],
-    "forte": ["coup_bas", "sabotage"]
+  "nom": "Voleur",
+  "genre": "m",
+  "role": "degats",
+  "pv": 1000,
+  "k": 1.0,
+  "acolyte": "pugiliste",
+  "moyeu": {
+    "nom": "Dague",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
   },
-  "passives": ["opportuniste", "fuite", "doigts_agiles", "mise_a_mort"]
+  "voies": [
+    {
+      "id": "ombres",
+      "nom": "Voie des Ombres",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Coup sournois",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Lame dansante",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Frappe des ombres",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Assassinat",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "poison",
+      "nom": "Voie du Poison",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Lame empoisonnée",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "poison", "par_tour": 10, "tours": 5, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Toxine",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 20, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Nuage toxique",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 20, "tours": 4, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 52, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Venin noir",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 40, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ruse",
+      "nom": "Voie de la Ruse",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Jet de sable",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Croc-en-jambe",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 65, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Bombe fumigène",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 28, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Coup du lapin",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "larcin",
+      "nom": "Voie du Larcin",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Esquive",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Vol",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Diversion",
+          "genre": "f",
+          "effets": [
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Pillage",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 120, "cible": "un_ennemi"},
+            {"type": "dissipe", "cible": "un_ennemi"},
+            {"type": "egare", "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eventail",
+      "nom": "Voie de l'Éventail",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Éventail de lames",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 54, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Pluie de dagues",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 77, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Tourbillon",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 108, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Mille coupures",
+          "genre": "fp",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 28, "tours": 4, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    }
+  ]
 }

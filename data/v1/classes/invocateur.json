@@ -1,0 +1,14 @@
+{
+  "id": "invocateur",
+  "name": "Invocateur",
+  "roles": ["front", "degats"],
+  "identity": "Il ne combat pas seul : sa créature encaisse à sa place.",
+  "elements": ["contondant", "ombre"],
+  "stats": {"max_hp": 270, "speed": 7, "power": 99},
+  "skills": {
+    "basique": ["fouet_d_ombre", "ordre"],
+    "moyenne": ["golem", "spectre"],
+    "forte": ["sacrifice", "lien"]
+  },
+  "passives": ["symbiose", "essaim", "pacte", "nourrice"]
+}

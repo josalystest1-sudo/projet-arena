@@ -1,0 +1,18 @@
+{
+  "etourdi": {"nom": "Étourdi", "type": "controle", "texte": "ne peut rien jouer au tour suivant", "pictogramme": "chaines", "couleur": "#c9a0ff", "negatif": true, "dissipable": false, "purgeable": true},
+  "gele": {"nom": "Gelé", "type": "controle", "texte": "ne peut jouer que le moyeu", "pictogramme": "flocon", "couleur": "#c9a0ff", "negatif": true, "dissipable": false, "purgeable": true},
+  "silencie": {"nom": "Silencié", "type": "controle", "texte": "ne peut jouer aucune Clé", "pictogramme": "baillon", "couleur": "#c9a0ff", "negatif": true, "dissipable": false, "purgeable": true},
+  "enracine": {"nom": "Enraciné", "type": "controle", "texte": "ne peut pas changer de voie", "pictogramme": "racine", "couleur": "#c9a0ff", "negatif": true, "dissipable": false, "purgeable": true},
+  "aveugle": {"nom": "Aveuglé", "type": "controle", "texte": "ses effets sur un seul ennemi ne font rien", "pictogramme": "oeil_barre", "couleur": "#c9a0ff", "negatif": true, "dissipable": false, "purgeable": true},
+  "desarme": {"nom": "Désarmé", "type": "affaiblissement", "texte": "ses dégâts directs sont divisés par deux", "pictogramme": "epee_brisee", "couleur": "#c9a0ff", "negatif": true, "dissipable": false, "purgeable": true},
+  "provoque": {"nom": "Provoqué", "type": "controle", "texte": "ne peut viser que celui qui l'a provoqué", "pictogramme": "bouclier_pointe", "couleur": "#c9a0ff", "negatif": true, "dissipable": false, "purgeable": true},
+  "egare": {"nom": "Égaré", "type": "deplacement", "texte": "recule d'un rang sur toutes ses voies", "pictogramme": "fleche_arriere", "couleur": "#c9a0ff", "negatif": true, "dissipable": false, "purgeable": false},
+  "saignement": {"nom": "Saignement", "type": "dot", "texte": "perd des PV chaque tour, barrière ou non", "pictogramme": "goutte", "couleur": "#d35b5b", "negatif": true, "dissipable": false, "purgeable": true},
+  "brulure": {"nom": "Brûlure", "type": "dot", "texte": "perd des PV chaque tour ; ses barrières reçues sont divisées par deux", "pictogramme": "flamme", "couleur": "#d35b5b", "negatif": true, "dissipable": false, "purgeable": true},
+  "poison": {"nom": "Poison", "type": "dot", "texte": "perd des PV chaque tour ; ses soins reçus sont divisés par deux", "pictogramme": "fiole", "couleur": "#d35b5b", "negatif": true, "dissipable": false, "purgeable": true},
+  "familier": {"nom": "Familier", "type": "dot", "texte": "une créature le blesse chaque tour", "pictogramme": "patte", "couleur": "#d35b5b", "negatif": true, "dissipable": false, "purgeable": true},
+  "gardien": {"nom": "Gardien", "type": "hot", "texte": "une créature le soigne chaque tour", "pictogramme": "patte_coeur", "couleur": "#5cc8b8", "negatif": false, "dissipable": true, "purgeable": false},
+  "barriere": {"nom": "Barrière", "type": "protection", "texte": "absorbe les dégâts, sauf le saignement", "pictogramme": "bouclier", "couleur": "#9bd3ca", "negatif": false, "dissipable": true, "purgeable": false},
+  "renfort": {"nom": "Renfort", "type": "renfort", "texte": "ses dégâts, soins et barrières sont augmentés", "pictogramme": "etoile", "couleur": "#e3b85f", "negatif": false, "dissipable": true, "purgeable": false},
+  "affaiblissement": {"nom": "Affaiblissement", "type": "affaiblissement", "texte": "ses dégâts, soins et barrières sont réduits", "pictogramme": "etoile_fendue", "couleur": "#e08a4f", "negatif": true, "dissipable": false, "purgeable": true}
+}

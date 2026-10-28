@@ -34,7 +34,7 @@ import sys
 from collections import defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DATA = os.path.join(ROOT, "data")
+DATA = os.path.join(ROOT, "data", "v1")
 GODOT = os.environ.get("GODOT", os.path.expanduser("~/godot/godot"))
 OUT = os.environ.get("EQUILIBRAGE_DIR", "/tmp/equilibrage")
 GAIN = 1.0
