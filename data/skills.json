@@ -11,7 +11,7 @@
   },
   "provocation": {
     "name": "Provocation", "class": "guerrier", "tier": "moyenne", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "taunt", "count": 2}, {"type": "damage", "power": 25}],
+    "effects": [{"type": "taunt", "count": 2}, {"type": "damage", "power": 26}],
     "description": "Frappe la cible ; elle et le prochain ennemi à agir doivent attaquer le Guerrier ce tour."
   },
   "rempart": {
@@ -21,12 +21,12 @@
   },
   "fendoir": {
     "name": "Fendoir", "class": "guerrier", "tier": "forte", "element": "tranchant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 64}, {"type": "status", "id": "saignement", "turns": 3, "value": 13}],
+    "effects": [{"type": "damage", "power": 63}, {"type": "status", "id": "saignement", "turns": 3, "value": 13}],
     "description": "Gros dégâts tranchants et saignement pendant {turns} tours."
   },
   "cri_de_guerre": {
     "name": "Cri de guerre", "class": "guerrier", "tier": "forte", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 52}, {"type": "status", "id": "galvanise", "turns": 3, "value": 51, "on": "allies"}],
+    "effects": [{"type": "damage", "power": 53}, {"type": "status", "id": "galvanise", "turns": 3, "value": 52, "on": "allies"}],
     "description": "Frappe un ennemi ; tout le duo inflige +{value} % de dégâts pendant {turns} tours."
   },
 
@@ -42,17 +42,17 @@
   },
   "trait_de_givre": {
     "name": "Trait de givre", "class": "mage", "tier": "moyenne", "element": "givre", "target": "enemy",
-    "effects": [{"type": "damage", "power": 50}, {"type": "act_last"}],
+    "effects": [{"type": "damage", "power": 49}, {"type": "act_last"}],
     "description": "Dégâts de givre ; la cible agit en dernier."
   },
   "arc_de_foudre": {
     "name": "Arc de foudre", "class": "mage", "tier": "moyenne", "element": "foudre", "target": "enemies_2",
-    "effects": [{"type": "damage", "power": 42}],
+    "effects": [{"type": "damage", "power": 43}],
     "description": "La foudre frappe la cible et un second ennemi."
   },
   "nova": {
     "name": "Nova", "class": "mage", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 58}],
+    "effects": [{"type": "damage", "power": 59}],
     "description": "Explosion de feu sur tous les ennemis."
   },
   "bouclier_de_mana": {
@@ -63,7 +63,7 @@
 
   "chatiment": {
     "name": "Châtiment", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "enemy",
-    "effects": [{"type": "damage", "power": 34}],
+    "effects": [{"type": "damage", "power": 33}],
     "description": "Frappe de lumière sur un ennemi."
   },
   "priere": {
@@ -114,28 +114,28 @@
   },
   "coup_bas": {
     "name": "Coup bas", "class": "voleur", "tier": "forte", "element": "perforant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 52, "bonus_if_not_acted": 1.0}],
+    "effects": [{"type": "damage", "power": 48, "bonus_if_not_acted": 1.0}],
     "description": "Gros coup perforant ; dégâts doublés si la cible n'a pas encore agi ce tour."
   },
   "sabotage": {
     "name": "Sabotage", "class": "voleur", "tier": "forte", "element": "ombre", "target": "enemy",
-    "effects": [{"type": "damage", "power": 46}, {"type": "delay_cooldown", "tier": "forte"}],
+    "effects": [{"type": "damage", "power": 49}, {"type": "delay_cooldown", "tier": "forte"}],
     "description": "Dégâts d'ombre ; la forte de la cible repart en recharge complète."
   },
 
   "tir": {
     "name": "Tir", "class": "archer", "tier": "basique", "element": "perforant", "target": "enemy", "ranged": true,
-    "effects": [{"type": "damage", "power": 38}],
+    "effects": [{"type": "damage", "power": 39}],
     "description": "Une flèche sur un ennemi."
   },
   "tir_rapide": {
     "name": "Tir rapide", "class": "archer", "tier": "basique", "element": "perforant", "target": "enemy", "ranged": true, "speed_bonus": 6,
-    "effects": [{"type": "damage", "power": 35}],
+    "effects": [{"type": "damage", "power": 34}],
     "description": "Flèche plus faible, décochée en premier."
   },
   "marque": {
     "name": "Marque", "class": "archer", "tier": "moyenne", "element": "perforant", "target": "enemy", "ranged": true,
-    "effects": [{"type": "damage", "power": 33}, {"type": "status", "id": "marque", "turns": 2, "value": 22}],
+    "effects": [{"type": "damage", "power": 31}, {"type": "status", "id": "marque", "turns": 2, "value": 21}],
     "description": "Frappe et marque la cible : elle subit +{value} % de dégâts pendant {turns} tours."
   },
   "piege": {
@@ -166,17 +166,17 @@
   },
   "garde_haute": {
     "name": "Garde haute", "class": "pugiliste", "tier": "moyenne", "element": "", "target": "self",
-    "effects": [{"type": "status", "id": "garde", "turns": 2, "value": 32, "counter": 25}],
+    "effects": [{"type": "status", "id": "garde", "turns": 2, "value": 33, "counter": 25}],
     "description": "En garde jusqu'à la fin du tour suivant : -{value} % de dégâts subis, et chaque ennemi qui le frappe au contact prend une contre-attaque."
   },
   "crochet": {
     "name": "Crochet", "class": "pugiliste", "tier": "moyenne", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 37, "bonus_after": "jab", "bonus_after_value": 0.75}],
+    "effects": [{"type": "damage", "power": 36, "bonus_after": "jab", "bonus_after_value": 0.75}],
     "description": "Crochet ; dégâts doublés si le Jab a touché au tour précédent."
   },
   "uppercut": {
     "name": "Uppercut", "class": "pugiliste", "tier": "forte", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 66}, {"type": "status", "id": "gele", "turns": 2}],
+    "effects": [{"type": "damage", "power": 68}, {"type": "status", "id": "gele", "turns": 2}],
     "description": "Gros dégâts ; la cible, sonnée, agit en dernier au tour suivant."
   },
   "enchainement": {
@@ -187,17 +187,17 @@
 
   "fiole": {
     "name": "Fiole", "class": "alchimiste", "tier": "basique", "element": "feu", "target": "enemy",
-    "effects": [{"type": "damage", "power": 37}],
+    "effects": [{"type": "damage", "power": 36}],
     "description": "Une fiole enflammée lancée sur un ennemi."
   },
   "elixir": {
     "name": "Élixir", "class": "alchimiste", "tier": "basique", "element": "", "target": "ally",
-    "effects": [{"type": "heal", "power": 41}, {"type": "status", "id": "vif", "turns": 2, "value": 3}],
+    "effects": [{"type": "heal", "power": 42}, {"type": "status", "id": "vif", "turns": 2, "value": 4}],
     "description": "Petit soin sur un allié, qui gagne +{value} vitesse pendant {turns} tours."
   },
   "acide": {
     "name": "Acide", "class": "alchimiste", "tier": "moyenne", "element": "givre", "target": "enemy",
-    "effects": [{"type": "damage", "power": 28}, {"type": "status", "id": "affaibli", "turns": 2, "value": 28}],
+    "effects": [{"type": "damage", "power": 23}, {"type": "status", "id": "affaibli", "turns": 2, "value": 23}],
     "description": "Dégâts ; la cible inflige {value} % de dégâts en moins pendant {turns} tours."
   },
   "fumigene": {
@@ -207,7 +207,7 @@
   },
   "bombe": {
     "name": "Bombe", "class": "alchimiste", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 41}],
+    "effects": [{"type": "damage", "power": 27}],
     "description": "Une bombe de feu sur tous les ennemis."
   },
   "catalyseur": {
@@ -218,12 +218,12 @@
 
   "note": {
     "name": "Note", "class": "barde", "tier": "basique", "element": "foudre", "target": "enemy",
-    "effects": [{"type": "damage", "power": 34}],
+    "effects": [{"type": "damage", "power": 30}],
     "description": "Une note de foudre sur un ennemi."
   },
   "refrain": {
     "name": "Refrain", "class": "barde", "tier": "basique", "element": "", "target": "ally",
-    "effects": [{"type": "status", "id": "vif", "turns": 2, "value": 3}],
+    "effects": [{"type": "status", "id": "vif", "turns": 2, "value": 5}],
     "description": "Un allié gagne +{value} vitesse pendant {turns} tours."
   },
   "hymne": {
@@ -238,28 +238,28 @@
   },
   "crescendo": {
     "name": "Crescendo", "class": "barde", "tier": "forte", "element": "foudre", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 41, "per_turn": 0.08}],
+    "effects": [{"type": "damage", "power": 43, "per_turn": 0.08}],
     "description": "Foudre sur tous les ennemis, +{per_turn%} par tour écoulé depuis le début du combat."
   },
   "berceuse": {
     "name": "Berceuse", "class": "barde", "tier": "forte", "element": "foudre", "target": "enemy",
-    "effects": [{"type": "damage", "power": 39}, {"type": "status", "id": "etourdi", "turns": 2}],
+    "effects": [{"type": "damage", "power": 37}, {"type": "status", "id": "etourdi", "turns": 2}],
     "description": "Dégâts ; la cible s'endort et perd son action au tour suivant."
   },
 
   "argument": {
     "name": "Argument", "class": "diplomate", "tier": "basique", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 24}],
+    "effects": [{"type": "damage", "power": 30}],
     "description": "Un coup de canne, pour appuyer l'argument."
   },
   "encouragement": {
-    "name": "Encouragement", "class": "diplomate", "tier": "basique", "element": "", "target": "ally",
-    "effects": [{"type": "status", "id": "galvanise", "turns": 1, "value": 23}],
-    "description": "Un allié inflige +{value} % de dégâts ce tour."
+    "name": "Encouragement", "class": "diplomate", "tier": "basique", "element": "contondant", "target": "enemy",
+    "effects": [{"type": "damage", "power": 27}, {"type": "status", "id": "galvanise", "turns": 1, "value": 21, "on": "partner"}],
+    "description": "Un petit coup de canne ; ton allié inflige +{value} % de dégâts ce tour."
   },
   "ultimatum": {
     "name": "Ultimatum", "class": "diplomate", "tier": "moyenne", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "taunt", "count": 1}, {"type": "status", "id": "ultimatum", "turns": 1, "value": 24}, {"type": "damage", "power": 14}],
+    "effects": [{"type": "taunt", "count": 1}, {"type": "status", "id": "ultimatum", "turns": 1, "value": 23}, {"type": "damage", "power": 13}],
     "description": "La cible doit attaquer le Diplomate ce tour, et le paie : chaque coup qu'elle lui porte lui vaut une riposte."
   },
   "treve": {
@@ -269,38 +269,38 @@
   },
   "discours": {
     "name": "Discours", "class": "diplomate", "tier": "forte", "element": "", "target": "allies_all",
-    "effects": [{"type": "status", "id": "galvanise", "turns": 3, "value": 36}],
+    "effects": [{"type": "status", "id": "galvanise", "turns": 3, "value": 40}],
     "description": "Tout le duo inflige +{value} % de dégâts pendant {turns} tours."
   },
   "chantage": {
     "name": "Chantage", "class": "diplomate", "tier": "forte", "element": "lumiere", "target": "enemy",
-    "effects": [{"type": "damage", "power": 30}, {"type": "status", "id": "chantage", "turns": 2}],
+    "effects": [{"type": "damage", "power": 27}, {"type": "status", "id": "chantage", "turns": 2}],
     "description": "Dégâts ; la cible ne peut pas utiliser sa forte au tour suivant."
   },
 
   "fouet_d_ombre": {
     "name": "Fouet d'ombre", "class": "invocateur", "tier": "basique", "element": "ombre", "target": "enemy",
-    "effects": [{"type": "damage", "power": 39}],
+    "effects": [{"type": "damage", "power": 40}],
     "description": "Un fouet d'ombre sur un ennemi."
   },
   "ordre": {
     "name": "Ordre", "class": "invocateur", "tier": "basique", "element": "ombre", "target": "enemy",
-    "effects": [{"type": "order", "power": 49, "fallback": 32}],
+    "effects": [{"type": "order", "power": 48, "fallback": 32}],
     "description": "Sa créature attaque la cible ({power} de puissance) ; sans créature, l'Invocateur frappe lui-même, plus faiblement ({fallback})."
   },
   "golem": {
     "name": "Golem", "class": "invocateur", "tier": "moyenne", "element": "contondant", "target": "self",
-    "effects": [{"type": "summon", "creature": "golem", "name": "Golem", "role": "protection", "hp": 0.45, "power": 2, "strike": 40, "element": "contondant", "turns": 3}],
+    "effects": [{"type": "summon", "creature": "golem", "name": "Golem", "role": "protection", "hp": 0.45, "power": 0.765, "strike": 40, "element": "contondant", "turns": 3}],
     "description": "Invoque un Golem pour {turns} tours ({hp%} de ses PV) : il encaisse à la place du duo tous les coups directs tant qu'il tient. Une créature à la fois."
   },
   "spectre": {
     "name": "Spectre", "class": "invocateur", "tier": "moyenne", "element": "ombre", "target": "self",
-    "effects": [{"type": "summon", "creature": "spectre", "name": "Spectre", "role": "degats", "hp": 0.25, "power": 1, "strike": 42, "element": "ombre", "turns": 3}],
+    "effects": [{"type": "summon", "creature": "spectre", "name": "Spectre", "role": "degats", "hp": 0.25, "power": 0.637, "strike": 42, "element": "ombre", "turns": 3}],
     "description": "Invoque un Spectre pour {turns} tours : à chaque fin de tour, il frappe seul la dernière cible de l'Invocateur. Une créature à la fois."
   },
   "sacrifice": {
     "name": "Sacrifice", "class": "invocateur", "tier": "forte", "element": "ombre", "target": "enemies_all",
-    "effects": [{"type": "sacrifice", "power": 32, "hp_share": 0.5, "fallback": 0.5}],
+    "effects": [{"type": "sacrifice", "power": 33, "hp_share": 0.5, "fallback": 0.5}],
     "description": "Sa créature explose sur tous les ennemis : des dégâts d'ombre, plus {hp_share%} des PV qu'il lui restait. Sans créature, la moitié des dégâts."
   },
   "lien": {

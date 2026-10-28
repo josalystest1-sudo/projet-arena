@@ -10,13 +10,15 @@ Usage : python3 tools/regleur.py <tours de réglage> <combats par tour>
    - une classe : sa puissance (écart à 50 %) ; ses PV restent ceux de son rôle (le Front le plus solide, le Dégâts
      le plus fragile), sinon le réglage finit par casser l'identité des classes ;
    - une compétence ou un passif : son chiffre (écart au taux de sa classe, pour ne pas corriger deux fois) ;
-   - une Synergie : son chiffre (écart à la moyenne de ses deux classes).
-   - une paire d'éléments d'un même kit (deux compétences, ou une compétence et le passif) : son ajustement de PV et
-     de puissance dans data/destins.json (écart entre le taux des kits qui ont la paire et ce qu'on attendrait de
-     chacun des deux éléments seul). C'est le budget de puissance du Destin : aucun kit ne doit dominer ;
-   - un kit complet, côté joueur et côté acolyte séparément (un Destin de joueur n'est jamais joué en acolyte, et un
-     même kit n'a pas la même force selon qui le joue) : le reste à corriger, une fois tout le reste appliqué
-     (data/destins.json, « kits »).
+   - une Synergie : son chiffre (écart à la moyenne de ses deux classes) ;
+   - le budget de puissance du Destin (data/destins.json, ajustements de PV et de puissance) : un élément sans chiffre
+     (« kit_items »), la composition du duo (« duo_classes »), qui en est le joueur (« duo_orders »), une classe jouée
+     en acolyte (« acolyte_classes »), et chaque kit complet, côté joueur et côté acolyte séparément (« kits » : un
+     Destin de joueur n'est jamais joué en acolyte, et un même kit n'a pas la même force selon qui le joue).
+   Les leviers par paire, par trio et par élément-selon-le-partenaire (« kit_pairs », « kit_triples », « duo_items »)
+   ne sont plus réglés : à 10 classes, ces ajustements qui s'additionnent sur un même kit avec celui du kit entier
+   avaient divergé (jusqu'à +60 % sur un kit, 6 % à 94 % de victoires). Le kit entier, mesuré directement, suffit
+   avec 400 000 combats par passe ; et le moteur plafonne le total à ±25 %.
 Les fichiers de data/ sont réécrits ; on relit le résultat avec tools/equilibrage.py.
 """
 import json
@@ -36,30 +38,34 @@ GAIN = 1.0
 PASSIVE_GAIN = 2.5
 SYNERGY_GAIN = 0.8
 CLASS_GAIN = 0.6
-MAX_STEP = 0.10
+# Pas maximal d'un chiffre par passe. À 10 %, une compétence à 18 points de sa classe (Encouragement, Argument après le
+# run 2) mettait cinq passes à revenir ; à 15 %, trois. L'amortissement divise le pas par deux dès qu'un écart change de sens.
+MAX_STEP = 0.15
 
 # Les chiffres que le régleur fait bouger viennent des données : pour une compétence, tous ses chiffres de force
 # (« power », « value », « percent » de ses effets, scalés ensemble) ; pour un passif ou une Synergie, le chiffre
 # nommé par « lever ». Sans chiffre (Rempart, Résonance, Météorologue), l'élément se règle par le budget du Destin.
 SKILL_LEVER_KEYS = ("power", "value", "percent")
+# Leviers dont un chiffre plus grand AFFAIBLIT le passif (« un coup sur N est détourné », « seconde esquive à partir du
+# tour N ») : le régleur les bouge dans l'autre sens. Sans ça, il avait ramené Charisme de 4 à 1 (tous les coups
+# détournés) et Esquive de 5 à 2 en croyant les affaiblir, et tout le Diplomate s'était déformé pour compenser.
+INVERTED_LEVERS = ("redirect_every", "dodge_again_from_turn")
 
 
 def skill_levers(skill):
     return [(effect["type"], key) for effect in skill["effects"] for key in SKILL_LEVER_KEYS if key in effect]
 
 
-PAIR_GAIN = 0.5
 PAIR_LIMIT = 0.15
 # Une compétence ou un passif sans chiffre à régler (Rempart, Résonance, Météorologue) se règle par le budget du
 # Destin : un ajustement de PV et de puissance du perso qui l'a (data/destins.json, « kit_items »).
 ITEM_GAIN = 0.4
-# En duo, un élément n'a pas la même force selon la classe du partenaire (un Bouclier de mana protège mieux un Guerrier
-# qui encaisse) : réglé par « duo_items ». La composition du duo, qui touche les deux membres : « duo_classes » ;
-# et qui en est le joueur et qui l'acolyte (« mage>guerrier » : un Mage avec son acolyte Guerrier) : « duo_orders ».
+# La composition du duo, qui touche les deux membres : « duo_classes » ; et qui en est le joueur et qui l'acolyte
+# (« mage>guerrier » : un Mage avec son acolyte Guerrier) : « duo_orders ».
 COMPO_GAIN = 0.25
-# Le reste d'un kit complet, par côté (joueur ou acolyte) : comparé à sa classe jouée du même côté. Les paires, les
-# trios et les éléments corrigent déjà la plus grande part ; ce levier finit le travail, d'où un gain modeste.
-KIT_GAIN = 0.35
+# Le reste d'un kit complet, par côté (joueur ou acolyte) : comparé à sa classe jouée du même côté (chaque kit est
+# mesuré directement, environ 1 250 parties par kit et par côté avec 400 000 combats).
+KIT_GAIN = 0.5
 # Bornes des chiffres de Synergie : au-delà, une Synergie change de nature (ou ne se joue pas assez pour être réglée
 # par sa force : il faut alors revoir son effet).
 SYNERGY_LIMITS = {"mult": (0.5, 1.5), "share": (0.3, 1.0), "bonus": (0.05, 1.0)}
@@ -197,56 +203,6 @@ def measure(files):
     return {k: 100.0 * w / g for k, (w, g) in rates.items() if g > 0}
 
 
-def pair_key(a, b):
-    return f"{a}+{b}" if a < b else f"{b}+{a}"
-
-
-def measure_pairs(files):
-    """Pour chaque paire d'un même kit : (taux observé, taux attendu des deux éléments pris seuls, marge, parties)."""
-    import csv
-    import itertools
-    single = defaultdict(lambda: [0, 0])
-    pair = defaultdict(lambda: [0, 0])
-    classes = defaultdict(lambda: [0, 0])
-    owner = {}
-    for path in files:
-        with open(path, encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                won = int(row["gagne"])
-                for side, prefix in (("joueur", "j_"), ("acolyte", "a_")):
-                    items = [row[prefix + t] for t in ("basique", "moyenne", "forte", "passif")]
-                    for entry in [classes[row[side]]] + [single[i] for i in items]:
-                        entry[0] += won
-                        entry[1] += 1
-                    for a, b in itertools.combinations(items, 2):
-                        key = pair_key(a, b)
-                        owner[key] = row[side]
-                        pair[key][0] += won
-                        pair[key][1] += 1
-    rate = lambda e: 100.0 * e[0] / e[1]
-    result = {}
-    for key, entry in pair.items():
-        a, b = key.split("+")
-        expected = rate(single[a]) + rate(single[b]) - rate(classes[owner[key]])
-        result[key] = (rate(entry), expected, 196.0 * math.sqrt(0.25 / entry[1]), entry[1])
-    return result
-
-
-def tune_pairs(pairs):
-    destins = load("destins.json")
-    values = destins.setdefault("kit_pairs", {})
-    report = []
-    for key, (observed, expected, margin, games) in sorted(pairs.items()):
-        deviation = observed - expected
-        if abs(deviation) < max(1.5, margin):
-            continue
-        old = values.get(key, 0.0)
-        values[key] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - PAIR_GAIN * damp("paire:" + key, deviation) * deviation / 100.0)), 3)
-        report.append(f"paire {key} ({deviation:+.1f}) : {old:+.3f} -> {values[key]:+.3f}")
-    write_destins(destins)
-    return report
-
-
 # Amortissement : un levier dont l'écart change de sens d'une passe à l'autre a dépassé sa cible ; son pas est divisé
 # par deux (et remonte peu à peu tant que l'écart garde le même sens). Sans ça, plusieurs leviers qui corrigent le même
 # écart (une Synergie, les deux membres d'un duo, leurs compétences) le faisaient osciller de ±20 points.
@@ -305,7 +261,10 @@ def tune(rates):
             for key in SKILL_LEVER_KEYS:
                 if key in effect:
                     old = effect[key]
-                    effect[key] = step_int(old, deviation, GAIN * damp("comp:" + skill_id, deviation))
+                    gain = GAIN * damp("comp:" + skill_id, deviation)
+                    # Un chiffre à virgule (la part de puissance d'une créature : 0,7) reste à virgule : arrondi en entier,
+                    # le Golem était passé à 4 fois la puissance de l'Invocateur et oscillait entre 3 et 4.
+                    effect[key] = step_int(old, deviation, gain) if isinstance(old, int) else round(step(old, deviation, gain), 3)
                     report.append(f"{skill_id} ({deviation:+.1f}) : {key} {old} -> {effect[key]}")
     destins = load("destins.json")
     items = destins.setdefault("kit_items", {})
@@ -318,36 +277,6 @@ def tune(rates):
         old = items.get(item_id, 0.0)
         items[item_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * damp("budget:" + item_id, deviation) * deviation / 100.0)), 3)
         report.append(f"budget {item_id} ({deviation:+.1f}) : {old:+.3f} -> {items[item_id]:+.3f}")
-    duo_items = destins.setdefault("duo_items", {})
-    for key, rate in sorted(rates.items()):
-        if not key.startswith("duo:"):
-            continue
-        _, partner, item_id = key.split(":")
-        own_class = skills[item_id]["class"] if item_id in skills else passives[item_id]["class"]
-        overall = rates.get("comp:" + item_id, rates.get("passif:" + item_id))
-        # L'écart propre au partenaire : l'élément comparé à sa classe dans ce duo, moins son écart à sa classe en
-        # général (déjà réglé par son chiffre). Ainsi un duo entier qui gagne trop ne déplace pas tous ses éléments.
-        deviation = (rate - rates[f"duoclasse:{partner}:{own_class}"]) - (overall - rates["classe:" + own_class])
-        margin = 196.0 * math.sqrt(0.25 / GAMES[key])
-        if abs(deviation) < max(1.5, margin):
-            continue
-        inner = duo_items.setdefault(partner, {})
-        old = inner.get(item_id, 0.0)
-        inner[item_id] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
-        report.append(f"budget {item_id} avec un {partner} ({deviation:+.1f}) : {old:+.3f} -> {inner[item_id]:+.3f}")
-    # Les trois compétences d'un kit ensemble (un trio qui va trop bien ou trop mal ensemble, au-delà de ses paires).
-    triples = destins.setdefault("kit_triples", {})
-    for key, rate in sorted(rates.items()):
-        if not key.startswith("trio:"):
-            continue
-        trio = key.split(":")[1]
-        deviation = rate - rates["classe:" + skills[trio.split("+")[0]]["class"]]
-        margin = 196.0 * math.sqrt(0.25 / GAMES[key])
-        if abs(deviation) < max(1.5, margin):
-            continue
-        old = triples.get(trio, 0.0)
-        triples[trio] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - ITEM_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
-        report.append(f"budget du trio {trio} ({deviation:+.1f}) : {old:+.3f} -> {triples[trio]:+.3f}")
     # Une classe jouée en acolyte (toujours par l'IA) comparée à la même classe en général.
     acolytes = destins.setdefault("acolyte_classes", {})
     for key, rate in sorted(rates.items()):
@@ -384,8 +313,8 @@ def tune(rates):
         old = orders.get(order, 0.0)
         orders[order] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - COMPO_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
         report.append(f"budget du duo {order} ({deviation:+.1f}) : {old:+.3f} -> {orders[order]:+.3f}")
-    # Le reste de chaque kit complet, côté joueur et côté acolyte : ce que les éléments, les paires, les trios et le
-    # partenaire n'expliquent pas (comparé à sa classe jouée du même côté, pour ne rien corriger deux fois).
+    # Chaque kit complet, côté joueur et côté acolyte : ce que les éléments et la composition n'expliquent pas
+    # (comparé à sa classe jouée du même côté, pour ne rien corriger deux fois).
     kits = destins.setdefault("kits", {"joueur": {}, "acolyte": {}})
     for key, rate in sorted(rates.items()):
         if not key.startswith("kit:"):
@@ -407,6 +336,8 @@ def tune(rates):
         deviation = rates["passif:" + passive_id] - rates["classe:" + passive["class"]]
         if abs(deviation) < 1.0:
             continue
+        if key in INVERTED_LEVERS:
+            deviation = -deviation
         old = passive["params"][key]
         gain = PASSIVE_GAIN * damp("passif:" + passive_id, deviation)
         passive["params"][key] = step_int(old, deviation, gain) if isinstance(old, int) else round(step(old, deviation, gain), 3)
@@ -451,13 +382,11 @@ def save_damping():
 def one_round(label, files):
     """Une passe de réglage à partir de fichiers CSV déjà simulés : mesure, puis correction des chiffres de data/."""
     rates = measure(files)
-    pairs = measure_pairs(files)
     spread = [v for k, v in rates.items() if k.startswith(("comp:", "passif:", "classe:"))]
-    worst_pair = max(abs(o - e) for o, e, _, _ in pairs.values())
     kits = [v for k, v in rates.items() if k.startswith("kit:")]
-    print(f"\n== Réglage {label} : écart max à 50 % = {max(abs(v - 50) for v in spread):.1f} points ; pire paire : {worst_pair:.1f} points"
+    print(f"\n== Réglage {label} : écart max à 50 % = {max(abs(v - 50) for v in spread):.1f} points"
           f" ; kits (par côté) de {min(kits):.1f} à {max(kits):.1f} %, {sum(1 for v in kits if 48 <= v <= 52)} sur {len(kits)} dans 48-52", flush=True)
-    for line in tune(rates) + tune_pairs(pairs):
+    for line in tune(rates):
         print("  " + line, flush=True)
     save_damping()
 

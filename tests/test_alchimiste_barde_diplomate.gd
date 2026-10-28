@@ -51,7 +51,8 @@ func test_elixir_acide_bombe_catalyseur() -> void:
 	acid.resolve_turn([action("a1", "acide", "b2")])
 	heal_all(acid)
 	var malus := 1.0 - float(skill_power("acide", "status")) / 100.0
-	assert_eq(acid._damage_amount(mage, acid.get_unit("a1"), 40, 1.0, true, "feu"), int(round(before * malus)), "-30 % de dégâts infligés")
+	# À l'arrondi près : le moteur arrondit à une autre étape, et le chiffre de l'Acide est réglé par le simulateur.
+	assert_between(float(acid._damage_amount(mage, acid.get_unit("a1"), 40, 1.0, true, "feu")), round(before * malus) - 1.0, round(before * malus) + 1.0, "-%d %% de dégâts infligés" % int(skill_power("acide", "status")))
 	# Bombe : tous les ennemis. Catalyseur : toutes les recharges d'un allié remises à zéro.
 	var bomb := duo_combat(AG, GM)
 	jump_to_turn(bomb, 3)
@@ -180,9 +181,12 @@ func test_discours_encouragement_chantage() -> void:
 		assert_eq(int(combat.get_unit(unit_id).get_status("galvanise")["value"]), skill_power("discours", "status"), unit_id + " galvanisé par le Discours")
 	var cheer := duo_combat(DG, GM, {"diplomate": {"basique": 1}})
 	first(cheer, "a1")
-	var events := cheer.resolve_turn([action("a1", "encouragement", "a2"), action("a2", "taillade", "b2")])
+	# Encouragement frappe un ennemi (petit coup) et galvanise le partenaire, quelle que soit la cible.
+	var events := cheer.resolve_turn([action("a1", "encouragement", "b1"), action("a2", "taillade", "b2")])
 	var boost := 1.0 + float(skill_power("encouragement", "status")) / 100.0
 	assert_eq(damage_from(events, "a2", "b2"), int(round(skill_power("taillade") * class_power("guerrier") * boost)), "le Guerrier encouragé frappe plus fort")
+	assert_true(damage_from(events, "a1", "b1") > 0, "et le Diplomate a donné son coup de canne")
+	assert_false(cheer.get_unit("a1").has_status("galvanise"), "lui-même n'est pas galvanisé")
 	var blackmail := duo_combat(DG, GM, {"diplomate": {"forte": 1}})
 	jump_to_turn(blackmail, 3)
 	blackmail.resolve_turn([action("a1", "chantage", "b1")])
@@ -211,7 +215,7 @@ func test_charisme_impassible_reseau_protocole() -> void:
 	jump_to_turn(network, 3)
 	network.resolve_turn([action("a1", "chantage", "b1")])
 	network._actions = {}
-	assert_eq(network.effective_speed(network.get_unit("a1")), network.get_unit("a1").base_speed + 1, "le Guerrier adverse est sous Chantage : +1 vitesse")
+	assert_eq(network.effective_speed(network.get_unit("a1")), network.get_unit("a1").base_speed + int(pp("reseau", "speed_per_marked_enemy")), "le Guerrier adverse est sous Chantage : +%d vitesse" % int(pp("reseau", "speed_per_marked_enemy")))
 	# Protocole : un état de contrôle retiré à l'allié en fin de tour.
 	var protocol := duo_combat(DG, GM, {"diplomate": {"passive": 3}})
 	var events := protocol.resolve_turn([action("b2", "trait_de_givre", "a2")])
@@ -312,7 +316,14 @@ func test_un_acolyte_alchimiste_enfume_le_joueur_entame() -> void:
 func test_un_acolyte_diplomate_encourage_le_joueur() -> void:
 	var combat := duo_combat(["mage", "diplomate"], GM, {"diplomate": {"basique": 1, "moyenne": 1}})
 	var decision := CombatAI.decide_acolyte(combat, combat.get_unit("a2"))
-	assert_eq("%s → %s" % [decision["action"].skill_id, decision["action"].target_id], "encouragement → a1", "l'Encouragement va au joueur, pas à lui")
+	assert_eq(decision["action"].skill_id, "encouragement", "sa basique : Encouragement")
+	assert_true(decision["action"].target_id.begins_with("b"), "frappée sur un ennemi")
+	var galvanised: Array = []
+	for event in events_of_type(combat.resolve_turn([decision["action"]]), "status"):
+		if event["status"] == "galvanise":
+			galvanised.append(event["target"])
+	assert_eq(galvanised, ["a1"], "et c'est le joueur qui est encouragé, pas lui")
+	heal_all(combat)
 	combat.get_unit("a1").hp = 150
 	var truce := CombatAI.decide_acolyte(combat, combat.get_unit("a2"))
 	assert_eq(truce["action"].skill_id, "treve", "tu as perdu des PV : une Trêve")
