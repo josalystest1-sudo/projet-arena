@@ -15,7 +15,7 @@ Les prototypes des étapes 1 à 3 sont jouables sur téléphone : le **combat en
 | 1. Prototype de combat en duo | **Fait, à valider** | PR #5 à #8, #10, #12, #14. Critère de sortie (« on a envie de relancer un combat ») pas encore confirmé par Gautier. |
 | 2. La Tour en prototype | **Fait, à valider** | PR #9, #13 (monstres et bestiaire). Critère (« on veut battre son record ») pas encore confirmé. |
 | 3. 10 classes, Destin, mini-Destin, Synergies | **Fait, à valider** | PR #17 à #23. Équilibrage des 10 classes et de la Tour vérifié sur des combats neufs (PR #23). |
-| 4. Simulateur d'équilibrage | **En cours** | Duels et Tour : `tools/equilibrage.gd`, `tools/regleur.py`, `tools/simulate_tour.gd`, `tools/menace.py`, `tools/regleur_tour.py`, `tools/profil.gd`. Fait : les nœuds du Destin mesurés et réglés (PR #24). La Tour suit le niveau (PR #25). La durée des combats est dans la cible du GDD (PR #26). Reste : les Synergies et compositions hors fourchette, les nœuds du Destin selon le côté (branche `destin-par-cote`). |
+| 4. Simulateur d'équilibrage | **En cours** | Duels et Tour : `tools/equilibrage.gd`, `tools/regleur.py`, `tools/simulate_tour.gd`, `tools/menace.py`, `tools/regleur_tour.py`, `tools/profil.gd`. Fait : les nœuds du Destin mesurés et réglés (PR #24). La Tour suit le niveau (PR #25). La durée des combats est dans la cible du GDD (PR #26). Les nœuds du Destin ont leur valeur par côté (PR #27). Reste : les Synergies hors fourchette (c'est leur effet à revoir), la durée des combats aux niveaux élevés. |
 | 5. Serveur, comptes, PvP réel, Échos | À faire | Pas avant l'étape 4. |
 | 6. Art PixelLab et les 13 écrans | À faire | Sprites provisoires d'ici là. Les écrans existent déjà en version simple (création, rencontre, Vitrine, Acolyte, Compétences, La Tour, Bestiaire, Profil, Paramètres). |
 | 7 à 10. Évolutions, boutique, bêta, lancement | À faire | |
@@ -34,7 +34,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
    - les 7 classes manquantes, par groupes : ~~Voleur, Archer, Pugiliste~~ (PR #19) ; ~~Alchimiste, Barde, Diplomate~~ (PR #20) ; ~~l'Invocateur et sa créature~~ (PR #21) ; 6 actives et 4 passifs chacune, leurs Synergies (au moins une entre chaque classe et chaque classe qui peut lui servir d'acolyte, et chaque kit a une Synergie possible), avec tests ;
    - ~~le générateur de Destin (arbre de 45 nœuds, 30 points, budget de puissance), le mini-Destin de l'acolyte (15 nœuds, auto-attribué) et l'écran de l'arbre~~ (PR #22) ;
    - ~~un nouveau passage du régleur (duel et Tour) sur les 10 classes~~ (PR #23).
-3. **Étape 4**, en plusieurs PR : ~~le simulateur avec Destin et le régleur des valeurs des nœuds~~ (PR #24) ; ~~la Tour qui suit le niveau du duo~~ (PR #25) ; ~~la durée des combats~~ (PR #26) ; les valeurs du Destin propres à l'acolyte (branche `destin-par-cote`) ; les Synergies encore hors fourchette (revoir leur effet, voir « Limites connues ») ; la durée des combats aux niveaux élevés.
+3. **Étape 4**, en plusieurs PR : ~~le simulateur avec Destin et le régleur des valeurs des nœuds~~ (PR #24) ; ~~la Tour qui suit le niveau du duo~~ (PR #25) ; ~~la durée des combats~~ (PR #26) ; ~~les valeurs du Destin propres à l'acolyte~~ (PR #27) ; les Synergies encore hors fourchette (revoir leur effet, voir « Limites connues ») ; la durée des combats aux niveaux élevés.
 
 ## Limites connues
 
@@ -43,7 +43,6 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 - **Cycle entre compositions** (mesuré à 3 classes) : Guerrier + Mage bat Mage + Prêtre 55 %, Mage + Prêtre bat Guerrier + Prêtre 56 %, Guerrier + Prêtre bat Guerrier + Mage 55 %. La force d'un duo ne peut pas le corriger. Le Guerrier + Prêtre gagne surtout au décompte des PV : piste de la mort subite (étape 4). À remesurer à 10 classes (les affrontements vont de 43 à 55 %).
 - **Le pilier « le duo gagne »** n'est pas encore démontré au simulateur : un joueur IA qui lit l'annonce de son acolyte gagne 52,9 % contre un qui l'ignore. Il faudra une IA qui prépare ses coups sur plusieurs tours (étape 4), et surtout le ressenti de Gautier.
 - **La Tour selon la classe** : étage moyen atteint, de 5,7 (Barde) à 9,2 (Prêtre) ; les Soutiens qui frappent peu montent moins haut. Le record étant par classe, ce n'est pas bloquant, mais l'écart a grandi avec les 10 classes.
-- **Les nœuds du Destin selon le côté** : un même modèle n'a pas la même force chez le joueur et chez l'acolyte (« +soins » et les Pivots de Front : 44–47 % côté joueur, 56 % côté acolyte). Le régleur mesure les deux ensemble ; des valeurs propres au mini-Destin sont la suite (étape 4).
 - **Durée des combats** : 90,5 % entre les tours 8 et 15 depuis la PR #26 (+15 % de PV). Mais avec le Destin aux niveaux élevés, les combats raccourcissent (35 % finis avant le tour 8 aux niveaux 1 à 30, mesuré avant la PR #26) : les nœuds de puissance pèsent plus que ceux de PV. À remesurer, puis corriger du côté des nœuds.
 - **La règle d'attente de l'acolyte** (garder sa forte un tour pour une Synergie) ne sert que dans environ 2 combats sur 100 avec 3 classes ; elle prendra de l'importance avec les 10 classes.
 - **Ce qui est provisoire** : sprites en pixels dessinés en code (PixelLab à l'étape 6), bruitages synthétiques, noms des monstres et de l'acolyte (en attente de l'univers), données gardées sur l'appareil (comptes à l'étape 5), courbe d'XP rapide et bouton « Gagner un niveau » (pour tester l'arbre du Destin).
@@ -99,6 +98,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | #24 | 28 oct | Le simulateur avec Destin (niveau, points placés au hasard, nœuds pris dans le CSV), le régleur des valeurs des nœuds, les valeurs réglées, bouton « Réglage du Destin » sur GitHub. |
 | #25 | 28 oct | La Tour suit le niveau du duo : monstres renforcés de 2,2 % par niveau, calibré au simulateur (même part au sommet du niveau 0 au niveau 30). |
 | #26 | 28 oct | Durée des combats : +15 % de PV pour toutes les classes (90,5 % des combats entre les tours 8 et 15, cible du GDD), reréglage des classes et de la Tour. |
+| #27 | 28 oct | Le Destin par côté : un facteur par modèle de nœud pour le mini-Destin de l'acolyte (`mini_values`), régleur qui mesure joueur et acolyte séparément, valeurs reréglées. |
 
 ## Reprendre le travail (pour Claude Code)
 
