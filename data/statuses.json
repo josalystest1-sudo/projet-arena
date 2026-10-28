@@ -1,10 +1,10 @@
 {
-  "saignement": {"name": "Saignement", "negative": true, "icon": "S", "description": "Perd des PV à chaque fin de tour."},
-  "brulure": {"name": "Brûlure", "negative": true, "icon": "B", "description": "Perd des PV à chaque fin de tour."},
-  "gele": {"name": "Gelé", "negative": true, "icon": "G", "description": "Agit en dernier."},
-  "provoque": {"name": "Provoqué", "negative": true, "icon": "P", "description": "Doit attaquer celui qui l'a provoqué ce tour."},
-  "cri_de_guerre": {"name": "Galvanisé", "negative": false, "icon": "+", "description": "Inflige plus de dégâts."},
+  "saignement": {"name": "Saignement", "negative": true, "dot": true, "icon": "S", "description": "Perd des PV à chaque fin de tour."},
+  "brulure": {"name": "Brûlure", "negative": true, "dot": true, "icon": "B", "description": "Perd des PV à chaque fin de tour."},
+  "gele": {"name": "Gelé", "negative": true, "control": true, "icon": "G", "description": "Agit en dernier."},
+  "provoque": {"name": "Provoqué", "negative": true, "control": true, "icon": "P", "description": "Doit attaquer celui qui l'a provoqué ce tour."},
+  "galvanise": {"name": "Galvanisé", "negative": false, "kind": "renfort", "icon": "+", "description": "Inflige plus de dégâts."},
   "affaibli": {"name": "Affaibli", "negative": true, "icon": "-", "description": "Inflige moins de dégâts."},
-  "rempart": {"name": "Rempart", "negative": false, "icon": "R", "description": "Le prochain coup est absorbé."},
-  "barriere": {"name": "Barrière", "negative": false, "icon": "O", "description": "Absorbe des dégâts."}
+  "rempart": {"name": "Rempart", "negative": false, "kind": "protection", "icon": "R", "description": "Le prochain coup est absorbé."},
+  "barriere": {"name": "Barrière", "negative": false, "kind": "protection", "icon": "O", "description": "Absorbe des dégâts."}
 }

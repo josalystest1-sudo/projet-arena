@@ -1,16 +1,16 @@
 {
-  "peau_de_fer": {"name": "Peau de fer", "class": "guerrier", "params": {"reduction": 0.155}, "description": "-{reduction%} de dégâts subis."},
-  "second_souffle": {"name": "Second souffle", "class": "guerrier", "params": {"threshold": 0.3, "heal": 0.285}, "description": "Se soigne de {heal%} de ses PV en passant sous {threshold%} (une fois par combat)."},
-  "veteran": {"name": "Vétéran", "class": "guerrier", "params": {"speed": 1, "damage": 0.043, "ko_mult": 2}, "description": "+{damage%} de dégâts. Quand son allié est KO : ce bonus est multiplié par {ko_mult}, et +{speed} vitesse."},
-  "colere": {"name": "Colère", "class": "guerrier", "params": {"per_quarter": 0.087}, "description": "+{per_quarter%} de dégâts par quart de PV manquant."},
+  "peau_de_fer": {"name": "Peau de fer", "class": "guerrier", "lever": "reduction", "params": {"reduction": 0.155}, "description": "-{reduction%} de dégâts subis."},
+  "second_souffle": {"name": "Second souffle", "class": "guerrier", "lever": "souffle_heal", "params": {"souffle_threshold": 0.3, "souffle_heal": 0.285}, "description": "Se soigne de {souffle_heal%} de ses PV en passant sous {souffle_threshold%} (une fois par combat)."},
+  "veteran": {"name": "Vétéran", "class": "guerrier", "lever": "damage_bonus", "params": {"ko_speed": 1, "damage_bonus": 0.043, "ko_mult": 2}, "description": "+{damage_bonus%} de dégâts. Quand son allié est KO : ce bonus est multiplié par {ko_mult}, et +{ko_speed} vitesse."},
+  "colere": {"name": "Colère", "class": "guerrier", "lever": "per_quarter", "params": {"per_quarter": 0.087}, "description": "+{per_quarter%} de dégâts par quart de PV manquant."},
 
-  "resonance": {"name": "Résonance", "class": "mage", "description": "Toucher 2 cibles ou plus réduit la recharge de la forte d'un tour."},
-  "focalisation": {"name": "Focalisation", "class": "mage", "params": {"bonus": 0.08}, "description": "+{bonus%} de dégâts sur cible unique."},
-  "brasier": {"name": "Brasier", "class": "mage", "params": {"value": 3, "turns": 1}, "description": "Chaque coup de feu brûle la cible : {value} dégâts en fin de tour."},
-  "meteorologue": {"name": "Météorologue", "class": "mage", "description": "La forte revient 1 tour plus tôt."},
+  "resonance": {"name": "Résonance", "class": "mage", "params": {"multi_hit_forte_minus": 1}, "description": "Toucher 2 cibles ou plus réduit la recharge de la forte d'un tour."},
+  "focalisation": {"name": "Focalisation", "class": "mage", "lever": "single_target_bonus", "params": {"single_target_bonus": 0.08}, "description": "+{single_target_bonus%} de dégâts sur cible unique."},
+  "brasier": {"name": "Brasier", "class": "mage", "lever": "burn_value", "params": {"burn_value": 3, "burn_turns": 1}, "description": "Chaque coup de feu brûle la cible : {burn_value} dégâts en fin de tour."},
+  "meteorologue": {"name": "Météorologue", "class": "mage", "params": {"forte_minus": 1}, "description": "La forte revient 1 tour plus tôt."},
 
-  "foi": {"name": "Foi", "class": "pretre", "params": {"threshold": 0.4, "bonus": 0.19}, "description": "Soins +{bonus%} sur un allié sous {threshold%} de PV."},
-  "martyr": {"name": "Martyr", "class": "pretre", "params": {"share": 0.073}, "description": "Encaisse {share%} des dégâts subis par son allié."},
-  "lumiere_interieure": {"name": "Lumière intérieure", "class": "pretre", "params": {"heal": 0.058}, "description": "Se soigne de {heal%} de ses PV à chaque fin de tour."},
-  "sanctuaire": {"name": "Sanctuaire", "class": "pretre", "params": {"bonus": 0.411}, "description": "Ses barrières sont {bonus%} plus grosses."}
+  "foi": {"name": "Foi", "class": "pretre", "lever": "foi_bonus", "params": {"foi_threshold": 0.4, "foi_bonus": 0.19}, "description": "Soins +{foi_bonus%} sur un allié sous {foi_threshold%} de PV."},
+  "martyr": {"name": "Martyr", "class": "pretre", "lever": "martyr_share", "params": {"martyr_share": 0.073}, "description": "Encaisse {martyr_share%} des dégâts subis par son allié."},
+  "lumiere_interieure": {"name": "Lumière intérieure", "class": "pretre", "lever": "regen", "params": {"regen": 0.058}, "description": "Se soigne de {regen%} de ses PV à chaque fin de tour."},
+  "sanctuaire": {"name": "Sanctuaire", "class": "pretre", "lever": "barrier_bonus", "params": {"barrier_bonus": 0.411}, "description": "Ses barrières sont {barrier_bonus%} plus grosses."}
 }

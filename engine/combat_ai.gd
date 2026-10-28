@@ -166,11 +166,15 @@ static func synergy_options(combat: Combat, leader: CombatUnit, acolyte: CombatU
 	return result
 
 
-## Ce que fait une compétence, vu par l'IA : degats, soin, protection, renfort ou releve.
+## Ce que fait une compétence, vu par l'IA : degats, soin, protection, renfort ou releve. Une compétence qui ne pose
+## qu'un état suit ce que l'état dit de lui (« kind » dans data/statuses.json : Voile et Piège protègent, Vif renforce).
 static func skill_kind(data: CombatData, skill_id: String) -> String:
 	var types: Array = []
+	var status_kinds: Array = []
 	for effect in data.skill(skill_id).get("effects", []):
 		types.append(str(effect["type"]))
+		if str(effect["type"]) == "status":
+			status_kinds.append(data.status_kind(str(effect["id"])))
 	if types.has("revive"):
 		return "releve"
 	if types.has("heal") or types.has("cleanse"):
@@ -179,6 +183,8 @@ static func skill_kind(data: CombatData, skill_id: String) -> String:
 		return "protection"
 	if types.has("damage"):
 		return "degats"
+	if status_kinds.has("protection"):
+		return "protection"
 	return "renfort"
 
 
@@ -218,10 +224,13 @@ static func _libre(combat: Combat, unit: CombatUnit, focus: CombatUnit, hold_for
 	var decision := {}
 	match role:
 		"front":
-			# Il protège l'allié le plus fragile (en duo : le joueur) dès que celui-ci a perdu des PV et que sa protection est prête.
+			# Il protège l'allié le plus fragile (en duo : le joueur) dès que celui-ci a perdu des PV et que sa protection est prête ;
+			# une protection qu'il ne peut poser que sur lui-même (Garde haute) sert dès qu'il a lui-même perdu des PV.
 			var guarded := _guarded_ally(combat, unit)
 			if guarded.hp < guarded.max_hp:
 				decision = _pick(combat, unit, any_tier, ["protection"], guarded, enemy, "protege")
+			if decision.is_empty() and unit.hp < unit.max_hp:
+				decision = _pick(combat, unit, any_tier, ["protection"], unit, enemy, "protege", true)
 			if decision.is_empty():
 				decision = _pick(combat, unit, forte, ["degats", "renfort", "protection"], hurt, enemy, "forte")
 		"soutien":
@@ -231,6 +240,11 @@ static func _libre(combat: Combat, unit: CombatUnit, focus: CombatUnit, hold_for
 				decision = _pick_cleanse(combat, unit, any_tier, combat.allies_of(unit, true))
 			if decision.is_empty():
 				decision = _pick(combat, unit, forte, ["protection", "degats", "renfort"], hurt, enemy, "forte")
+			# Une protection (Fumigène, Trêve) sur l'allié dès qu'il a perdu des PV.
+			if decision.is_empty() and hurt != null and hurt != unit and hurt.hp < hurt.max_hp:
+				decision = _pick(combat, unit, ["moyenne"], ["protection"], hurt, enemy, "protege")
+			if decision.is_empty():
+				decision = _pick(combat, unit, ["moyenne"], ["renfort"], hurt, enemy, "moyenne")
 		_:
 			if hurt_badly:
 				decision = _pick(combat, unit, any_tier, ["soin", "protection"], hurt, enemy, "secours")
@@ -274,12 +288,17 @@ static func _synergy_with(combat: Combat, unit: CombatUnit, partner_action: Comb
 
 ## La première compétence prête, dans l'ordre des paliers donnés, dont le type est accepté et qui sert à quelque chose.
 ## ally : cible d'un soin ou d'une protection ; enemy : cible d'une attaque ou d'une provocation.
-static func _pick(combat: Combat, unit: CombatUnit, tiers: Array, kinds: Array, ally: CombatUnit, enemy: CombatUnit, rule: String) -> Dictionary:
+## Une compétence qui ne vise que soi (Voile, Garde haute) ne sert à secourir ou protéger que si l'allié à secourir est
+## soi-même ; self_only : seules ces compétences sont considérées.
+static func _pick(combat: Combat, unit: CombatUnit, tiers: Array, kinds: Array, ally: CombatUnit, enemy: CombatUnit, rule: String, self_only: bool = false) -> Dictionary:
 	for tier in tiers:
 		if not combat.can_use(unit, tier):
 			continue
 		var skill_id: String = unit.skills[tier]
 		if not kinds.has(skill_kind(combat.data, skill_id)):
+			continue
+		var targets_self := str(combat.data.skill(skill_id).get("target", "enemy")) == "self"
+		if (self_only and not targets_self) or (targets_self and rule in ["protege", "secours", "soin"] and ally != unit):
 			continue
 		var target := _target_for(combat, unit, skill_id, ally, enemy)
 		if target == null or (tier != "basique" and _wasted(combat, unit, skill_id, target)):
@@ -346,6 +365,7 @@ static func _wasted(combat: Combat, unit: CombatUnit, skill_id: String, target: 
 	var group: Array[CombatUnit] = [target]
 	if str(skill.get("target")) == "allies_all":
 		group = combat.allies_of(unit, true)
+	var only_statuses := true
 	for effect in skill.get("effects", []):
 		match str(effect["type"]):
 			"absorb_next_hit":
@@ -361,6 +381,25 @@ static func _wasted(combat: Combat, unit: CombatUnit, skill_id: String, target: 
 					# Un soin qui déborde en barrière n'est inutile que si la cible a déjà une barrière au moins aussi grosse.
 					return target.hp >= target.max_hp and target.barrier_amount() >= int(effect["power"])
 				return target.hp >= target.max_hp and not _has_effect(combat, skill_id, "cleanse")
+			"reset_cooldowns":
+				# Catalyseur : inutile si l'allié n'a rien en recharge.
+				var pending := 0
+				for tier in ["moyenne", "forte"]:
+					pending += combat.cooldown_remaining(target, tier)
+				return pending == 0
+			"status":
+				pass
+			_:
+				only_statuses = false
+	# Une compétence qui ne pose que des états (Piège, Voile, Totem) est inutile si tous sont déjà posés pour au moins
+	# aussi longtemps sur toute sa cible.
+	if only_statuses and not skill.get("effects", []).is_empty():
+		for member in group:
+			for effect in skill.get("effects", []):
+				var existing := member.get_status(str(effect["id"]))
+				if existing.is_empty() or int(existing.get("turns", 0)) < int(effect.get("turns", 1)) or int(existing.get("value", 0)) < int(effect.get("value", 0)):
+					return false
+		return true
 	return false
 
 
@@ -368,9 +407,14 @@ static func _wasted(combat: Combat, unit: CombatUnit, skill_id: String, target: 
 # Utilitaires
 # ---------------------------------------------------------------------------
 
-## L'ennemi le plus bas en pourcentage de PV (à égalité : le moins de PV, puis l'ordre des places).
+## L'ennemi le plus bas en pourcentage de PV (à égalité : le moins de PV, puis l'ordre des places), parmi ceux
+## qu'on peut viser (un ennemi sous Voile ou dans la fumée ne compte pas, sauf s'il n'y a que lui).
 static func _lowest_enemy(combat: Combat, unit: CombatUnit) -> CombatUnit:
-	return _lowest(combat.enemies_of(unit, true))
+	var targetable: Array[CombatUnit] = []
+	for enemy in combat.enemies_of(unit, true):
+		if not combat.is_untargetable(enemy):
+			targetable.append(enemy)
+	return _lowest(targetable if not targetable.is_empty() else combat.enemies_of(unit, true))
 
 
 ## L'allié le plus bas en pourcentage de PV, soi compris (à égalité : le joueur d'abord).

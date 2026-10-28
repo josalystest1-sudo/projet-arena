@@ -7,6 +7,12 @@
       "nova"
     ],
     "same_target": false,
+    "effect": {
+      "type": "amplify",
+      "skill": "nova",
+      "vs_status": "provoque"
+    },
+    "lever": "bonus",
     "params": {
       "bonus": 0.392
     },
@@ -20,6 +26,15 @@
       "priere"
     ],
     "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "skill": "rempart",
+      "to": "skill_target",
+      "status": "rempart",
+      "turns": 2,
+      "value": 1,
+      "stack": true
+    },
     "description": "Le Rempart se reforme : l'allié protégé est à l'abri d'un coup de plus."
   },
   {
@@ -30,6 +45,12 @@
       "chatiment"
     ],
     "same_target": true,
+    "effect": {
+      "type": "extra_damage",
+      "skill": "chatiment",
+      "element": "lumiere"
+    },
+    "lever": "damage",
     "params": {
       "damage": 31
     },
@@ -43,6 +64,11 @@
       "boule_de_feu"
     ],
     "same_target": true,
+    "effect": {
+      "type": "extend_status",
+      "status": "saignement"
+    },
+    "lever": "bonus",
     "params": {
       "extra_turns": 2,
       "bonus": 0.507
@@ -57,10 +83,15 @@
       "bouclier_de_mana"
     ],
     "same_target": false,
-    "description": "Le Bouclier de mana se pose aussi sur l'autre membre du duo, à {share%} de sa taille.",
+    "effect": {
+      "type": "spread_to_duo",
+      "skill": "bouclier_de_mana"
+    },
+    "lever": "share",
     "params": {
       "share": 1.0
-    }
+    },
+    "description": "Le Bouclier de mana se pose aussi sur l'autre membre du duo, à {share%} de sa taille."
   },
   {
     "id": "provocation_chatiment",
@@ -70,6 +101,12 @@
       "chatiment"
     ],
     "same_target": false,
+    "effect": {
+      "type": "spread_to_enemies",
+      "skill": "chatiment",
+      "vs_status": "provoque"
+    },
+    "lever": "mult",
     "params": {
       "mult": 1.315
     },
@@ -83,6 +120,11 @@
       "priere"
     ],
     "same_target": false,
+    "effect": {
+      "type": "spread_to_duo",
+      "skill": "priere"
+    },
+    "lever": "mult",
     "params": {
       "mult": 1.198
     },
