@@ -31,12 +31,14 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 
 	var profile := app.profile
 	var record := int(profile.tower_records.get(app.player_class, 0))
-	var facts: Array = []
+	var facts: Array = ["niveau %d" % profile.level]
 	if profile.wins + profile.losses > 0:
 		facts.append("%d victoire%s · %d défaite%s" % [profile.wins, "s" if profile.wins > 1 else "", profile.losses, "s" if profile.losses > 1 else ""])
 		facts.append("série : %d (record %d)" % [profile.streak, profile.best_streak])
 	facts.append("Tour : étage %d" % record if record > 0 else "Tour : pas encore tentée")
 	column.add_child(UiKit.label(" · ".join(facts), 16, UiKit.SOFT))
+	if app.destin_points_left() > 0:
+		column.add_child(UiKit.button("%d point%s de Destin à placer" % [app.destin_points_left(), "s" if app.destin_points_left() > 1 else ""], func(): app.show_screen("destin"), 48, 17))
 	var synergies := app.duo_synergies()
 	if not synergies.is_empty():
 		var names: Array = []
