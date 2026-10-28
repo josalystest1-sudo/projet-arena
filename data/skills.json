@@ -171,7 +171,7 @@
   },
   "crochet": {
     "name": "Crochet", "class": "pugiliste", "tier": "moyenne", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 36, "bonus_after": "jab", "bonus_after_value": 0.75}],
+    "effects": [{"type": "damage", "power": 35, "bonus_after": "jab", "bonus_after_value": 0.75}],
     "description": "Crochet ; dégâts doublés si le Jab a touché au tour précédent."
   },
   "uppercut": {
@@ -207,7 +207,7 @@
   },
   "bombe": {
     "name": "Bombe", "class": "alchimiste", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 26}],
+    "effects": [{"type": "damage", "power": 25}],
     "description": "Une bombe de feu sur tous les ennemis."
   },
   "catalyseur": {
@@ -249,12 +249,12 @@
 
   "argument": {
     "name": "Argument", "class": "diplomate", "tier": "basique", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 30}],
+    "effects": [{"type": "damage", "power": 29}],
     "description": "Un coup de canne, pour appuyer l'argument."
   },
   "encouragement": {
     "name": "Encouragement", "class": "diplomate", "tier": "basique", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 27}, {"type": "status", "id": "galvanise", "turns": 1, "value": 21, "on": "partner"}],
+    "effects": [{"type": "damage", "power": 28}, {"type": "status", "id": "galvanise", "turns": 1, "value": 22, "on": "partner"}],
     "description": "Un petit coup de canne ; ton allié inflige +{value} % de dégâts ce tour."
   },
   "ultimatum": {

@@ -4,7 +4,7 @@
   "roles": ["front", "degats"],
   "identity": "Combos et contres : chaque coup prépare le suivant.",
   "elements": ["contondant"],
-  "stats": {"max_hp": 264, "speed": 10, "power": 84},
+  "stats": {"max_hp": 264, "speed": 10, "power": 85},
   "skills": {
     "basique": ["jab", "direct"],
     "moyenne": ["garde_haute", "crochet"],

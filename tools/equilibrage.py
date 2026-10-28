@@ -47,6 +47,7 @@ def main():
     print(f"{combats} combats · {sum(turns) / combats:.1f} tours en moyenne · {100 * ko / combats:.0f} % finis par KO · {100 * in_window / combats:.0f} % entre les tours 8 et 15")
 
     groups = defaultdict(lambda: defaultdict(lambda: [0, 0]))
+    synergy_rows = []
     # Les nœuds du Destin par rapport à la classe de celui qui les a pris (un modèle n'est pas tiré par n'importe qui).
     relative = {"joueur": defaultdict(list), "acolyte": defaultdict(list)}
     for r in rows:
@@ -68,6 +69,7 @@ def main():
         add("Compositions", " + ".join(sorted([r["joueur"], r["acolyte"]])))
         for synergy in filter(None, r["synergies_possibles"].split("+")):
             add("Synergies possibles dans le duo", synergy)
+            synergy_rows.append((won, synergy, r))
         add("Kits du joueur (Destins)", " ".join([r["joueur"], r["j_basique"], r["j_moyenne"], r["j_forte"], r["j_passif"]]))
         add("Kits de l'acolyte (Destins)", " ".join([r["acolyte"], r["a_basique"], r["a_moyenne"], r["a_forte"], r["a_passif"]]))
         add("Affrontements", " + ".join(sorted([r["joueur"], r["acolyte"]])) + "  contre  " + " + ".join(sorted(r["adverse"].split("+"))))
@@ -105,6 +107,24 @@ def main():
             margin = 196.0 * math.sqrt(0.25 / len(entries))
             mark = "  <-- hors fourchette" if abs(gap) - margin > 2.0 else ""
             print(f"  {label:<44} {50.0 + gap:5.1f} % ± {margin:3.1f}  ({len(entries)}){mark}")
+    # Les Synergies par rapport aux deux kits du duo qui les ont (leur force propre masque l'effet de la Synergie).
+    if synergy_rows:
+        print("\nSynergies, écart à ce qu'on attend des deux kits du duo (50 = la Synergie n'ajoute rien)")
+        kits_j = groups["Kits du joueur (Destins)"]
+        kits_a = groups["Kits de l'acolyte (Destins)"]
+        gaps = defaultdict(list)
+        for won, synergy, r in synergy_rows:
+            kj = kits_j[" ".join([r["joueur"], r["j_basique"], r["j_moyenne"], r["j_forte"], r["j_passif"]])]
+            ka = kits_a[" ".join([r["acolyte"], r["a_basique"], r["a_moyenne"], r["a_forte"], r["a_passif"]])]
+            expected = 100.0 * kj[0] / max(kj[1], 1) + 100.0 * ka[0] / max(ka[1], 1) - 50.0
+            gaps[synergy].append(100.0 * won - expected)
+        for synergy, values in sorted(gaps.items(), key=lambda kv: -sum(kv[1]) / len(kv[1])):
+            if len(values) < 200:
+                continue
+            gap = sum(values) / len(values)
+            margin = 196.0 * math.sqrt(0.25 / len(values))
+            mark = "  <-- hors fourchette" if abs(gap) - margin > 2.0 else ""
+            print(f"  {synergy:<44} {50.0 + gap:5.1f} % ± {margin:3.1f}  ({len(values)}){mark}")
     flagged_kits = 0
     for group in ("Kits du joueur (Destins)", "Kits de l'acolyte (Destins)"):
         kits = groups[group]

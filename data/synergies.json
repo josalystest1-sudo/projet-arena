@@ -14,7 +14,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.383
+      "bonus": 0.357
     },
     "description": "Les ennemis provoqués subissent la Nova à +{bonus%}."
   },
@@ -52,7 +52,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 33
+      "damage": 37
     },
     "description": "La cible gelée subit {damage} dégâts de lumière supplémentaires."
   },
@@ -89,7 +89,7 @@
     },
     "lever": "share",
     "params": {
-      "share": 0.744
+      "share": 0.732
     },
     "description": "Le Bouclier de mana se pose aussi sur l'autre membre du duo, à {share%} de sa taille."
   },
@@ -108,7 +108,7 @@
     },
     "lever": "mult",
     "params": {
-      "mult": 1.006
+      "mult": 0.937
     },
     "description": "Le Châtiment frappe aussi l'autre ennemi provoqué, à {mult%} de sa force."
   },
@@ -126,7 +126,7 @@
     },
     "lever": "mult",
     "params": {
-      "mult": 1.125
+      "mult": 0.991
     },
     "description": "La Prière soigne aussi l'autre membre du duo, à {mult%} de sa force ; comme pour la Prière, une part de ce qui dépasse ses PV max devient une barrière."
   },
@@ -185,7 +185,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 32,
+      "value": 36,
       "turns": 2
     },
     "description": "La cible, accablée, inflige {value} % de dégâts en moins pendant {turns} tours."
@@ -241,7 +241,7 @@
     },
     "lever": "share",
     "params": {
-      "share": 0.735
+      "share": 0.725
     },
     "description": "Le Pugiliste couvre aussi le Voleur : il reçoit une garde à {share%} de la sienne."
   },
@@ -304,7 +304,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 76,
+      "value": 84,
       "turns": 2
     },
     "description": "La lumière désigne la cible : elle est marquée (+{value} % de dégâts subis) pendant {turns} tours."
@@ -392,7 +392,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 245
+      "power": 383
     },
     "description": "La foudre crépite autour de la garde : barrière sur tout le duo."
   },
@@ -411,7 +411,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 54
+      "damage": 62
     },
     "description": "La cible sonnée subit {damage} dégâts de lumière supplémentaires."
   },
@@ -428,7 +428,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 8
+      "power": 4
     },
     "description": "Chaque coup est une prière : tout le duo se soigne."
   },
@@ -571,7 +571,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 5,
+      "value": 4,
       "turns": 2
     },
     "description": "La lame huilée prend feu : la cible brûle ({value} dégâts en fin de tour pendant {turns} tours)."
@@ -664,7 +664,7 @@
     "lever": "bonus",
     "params": {
       "extra_turns": 1,
-      "bonus": 0.673
+      "bonus": 0.695
     },
     "description": "La cible, affaiblie et tailladée, le reste {extra_turns} tour de plus et {bonus%} plus fort."
   },
@@ -683,7 +683,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 17
+      "damage": 15
     },
     "description": "L'uppercut tombe à contretemps : {damage} dégâts de plus sur la cible."
   },
@@ -704,7 +704,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 37,
+      "value": 40,
       "turns": 2
     },
     "description": "La Nova porte la Dissonance partout : tous les ennemis infligent {value} % de dégâts en moins pendant {turns} tours."
@@ -724,7 +724,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.312
+      "bonus": 0.307
     },
     "description": "Le Coup bas fait +{bonus%} de dégâts sur la cible affaiblie."
   },
@@ -746,7 +746,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 26,
+      "value": 27,
       "turns": 2
     },
     "description": "La cible, affaiblie et saignante, est marquée : +{value} % de dégâts subis pendant {turns} tours."
@@ -801,7 +801,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 36,
+      "value": 40,
       "turns": 1
     },
     "description": "Sommés de toutes parts, les ennemis infligent {value} % de dégâts en moins ce tour."
@@ -820,7 +820,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 14
+      "power": 10
     },
     "description": "Une trêve garantie par le Rempart : barrière sur tout le duo."
   },
@@ -838,7 +838,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.25
+      "bonus": 0.215
     },
     "description": "La Nova, haranguée, fait +{bonus%} de dégâts."
   },
@@ -917,7 +917,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 19,
+      "value": 23,
       "turns": 1
     },
     "description": "Persuadée par la canne et la flèche, la cible inflige {value} % de dégâts en moins ce tour."
@@ -957,7 +957,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 97
+      "power": 138
     },
     "description": "Dans le souffle de la Nova, le Spectre frappe aussitôt la cible ({power} de puissance)."
   },
@@ -974,7 +974,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 17
+      "power": 12
     },
     "description": "Le mana soude la pierre : le Golem récupère des PV ({power} de puissance de l'Invocateur)."
   },
@@ -993,7 +993,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 21
+      "damage": 19
     },
     "description": "Prise en tenaille entre la créature et la dague : {damage} dégâts perforants de plus sur la cible."
   },
@@ -1011,7 +1011,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.568
+      "bonus": 0.575
     },
     "description": "Deux lames d'ombre : le Lancer fait +{bonus%} de dégâts."
   },
@@ -1032,7 +1032,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 8,
+      "value": 7,
       "turns": 2
     },
     "description": "Les flèches traversent l'explosion : tous les ennemis brûlent ({value} dégâts en fin de tour pendant {turns} tours)."
@@ -1067,7 +1067,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 122
+      "power": 213
     },
     "description": "La Prière soigne aussi le Golem ({power} de puissance de l'Invocateur)."
   },
@@ -1084,7 +1084,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 17
+      "power": 12
     },
     "description": "Le Spectre frappe aussitôt la cible du Châtiment ({power} de puissance)."
   },
@@ -1118,7 +1118,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 15,
+      "value": 11,
       "turns": 2
     },
     "description": "L'explosion répand l'Acide sur tous les ennemis : ils infligent {value} % de dégâts en moins pendant {turns} tours."
@@ -1154,7 +1154,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 33
+      "power": 30
     },
     "description": "Le Spectre répond à la Dissonance : il frappe aussitôt sa cible ({power} de puissance)."
   },
@@ -1172,7 +1172,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.799
+      "bonus": 0.81
     },
     "description": "Encouragé, l'Invocateur commande mieux : l'Ordre fait +{bonus%} de dégâts."
   },

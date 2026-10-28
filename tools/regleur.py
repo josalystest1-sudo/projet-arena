@@ -10,7 +10,9 @@ Usage : python3 tools/regleur.py <tours de réglage> <combats par tour>
    - une classe : sa puissance (écart à 50 %) ; ses PV restent ceux de son rôle (le Front le plus solide, le Dégâts
      le plus fragile), sinon le réglage finit par casser l'identité des classes ;
    - une compétence ou un passif : son chiffre (écart au taux de sa classe, pour ne pas corriger deux fois) ;
-   - une Synergie : son chiffre (écart à la moyenne de ses deux classes) ;
+   - une Synergie : son chiffre (écart entre les duos qui l'ont et ce qu'on attend de leurs deux kits : un duo qui
+     a une Synergie possible est une paire de kits précise, dont la force propre masquait l'effet de la Synergie ;
+     comparée à la composition, Golem + Prière restait à 30 % avec un chiffre à sa borne) ;
    - le budget de puissance du Destin (data/destins.json, ajustements de PV et de puissance) : un élément sans chiffre
      (« kit_items »), la composition du duo (« duo_classes »), qui en est le joueur (« duo_orders »), une classe jouée
      en acolyte (« acolyte_classes »), et chaque kit complet, côté joueur et côté acolyte séparément (« kits » : un
@@ -170,6 +172,27 @@ def simulate(round_index, count):
 
 
 GAMES = {}
+
+
+def measure_synergy_gaps(files, rates):
+    """Pour chaque Synergie : l'écart moyen, en points, entre les duos qui l'ont et ce qu'on attend de leurs deux kits
+    (taux du kit du joueur de ce côté + taux du kit de l'acolyte de ce côté - 50). Renvoie {id: (écart, parties)}."""
+    import csv
+    gaps = defaultdict(lambda: [0.0, 0])
+    for path in files:
+        with open(path, encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                possible = [s for s in row["synergies_possibles"].split("+") if s]
+                if not possible:
+                    continue
+                won = 100.0 * int(row["gagne"])
+                kit_j = "kit:joueur:" + row["joueur"] + ":" + "+".join(row["j_" + t] for t in ("basique", "moyenne", "forte", "passif"))
+                kit_a = "kit:acolyte:" + row["acolyte"] + ":" + "+".join(row["a_" + t] for t in ("basique", "moyenne", "forte", "passif"))
+                expected = rates.get(kit_j, 50.0) + rates.get(kit_a, 50.0) - 50.0
+                for synergy_id in possible:
+                    gaps[synergy_id][0] += won - expected
+                    gaps[synergy_id][1] += 1
+    return {k: (g / n, n) for k, (g, n) in gaps.items() if n}
 
 
 def measure(files):
@@ -346,11 +369,9 @@ def tune(rates):
         key = synergy.get("lever")
         if key is None or any(skill.startswith("*") for skill in synergy["skills"]):
             continue
-        a, b = synergy["skills"]
-        # Une Synergie se compare aux duos de la même composition (une Synergie Guerrier-Mage aux duos Guerrier + Mage).
-        base = rates["compo:" + "+".join(sorted([skills[a]["class"], skills[b]["class"]]))]
-        deviation = rates.get("syn:" + synergy["id"], base) - base
-        if abs(deviation) < 1.5:
+        # Une Synergie se compare à ce qu'on attend des deux kits du duo qui l'ont (voir measure_synergy_gaps).
+        deviation, games = SYNERGY_GAPS.get(synergy["id"], (0.0, 0))
+        if games < 300 or abs(deviation) < max(1.5, 196.0 * math.sqrt(0.25 / games)):
             continue
         old = synergy["params"][key]
         gain = SYNERGY_GAIN * damp("syn:" + synergy["id"], deviation)
@@ -379,9 +400,14 @@ def save_damping():
         json.dump(DAMPING, f)
 
 
+SYNERGY_GAPS = {}
+
+
 def one_round(label, files):
     """Une passe de réglage à partir de fichiers CSV déjà simulés : mesure, puis correction des chiffres de data/."""
     rates = measure(files)
+    SYNERGY_GAPS.clear()
+    SYNERGY_GAPS.update(measure_synergy_gaps(files, rates))
     spread = [v for k, v in rates.items() if k.startswith(("comp:", "passif:", "classe:"))]
     kits = [v for k, v in rates.items() if k.startswith("kit:")]
     print(f"\n== Réglage {label} : écart max à 50 % = {max(abs(v - 50) for v in spread):.1f} points"
