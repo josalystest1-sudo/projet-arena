@@ -2,6 +2,8 @@
 
 Ce fichier est lu au début de chaque session. Il résume ce qu'il faut savoir pour travailler sur le jeu sans relire tout le GDD. La source de vérité complète est `docs/GDD.md` : en cas de doute sur une règle, c'est lui qui tranche.
 
+**Avancement : `docs/SUIVI.md`** (où on en est, ce qui attend Gautier, les prochaines tâches, l'historique des PR et de ses retours). Le lire juste après ce fichier, et le mettre à jour à chaque PR.
+
 **Changement majeur du 27 octobre 2026 :** le jeu passe du 3v3 entre humains au **duo** (joueur + acolyte IA). Le prototype 3v3 de l'étape 1 reste la base technique ; son format doit être remplacé. Tout ce qui parle de « 3 alliés », d'Intentions visibles entre humains ou de file par rôle est caduc.
 
 ## Qui est le propriétaire du projet et comment travailler avec lui
@@ -40,6 +42,8 @@ Ce fichier est lu au début de chaque session. Il résume ce qu'il faut savoir p
 
 ## Feuille de route (ordre impératif)
 
+(État au 28 octobre 2026 : prototypes des étapes 1 et 2 faits, critères de sortie à faire confirmer par Gautier ; outils de l'étape 4 déjà là pour 3 classes. Détail dans `docs/SUIVI.md`.)
+
 1. **Prototype de combat en duo (web).** Reprendre le moteur de l'étape 1 (3v3) et le passer en duo : l'acolyte (sans postures) et son annonce, le duo du joueur contre un duo IA, 3 classes. **Critère de sortie : on a envie de relancer un combat.**
 2. **La Tour en prototype** : 10 étages générés, gestion des PV et recharges entre étages. Critère : on veut battre son record.
 3. Les 10 classes complètes, le générateur de Destin (budget de puissance), le mini-Destin de l'acolyte, les Synergies joueur-acolyte.
@@ -65,6 +69,8 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 ## Choix faits par Claude Code
 
 (À compléter au fil des sessions : une ligne par choix, avec la date et la raison.)
+
+**Suivi (2026-10-28)** : `docs/SUIVI.md` tient l'avancement, les retours de Gautier et la suite ; `tools/navigateur.js` pilote le jeu web dans un navigateur au format téléphone (souris ou doigt) et prend des captures, pour vérifier un écran comme Gautier le verra.
 
 **Technique (2026-10-26, étape 1)**
 
