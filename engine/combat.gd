@@ -560,20 +560,20 @@ func _resolve_targets(actor: CombatUnit, action: CombatAction) -> Array[CombatUn
 	match target_type:
 		"enemy", "enemies_2":
 			var provoker := _provoker_of(actor)
-			if provoker != null:
+			if provoker != null and not _truce_blocks(actor, provoker):
 				chosen = provoker
-			elif chosen == null or not chosen.is_alive() or chosen.team == actor.team or is_untargetable(chosen):
-				chosen = _first_targetable(enemies_of(actor, true))
+			elif chosen == null or not chosen.is_alive() or chosen.team == actor.team or is_untargetable(chosen) or _truce_blocks(actor, chosen):
+				chosen = _first_targetable(actor, enemies_of(actor, true))
 			if chosen != null:
 				chosen = _charisma_redirect(actor, chosen, target_type == "enemy")
 				result.append(chosen)
 			if target_type == "enemies_2":
 				for enemy in enemies_of(actor, true):
-					if enemy != chosen and result.size() < 2 and not is_untargetable(enemy):
+					if enemy != chosen and result.size() < 2 and not is_untargetable(enemy) and not _truce_blocks(actor, enemy):
 						result.append(enemy)
 		"enemies_all":
 			for enemy in enemies_of(actor, true):
-				if not is_untargetable(enemy):
+				if not is_untargetable(enemy) and not _truce_blocks(actor, enemy):
 					result.append(enemy)
 		"ally":
 			if chosen == null or not chosen.is_alive() or chosen.team != actor.team:
@@ -1206,9 +1206,19 @@ func _apply_synergy(synergy: Dictionary, second: CombatUnit, first: CombatUnit) 
 						continue
 				_apply_damage(owner, enemy, _damage_amount(owner, enemy, power, _sp(id, "mult", 1.0), true, str(data.skill(skill_id).get("element", ""))), str(data.skill(skill_id).get("element", "")), "synergie")
 		"cooldown_minus":
-			# Une recharge du partenaire (ou des deux) revient plus tôt (Hymne + une forte).
+			# Une recharge revient plus tôt : celle de qui joue la compétence nommée, des deux (« who: both »), ou, sans
+			# compétence nommée (Hymne + n'importe quelle forte), de celui des deux qui a joué une compétence de ce palier.
 			var tier := str(effect.get("tier", "forte"))
-			for unit in ([first, second] if str(effect.get("who", "owner")) == "both" else [owner]):
+			var refunded: Array = []
+			if str(effect.get("who", "owner")) == "both":
+				refunded = [first, second]
+			elif skill_id != "":
+				refunded = [owner]
+			else:
+				for unit in [first, second]:
+					if unit.tier_of(_actions[unit.id].skill_id) == tier:
+						refunded.append(unit)
+			for unit in refunded:
 				_reduce_cooldown(unit, tier, int(_sp(id, "amount", 1)), "synergie")
 		"heal_duo":
 			for ally in allies_of(second, true):
@@ -1408,11 +1418,24 @@ func _ids(list: Array[CombatUnit]) -> Array:
 	return ids
 
 
-func _first_targetable(list: Array[CombatUnit]) -> CombatUnit:
+func _first_targetable(actor: CombatUnit, list: Array[CombatUnit]) -> CombatUnit:
 	for unit in list:
-		if unit.is_alive() and not is_untargetable(unit):
+		if unit.is_alive() and not is_untargetable(unit) and not _truce_blocks(actor, unit):
 			return unit
 	return null
+
+
+## Trêve (Diplomate) : l'ennemi sous Trêve et l'allié du Diplomate ne peuvent pas se viser ce tour, dans les deux sens.
+func _truce_blocks(actor: CombatUnit, target: CombatUnit) -> bool:
+	return _truce_pair(actor, target) or _truce_pair(target, actor)
+
+
+func _truce_pair(bound: CombatUnit, other: CombatUnit) -> bool:
+	var truce := bound.get_status("treve")
+	if truce.is_empty():
+		return false
+	var diplomat := get_unit(str(truce.get("source", "")))
+	return diplomat != null and diplomat.team != bound.team and partner_of(diplomat) == other
 
 
 func _lowest_hp(list: Array[CombatUnit]) -> CombatUnit:

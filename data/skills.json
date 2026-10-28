@@ -183,5 +183,98 @@
     "name": "Enchaînement", "class": "pugiliste", "tier": "forte", "element": "contondant", "target": "enemy",
     "effects": [{"type": "damage", "power": 26, "hits": 3}],
     "description": "Trois coups enchaînés sur la même cible."
+  },
+
+  "fiole": {
+    "name": "Fiole", "class": "alchimiste", "tier": "basique", "element": "feu", "target": "enemy",
+    "effects": [{"type": "damage", "power": 38}],
+    "description": "Une fiole enflammée lancée sur un ennemi."
+  },
+  "elixir": {
+    "name": "Élixir", "class": "alchimiste", "tier": "basique", "element": "", "target": "ally",
+    "effects": [{"type": "heal", "power": 40}, {"type": "status", "id": "vif", "turns": 2, "value": 2}],
+    "description": "Petit soin sur un allié, qui gagne +{value} vitesse pendant {turns} tours."
+  },
+  "acide": {
+    "name": "Acide", "class": "alchimiste", "tier": "moyenne", "element": "givre", "target": "enemy",
+    "effects": [{"type": "damage", "power": 30}, {"type": "status", "id": "affaibli", "turns": 2, "value": 30}],
+    "description": "Dégâts ; la cible inflige {value} % de dégâts en moins pendant {turns} tours."
+  },
+  "fumigene": {
+    "name": "Fumigène", "class": "alchimiste", "tier": "moyenne", "element": "", "target": "ally",
+    "effects": [{"type": "status", "id": "fumee", "turns": 1}],
+    "description": "Un nuage de fumée cache un allié : on ne peut plus le viser jusqu'à la fin du tour."
+  },
+  "bombe": {
+    "name": "Bombe", "class": "alchimiste", "tier": "forte", "element": "feu", "target": "enemies_all",
+    "effects": [{"type": "damage", "power": 48}],
+    "description": "Une bombe de feu sur tous les ennemis."
+  },
+  "catalyseur": {
+    "name": "Catalyseur", "class": "alchimiste", "tier": "forte", "element": "", "target": "ally",
+    "effects": [{"type": "reset_cooldowns"}],
+    "description": "Remet à zéro toutes les recharges d'un allié : sa moyenne et sa forte sont de nouveau prêtes."
+  },
+
+  "note": {
+    "name": "Note", "class": "barde", "tier": "basique", "element": "foudre", "target": "enemy",
+    "effects": [{"type": "damage", "power": 38}],
+    "description": "Une note de foudre sur un ennemi."
+  },
+  "refrain": {
+    "name": "Refrain", "class": "barde", "tier": "basique", "element": "", "target": "ally",
+    "effects": [{"type": "status", "id": "vif", "turns": 2, "value": 2}],
+    "description": "Un allié gagne +{value} vitesse pendant {turns} tours."
+  },
+  "hymne": {
+    "name": "Hymne", "class": "barde", "tier": "moyenne", "element": "foudre", "target": "enemy",
+    "effects": [{"type": "damage", "power": 34}, {"type": "team_first"}],
+    "description": "Frappe un ennemi ; ce tour, tout le duo agit avant les ennemis."
+  },
+  "dissonance": {
+    "name": "Dissonance", "class": "barde", "tier": "moyenne", "element": "foudre", "target": "enemy",
+    "effects": [{"type": "damage", "power": 34}, {"type": "status", "id": "affaibli", "turns": 2, "value": 20}],
+    "description": "Dégâts ; la cible inflige {value} % de dégâts en moins pendant {turns} tours."
+  },
+  "crescendo": {
+    "name": "Crescendo", "class": "barde", "tier": "forte", "element": "foudre", "target": "enemies_all",
+    "effects": [{"type": "damage", "power": 40, "per_turn": 0.08}],
+    "description": "Foudre sur tous les ennemis, +{per_turn%} par tour écoulé depuis le début du combat."
+  },
+  "berceuse": {
+    "name": "Berceuse", "class": "barde", "tier": "forte", "element": "foudre", "target": "enemy",
+    "effects": [{"type": "damage", "power": 40}, {"type": "status", "id": "etourdi", "turns": 2}],
+    "description": "Dégâts ; la cible s'endort et perd son action au tour suivant."
+  },
+
+  "argument": {
+    "name": "Argument", "class": "diplomate", "tier": "basique", "element": "contondant", "target": "enemy",
+    "effects": [{"type": "damage", "power": 40}],
+    "description": "Un coup de canne, pour appuyer l'argument."
+  },
+  "encouragement": {
+    "name": "Encouragement", "class": "diplomate", "tier": "basique", "element": "", "target": "ally",
+    "effects": [{"type": "status", "id": "galvanise", "turns": 1, "value": 15}],
+    "description": "Un allié inflige +{value} % de dégâts ce tour."
+  },
+  "ultimatum": {
+    "name": "Ultimatum", "class": "diplomate", "tier": "moyenne", "element": "contondant", "target": "enemy",
+    "effects": [{"type": "taunt", "count": 1}, {"type": "status", "id": "ultimatum", "turns": 1, "value": 30}, {"type": "damage", "power": 20}],
+    "description": "La cible doit attaquer le Diplomate ce tour, et le paie : chaque coup qu'elle lui porte lui vaut une riposte."
+  },
+  "treve": {
+    "name": "Trêve", "class": "diplomate", "tier": "moyenne", "element": "", "target": "enemy",
+    "effects": [{"type": "status", "id": "treve", "turns": 1}],
+    "description": "Impose une trêve entre un ennemi et ton allié : ce tour, ils ne peuvent pas se viser l'un l'autre."
+  },
+  "discours": {
+    "name": "Discours", "class": "diplomate", "tier": "forte", "element": "", "target": "allies_all",
+    "effects": [{"type": "status", "id": "galvanise", "turns": 3, "value": 25}],
+    "description": "Tout le duo inflige +{value} % de dégâts pendant {turns} tours."
+  },
+  "chantage": {
+    "name": "Chantage", "class": "diplomate", "tier": "forte", "element": "lumiere", "target": "enemy",
+    "effects": [{"type": "damage", "power": 42}, {"type": "status", "id": "chantage", "turns": 2}],
+    "description": "Dégâts ; la cible ne peut pas utiliser sa forte au tour suivant."
   }
 }

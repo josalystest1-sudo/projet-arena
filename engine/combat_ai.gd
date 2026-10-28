@@ -352,6 +352,11 @@ static func _target_for(combat: Combat, unit: CombatUnit, skill_id: String, ally
 		"enemy", "enemies_2", "enemies_all":
 			return enemy if valid.has(enemy) else _lowest_enemy(combat, unit)
 		"ally":
+			# Un renfort (Encouragement, Refrain) va à l'autre membre du duo plutôt qu'à soi.
+			if skill_kind(combat.data, skill_id) == "renfort":
+				var partner := combat.partner_of(unit)
+				if partner != null and valid.has(partner):
+					return partner
 			return ally if valid.has(ally) else _lowest_ally(combat, unit)
 		"ally_ko":
 			return null
