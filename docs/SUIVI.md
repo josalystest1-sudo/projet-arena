@@ -15,7 +15,7 @@ Les prototypes des étapes 1 à 3 sont jouables sur téléphone : le **combat en
 | 1. Prototype de combat en duo | **Fait, à valider** | PR #5 à #8, #10, #12, #14. Critère de sortie (« on a envie de relancer un combat ») pas encore confirmé par Gautier. |
 | 2. La Tour en prototype | **Fait, à valider** | PR #9, #13 (monstres et bestiaire). Critère (« on veut battre son record ») pas encore confirmé. |
 | 3. 10 classes, Destin, mini-Destin, Synergies | **Fait, à valider** | PR #17 à #23. Équilibrage des 10 classes et de la Tour vérifié sur des combats neufs (PR #23). |
-| 4. Simulateur d'équilibrage | **En cours** | Duels et Tour : `tools/equilibrage.gd`, `tools/regleur.py`, `tools/simulate_tour.gd`, `tools/menace.py`, `tools/regleur_tour.py`, `tools/profil.gd`. Reste : les nœuds du Destin (mesure et réglage de leurs valeurs, branche `simulateur-destin`), la Tour selon le niveau (branche `tour-niveau`), la mort subite (17,6 % des combats finissent avant le tour 8, cible 90 % entre 8 et 15). |
+| 4. Simulateur d'équilibrage | **En cours** | Duels et Tour : `tools/equilibrage.gd`, `tools/regleur.py`, `tools/simulate_tour.gd`, `tools/menace.py`, `tools/regleur_tour.py`, `tools/profil.gd`. Fait : les nœuds du Destin mesurés et réglés (PR #24). Reste : la Tour selon le niveau (branche `tour-niveau`, à calibrer), la mort subite (17,6 % des combats finissent avant le tour 8, cible 90 % entre 8 et 15). |
 | 5. Serveur, comptes, PvP réel, Échos | À faire | Pas avant l'étape 4. |
 | 6. Art PixelLab et les 13 écrans | À faire | Sprites provisoires d'ici là. Les écrans existent déjà en version simple (création, rencontre, Vitrine, Acolyte, Compétences, La Tour, Bestiaire, Profil, Paramètres). |
 | 7 à 10. Évolutions, boutique, bêta, lancement | À faire | |
@@ -34,7 +34,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
    - les 7 classes manquantes, par groupes : ~~Voleur, Archer, Pugiliste~~ (PR #19) ; ~~Alchimiste, Barde, Diplomate~~ (PR #20) ; ~~l'Invocateur et sa créature~~ (PR #21) ; 6 actives et 4 passifs chacune, leurs Synergies (au moins une entre chaque classe et chaque classe qui peut lui servir d'acolyte, et chaque kit a une Synergie possible), avec tests ;
    - ~~le générateur de Destin (arbre de 45 nœuds, 30 points, budget de puissance), le mini-Destin de l'acolyte (15 nœuds, auto-attribué) et l'écran de l'arbre~~ (PR #22) ;
    - ~~un nouveau passage du régleur (duel et Tour) sur les 10 classes~~ (PR #23).
-3. **Étape 4**, en plusieurs PR : le simulateur avec Destin et le régleur des valeurs des nœuds (prêt sur la branche `simulateur-destin`, à faire tourner) ; la Tour qui suit le niveau du duo (branche `tour-niveau`, à calibrer) ; la mort subite (durée des combats) ; les Synergies et compositions encore hors fourchette (voir « Limites connues »).
+3. **Étape 4**, en plusieurs PR : ~~le simulateur avec Destin et le régleur des valeurs des nœuds~~ (PR #24) ; la Tour qui suit le niveau du duo (branche `tour-niveau`, à calibrer) ; la mort subite (durée des combats) ; les Synergies et compositions encore hors fourchette (voir « Limites connues »).
 
 ## Limites connues
 
@@ -43,7 +43,8 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 - **Cycle entre compositions** (mesuré à 3 classes) : Guerrier + Mage bat Mage + Prêtre 55 %, Mage + Prêtre bat Guerrier + Prêtre 56 %, Guerrier + Prêtre bat Guerrier + Mage 55 %. La force d'un duo ne peut pas le corriger. Le Guerrier + Prêtre gagne surtout au décompte des PV : piste de la mort subite (étape 4). À remesurer à 10 classes (les affrontements vont de 43 à 55 %).
 - **Le pilier « le duo gagne »** n'est pas encore démontré au simulateur : un joueur IA qui lit l'annonce de son acolyte gagne 52,9 % contre un qui l'ignore. Il faudra une IA qui prépare ses coups sur plusieurs tours (étape 4), et surtout le ressenti de Gautier.
 - **La Tour selon la classe** : étage moyen atteint, de 5,7 (Barde) à 9,2 (Prêtre) ; les Soutiens qui frappent peu montent moins haut. Le record étant par classe, ce n'est pas bloquant, mais l'écart a grandi avec les 10 classes.
-- **Durée des combats** : 82 % entre les tours 8 et 15 (cible du GDD : 90 %) ; 17,6 % finissent avant le tour 8. La mort subite n'y est pour rien (3 % des combats s'y terminent) : ce sont les premiers KO qui arrivent tôt. À régler à l'étape 4 (PV, ou tour de mort subite).
+- **Les nœuds du Destin selon le côté** : un même modèle n'a pas la même force chez le joueur et chez l'acolyte (« +soins » et les Pivots de Front : 44–47 % côté joueur, 56 % côté acolyte). Le régleur mesure les deux ensemble ; des valeurs propres au mini-Destin sont la suite (étape 4).
+- **Durée des combats** : 82 % entre les tours 8 et 15 (cible du GDD : 90 %) ; 17,6 % finissent avant le tour 8 (35 % avec le Destin aux niveaux 1 à 30 : les bonus de puissance pèsent plus que ceux de PV). La mort subite n'y est pour rien (3 % des combats s'y terminent) : ce sont les premiers KO qui arrivent tôt. À régler à l'étape 4 (PV, ou tour de mort subite).
 - **La règle d'attente de l'acolyte** (garder sa forte un tour pour une Synergie) ne sert que dans environ 2 combats sur 100 avec 3 classes ; elle prendra de l'importance avec les 10 classes.
 - **Ce qui est provisoire** : sprites en pixels dessinés en code (PixelLab à l'étape 6), bruitages synthétiques, noms des monstres et de l'acolyte (en attente de l'univers), données gardées sur l'appareil (comptes à l'étape 5), courbe d'XP rapide et bouton « Gagner un niveau » (pour tester l'arbre du Destin).
 - **Les valeurs des nœuds du Destin** sont fixées à la main (`data/destin_nodes.json`) : le simulateur de l'étape 4 doit mesurer le taux de victoire par type de nœud et corriger.
@@ -95,6 +96,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | #21 | 28 oct | L'Invocateur et sa créature (Golem, Spectre) : la 10e classe, 14 Synergies ; bouton de réglage de la Tour sur GitHub. |
 | #22 | 28 oct | Le Destin : arbre de 45 nœuds et 30 points, mini-Destin de l'acolyte (15 nœuds), niveaux et XP, écran de l'arbre. |
 | #23 | 28 oct | Équilibrage des 10 classes et de la Tour (sur le PC de Gautier) ; régleur simplifié et trois pièges corrigés ; plafond ±25 % ; Encouragement frappe aussi ; simulateur 3,4 fois plus rapide. |
+| #24 | 28 oct | Le simulateur avec Destin (niveau, points placés au hasard, nœuds pris dans le CSV), le régleur des valeurs des nœuds, les valeurs réglées, bouton « Réglage du Destin » sur GitHub. |
 
 ## Reprendre le travail (pour Claude Code)
 
