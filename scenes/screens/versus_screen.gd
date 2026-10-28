@@ -11,7 +11,7 @@ var _started := false
 
 func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	app = p_app
-	enemy = Duo.random_duo(app.data, app.rng)
+	enemy = app.random_enemy_duo()
 	var first := app.rng.randi_range(0, ENEMY_NAMES.size() - 1)
 	enemy[0]["name"] = ENEMY_NAMES[first]
 	enemy[1]["name"] = ENEMY_NAMES[(first + app.rng.randi_range(1, ENEMY_NAMES.size() - 1)) % ENEMY_NAMES.size()]

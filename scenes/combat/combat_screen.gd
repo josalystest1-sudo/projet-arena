@@ -490,7 +490,7 @@ func _start_combat(enemy: Array = []) -> void:
 	# En face : un duo IA (en attendant les Échos de l'étape 5).
 	var team_b := enemy
 	if team_b.is_empty():
-		team_b = Duo.random_duo(data, rng)
+		team_b = app.random_enemy_duo()
 		team_b[0]["name"] = ENEMY_NAMES[0]
 		team_b[1]["name"] = ENEMY_NAMES[1]
 	mode = "pvp"

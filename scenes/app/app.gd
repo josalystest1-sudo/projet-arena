@@ -286,6 +286,28 @@ func duo_members() -> Array:
 	return team
 
 
+## Le duo IA d'en face : de ton niveau, avec un Destin et un mini-Destin dont les points sont placés seuls (comme le
+## fera le matchmaking par niveau de l'étape 5). Sans ça, chaque niveau gagné te donnerait l'avantage sur un adversaire
+## sans Destin.
+func random_enemy_duo() -> Array:
+	var team := Duo.random_duo(data, rng)
+	for i in range(team.size()):
+		var member: Dictionary = team[i]
+		var mini := i > 0
+		var tree := Destin.generate(data, member["class_id"], member["picks"], rng.randi(), mini)
+		var taken: Array = [] if mini else [0]
+		var points := mini(profile.level / 2, int(data.destin_nodes.get("mini_points", 15))) if mini else profile.level
+		while taken.size() < points:
+			var next := Destin.auto_take(tree, taken)
+			if next < 0:
+				break
+			taken.append(next)
+		var theirs := Destin.mods_for(tree, taken)
+		member["mods"] = theirs["mods"]
+		member["skill_mods"] = theirs["skill_mods"]
+	return team
+
+
 func player_skills() -> Array[String]:
 	return Duo.kit_skills(data, player_class, player_picks)
 
