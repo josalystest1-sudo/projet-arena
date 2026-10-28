@@ -132,6 +132,24 @@ func kit_bonus(skill_ids: Array, passive_id: String, own_class: String = "", par
 	return clampf(total, -MAX_KIT_BONUS, MAX_KIT_BONUS)
 
 
+## Plafond de l'ajustement par paire de kits (toutes Synergies possibles du duo confondues).
+const MAX_PAIR_BONUS := 0.1
+
+
+## L'ajustement de PV et de puissance des deux membres d'un duo selon les Synergies qu'ils peuvent déclencher
+## (data/destins.json, « synergy_pairs » : par Synergie, le reste à corriger des paires de kits qui l'ont, une fois
+## chaque kit réglé de son côté). Une paire de kits précise peut aller trop bien ou trop mal ensemble sans qu'aucun
+## des deux kits ni la Synergie n'en soit la cause. Plafonné à ±10 %.
+func synergy_pairs_bonus(class_a: String, picks_a: Dictionary, class_b: String, picks_b: Dictionary) -> float:
+	var pairs: Dictionary = destins.get("synergy_pairs", {})
+	if pairs.is_empty():
+		return 0.0
+	var total := 0.0
+	for synergy in Duo.kit_synergies(self, class_a, picks_a, class_b, picks_b):
+		total += float(pairs.get(str(synergy["id"]), 0.0))
+	return clampf(total, -MAX_PAIR_BONUS, MAX_PAIR_BONUS)
+
+
 ## Clé d'un kit complet : sa classe, puis ses trois compétences (basique, moyenne, forte) et son passif.
 static func kit_key(class_id: String, skill_ids: Array, passive_id: String) -> String:
 	var items: Array = skill_ids.duplicate()
