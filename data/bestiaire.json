@@ -1,0 +1,20 @@
+{
+  "familles": {"betes": "Bêtes", "morts": "Morts-vivants", "elementaires": "Élémentaires", "gobelins": "Gobelins"},
+  "rangs": {"sbire": "Sbire", "soldat": "Soldat", "elite": "Élite", "gardien": "Gardien"},
+  "monstres": {
+    "rat": {"nom": "Rat des cryptes", "famille": "betes", "rang": "sbire", "classe": "voleur", "voies": ["poison"], "pv_mult": 0.5, "description": "Seul, il ne fait pas peur. Ils ne sont jamais seuls."},
+    "loup": {"nom": "Loup gris", "famille": "betes", "rang": "soldat", "classe": "guerrier", "voies": ["sang"], "pv_mult": 0.8, "description": "Rapide, et ses crocs font saigner."},
+    "ours": {"nom": "Ours brun", "famille": "betes", "rang": "elite", "classe": "guerrier", "voies": ["charge", "rempart"], "pv_mult": 1.2, "description": "Il attire les coups pour protéger sa meute, puis charge."},
+    "squelette": {"nom": "Squelette", "famille": "morts", "rang": "sbire", "classe": "guerrier", "voies": ["rempart"], "pv_mult": 0.6, "description": "Il se met entre toi et ses maîtres."},
+    "goule": {"nom": "Goule", "famille": "morts", "rang": "soldat", "classe": "mage", "voies": ["arcane"], "pv_mult": 0.8, "description": "Elle se soigne en dévorant ce qu'elle frappe."},
+    "necromancien": {"nom": "Nécromancien", "famille": "morts", "rang": "elite", "classe": "invocateur", "voies": ["meute", "gardien"], "pv_mult": 1.0, "description": "Il lâche ses morts sur toi et veille sur les siens. À abattre en premier."},
+    "feu_follet": {"nom": "Feu follet", "famille": "elementaires", "rang": "sbire", "classe": "mage", "voies": ["brasier"], "pv_mult": 0.5, "description": "Fragile : il brûle tout ce qu'il touche."},
+    "gelee": {"nom": "Gelée", "famille": "elementaires", "rang": "soldat", "classe": "alchimiste", "voies": ["acide", "elixir"], "pv_mult": 0.9, "description": "Lente et collante : son acide ronge, et elle se reforme."},
+    "golem": {"nom": "Golem de pierre", "famille": "elementaires", "rang": "elite", "classe": "guerrier", "voies": ["tonnerre", "rempart"], "pv_mult": 1.3, "description": "Un mur qui protège les siens et fait trembler le sol."},
+    "gobelin": {"nom": "Gobelin", "famille": "gobelins", "rang": "sbire", "classe": "voleur", "voies": ["ombres"], "pv_mult": 0.5, "description": "Lâche seul, féroce en bande."},
+    "chaman": {"nom": "Chaman gobelin", "famille": "gobelins", "rang": "soldat", "classe": "alchimiste", "voies": ["elixir", "fumees"], "pv_mult": 0.7, "description": "Il soigne la bande et aveugle ses ennemis."},
+    "chef_gobelin": {"nom": "Chef de guerre", "famille": "gobelins", "rang": "elite", "classe": "guerrier", "voies": ["rempart", "cri"], "pv_mult": 1.2, "description": "Il provoque, encaisse et se relance."},
+    "dragonnet": {"nom": "Dragonnet", "famille": "betes", "rang": "gardien", "classe": "mage", "voies": ["brasier", "foudre"], "pv_mult": 1.5, "description": "Gardien. Son souffle brûle tout le duo, sa foudre étourdit."},
+    "liche": {"nom": "Liche", "famille": "morts", "rang": "gardien", "classe": "mage", "voies": ["givre", "arcane"], "pv_mult": 1.5, "description": "Gardienne. Elle gèle le duo et draine sa vie."}
+  }
+}

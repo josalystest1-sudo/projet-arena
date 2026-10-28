@@ -16,6 +16,8 @@ const ECLAT_VALEURS_CLE := [0.0, 0.0, 0.0, 0.0, 0.10]
 var classe_id := ""
 ## Le nom affiché : celui de la classe, ou d'un monstre de la Tour.
 var nom := ""
+## Le dessin : celui de la classe, ou celui du monstre (son identifiant dans le bestiaire).
+var sprite := ""
 var role := ""
 var graine := 0
 var acolyte := false
@@ -37,6 +39,7 @@ static func de_base(donnees: Donnees, p_classe_id: String, nb_voies: int = 5, to
 	var d := Destin.new()
 	d.classe_id = p_classe_id
 	d.nom = str(cls["nom"])
+	d.sprite = p_classe_id
 	d.role = str(cls["role"])
 	d.pv_base = int(cls["pv"])
 	d.k = float(cls["k"])
@@ -82,7 +85,7 @@ func bonus_pv() -> float:
 
 
 func vers_dict() -> Dictionary:
-	return {"classe_id": classe_id, "nom": nom, "role": role, "graine": graine, "acolyte": acolyte, "pv_base": pv_base,
+	return {"classe_id": classe_id, "nom": nom, "sprite": sprite, "role": role, "graine": graine, "acolyte": acolyte, "pv_base": pv_base,
 		"pv_mult": pv_mult, "k": k, "moyeu": moyeu.duplicate(true), "voies": voies.duplicate(true)}
 
 
@@ -90,6 +93,7 @@ static func depuis_dict(dico: Dictionary) -> Destin:
 	var d := Destin.new()
 	d.classe_id = str(dico["classe_id"])
 	d.nom = str(dico["nom"])
+	d.sprite = str(dico.get("sprite", dico["classe_id"]))
 	d.role = str(dico["role"])
 	d.graine = int(dico["graine"])
 	d.acolyte = bool(dico["acolyte"])

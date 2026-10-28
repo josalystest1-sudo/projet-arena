@@ -52,7 +52,7 @@ static func nouveau_combat(camp_a: Array, camp_b: Array, niveau: int, mode: Stri
 			for v in range(destin.voies.size()):
 				bonus.append([destin.bonus_valeurs(v, 1), destin.bonus_valeurs(v, 2), destin.bonus_valeurs(v, 3), destin.bonus_valeurs(v, 4)])
 			var pv_max := plancher(float(destin.pv_base) * destin.pv_mult * m * (1.0 + destin.bonus_pv()))
-			e.statique[id] = {"camp": c[0], "place": place, "classe": destin.classe_id, "nom": destin.nom,
+			e.statique[id] = {"camp": c[0], "place": place, "classe": destin.classe_id, "nom": destin.nom, "sprite": destin.sprite,
 				"role": destin.role, "k": destin.k, "pv_max": pv_max, "moyeu": destin.moyeu, "voies": destin.voies,
 				"bonus": bonus}
 			var nv := destin.voies.size()
@@ -127,14 +127,14 @@ static func actions_legales(e: EtatCombat, id: String) -> Array[Dictionary]:
 ## choisie si elle vit encore, sinon l'ennemi vivant qui a le moins de PV en pourcentage (à égalité, dans l'ordre :
 ## le joueur adverse avant son acolyte, le premier ennemi de la Tour).
 static func cible_ennemie(e: EtatCombat, id: String) -> String:
-	var provocateur := _provocateur(e, id)
-	if provocateur != "":
-		return provocateur
+	var forcee := provocateur(e, id)
+	if forcee != "":
+		return forcee
 	var choisie := str(e.perso(id)["cible_ennemie"])
 	var ennemis := e.ennemis_vivants(id)
 	if choisie in ennemis:
 		return choisie
-	return _plus_bas(e, ennemis)
+	return plus_bas(e, ennemis)
 
 
 ## La cible alliée : celle choisie si elle vit encore, sinon l'allié vivant (soi compris) au plus bas en pourcentage.
@@ -143,10 +143,10 @@ static func cible_alliee(e: EtatCombat, id: String) -> String:
 	var allies := e.allies_vivants(id)
 	if choisie in allies:
 		return choisie
-	return _plus_bas(e, allies)
+	return plus_bas(e, allies)
 
 
-static func _plus_bas(e: EtatCombat, ids: Array[String]) -> String:
+static func plus_bas(e: EtatCombat, ids: Array[String]) -> String:
 	var meilleur := ""
 	for id in ids:
 		if meilleur == "" or e.pv_pourcent(id) < e.pv_pourcent(meilleur):
@@ -154,7 +154,7 @@ static func _plus_bas(e: EtatCombat, ids: Array[String]) -> String:
 	return meilleur
 
 
-static func _provocateur(e: EtatCombat, id: String) -> String:
+static func provocateur(e: EtatCombat, id: String) -> String:
 	if not e.a_etat(id, "provoque"):
 		return ""
 	var source := str(e.perso(id)["etats"]["provoque"]["source"])
@@ -191,9 +191,9 @@ static func valider(e: EtatCombat, id: String, declaration: Variant) -> Dictiona
 					choisie = {}
 	if choisie.is_empty():
 		choisie = legales[0].duplicate()
-	var provocateur := _provocateur(e, id)
-	if provocateur != "":
-		choisie["cible_ennemie"] = provocateur
+	var forcee := provocateur(e, id)
+	if forcee != "":
+		choisie["cible_ennemie"] = forcee
 	return choisie
 
 
