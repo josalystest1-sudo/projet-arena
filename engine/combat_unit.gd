@@ -1,4 +1,4 @@
-## Un personnage en combat : stats, kit (une compétence par palier + un passif), recharges, états.
+## Un personnage en combat : stats, kit (une compétence par palier + un passif), recharges, états, modificateurs.
 ## Module pur : aucune dépendance aux nœuds de scène.
 class_name CombatUnit
 extends RefCounted
@@ -19,10 +19,18 @@ var heal_mult: float = 1.0
 ## Palier -> identifiant de compétence.
 var skills: Dictionary = {}
 var passive: String = ""
+## Modificateurs permanents du personnage (les nœuds de son Destin, un jour l'évolution), par clé : les mêmes clés
+## que les paramètres des passifs (« reduction », « forte_minus », « feu_bonus »…). Le moteur lit toujours la somme
+## du paramètre du passif et du modificateur (Combat._pv).
+var mods: Dictionary = {}
+## Modificateurs propres à une compétence (évolutions de compétence du Destin) : identifiant -> {clé: valeur}.
+var skill_mods: Dictionary = {}
+## États contre lesquels il est immunisé (passif, Destin).
+var immunities: Array = []
 ## Palier -> numéro du tour à partir duquel la compétence est de nouveau disponible.
 var cooldown_until: Dictionary = {}
 var statuses: Array[Dictionary] = []
-## Drapeaux « une fois par combat » (second_souffle, resurrection, revived...).
+## Drapeaux « une fois par combat » (second_souffle, resurrection, revived...) et compteurs (esquives, combo...).
 var flags: Dictionary = {}
 var last_target: String = ""
 ## Le dernier ennemi qui lui a porté un coup direct.
@@ -62,6 +70,7 @@ static func from_class(data: CombatData, p_class_id: String, picks: Dictionary, 
 		unit.max_hp = maxi(1, int(round(float(unit.max_hp) * (1.0 + bonus))))
 		unit.hp = unit.max_hp
 		unit.power = maxi(1, int(round(float(unit.power) * (1.0 + bonus))))
+	unit.setup_immunities(data)
 	return unit
 
 
@@ -82,10 +91,49 @@ static func from_monster(data: CombatData, monster_id: String, p_id: String, p_t
 	for tier in TIERS:
 		unit.skills[tier] = str(monster["skills"][tier])
 	unit.passive = str(monster.get("passive", ""))
+	unit.setup_immunities(data)
 	return unit
 
 
-## Tire un kit au hasard (en attendant le générateur de Destin de l'étape 2).
+## Applique les modificateurs permanents (nœuds de Destin pris) : PV et puissance tout de suite, le reste est lu
+## par le moteur au fil du combat.
+func apply_mods(data: CombatData, p_mods: Dictionary, p_skill_mods: Dictionary = {}) -> void:
+	for key in p_mods:
+		if p_mods[key] is Array:
+			# Une liste (« immune ») s'allonge.
+			var merged: Array = mods.get(key, []).duplicate()
+			for item in p_mods[key]:
+				if not merged.has(item):
+					merged.append(item)
+			mods[key] = merged
+		else:
+			mods[key] = float(mods.get(key, 0.0)) + float(p_mods[key])
+	for skill_id in p_skill_mods:
+		var current: Dictionary = skill_mods.get(skill_id, {})
+		for key in p_skill_mods[skill_id]:
+			current[key] = float(current.get(key, 0.0)) + float(p_skill_mods[skill_id][key])
+		skill_mods[skill_id] = current
+	if mods.has("hp_pct"):
+		max_hp = maxi(1, int(round(float(max_hp) * (1.0 + float(mods["hp_pct"])))))
+		hp = max_hp
+		mods.erase("hp_pct")
+	if mods.has("power_pct"):
+		power = maxi(1, int(round(float(power) * (1.0 + float(mods["power_pct"])))))
+		mods.erase("power_pct")
+	setup_immunities(data)
+
+
+## Les immunités viennent du passif (« immune » dans ses paramètres) et des modificateurs.
+func setup_immunities(data: CombatData) -> void:
+	immunities = []
+	for status_id in data.passive_list(passive, "immune"):
+		immunities.append(str(status_id))
+	for status_id in mods.get("immune", []):
+		if not immunities.has(str(status_id)):
+			immunities.append(str(status_id))
+
+
+## Tire un kit au hasard (en attendant le générateur de Destin de l'étape 3).
 static func random_picks(rng: RandomNumberGenerator) -> Dictionary:
 	return {
 		"basique": rng.randi_range(0, 1),
@@ -139,6 +187,10 @@ func remove_status(status_id: String) -> void:
 			statuses.remove_at(i)
 
 
+func is_immune(status_id: String) -> bool:
+	return immunities.has(status_id)
+
+
 func barrier_amount() -> int:
 	return int(get_status("barriere").get("value", 0))
 
@@ -148,3 +200,8 @@ func status_ids() -> Array[String]:
 	for status in statuses:
 		ids.append(str(status["id"]))
 	return ids
+
+
+## Un modificateur propre à une compétence (évolution de Destin), 0 s'il n'y en a pas.
+func skill_mod(skill_id: String, key: String) -> float:
+	return float(skill_mods.get(skill_id, {}).get(key, 0.0))

@@ -101,7 +101,7 @@ func test_meute_plus_forte_a_plusieurs() -> void:
 	combat.get_unit("b3").hp = 0
 	var alone := combat._damage_amount(rat, target, 40, 1.0, true)
 	assert_true(full > alone, "plus fort quand la meute est debout")
-	var bonus := data.passive_param("meute", "bonus", 0.0)
+	var bonus := data.passive_param("meute", "per_ally_bonus", 0.0)
 	assert_between(float(full) / float(alone), 1.0 + 2.0 * bonus - 0.05, 1.0 + 2.0 * bonus + 0.05, "+%d %% par autre monstre debout" % int(bonus * 100))
 
 
@@ -114,7 +114,7 @@ func test_regeneration_s_arrete_quand_les_monstres_s_epuisent() -> void:
 	var jelly := combat.get_unit("b1")
 	jelly.hp = 100
 	combat.resolve_turn([action("a1", "priere", "a1"), action("a2", "rempart", "a1"), action("b1", "fouet_gluant", "a1")])
-	var expected := int(round(round(jelly.max_hp * data.passive_param("regeneration", "heal", 0.0)) * 0.5))
+	var expected := int(round(round(jelly.max_hp * data.passive_param("regeneration", "regen", 0.0)) * 0.5))
 	assert_eq(jelly.hp, 100 + expected, "elle se reforme à chaque tour (soins des monstres réduits)")
 	jump_to_turn(combat, 12)
 	var before := jelly.hp

@@ -38,30 +38,16 @@ SYNERGY_GAIN = 0.8
 CLASS_GAIN = 0.6
 MAX_STEP = 0.10
 
-# Le chiffre principal de chaque compétence : (type d'effet, clé). Rempart n'a pas de chiffre : il n'est pas réglé.
-SKILL_LEVERS = {
-    "taillade": [("damage", "power")], "coup_de_bouclier": [("damage", "power")],
-    "provocation": [("damage", "power")], "fendoir": [("damage", "power"), ("status", "value")],
-    "cri_de_guerre": [("damage", "power")],
-    "boule_de_feu": [("damage", "power")], "etincelle": [("damage", "power")],
-    "trait_de_givre": [("damage", "power")], "arc_de_foudre": [("damage", "power")],
-    "nova": [("damage", "power")], "bouclier_de_mana": [("barrier", "power")],
-    "chatiment": [("damage", "power")], "priere": [("heal", "power")],
-    "restauration": [("heal", "power")], "purification": [("heal", "power")],
-    "egide": [("barrier", "power")], "resurrection": [("revive", "percent")],
-}
-# Le chiffre principal de chaque passif (plus il est haut, plus le passif est fort). Résonance et Météorologue
-# (une recharge en moins) n'ont pas de chiffre fin : ils ne sont pas réglés automatiquement.
-PASSIVE_LEVERS = {
-    "peau_de_fer": "reduction", "second_souffle": "heal", "veteran": "damage", "colere": "per_quarter",
-    "focalisation": "bonus", "brasier": "value", "foi": "bonus", "martyr": "share",
-    "lumiere_interieure": "heal", "sanctuaire": "bonus",
-}
-SYNERGY_LEVERS = {
-    "provocation_nova": "bonus", "trait_de_givre_chatiment": "damage",
-    "provocation_chatiment": "mult", "arc_de_foudre_priere": "mult",
-    "fendoir_boule_de_feu": "bonus", "cri_de_guerre_bouclier_de_mana": "share",
-}
+# Les chiffres que le régleur fait bouger viennent des données : pour une compétence, tous ses chiffres de force
+# (« power », « value », « percent » de ses effets, scalés ensemble) ; pour un passif ou une Synergie, le chiffre
+# nommé par « lever ». Sans chiffre (Rempart, Résonance, Météorologue), l'élément se règle par le budget du Destin.
+SKILL_LEVER_KEYS = ("power", "value", "percent")
+
+
+def skill_levers(skill):
+    return [(effect["type"], key) for effect in skill["effects"] for key in SKILL_LEVER_KEYS if key in effect]
+
+
 PAIR_GAIN = 0.5
 PAIR_LIMIT = 0.15
 # Une compétence ou un passif sans chiffre à régler (Rempart, Résonance, Météorologue) se règle par le budget du
@@ -309,22 +295,22 @@ def tune(rates):
         new_power = int(round(step(power, deviation, CLASS_GAIN * damp("classe:" + class_id, deviation))))
         set_class_stats(class_id, new_hp, new_power)
         report.append(f"classe {class_id} {rates['classe:' + class_id]:.1f} % : PV {hp} -> {new_hp}, puissance {power} -> {new_power}")
-    for skill_id, levers in SKILL_LEVERS.items():
-        skill = skills[skill_id]
+    for skill_id, skill in skills.items():
+        if skill.get("monster") or not skill_levers(skill) or ("comp:" + skill_id) not in rates:
+            continue
         deviation = rates["comp:" + skill_id] - rates["classe:" + skill["class"]]
         if abs(deviation) < 1.0:
             continue
-        for effect_type, key in levers:
-            for effect in skill["effects"]:
-                if effect["type"] == effect_type and key in effect:
+        for effect in skill["effects"]:
+            for key in SKILL_LEVER_KEYS:
+                if key in effect:
                     old = effect[key]
                     effect[key] = step_int(old, deviation, GAIN * damp("comp:" + skill_id, deviation))
                     report.append(f"{skill_id} ({deviation:+.1f}) : {key} {old} -> {effect[key]}")
-                    break
     destins = load("destins.json")
     items = destins.setdefault("kit_items", {})
-    unleveled = [(sid, "comp:", s["class"]) for sid, s in skills.items() if sid not in SKILL_LEVERS]
-    unleveled += [(pid, "passif:", p["class"]) for pid, p in passives.items() if pid not in PASSIVE_LEVERS]
+    unleveled = [(sid, "comp:", s["class"]) for sid, s in skills.items() if not skill_levers(s)]
+    unleveled += [(pid, "passif:", p["class"]) for pid, p in passives.items() if not p.get("lever")]
     for item_id, prefix, class_id in unleveled:
         deviation = rates[prefix + item_id] - rates["classe:" + class_id]
         if abs(deviation) < 1.0:
@@ -414,8 +400,10 @@ def tune(rates):
         inner[kit] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - KIT_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
         report.append(f"budget du kit {kit} en {side} ({deviation:+.1f}) : {old:+.3f} -> {inner[kit]:+.3f}")
     write_destins(destins)
-    for passive_id, key in PASSIVE_LEVERS.items():
-        passive = passives[passive_id]
+    for passive_id, passive in passives.items():
+        key = passive.get("lever")
+        if not key or ("passif:" + passive_id) not in rates:
+            continue
         deviation = rates["passif:" + passive_id] - rates["classe:" + passive["class"]]
         if abs(deviation) < 1.0:
             continue
@@ -424,8 +412,8 @@ def tune(rates):
         passive["params"][key] = step_int(old, deviation, gain) if isinstance(old, int) else round(step(old, deviation, gain), 3)
         report.append(f"passif {passive_id} ({deviation:+.1f}) : {key} {old} -> {passive['params'][key]}")
     for synergy in synergies:
-        key = SYNERGY_LEVERS.get(synergy["id"])
-        if key is None:
+        key = synergy.get("lever")
+        if key is None or any(skill.startswith("*") for skill in synergy["skills"]):
             continue
         a, b = synergy["skills"]
         # Une Synergie se compare aux duos de la même composition (une Synergie Guerrier-Mage aux duos Guerrier + Mage).

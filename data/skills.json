@@ -26,7 +26,7 @@
   },
   "cri_de_guerre": {
     "name": "Cri de guerre", "class": "guerrier", "tier": "forte", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 50}, {"type": "status", "id": "cri_de_guerre", "turns": 3, "value": 50, "on": "allies"}],
+    "effects": [{"type": "damage", "power": 50}, {"type": "status", "id": "galvanise", "turns": 3, "value": 50, "on": "allies"}],
     "description": "Frappe un ennemi ; tout le duo inflige +{value} % de dégâts pendant {turns} tours."
   },
 
