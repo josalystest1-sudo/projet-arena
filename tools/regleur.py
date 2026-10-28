@@ -13,7 +13,10 @@ Usage : python3 tools/regleur.py <tours de réglage> <combats par tour>
    - une Synergie : son chiffre (écart à la moyenne de ses deux classes).
    - une paire d'éléments d'un même kit (deux compétences, ou une compétence et le passif) : son ajustement de PV et
      de puissance dans data/destins.json (écart entre le taux des kits qui ont la paire et ce qu'on attendrait de
-     chacun des deux éléments seul). C'est le budget de puissance du Destin : aucun kit ne doit dominer.
+     chacun des deux éléments seul). C'est le budget de puissance du Destin : aucun kit ne doit dominer ;
+   - un kit complet, côté joueur et côté acolyte séparément (un Destin de joueur n'est jamais joué en acolyte, et un
+     même kit n'a pas la même force selon qui le joue) : le reste à corriger, une fois tout le reste appliqué
+     (data/destins.json, « kits »).
 Les fichiers de data/ sont réécrits ; on relit le résultat avec tools/equilibrage.py.
 """
 import json
@@ -68,6 +71,9 @@ ITEM_GAIN = 0.4
 # qui encaisse) : réglé par « duo_items ». La composition du duo, qui touche les deux membres : « duo_classes » ;
 # et qui en est le joueur et qui l'acolyte (« mage>guerrier » : un Mage avec son acolyte Guerrier) : « duo_orders ».
 COMPO_GAIN = 0.25
+# Le reste d'un kit complet, par côté (joueur ou acolyte) : comparé à sa classe jouée du même côté. Les paires, les
+# trios et les éléments corrigent déjà la plus grande part ; ce levier finit le travail, d'où un gain modeste.
+KIT_GAIN = 0.35
 # Bornes des chiffres de Synergie : au-delà, une Synergie change de nature (ou ne se joue pas assez pour être réglée
 # par sa force : il faut alors revoir son effet).
 SYNERGY_LIMITS = {"mult": (0.5, 1.5), "share": (0.3, 1.0), "bonus": (0.05, 1.0)}
@@ -112,7 +118,7 @@ def write_passives(passives):
 
 def write_destins(destins):
     lines = ["{"]
-    sections = ("kit_items", "kit_pairs", "kit_triples", "duo_classes", "duo_orders", "acolyte_classes", "duo_items")
+    sections = ("kit_items", "kit_pairs", "kit_triples", "duo_classes", "duo_orders", "acolyte_classes", "duo_items", "kits")
     for n, section in enumerate(sections):
         values = destins.get(section, {})
         lines.append(f'  "{section}": {{')
@@ -123,6 +129,14 @@ def write_destins(destins):
                 keys = sorted(k for k, v in inner.items() if v != 0)
                 body = ", ".join(f'"{k}": {inner[k]}' for k in keys)
                 lines.append(f'    "{partner}": {{{body}}}' + ("," if p_index < len(partners) - 1 else ""))
+        elif section == "kits":
+            # Un kit par ligne, rangé par côté puis par classe (ils sont nombreux : 32 par classe et par côté).
+            for s_index, side in enumerate(("joueur", "acolyte")):
+                inner = values.get(side, {})
+                keys = sorted(k for k, v in inner.items() if v != 0)
+                lines.append(f'    "{side}": {{')
+                lines += [f'      "{k}": {inner[k]}' + ("," if i < len(keys) - 1 else "") for i, k in enumerate(keys)]
+                lines.append("    }" + ("," if s_index == 0 else ""))
         else:
             keys = sorted(k for k, v in values.items() if v != 0)
             lines += [f'    "{k}": {values[k]}' + ("," if i < len(keys) - 1 else "") for i, k in enumerate(keys)]
@@ -183,6 +197,9 @@ def measure(files):
                     if side == "acolyte":
                         keys.append("acolyte:" + cls)
                     keys.append("trio:" + "+".join(sorted(row[prefix + t] for t in ("basique", "moyenne", "forte"))))
+                    # Le kit complet, du côté où il est joué (un Destin de joueur n'est jamais joué en acolyte).
+                    keys.append(f"cote:{side}:{cls}")
+                    keys.append(f"kit:{side}:{cls}:" + "+".join(row[prefix + t] for t in ("basique", "moyenne", "forte", "passif")))
                 keys += ["syn:" + s for s in filter(None, row["synergies_possibles"].split("+"))]
                 keys.append("compo:" + "+".join(sorted([row["joueur"], row["acolyte"]])))
                 keys.append(f"ordre:{row['joueur']}>{row['acolyte']}")
@@ -381,6 +398,21 @@ def tune(rates):
         old = orders.get(order, 0.0)
         orders[order] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - COMPO_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
         report.append(f"budget du duo {order} ({deviation:+.1f}) : {old:+.3f} -> {orders[order]:+.3f}")
+    # Le reste de chaque kit complet, côté joueur et côté acolyte : ce que les éléments, les paires, les trios et le
+    # partenaire n'expliquent pas (comparé à sa classe jouée du même côté, pour ne rien corriger deux fois).
+    kits = destins.setdefault("kits", {"joueur": {}, "acolyte": {}})
+    for key, rate in sorted(rates.items()):
+        if not key.startswith("kit:"):
+            continue
+        _, side, kit = key.split(":", 2)
+        deviation = rate - rates[f"cote:{side}:{kit.split(':')[0]}"]
+        margin = 196.0 * math.sqrt(0.25 / GAMES[key])
+        if abs(deviation) < max(1.5, margin):
+            continue
+        inner = kits.setdefault(side, {})
+        old = inner.get(kit, 0.0)
+        inner[kit] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - KIT_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
+        report.append(f"budget du kit {kit} en {side} ({deviation:+.1f}) : {old:+.3f} -> {inner[kit]:+.3f}")
     write_destins(destins)
     for passive_id, key in PASSIVE_LEVERS.items():
         passive = passives[passive_id]
@@ -428,7 +460,9 @@ def main():
         pairs = measure_pairs(files)
         spread = [v for k, v in rates.items() if k.startswith(("comp:", "passif:", "classe:"))]
         worst_pair = max(abs(o - e) for o, e, _, _ in pairs.values())
-        print(f"\n== Réglage {r} : écart max à 50 % = {max(abs(v - 50) for v in spread):.1f} points ; pire paire : {worst_pair:.1f} points")
+        kits = [v for k, v in rates.items() if k.startswith("kit:")]
+        print(f"\n== Réglage {r} : écart max à 50 % = {max(abs(v - 50) for v in spread):.1f} points ; pire paire : {worst_pair:.1f} points"
+              f" ; kits (par côté) de {min(kits):.1f} à {max(kits):.1f} %, {sum(1 for v in kits if 48 <= v <= 52)} sur {len(kits)} dans 48-52")
         for line in tune(rates) + tune_pairs(pairs):
             print("  " + line)
         os.makedirs(OUT, exist_ok=True)
