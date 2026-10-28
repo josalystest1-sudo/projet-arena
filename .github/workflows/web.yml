@@ -3,6 +3,13 @@ name: Export web et publication sur GitHub Pages
 on:
   push:
     branches: [main]
+  # Aperçu du combat V2 (branche combat-v2, docs/SPEC-COMBAT-V2.md) : chaque fois que ses tests passent après une
+  # fusion, le site est republié avec le jeu de main à la racine et celui de combat-v2 sous /v2/. Ce flux tourne
+  # depuis main, la seule branche autorisée à publier sur GitHub Pages.
+  workflow_run:
+    workflows: ["Tests du moteur de règles"]
+    types: [completed]
+    branches: [combat-v2]
   workflow_dispatch:
 
 permissions:
@@ -21,8 +28,11 @@ jobs:
   build:
     name: Tests puis export web
     runs-on: ubuntu-latest
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Cache de Godot et des modèles d'export web
         id: cache-godot
@@ -60,6 +70,21 @@ jobs:
           mkdir -p build/web
           timeout 600 ~/godot/godot --headless --path . --export-release "Web" build/web/index.html
           test -f build/web/index.wasm
+
+      - name: Aperçu du combat V2 sous /v2/ (si la branche combat-v2 existe et que ses tests passent)
+        run: |
+          if git ls-remote --exit-code --heads origin combat-v2 > /dev/null; then
+            git fetch --depth 1 origin combat-v2
+            git worktree add /tmp/v2 FETCH_HEAD
+            cd /tmp/v2
+            timeout 300 ~/godot/godot --headless --path . --import || true
+            if timeout 600 ~/godot/godot --headless --path . --script res://tests/run_tests.gd; then
+              mkdir -p "$GITHUB_WORKSPACE/build/web/v2"
+              timeout 600 ~/godot/godot --headless --path . --export-release "Web" "$GITHUB_WORKSPACE/build/web/v2/index.html" || rm -rf "$GITHUB_WORKSPACE/build/web/v2"
+            else
+              echo "Les tests de combat-v2 échouent : pas d'aperçu publié."
+            fi
+          fi
 
       - uses: actions/upload-pages-artifact@v3
         with:
