@@ -14,5 +14,9 @@
   "voile": {"name": "Voilé", "negative": false, "kind": "protection", "untargetable": true, "icon": "~", "description": "On ne peut pas le viser ce tour."},
   "etourdi": {"name": "Étourdi", "negative": true, "control": true, "icon": "*", "description": "Perd sa prochaine action."},
   "garde": {"name": "En garde", "negative": false, "kind": "protection", "icon": "][", "description": "Subit moins de dégâts et contre-attaque au contact."},
-  "piege": {"name": "Piégé", "negative": false, "kind": "protection", "icon": "^", "description": "Le prochain ennemi qui le frappe est étourdi."}
+  "piege": {"name": "Piégé", "negative": false, "kind": "protection", "icon": "^", "description": "Le prochain ennemi qui le frappe est étourdi."},
+  "fumee": {"name": "Enfumé", "negative": false, "kind": "protection", "untargetable": true, "icon": "~", "description": "On ne peut pas le viser ce tour."},
+  "ultimatum": {"name": "Sommé", "negative": true, "control": true, "icon": "!", "description": "Doit attaquer le Diplomate, et chaque coup lui vaut une riposte."},
+  "treve": {"name": "En trêve", "negative": true, "kind": "protection", "icon": "=", "description": "Ne peut pas viser l'allié du Diplomate ce tour, ni être visé par lui."},
+  "chantage": {"name": "Sous chantage", "negative": true, "control": true, "icon": "$", "description": "Ne peut pas utiliser sa forte."}
 }

@@ -31,7 +31,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 1. ~~Équilibrer les Destins séparément côté joueur et côté acolyte.~~ Fait (PR #16) : côté joueur 45,5–52,9 % (77 kits sur 96 dans 48–52), côté acolyte 45,9–53,8 % (83 sur 96), Tour reréglée.
 2. **Étape 3**, en plusieurs PR :
    - ~~le moteur rendu générique~~ fait (PR #17) ;
-   - les 7 classes manquantes, par groupes : ~~Voleur, Archer, Pugiliste~~ (PR #19) ; puis Alchimiste, Barde, Diplomate ; puis l'Invocateur et sa créature ; 6 actives et 4 passifs chacune, leurs Synergies (au moins une entre chaque classe et chaque classe qui peut lui servir d'acolyte, et chaque kit a une Synergie possible), avec tests ;
+   - les 7 classes manquantes, par groupes : ~~Voleur, Archer, Pugiliste~~ (PR #19) ; ~~Alchimiste, Barde, Diplomate~~ (PR #20) ; puis l'Invocateur et sa créature ; 6 actives et 4 passifs chacune, leurs Synergies (au moins une entre chaque classe et chaque classe qui peut lui servir d'acolyte, et chaque kit a une Synergie possible), avec tests ;
    - le générateur de Destin (arbre de 45 nœuds, 30 points, budget de puissance), le mini-Destin de l'acolyte (15 nœuds, auto-attribué) et l'écran de l'arbre ;
    - un nouveau passage du régleur (duel et Tour) sur les 10 classes.
 
@@ -83,12 +83,13 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | #17 | 28 oct | Moteur générique (passifs par paramètres, états par drapeaux, Synergies en données) ; aucune règle ne change. |
 | #18 | 28 oct | Réglage de l'équilibrage sur les machines de GitHub, en parallèle (bouton dans l'onglet Actions). |
 | #19 | 28 oct | Voleur, Archer, Pugiliste : 3 classes, 16 Synergies, réglage sur GitHub. |
+| #20 | 28 oct | Alchimiste, Barde, Diplomate : 3 Soutiens, 26 Synergies. |
 
 ## Reprendre le travail (pour Claude Code)
 
 - **Branche de travail** : celle indiquée par la session. Le force-push est refusé : pour se mettre à jour, `git merge origin/main` (pas de rebase). Les PR se fusionnent en « squash » avec le SHA complet (40 caractères) de leur dernier commit.
 - **Godot 4.5** : s'il manque dans le conteneur, l'installer comme la CI (`.github/workflows/tests.yml`, dans `~/godot/godot`) ; pour l'export web, les modèles d'export comme dans `.github/workflows/web.yml`.
-- **Tests** (135 au 28 octobre) : `~/godot/godot --headless --path . --script res://tests/run_tests.gd`.
+- **Tests** (150 au 28 octobre) : `~/godot/godot --headless --path . --script res://tests/run_tests.gd`.
 - **Voir le jeu comme Gautier** : exporter (`~/godot/godot --headless --path . --export-release "Web" build/web/index.html`), servir `build/web` (`python3 -m http.server 8765`), puis piloter et capturer avec `node tools/navigateur.js` (souris ou doigt, hauteur de téléphone réglable ; mode d'emploi en tête du fichier). Ajouter `?graine=7` à l'adresse rejoue toujours les mêmes tirages.
 - **Équilibrage** : de préférence sur GitHub (onglet Actions → « Réglage de l'équilibrage », choisir la branche de départ ; à la fin, une branche `reglage-<numéro>` porte les données réglées et le résumé du run donne le rapport). En local, commandes dans le `README.md` ; faire tourner le régleur dans une copie (`git worktree`), puis recopier `data/`. Pour arrêter un processus, éviter `pkill -f` (il se tue lui-même) : passer par `ps aux | grep "[n]om"`.
 - **Chaque retour de Gautier** : l'ajouter au tableau « Retours » ci-dessus ; chaque choix fait sans le GDD : une ligne dans `CLAUDE.md`.

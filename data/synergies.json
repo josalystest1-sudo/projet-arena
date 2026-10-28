@@ -431,5 +431,517 @@
       "power": 24
     },
     "description": "Chaque coup est une prière : tout le duo se soigne."
+  },
+  {
+    "id": "acide_provocation",
+    "name": "Corrosion",
+    "skills": [
+      "acide",
+      "provocation"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "add_status",
+      "to": "enemies",
+      "status": "affaibli",
+      "turns": 2,
+      "value": 20
+    },
+    "lever": "value",
+    "params": {
+      "value": 20,
+      "turns": 2
+    },
+    "description": "L'acide gicle sur tous les ennemis provoqués : ils infligent {value} % de dégâts en moins pendant {turns} tours."
+  },
+  {
+    "id": "fumigene_rempart",
+    "name": "Rideau de fumée",
+    "skills": [
+      "fumigene",
+      "rempart"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "barrier_duo",
+      "turns": 2
+    },
+    "lever": "power",
+    "params": {
+      "power": 35
+    },
+    "description": "Derrière la fumée et le Rempart, tout le duo reçoit une barrière."
+  },
+  {
+    "id": "fiole_jab",
+    "name": "Flamme et poing",
+    "skills": [
+      "fiole",
+      "jab"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "extra_damage",
+      "skill": "fiole",
+      "element": "feu"
+    },
+    "lever": "damage",
+    "params": {
+      "damage": 28
+    },
+    "description": "Le poing enflammé : {damage} dégâts de feu de plus sur la cible."
+  },
+  {
+    "id": "elixir_direct",
+    "name": "Dopage",
+    "skills": [
+      "elixir",
+      "direct"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "to": "duo",
+      "status": "galvanise",
+      "turns": 2,
+      "value": 15
+    },
+    "lever": "value",
+    "params": {
+      "value": 15,
+      "turns": 2
+    },
+    "description": "L'élixir monte à la tête : tout le duo inflige +{value} % de dégâts pendant {turns} tours."
+  },
+  {
+    "id": "bombe_nova",
+    "name": "Déflagration",
+    "skills": [
+      "bombe",
+      "nova"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "to": "enemies",
+      "status": "brulure",
+      "turns": 2,
+      "value": 12
+    },
+    "lever": "value",
+    "params": {
+      "value": 12,
+      "turns": 2
+    },
+    "description": "Deux explosions : tous les ennemis brûlent ({value} dégâts en fin de tour pendant {turns} tours)."
+  },
+  {
+    "id": "catalyseur_bouclier_de_mana",
+    "name": "Recharge arcanique",
+    "skills": [
+      "catalyseur",
+      "bouclier_de_mana"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "cooldown_minus",
+      "skill": "bouclier_de_mana",
+      "tier": "forte"
+    },
+    "params": {
+      "amount": 2
+    },
+    "description": "Le Bouclier de mana revient {amount} tours plus tôt."
+  },
+  {
+    "id": "fiole_dague",
+    "name": "Huile enflammée",
+    "skills": [
+      "fiole",
+      "dague"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "add_status",
+      "skill": "fiole",
+      "to": "skill_target",
+      "status": "brulure",
+      "turns": 2,
+      "value": 10
+    },
+    "lever": "value",
+    "params": {
+      "value": 10,
+      "turns": 2
+    },
+    "description": "La lame huilée prend feu : la cible brûle ({value} dégâts en fin de tour pendant {turns} tours)."
+  },
+  {
+    "id": "elixir_lancer",
+    "name": "Remontant",
+    "skills": [
+      "elixir",
+      "lancer"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "cooldown_minus",
+      "skill": "lancer",
+      "tier": "moyenne"
+    },
+    "params": {
+      "amount": 1
+    },
+    "description": "Revigoré, le Voleur retrouve sa moyenne {amount} tour plus tôt."
+  },
+  {
+    "id": "acide_marque",
+    "name": "Cible rongée",
+    "skills": [
+      "acide",
+      "marque"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "extend_status",
+      "status": "marque"
+    },
+    "lever": "bonus",
+    "params": {
+      "extra_turns": 1,
+      "bonus": 0.5
+    },
+    "description": "L'acide creuse la Marque : elle dure {extra_turns} tour de plus et vaut +{bonus%}."
+  },
+  {
+    "id": "fumigene_piege",
+    "name": "Nasse",
+    "skills": [
+      "fumigene",
+      "piege"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "to": "duo",
+      "status": "piege",
+      "turns": 2
+    },
+    "params": {
+      "turns": 2
+    },
+    "description": "Dans la fumée, un piège devant chaque membre du duo : le prochain ennemi qui frappe l'un d'eux est étourdi."
+  },
+  {
+    "id": "hymne_forte",
+    "name": "Mesure",
+    "skills": [
+      "hymne",
+      "*forte"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "cooldown_minus",
+      "tier": "forte"
+    },
+    "params": {
+      "amount": 1
+    },
+    "description": "Portée par l'Hymne, la forte jouée ce tour revient {amount} tour plus tôt."
+  },
+  {
+    "id": "dissonance_fendoir",
+    "name": "Fausse note",
+    "skills": [
+      "dissonance",
+      "fendoir"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "extend_status",
+      "status": "affaibli"
+    },
+    "lever": "bonus",
+    "params": {
+      "extra_turns": 1,
+      "bonus": 0.5
+    },
+    "description": "La cible, affaiblie et tailladée, le reste {extra_turns} tour de plus et {bonus%} plus fort."
+  },
+  {
+    "id": "dissonance_uppercut",
+    "name": "Contretemps",
+    "skills": [
+      "dissonance",
+      "uppercut"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "extra_damage",
+      "skill": "uppercut",
+      "element": "contondant"
+    },
+    "lever": "damage",
+    "params": {
+      "damage": 30
+    },
+    "description": "L'uppercut tombe à contretemps : {damage} dégâts de plus sur la cible."
+  },
+  {
+    "id": "dissonance_nova",
+    "name": "Cacophonie",
+    "skills": [
+      "dissonance",
+      "nova"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "to": "enemies",
+      "status": "affaibli",
+      "turns": 2,
+      "value": 15
+    },
+    "lever": "value",
+    "params": {
+      "value": 15,
+      "turns": 2
+    },
+    "description": "La Nova porte la Dissonance partout : tous les ennemis infligent {value} % de dégâts en moins pendant {turns} tours."
+  },
+  {
+    "id": "dissonance_coup_bas",
+    "name": "Dernier accord",
+    "skills": [
+      "dissonance",
+      "coup_bas"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "amplify",
+      "skill": "coup_bas",
+      "vs_status": "affaibli"
+    },
+    "lever": "bonus",
+    "params": {
+      "bonus": 0.4
+    },
+    "description": "Le Coup bas fait +{bonus%} de dégâts sur la cible affaiblie."
+  },
+  {
+    "id": "dissonance_fleche_barbelee",
+    "name": "Requiem",
+    "skills": [
+      "dissonance",
+      "fleche_barbelee"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "add_status",
+      "skill": "fleche_barbelee",
+      "to": "skill_target",
+      "status": "marque",
+      "turns": 2,
+      "value": 20
+    },
+    "lever": "value",
+    "params": {
+      "value": 20,
+      "turns": 2
+    },
+    "description": "La cible, affaiblie et saignante, est marquée : +{value} % de dégâts subis pendant {turns} tours."
+  },
+  {
+    "id": "ultimatum_garde_haute",
+    "name": "Double riposte",
+    "skills": [
+      "ultimatum",
+      "garde_haute"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "extra_counter",
+      "skill": "ultimatum",
+      "guard": "garde_haute"
+    },
+    "description": "L'ennemi forcé d'attaquer subit les deux contre-attaques : celle du Diplomate et celle du Pugiliste en garde."
+  },
+  {
+    "id": "treve_crochet",
+    "name": "Diversion",
+    "skills": [
+      "treve",
+      "crochet"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "cooldown_minus",
+      "skill": "crochet",
+      "tier": "moyenne"
+    },
+    "params": {
+      "amount": 1
+    },
+    "description": "Pendant la trêve, le Pugiliste prépare le suivant : sa moyenne revient {amount} tour plus tôt."
+  },
+  {
+    "id": "ultimatum_provocation",
+    "name": "Sommation",
+    "skills": [
+      "ultimatum",
+      "provocation"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "to": "enemies",
+      "status": "affaibli",
+      "turns": 1,
+      "value": 20
+    },
+    "lever": "value",
+    "params": {
+      "value": 20,
+      "turns": 1
+    },
+    "description": "Sommés de toutes parts, les ennemis infligent {value} % de dégâts en moins ce tour."
+  },
+  {
+    "id": "treve_rempart",
+    "name": "Garantie",
+    "skills": [
+      "treve",
+      "rempart"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "barrier_duo",
+      "turns": 2
+    },
+    "lever": "power",
+    "params": {
+      "power": 30
+    },
+    "description": "Une trêve garantie par le Rempart : barrière sur tout le duo."
+  },
+  {
+    "id": "discours_nova",
+    "name": "Harangue",
+    "skills": [
+      "discours",
+      "nova"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "amplify",
+      "skill": "nova"
+    },
+    "lever": "bonus",
+    "params": {
+      "bonus": 0.3
+    },
+    "description": "La Nova, haranguée, fait +{bonus%} de dégâts."
+  },
+  {
+    "id": "chantage_bouclier_de_mana",
+    "name": "Pression",
+    "skills": [
+      "chantage",
+      "bouclier_de_mana"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "skill": "chantage",
+      "to": "skill_target",
+      "status": "gele",
+      "turns": 2
+    },
+    "params": {
+      "turns": 2
+    },
+    "description": "La cible, sous chantage et face au bouclier, hésite : elle agit en dernier au tour suivant."
+  },
+  {
+    "id": "argument_dague",
+    "name": "Argument tranchant",
+    "skills": [
+      "argument",
+      "dague"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "extra_damage",
+      "skill": "dague",
+      "element": "perforant"
+    },
+    "lever": "damage",
+    "params": {
+      "damage": 25
+    },
+    "description": "La dague appuie l'argument : {damage} dégâts perforants de plus sur la cible."
+  },
+  {
+    "id": "encouragement_lancer",
+    "name": "Complot",
+    "skills": [
+      "encouragement",
+      "lancer"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "amplify",
+      "skill": "lancer"
+    },
+    "lever": "bonus",
+    "params": {
+      "bonus": 0.5
+    },
+    "description": "Le Lancer, encouragé, fait +{bonus%} de dégâts."
+  },
+  {
+    "id": "argument_tir",
+    "name": "Persuasion",
+    "skills": [
+      "argument",
+      "tir"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "add_status",
+      "skill": "tir",
+      "to": "skill_target",
+      "status": "affaibli",
+      "turns": 1,
+      "value": 15
+    },
+    "lever": "value",
+    "params": {
+      "value": 15,
+      "turns": 1
+    },
+    "description": "Persuadée par la canne et la flèche, la cible inflige {value} % de dégâts en moins ce tour."
+  },
+  {
+    "id": "encouragement_tir_rapide",
+    "name": "Élan",
+    "skills": [
+      "encouragement",
+      "tir_rapide"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "to": "duo",
+      "status": "vif",
+      "turns": 2,
+      "value": 2
+    },
+    "lever": "value",
+    "params": {
+      "value": 2,
+      "turns": 2
+    },
+    "description": "Le duo prend de l'élan : +{value} vitesse pendant {turns} tours."
   }
 ]
