@@ -18,5 +18,6 @@
   "fumee": {"name": "Enfumé", "negative": false, "kind": "protection", "untargetable": true, "icon": "~", "description": "On ne peut pas le viser ce tour."},
   "ultimatum": {"name": "Sommé", "negative": true, "control": true, "icon": "!", "description": "Doit attaquer le Diplomate, et chaque coup lui vaut une riposte."},
   "treve": {"name": "En trêve", "negative": true, "kind": "protection", "icon": "=", "description": "Ne peut pas viser l'allié du Diplomate ce tour, ni être visé par lui."},
-  "chantage": {"name": "Sous chantage", "negative": true, "control": true, "icon": "$", "description": "Ne peut pas utiliser sa forte."}
+  "chantage": {"name": "Sous chantage", "negative": true, "control": true, "icon": "$", "description": "Ne peut pas utiliser sa forte."},
+  "lien": {"name": "Lié", "negative": false, "kind": "protection", "icon": "&", "description": "Les coups directs qu'il reçoit vont à la créature de l'Invocateur."}
 }

@@ -84,7 +84,7 @@ func test_une_synergie_joker_de_palier() -> void:
 
 func test_chaque_synergie_a_un_effet_connu() -> void:
 	var known := ["amplify", "force_condition", "extra_damage", "extend_status", "add_status", "spread_to_duo", "spread_to_enemies",
-		"cooldown_minus", "heal_duo", "barrier_duo", "cleanse_duo", "lifesteal", "extra_counter"]
+		"cooldown_minus", "heal_duo", "barrier_duo", "cleanse_duo", "lifesteal", "extra_counter", "creature_strike", "creature_heal", "creature_heal_absorbed"]
 	for synergy in data.synergies:
 		var effect: Dictionary = synergy.get("effect", {})
 		assert_true(known.has(str(effect.get("type", ""))), "%s : effet de type connu (%s)" % [synergy["id"], str(effect.get("type", "?"))])

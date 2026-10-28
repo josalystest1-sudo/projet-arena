@@ -42,5 +42,10 @@
   "charisme": {"name": "Charisme", "class": "diplomate", "lever": "redirect_every", "params": {"redirect_every": 4}, "description": "Un coup sur {redirect_every} visant son allié vise le Diplomate à la place."},
   "impassible": {"name": "Impassible", "class": "diplomate", "params": {"immune": ["provoque", "gele", "etourdi", "chantage", "push_back"]}, "description": "Immunisé aux contrôles : Provoqué, Gelé, Étourdi, Chantage, Intention repoussée."},
   "reseau": {"name": "Réseau", "class": "diplomate", "lever": "speed_per_marked_enemy", "params": {"speed_per_marked_enemy": 1}, "description": "+{speed_per_marked_enemy} vitesse par ennemi sous un de ses effets."},
-  "protocole": {"name": "Protocole", "class": "diplomate", "params": {"cleanse_ally_control": 1}, "description": "À chaque fin de tour, retire un état de contrôle (Provoqué, Gelé, Étourdi, Sommé, Chantage) à son allié."}
+  "protocole": {"name": "Protocole", "class": "diplomate", "params": {"cleanse_ally_control": 1}, "description": "À chaque fin de tour, retire un état de contrôle (Provoqué, Gelé, Étourdi, Sommé, Chantage) à son allié."},
+
+  "symbiose": {"name": "Symbiose", "class": "invocateur", "lever": "creature_bonus", "params": {"creature_bonus": 0.3}, "description": "Sa créature a {creature_bonus%} de PV et de puissance en plus."},
+  "essaim": {"name": "Essaim", "class": "invocateur", "params": {"creature_double_even_turns": 1}, "description": "Un tour sur deux (les tours pairs), sa créature frappe deux fois."},
+  "pacte": {"name": "Pacte", "class": "invocateur", "params": {"creature_death_moyenne_reset": 1}, "description": "Quand sa créature meurt, sa moyenne est immédiatement rechargée."},
+  "nourrice": {"name": "Nourrice", "class": "invocateur", "lever": "creature_regen", "params": {"creature_regen": 0.1}, "description": "À chaque fin de tour, sa créature récupère {creature_regen%} de ses PV."}
 }

@@ -27,6 +27,9 @@ var mods: Dictionary = {}
 var skill_mods: Dictionary = {}
 ## États contre lesquels il est immunisé (passif, Destin).
 var immunities: Array = []
+## La créature de l'Invocateur ({} s'il n'en a pas) : {kind, name, hp, max_hp, power, strike, element, turns}.
+## Un Golem encaisse les coups directs destinés à son camp ; un Spectre frappe seul en fin de tour.
+var creature: Dictionary = {}
 ## Palier -> numéro du tour à partir duquel la compétence est de nouveau disponible.
 var cooldown_until: Dictionary = {}
 var statuses: Array[Dictionary] = []
@@ -189,6 +192,10 @@ func remove_status(status_id: String) -> void:
 
 func is_immune(status_id: String) -> bool:
 	return immunities.has(status_id)
+
+
+func has_creature() -> bool:
+	return not creature.is_empty() and int(creature.get("hp", 0)) > 0
 
 
 func barrier_amount() -> int:

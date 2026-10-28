@@ -337,6 +337,16 @@ func preview(actor: CombatUnit, skill_id: String, target: CombatUnit) -> Diction
 				result["heal"] = int(result["heal"]) + mini(_heal_amount(actor, target, _effect_power(actor, skill_id, effect)), target.max_hp - target.hp)
 			"revive":
 				result["revive"] = not target.is_alive()
+			"order":
+				if actor.has_creature():
+					result["damage"] = int(result["damage"]) + _damage_amount(actor, target, int(effect.get("power", 0)), 1.0, true, str(actor.creature.get("element", "")), int(actor.creature["power"]))
+				else:
+					result["damage"] = int(result["damage"]) + _damage_amount(actor, target, int(effect.get("fallback", 0)), 1.0, true, str(skill.get("element", "")))
+			"sacrifice":
+				var base := int(effect.get("power", 0)) if actor.has_creature() else int(round(float(effect.get("power", 0)) * float(effect.get("fallback", 0.5))))
+				result["damage"] = int(result["damage"]) + _damage_amount(actor, target, base, 1.0, false, str(skill.get("element", "")))
+				if actor.has_creature():
+					result["damage"] = int(result["damage"]) + int(round(float(actor.creature["hp"]) * float(effect.get("hp_share", 0.5)) * sudden_death_damage_mult()))
 	if int(result["damage"]) > 0:
 		result["blocked"] = target.has_status("rempart") or _would_dodge(actor, target)
 		result["lethal"] = not result["blocked"] and int(result["damage"]) >= target.hp + target.barrier_amount()
@@ -690,6 +700,30 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 					_emit({"type": "cooldowns_reset", "source": actor.id, "target": target.id})
 		"team_first":
 			pass  # Pris en compte au tri de la file (voir resolve_turn).
+		"summon":
+			_summon(actor, effect)
+		"order":
+			# La créature attaque la cible ; sans créature, l'Invocateur frappe lui-même, plus faiblement.
+			for target in targets:
+				if actor.has_creature():
+					_creature_strike(actor, target, int(effect.get("power", 0)))
+				else:
+					var dealt := _deal_damage(actor, target, int(effect.get("fallback", 0)), element, _effect_mult(actor, target, effect, skill_id), bool(context["single_target"]), skill_id)
+					if dealt > 0:
+						_current_hits[target.id] = true
+		"sacrifice":
+			# La créature explose sur tous les ennemis : des dégâts, plus une part des PV qu'il lui restait.
+			var had := actor.has_creature()
+			var base := int(effect.get("power", 0)) if had else int(round(float(effect.get("power", 0)) * float(effect.get("fallback", 0.5))))
+			var blast := int(round(float(actor.creature.get("hp", 0)) * float(effect.get("hp_share", 0.5)) * sudden_death_damage_mult())) if had else 0
+			for target in targets:
+				var dealt := _deal_damage(actor, target, base, element, _effect_mult(actor, target, effect, skill_id), false, skill_id)
+				if blast > 0:
+					dealt += _apply_damage(actor, target, blast, element, "sacrifice")
+				if dealt > 0:
+					_current_hits[target.id] = true
+			if had:
+				_creature_dies(actor, "sacrifice")
 
 
 ## Multiplicateur propre à un effet de dégâts : doublé si la cible n'a pas encore agi (Coup bas), si une autre
@@ -721,8 +755,8 @@ func _effect_power(actor: CombatUnit, skill_id: String, effect: Dictionary) -> i
 ## Montant des dégâts d'une compétence, avant Martyr, Rempart et barrière. Dans l'ordre : la puissance de l'attaquant,
 ## ses états et passifs (Galvanisé, Colère, Focalisation, Vétéran, Meute, Affaibli, bonus de situation), la mort subite,
 ## puis ce que subit la cible (Peau de fer, Mâchoire d'acier, Peau de mercure, Marque).
-func _damage_amount(source: CombatUnit, target: CombatUnit, base_power: int, mult: float, single_target: bool, element: String = "") -> int:
-	var amount := float(base_power) * float(source.power) / 100.0 * mult
+func _damage_amount(source: CombatUnit, target: CombatUnit, base_power: int, mult: float, single_target: bool, element: String = "", power_override: int = -1) -> int:
+	var amount := float(base_power) * float(source.power if power_override < 0 else power_override) / 100.0 * mult
 	if source.has_status("galvanise"):
 		amount *= 1.0 + float(source.get_status("galvanise")["value"]) / 100.0
 	if _pv(source, "per_quarter") > 0.0:
@@ -815,6 +849,13 @@ func _deal_damage(source: CombatUnit, target: CombatUnit, base_power: int, eleme
 				total -= share
 				_apply_damage(source, ally, share, element, "martyr")
 			break
+	# Golem, Lien : la créature de l'Invocateur prend le coup ; ce qui dépasse ses PV passe à la cible.
+	var guardian := _creature_guard(target)
+	if guardian != null and source.team != target.team:
+		total = _creature_absorb(guardian, total, source)
+		if total <= 0:
+			_after_hit(source, target, 0, element, skill_id)
+			return 0
 	var dealt := _apply_damage(source, target, total, element, "hit")
 	_after_hit(source, target, dealt, element, skill_id)
 	return dealt
@@ -904,6 +945,8 @@ func _apply_damage(source: CombatUnit, target: CombatUnit, amount: int, element:
 		_damage_dealt[source.id][target.id] = int(_damage_dealt[source.id].get(target.id, 0)) + amount
 	if target.hp <= 0:
 		target.statuses.clear()
+		if target.has_creature():
+			_creature_gone(target)
 		_emit({"type": "ko", "target": target.id})
 	elif _pv(target, "souffle_heal") > 0.0 and not target.flags.get("second_souffle", false) and target.hp_ratio() < _pv(target, "souffle_threshold", 0.3):
 		target.flags["second_souffle"] = true
@@ -1053,6 +1096,97 @@ func _delay_cooldown(actor: CombatUnit, target: CombatUnit, tier: String) -> voi
 	if until > int(target.cooldown_until.get(tier, 0)):
 		target.cooldown_until[tier] = until
 	_emit({"type": "cooldown_delayed", "source": actor.id, "target": target.id, "tier": tier, "remaining": cooldown_remaining(target, tier)})
+
+
+# --- La créature de l'Invocateur -----------------------------------------------
+
+## Invoque une créature (une seule à la fois : la précédente s'efface). Ses PV et sa puissance sont une part de ceux
+## de l'Invocateur (Symbiose les augmente) ; elle dure un nombre de tours donné.
+func _summon(actor: CombatUnit, effect: Dictionary) -> void:
+	if actor.has_creature():
+		_creature_gone(actor)
+	var bonus := 1.0 + _pv(actor, "creature_bonus")
+	var max_hp := maxi(1, int(round(float(actor.max_hp) * float(effect.get("hp", 0.4)) * bonus)))
+	actor.creature = {"kind": str(effect.get("creature", "golem")), "name": str(effect.get("name", "Créature")), "hp": max_hp, "max_hp": max_hp,
+		"power": maxi(1, int(round(float(actor.power) * float(effect.get("power", 0.7)) * bonus))), "strike": int(effect.get("strike", 40)),
+		"element": str(effect.get("element", "ombre")), "turns": int(effect.get("turns", 3)), "born": turn}
+	_emit({"type": "creature_summoned", "owner": actor.id, "kind": actor.creature["kind"], "name": actor.creature["name"], "hp": max_hp, "max_hp": max_hp, "turns": actor.creature["turns"]})
+
+
+## L'Invocateur dont la créature prend les coups destinés à cette unité : un Golem protège tout son camp, une créature
+## quelconque protège un allié lié (Lien).
+func _creature_guard(target: CombatUnit) -> CombatUnit:
+	for ally in allies_of(target, true):
+		if not ally.has_creature():
+			continue
+		if str(ally.creature.get("kind", "")) == "golem":
+			return ally
+		var link := target.get_status("lien")
+		if not link.is_empty() and str(link.get("source", "")) == ally.id:
+			return ally
+	return null
+
+
+## La créature encaisse des dégâts ; renvoie ce qui dépasse ses PV (elle meurt alors).
+func _creature_absorb(owner: CombatUnit, amount: int, source: CombatUnit) -> int:
+	var creature: Dictionary = owner.creature
+	var absorbed := mini(amount, int(creature["hp"]))
+	creature["hp"] = int(creature["hp"]) - absorbed
+	if int(owner.flags.get("creature_absorbed_turn", -1)) != turn:
+		owner.flags["creature_absorbed"] = 0
+		owner.flags["creature_absorbed_turn"] = turn
+	owner.flags["creature_absorbed"] = int(owner.flags["creature_absorbed"]) + absorbed
+	if source != null:
+		damage_by_team[source.team] = int(damage_by_team[source.team]) + absorbed
+	_emit({"type": "creature_hit", "owner": owner.id, "source": source.id if source != null else "", "amount": absorbed, "hp": creature["hp"]})
+	if int(creature["hp"]) <= 0:
+		_creature_dies(owner, "ko")
+	return amount - absorbed
+
+
+## La créature frappe une cible avec sa propre puissance (Essaim : deux fois un tour sur deux).
+func _creature_strike(owner: CombatUnit, target: CombatUnit, base: int) -> void:
+	var times := 2 if _pv(owner, "creature_double_even_turns") > 0.0 and turn % 2 == 0 else 1
+	for i in range(times):
+		if not target.is_alive() or not owner.has_creature():
+			return
+		var creature: Dictionary = owner.creature
+		_emit({"type": "creature_attack", "owner": owner.id, "name": creature["name"], "target": target.id})
+		var amount := _damage_amount(owner, target, base, 1.0, true, str(creature.get("element", "")), int(creature["power"]))
+		if _apply_damage(owner, target, amount, str(creature.get("element", "")), "creature") > 0:
+			_current_hits[target.id] = true
+			_after_hit(owner, target, amount, str(creature.get("element", "")), "")
+
+
+## La créature meurt (abattue ou sacrifiée) : Pacte rend sa moyenne à l'Invocateur.
+func _creature_dies(owner: CombatUnit, reason: String) -> void:
+	_emit({"type": "creature_died", "owner": owner.id, "name": owner.creature.get("name", ""), "reason": reason})
+	owner.creature = {}
+	if _pv(owner, "creature_death_moyenne_reset") > 0.0 and int(owner.cooldown_until.get("moyenne", 0)) > turn + 1:
+		owner.cooldown_until["moyenne"] = turn + 1
+		_emit({"type": "cooldown_reduced", "target": owner.id, "tier": "moyenne", "amount": 0, "reason": "pacte"})
+
+
+## La créature s'efface sans mourir (durée écoulée, remplacée, ou son maître tombe).
+func _creature_gone(owner: CombatUnit) -> void:
+	_emit({"type": "creature_gone", "owner": owner.id, "name": owner.creature.get("name", "")})
+	owner.creature = {}
+
+
+func _creature_heal(owner: CombatUnit, amount: int, kind: String) -> void:
+	if not owner.has_creature() or amount <= 0:
+		return
+	var healed := mini(amount, int(owner.creature["max_hp"]) - int(owner.creature["hp"]))
+	owner.creature["hp"] = int(owner.creature["hp"]) + healed
+	_emit({"type": "creature_heal", "owner": owner.id, "amount": healed, "hp": owner.creature["hp"], "kind": kind})
+
+
+func _lowest_targetable(unit: CombatUnit) -> CombatUnit:
+	var best: CombatUnit = null
+	for enemy in enemies_of(unit, true):
+		if not is_untargetable(enemy) and (best == null or enemy.hp_ratio() < best.hp_ratio()):
+			best = enemy
+	return best
 
 
 # --- Synergies ---------------------------------------------------------------
@@ -1243,6 +1377,21 @@ func _apply_synergy(synergy: Dictionary, second: CombatUnit, first: CombatUnit) 
 			var healed := _lowest_hp(allies_of(second, true))
 			if healed != null and total > 0:
 				_heal(second, healed, int(round(float(total) * _sp(id, "share", 0.3))), "synergie", true)
+		"creature_strike":
+			# La créature frappe (de nouveau) la cible de la seconde compétence.
+			var master := first if first.has_creature() else second
+			if master.has_creature() and target != null and target.is_alive() and target.team != second.team:
+				_creature_strike(master, target, int(_sp(id, "power", float(master.creature.get("strike", 40)))))
+		"creature_heal":
+			# La créature se soigne (à la puissance de son maître).
+			var master := first if first.has_creature() else second
+			if master.has_creature():
+				_creature_heal(master, int(round(_sp(id, "power", 30) * float(master.power) / 100.0)), "synergie")
+		"creature_heal_absorbed":
+			# Égide + Lien (GDD) : la créature récupère tout ce qu'elle a encaissé ce tour.
+			var master := first if first.has_creature() else second
+			if master.has_creature() and int(master.flags.get("creature_absorbed_turn", -1)) == turn:
+				_creature_heal(master, int(master.flags.get("creature_absorbed", 0)), "synergie")
 		"extra_counter":
 			# Ultimatum + Garde haute : l'ennemi forcé d'attaquer subit aussi la contre-attaque du partenaire.
 			var guard := _actor_of(str(effect.get("guard", "")), second, first)
@@ -1296,6 +1445,16 @@ func _has_effect(skill_id: String, effect_type: String) -> bool:
 # ---------------------------------------------------------------------------
 
 func _end_of_turn() -> void:
+	# Les créatures : un Spectre frappe seul la dernière cible de son maître (sinon l'ennemi le plus bas).
+	for unit in units:
+		if unit.is_alive() and unit.has_creature() and str(unit.creature.get("kind", "")) == "spectre":
+			var target := get_unit(unit.last_target)
+			if target == null or not target.is_alive() or target.team == unit.team or is_untargetable(target):
+				target = _lowest_targetable(unit)
+			if target != null:
+				_creature_strike(unit, target, int(unit.creature.get("strike", 0)))
+		if team_units(0, true).is_empty() or team_units(1, true).is_empty():
+			break
 	# Effets sur la durée (saignement, brûlure, poison : les états marqués « dot » dans les données).
 	for unit in units:
 		if not unit.is_alive():
@@ -1326,6 +1485,17 @@ func _end_of_turn() -> void:
 		# Cardio : un tour sans être touché.
 		if unit.is_alive() and int(unit.flags.get("hit_this_turn", 0)) != turn:
 			unit.flags["quiet_turns"] = int(unit.flags.get("quiet_turns", 0)) + 1
+		# La créature : Nourrice la soigne, puis sa durée avance ; au bout, elle s'efface (ce n'est pas une mort).
+		if unit.is_alive() and unit.has_creature():
+			if _pv(unit, "creature_regen") > 0.0 and int(unit.creature["hp"]) < int(unit.creature["max_hp"]):
+				var healed := mini(int(round(float(unit.creature["max_hp"]) * _pv(unit, "creature_regen"))), int(unit.creature["max_hp"]) - int(unit.creature["hp"]))
+				unit.creature["hp"] = int(unit.creature["hp"]) + healed
+				_emit({"type": "creature_heal", "owner": unit.id, "amount": healed, "hp": unit.creature["hp"]})
+			# Le tour de l'invocation ne compte pas (l'Invocateur est lent : elle arrive souvent en fin de tour).
+			if turn > int(unit.creature.get("born", 0)):
+				unit.creature["turns"] = int(unit.creature.get("turns", 1)) - 1
+				if int(unit.creature["turns"]) <= 0:
+					_creature_gone(unit)
 
 	# Les états avancent d'un tour.
 	for unit in units:
