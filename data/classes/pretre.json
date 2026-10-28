@@ -3,6 +3,7 @@
   "name": "Prêtre",
   "roles": ["soutien", "front"],
   "identity": "Il répare, il relève, il tient.",
+  "elements": ["lumiere"],
   "stats": {"max_hp": 220, "speed": 7, "power": 117},
   "skills": {
     "basique": ["chatiment", "priere"],

@@ -3,6 +3,7 @@
   "name": "Guerrier",
   "roles": ["front", "degats"],
   "identity": "Le mur qui frappe : il tient la ligne et choisit qui on attaque.",
+  "elements": ["tranchant", "contondant"],
   "stats": {"max_hp": 250, "speed": 9, "power": 90},
   "skills": {
     "basique": ["taillade", "coup_de_bouclier"],

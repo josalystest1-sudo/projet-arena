@@ -3,6 +3,7 @@
   "name": "Mage",
   "roles": ["degats", "soutien"],
   "identity": "Les éléments en zone.",
+  "elements": ["feu", "givre", "foudre"],
   "stats": {"max_hp": 175, "speed": 8, "power": 105},
   "skills": {
     "basique": ["boule_de_feu", "etincelle"],
