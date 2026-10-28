@@ -39,6 +39,8 @@ var targetable: bool = false
 var selected_target: bool = false
 ## Cible qui déclencherait une Synergie avec l'annonce de l'acolyte.
 var synergy_mark: bool = false
+## Aura dorée derrière le perso : 1 = une Synergie est possible avec lui, 2 = elle est prête (ou se déclenche).
+var aura: int = 0
 ## Recharges visibles : {"moyenne": n, "forte": n} ; 0 = prête, -1 = déjà utilisée (une fois par combat).
 var cooldowns: Dictionary = {}
 ## Petit effet quand l'acolyte annonce ou révise son coup.
@@ -180,6 +182,15 @@ func _draw() -> void:
 		var glow := 0.5 + 0.5 * sin(_time * 9.0)
 		draw_rect(halo.grow(5), Color(1, 0.85, 0.2, 0.35 + 0.5 * glow), false, 3.0)
 		_draw_star(Vector2(w / 2.0, BUBBLE_HEIGHT + 2), 11.0, Color(1, 0.85, 0.2, 0.7 + 0.3 * glow))
+
+	# Aura dorée d'une Synergie : derrière le sprite, elle pulse plus vite quand la Synergie est prête.
+	if aura > 0 and alive:
+		var beat := 0.5 + 0.5 * sin(_time * (9.0 if aura == 2 else 4.5))
+		var center := Vector2(w / 2.0, BUBBLE_HEIGHT + sprite_size / 2.0 + 4.0)
+		var radius := sprite_size * 0.62 + 6.0 * beat
+		for ring in range(4):
+			draw_circle(center, radius - ring * 7.0, Color(1.0, 0.82, 0.2, (0.10 if aura == 1 else 0.16) + 0.06 * beat))
+		draw_arc(center, radius, 0.0, TAU, 48, Color(1.0, 0.85, 0.2, 0.55 + 0.4 * beat), 3.0 if aura == 1 else 5.0, true)
 
 	# Ombre au sol et sprite (couché s'il est KO).
 	var feet := Vector2(w / 2.0, BUBBLE_HEIGHT + sprite_size + 2)
