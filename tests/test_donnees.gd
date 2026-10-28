@@ -50,6 +50,8 @@ func test_au_moins_une_synergie_par_paire_de_classes() -> void:
 				continue
 			var found := false
 			for synergy in data.synergies:
+				if str(synergy["skills"][0]).begins_with("*") or str(synergy["skills"][1]).begins_with("*"):
+					continue
 				var pair := [data.skill(synergy["skills"][0])["class"], data.skill(synergy["skills"][1])["class"]]
 				if class_ids[i] in pair and class_ids[j] in pair:
 					found = true
