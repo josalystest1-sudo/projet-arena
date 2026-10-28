@@ -11,7 +11,7 @@
   },
   "provocation": {
     "name": "Provocation", "class": "guerrier", "tier": "moyenne", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "taunt", "count": 2}, {"type": "damage", "power": 25}],
+    "effects": [{"type": "taunt", "count": 2}, {"type": "damage", "power": 26}],
     "description": "Frappe la cible ; elle et le prochain ennemi à agir doivent attaquer le Guerrier ce tour."
   },
   "rempart": {
@@ -21,12 +21,12 @@
   },
   "fendoir": {
     "name": "Fendoir", "class": "guerrier", "tier": "forte", "element": "tranchant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 66}, {"type": "status", "id": "saignement", "turns": 3, "value": 14}],
+    "effects": [{"type": "damage", "power": 64}, {"type": "status", "id": "saignement", "turns": 3, "value": 13}],
     "description": "Gros dégâts tranchants et saignement pendant {turns} tours."
   },
   "cri_de_guerre": {
     "name": "Cri de guerre", "class": "guerrier", "tier": "forte", "element": "contondant", "target": "enemy",
-    "effects": [{"type": "damage", "power": 50}, {"type": "status", "id": "galvanise", "turns": 3, "value": 50, "on": "allies"}],
+    "effects": [{"type": "damage", "power": 52}, {"type": "status", "id": "galvanise", "turns": 3, "value": 51, "on": "allies"}],
     "description": "Frappe un ennemi ; tout le duo inflige +{value} % de dégâts pendant {turns} tours."
   },
 
@@ -42,33 +42,33 @@
   },
   "trait_de_givre": {
     "name": "Trait de givre", "class": "mage", "tier": "moyenne", "element": "givre", "target": "enemy",
-    "effects": [{"type": "damage", "power": 50}, {"type": "act_last"}],
+    "effects": [{"type": "damage", "power": 48}, {"type": "act_last"}],
     "description": "Dégâts de givre ; la cible agit en dernier."
   },
   "arc_de_foudre": {
     "name": "Arc de foudre", "class": "mage", "tier": "moyenne", "element": "foudre", "target": "enemies_2",
-    "effects": [{"type": "damage", "power": 42}],
+    "effects": [{"type": "damage", "power": 43}],
     "description": "La foudre frappe la cible et un second ennemi."
   },
   "nova": {
     "name": "Nova", "class": "mage", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 57}],
+    "effects": [{"type": "damage", "power": 58}],
     "description": "Explosion de feu sur tous les ennemis."
   },
   "bouclier_de_mana": {
     "name": "Bouclier de mana", "class": "mage", "tier": "forte", "element": "", "target": "ally",
-    "effects": [{"type": "barrier", "power": 185, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 183, "turns": 3}],
     "description": "Grosse barrière sur un allié pendant {turns} tours."
   },
 
   "chatiment": {
     "name": "Châtiment", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "enemy",
-    "effects": [{"type": "damage", "power": 35}],
+    "effects": [{"type": "damage", "power": 36}],
     "description": "Frappe de lumière sur un ennemi."
   },
   "priere": {
     "name": "Prière", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "heal", "power": 53, "overflow_barrier": true, "overflow": 0.5}],
+    "effects": [{"type": "heal", "power": 52, "overflow_barrier": true, "overflow": 0.5}],
     "description": "Petit soin sur un allié ; {overflow%} de ce qui dépasse ses PV max devient une barrière."
   },
   "restauration": {
@@ -83,12 +83,105 @@
   },
   "egide": {
     "name": "Égide", "class": "pretre", "tier": "forte", "element": "lumiere", "target": "allies_all",
-    "effects": [{"type": "barrier", "power": 64, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 66, "turns": 3}],
     "description": "Barrière sur tout le duo pendant {turns} tours."
   },
   "resurrection": {
     "name": "Résurrection", "class": "pretre", "tier": "forte", "element": "lumiere", "target": "ally_ko", "once_per_combat": true,
-    "effects": [{"type": "revive", "percent": 27}],
+    "effects": [{"type": "revive", "percent": 26}],
     "description": "Relève un allié KO à {percent} % de ses PV. Une fois par combat."
+  },
+
+  "dague": {
+    "name": "Dague", "class": "voleur", "tier": "basique", "element": "perforant", "target": "enemy",
+    "effects": [{"type": "damage", "power": 39}],
+    "description": "Coup de dague perforant sur un ennemi."
+  },
+  "lancer": {
+    "name": "Lancer", "class": "voleur", "tier": "basique", "element": "ombre", "target": "enemy", "ranged": true,
+    "effects": [{"type": "damage", "power": 39}],
+    "description": "Lame d'ombre lancée de loin : ne déclenche aucune riposte."
+  },
+  "voile": {
+    "name": "Voile", "class": "voleur", "tier": "moyenne", "element": "", "target": "self",
+    "effects": [{"type": "status", "id": "voile", "turns": 1}, {"type": "status", "id": "celerite", "turns": 2}],
+    "description": "Il disparaît : on ne peut plus le viser jusqu'à la fin du tour, et il agit en premier au tour suivant."
+  },
+  "poison": {
+    "name": "Poison", "class": "voleur", "tier": "moyenne", "element": "ombre", "target": "enemy",
+    "effects": [{"type": "damage", "power": 28}, {"type": "status", "id": "poison", "turns": 3, "value": 11}],
+    "description": "Lame empoisonnée : dégâts, puis {value} dégâts en fin de tour pendant {turns} tours."
+  },
+  "coup_bas": {
+    "name": "Coup bas", "class": "voleur", "tier": "forte", "element": "perforant", "target": "enemy",
+    "effects": [{"type": "damage", "power": 51, "bonus_if_not_acted": 1.0}],
+    "description": "Gros coup perforant ; dégâts doublés si la cible n'a pas encore agi ce tour."
+  },
+  "sabotage": {
+    "name": "Sabotage", "class": "voleur", "tier": "forte", "element": "ombre", "target": "enemy",
+    "effects": [{"type": "damage", "power": 47}, {"type": "delay_cooldown", "tier": "forte"}],
+    "description": "Dégâts d'ombre ; la forte de la cible repart en recharge complète."
+  },
+
+  "tir": {
+    "name": "Tir", "class": "archer", "tier": "basique", "element": "perforant", "target": "enemy", "ranged": true,
+    "effects": [{"type": "damage", "power": 39}],
+    "description": "Une flèche sur un ennemi."
+  },
+  "tir_rapide": {
+    "name": "Tir rapide", "class": "archer", "tier": "basique", "element": "perforant", "target": "enemy", "ranged": true, "speed_bonus": 6,
+    "effects": [{"type": "damage", "power": 34}],
+    "description": "Flèche plus faible, décochée en premier."
+  },
+  "marque": {
+    "name": "Marque", "class": "archer", "tier": "moyenne", "element": "perforant", "target": "enemy", "ranged": true,
+    "effects": [{"type": "damage", "power": 33}, {"type": "status", "id": "marque", "turns": 2, "value": 22}],
+    "description": "Frappe et marque la cible : elle subit +{value} % de dégâts pendant {turns} tours."
+  },
+  "piege": {
+    "name": "Piège", "class": "archer", "tier": "moyenne", "element": "", "target": "ally",
+    "effects": [{"type": "status", "id": "piege", "turns": 2}],
+    "description": "Pose un piège devant un allié : le prochain ennemi qui le frappe est étourdi et perd son action au tour suivant."
+  },
+  "fleche_barbelee": {
+    "name": "Flèche barbelée", "class": "archer", "tier": "forte", "element": "perforant", "target": "enemy", "ranged": true,
+    "effects": [{"type": "damage", "power": 54}, {"type": "status", "id": "saignement", "turns": 3, "value": 19}],
+    "description": "Gros dégâts et lourd saignement pendant {turns} tours."
+  },
+  "pluie_de_fleches": {
+    "name": "Pluie de flèches", "class": "archer", "tier": "forte", "element": "perforant", "target": "enemies_all", "ranged": true,
+    "effects": [{"type": "damage", "power": 46}],
+    "description": "Une volée de flèches sur tous les ennemis."
+  },
+
+  "jab": {
+    "name": "Jab", "class": "pugiliste", "tier": "basique", "element": "contondant", "target": "enemy", "speed_bonus": 6,
+    "effects": [{"type": "damage", "power": 34}],
+    "description": "Coup rapide : il agit tôt dans le tour. Prépare le Crochet."
+  },
+  "direct": {
+    "name": "Direct", "class": "pugiliste", "tier": "basique", "element": "contondant", "target": "enemy",
+    "effects": [{"type": "damage", "power": 41}],
+    "description": "Un direct du poing."
+  },
+  "garde_haute": {
+    "name": "Garde haute", "class": "pugiliste", "tier": "moyenne", "element": "", "target": "self",
+    "effects": [{"type": "status", "id": "garde", "turns": 2, "value": 32, "counter": 25}],
+    "description": "En garde jusqu'à la fin du tour suivant : -{value} % de dégâts subis, et chaque ennemi qui le frappe au contact prend une contre-attaque."
+  },
+  "crochet": {
+    "name": "Crochet", "class": "pugiliste", "tier": "moyenne", "element": "contondant", "target": "enemy",
+    "effects": [{"type": "damage", "power": 37, "bonus_after": "jab", "bonus_after_value": 0.75}],
+    "description": "Crochet ; dégâts doublés si le Jab a touché au tour précédent."
+  },
+  "uppercut": {
+    "name": "Uppercut", "class": "pugiliste", "tier": "forte", "element": "contondant", "target": "enemy",
+    "effects": [{"type": "damage", "power": 66}, {"type": "status", "id": "gele", "turns": 2}],
+    "description": "Gros dégâts ; la cible, sonnée, agit en dernier au tour suivant."
+  },
+  "enchainement": {
+    "name": "Enchaînement", "class": "pugiliste", "tier": "forte", "element": "contondant", "target": "enemy",
+    "effects": [{"type": "damage", "power": 26, "hits": 3}],
+    "description": "Trois coups enchaînés sur la même cible."
   }
 }

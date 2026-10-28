@@ -8,9 +8,11 @@ func test_l_acolyte_complete_le_role_du_joueur() -> void:
 		assert_false(options.is_empty(), "%s a au moins une classe d'acolyte possible" % class_id)
 		for acolyte_class in options:
 			assert_ne(Duo.main_role(data, acolyte_class), Duo.main_role(data, class_id), "%s ne reçoit pas un acolyte du même rôle" % class_id)
-	assert_eq(Duo.acolyte_classes(data, "guerrier"), ["mage", "pretre"], "un Front reçoit un Dégâts ou un Soutien")
-	assert_eq(Duo.acolyte_classes(data, "mage"), ["guerrier", "pretre"], "un Dégâts reçoit un Front ou un Soutien")
-	assert_eq(Duo.acolyte_classes(data, "pretre"), ["guerrier", "mage"], "un Soutien reçoit un Front ou un Dégâts")
+	assert_true(Duo.acolyte_classes(data, "guerrier").has("mage") and Duo.acolyte_classes(data, "guerrier").has("pretre"), "un Front reçoit un Dégâts ou un Soutien")
+	assert_false(Duo.acolyte_classes(data, "guerrier").has("pugiliste"), "jamais un autre Front")
+	assert_true(Duo.acolyte_classes(data, "mage").has("guerrier") and Duo.acolyte_classes(data, "mage").has("pretre"), "un Dégâts reçoit un Front ou un Soutien")
+	assert_false(Duo.acolyte_classes(data, "mage").has("voleur"), "jamais un autre Dégâts")
+	assert_true(Duo.acolyte_classes(data, "pretre").has("guerrier") and Duo.acolyte_classes(data, "pretre").has("mage"), "un Soutien reçoit un Front ou un Dégâts")
 
 
 func test_tout_kit_de_joueur_a_une_synergie_possible_avec_chaque_classe_d_acolyte() -> void:
@@ -38,13 +40,13 @@ func test_l_acolyte_tire_a_toujours_une_synergie_avec_son_joueur() -> void:
 		assert_false(Duo.kit_synergies(data, class_id, picks, acolyte["class_id"], acolyte["picks"]).is_empty(), "au moins une Synergie")
 
 
-func test_les_deux_classes_d_acolyte_sortent() -> void:
+func test_toutes_les_classes_d_acolyte_sortent() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 3
 	var seen := {}
-	for i in range(60):
+	for i in range(200):
 		seen[Duo.draw_acolyte(data, "pretre", CombatUnit.random_picks(rng), rng)["class_id"]] = true
-	assert_eq(seen.size(), 2, "un Prêtre reçoit tantôt un Guerrier, tantôt un Mage")
+	assert_eq(seen.size(), Duo.acolyte_classes(data, "pretre").size(), "un Prêtre reçoit tantôt l'une, tantôt l'autre des classes qui complètent la sienne")
 
 
 func test_tirage_reproductible() -> void:

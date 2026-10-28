@@ -6,7 +6,6 @@ extends Control
 const INTENT_SECONDS := 12.0
 ## Quand tu es KO, ton acolyte continue seul : quelques secondes pour lire son annonce.
 const KO_PLAYER_SECONDS := 3.0
-const CLASS_ORDER := ["guerrier", "mage", "pretre"]
 const ROLE_LABELS := {"front": "Front", "degats": "Dégâts", "soutien": "Soutien"}
 const TIER_LABELS := {"basique": "Basique", "moyenne": "Moyenne", "forte": "Forte"}
 const ACOLYTE_NAMES := ["Lys", "Orme", "Saule", "Iris", "Cèdre", "Aube", "Sorel", "Nima"]
@@ -1251,7 +1250,11 @@ func _play_event(event: Dictionary) -> void:
 				stats[source]["damage"] += amount
 				if int(event["hp"]) <= 0:
 					stats[source]["kos"] += 1
-			_add_story_result("%s -%d" % [_short_name(event["target"]), amount])
+			var kind := str(event["kind"])
+			if kind in ["garde", "ultimatum", "sang_acide"]:
+				_add_story_result("riposte : %s -%d" % [_short_name(event["target"]), amount])
+			else:
+				_add_story_result("%s -%d" % [_short_name(event["target"]), amount])
 			await _wait(0.3)
 		"heal":
 			if int(event["amount"]) > 0:
@@ -1298,10 +1301,36 @@ func _play_event(event: Dictionary) -> void:
 			_flash(Color(0.5, 1, 0.6), 0.3)
 			await _wait(0.6)
 		"action_lost":
-			story_note = "Tombé avant d'agir : son action est perdue."
+			var stunned: bool = str(event.get("reason", "ko")) == "etourdi"
+			story_note = "Étourdi : il perd son action (sa compétence n'est pas dépensée)." if stunned else "Tombé avant d'agir : son action est perdue."
 			story_results = []
-			_set_story("ACTION PERDUE", "%s est KO" % _short_name(event["actor"]), story_note, "off")
-			await _wait(0.4)
+			_set_story("ACTION PERDUE", "%s est %s" % [_short_name(event["actor"]), "étourdi" if stunned else "KO"], story_note, "off")
+			if stunned:
+				views[event["actor"]].float_text("Étourdi", Color("e599f7"), true)
+			await _wait(0.5)
+		"dodged":
+			views[event["target"]].float_text("Esquivé !", ACOLYTE_BLUE, true)
+			sfx.play("bloque")
+			_add_story_result("%s esquive" % _short_name(event["target"]))
+			await _wait(0.3)
+		"immune":
+			views[event["target"]].float_text("Immunisé", ACOLYTE_BLUE)
+			_add_story_result("%s : immunisé" % _short_name(event["target"]))
+		"trapped":
+			views[event["target"]].float_text("Piégé !", Color("ffa94d"), true)
+			sfx.play("bloque")
+			_add_story_result("%s tombe dans le piège : étourdi au prochain tour" % _short_name(event["target"]))
+			await _wait(0.3)
+		"redirected":
+			story_note = "Charisme : le coup est détourné sur %s." % _short_name(event["to"])
+		"cooldown_delayed":
+			views[event["target"]].float_text("Forte retardée", Color("ffa94d"))
+			_add_story_result("%s : sa forte repart en recharge" % _short_name(event["target"]))
+		"cooldowns_reset":
+			views[event["target"]].float_text("Recharges à zéro !", ACOLYTE_BLUE, true)
+			_add_story_result("%s : toutes ses recharges sont prêtes" % _short_name(event["target"]))
+		"status_removed":
+			views[event["target"]].float_text("Purifié", Color("51cf66"))
 		"synergy":
 			# Ta Synergie : grande annonce dorée et son effet. Celle d'en face : en rouge, pour qu'on ne confonde jamais.
 			var ours: bool = combat.get_unit(str(event["actors"][0])).team == 0
