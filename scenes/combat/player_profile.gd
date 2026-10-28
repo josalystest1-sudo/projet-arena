@@ -17,6 +17,8 @@ var duo: Dictionary = {}
 var tower_records: Dictionary = {}
 ## Les monstres déjà croisés à la Tour (identifiant -> true), pour le bestiaire.
 var monsters_seen: Dictionary = {}
+## Les bulles d'aide du combat déjà lues (identifiant -> true) : chacune ne s'affiche qu'une fois.
+var tips_seen: Dictionary = {}
 
 
 static func load_profile() -> PlayerProfile:
@@ -31,6 +33,7 @@ static func load_profile() -> PlayerProfile:
 		profile.duo = cfg.get_value("duo", "duo", {})
 		profile.tower_records = cfg.get_value("tour", "records", {})
 		profile.monsters_seen = cfg.get_value("tour", "monstres", {})
+		profile.tips_seen = cfg.get_value("aide", "vues", {})
 	return profile
 
 
@@ -44,6 +47,7 @@ func save() -> void:
 	cfg.set_value("duo", "duo", duo)
 	cfg.set_value("tour", "records", tower_records)
 	cfg.set_value("tour", "monstres", monsters_seen)
+	cfg.set_value("aide", "vues", tips_seen)
 	cfg.save(PATH)
 
 

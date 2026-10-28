@@ -48,6 +48,8 @@ func _ready() -> void:
 		rng.seed = test_seed
 	else:
 		rng.randomize()
+	# Sur téléphone, un écran qui défile doit défiler au doigt, même quand le doigt part d'une carte ou d'un bouton.
+	get_tree().node_added.connect(_let_scroll_through)
 	data = CombatData.load_default()
 	profile = PlayerProfile.load_profile()
 	sfx = Sfx.new()
@@ -98,6 +100,20 @@ func _build_layout() -> void:
 		button.pressed.connect(_on_nav.bind(entry[0]))
 		nav_bar.add_child(button)
 		nav_buttons[entry[0]] = button
+
+
+## Dans une zone qui défile, les cartes, boutons et espaces laissent passer le doigt jusqu'à elle : sans ça, un
+## glisser qui commence sur une carte (qui arrête le doigt par défaut) ne fait rien défiler. Un vrai glisser annule
+## l'appui sur un bouton ; un simple toucher le déclenche toujours (zone morte : gui/common/default_scroll_deadzone).
+func _let_scroll_through(node: Node) -> void:
+	if not node is Control or (node as Control).mouse_filter != Control.MOUSE_FILTER_STOP or node is ScrollContainer:
+		return
+	var parent := node.get_parent()
+	while parent != null:
+		if parent is ScrollContainer:
+			(node as Control).mouse_filter = Control.MOUSE_FILTER_PASS
+			return
+		parent = parent.get_parent()
 
 
 func _on_nav(screen: String) -> void:

@@ -12,7 +12,6 @@ const TIER_LABELS := {"basique": "Basique", "moyenne": "Moyenne", "forte": "Fort
 const ACOLYTE_NAMES := ["Lys", "Orme", "Saule", "Iris", "Cèdre", "Aube", "Sorel", "Nima"]
 const ENEMY_NAMES := ["Ombre", "Brume", "Cendre", "Givre", "Ronce", "Écume", "Nox", "Bise"]
 ## Largeur de la colonne de gauche : « Duo adverse » (en haut) et ton acolyte qui joue seul (en bas).
-const SIDE_WIDTH := 150.0
 const BG_COLOR := Color("141826")
 const PANEL_COLOR := Color("1f2538")
 const GOLD := Color("ffd43b")
@@ -58,31 +57,47 @@ var sfx: Sfx
 var views: Dictionary = {}
 var enemy_units: HBoxContainer
 var ally_units: HBoxContainer
-var enemy_side: VBoxContainer
-var acolyte_title: Label
-var acolyte_info: Label
+## Au-dessus des ennemis : qui tu affrontes (« Duo adverse · IA », « Étage 3 · Gobelins »).
+var field_label: Label
+## La carte du milieu, le seul endroit à lire : l'annonce de ton acolyte pendant le choix, puis chaque action.
+var story_panel: PanelContainer
+var story_title: Label
+var story_main: Label
+var story_sub: Label
 var overlay: IntentOverlay
 var turn_label: Label
 var timer_bar: ProgressBar
 var timer_label: Label
 var sudden_label: Label
-var banner: Label
-var log_label: Label
 var skill_buttons: Dictionary = {}
+## Le pas à faire maintenant, en gros : ① compétence, ② cible, ③ Prêt.
+var step_label: Label
+## L'encadré des Synergies, juste au-dessus des boutons (doré quand une Synergie est possible ou prête).
+var synergy_panel: PanelContainer
+var synergy_title: Label
+var synergy_text: Label
 var skill_info: Label
-var passive_info: Label
 var ready_button: Button
-var hint_label: Label
 var bottom_panel: PanelContainer
+## Les bulles d'aide du premier combat (une fois chacune), et le bouton « ? » qui les rouvre.
+var tip_layer: Control
+var help_button: Button
 var menu_layer: Control
 var end_layer: Control
 var stage: Control
+## La colonne de l'écran de combat, mise à l'échelle pour tenir en entier dans la hauteur disponible.
+var layout_root: VBoxContainer
 var flash_rect: ColorRect
 var cutin: Label
 var mute_button: Button
 var quit_button: Button
 var _quit_armed := false
-var synergy_labels: Dictionary = {}
+## Le numéro de l'action en cours pendant la résolution (« Action 2 sur 4 »).
+var action_index: int = 0
+var action_count: int = 0
+## Sous l'action en cours : sa note (provoqué…) et ce qu'elle a fait (« Toi -38 · Saule -20 »).
+var story_note: String = ""
+var story_results: Array = []
 
 
 ## Appelé par l'application : options = {mode: "pvp" (avec enemy : le duo adverse) ou "tour"}.
@@ -119,13 +134,11 @@ func _build_layout() -> void:
 	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(stage)
 	var root := VBoxContainer.new()
-	root.set_anchors_preset(Control.PRESET_FULL_RECT)
-	root.offset_left = 10
-	root.offset_right = -10
-	root.offset_top = 10
-	root.offset_bottom = -10
 	root.add_theme_constant_override("separation", 6)
 	stage.add_child(root)
+	layout_root = root
+	# Tout l'écran tient dans la hauteur du téléphone : s'il manque de place, il se réduit au lieu de déborder.
+	stage.resized.connect(_fit_layout)
 
 	# Barre du haut : tour, timer, son.
 	var top := HBoxContainer.new()
@@ -161,6 +174,12 @@ func _build_layout() -> void:
 	mute_button.pressed.connect(_on_mute_pressed)
 	top.add_child(mute_button)
 	_refresh_mute_button()
+	help_button = Button.new()
+	help_button.text = "?"
+	help_button.custom_minimum_size = Vector2(40, 36)
+	help_button.add_theme_font_size_override("font_size", 18)
+	help_button.pressed.connect(_show_help)
+	top.add_child(help_button)
 	quit_button = Button.new()
 	quit_button.text = "Quitter"
 	quit_button.custom_minimum_size = Vector2(64, 36)
@@ -173,117 +192,98 @@ func _build_layout() -> void:
 	sudden_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	root.add_child(sudden_label)
 
-	# Le duo adverse en haut : son nom à gauche, puis son acolyte et son joueur.
-	var enemy_row := HBoxContainer.new()
-	enemy_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	enemy_row.add_theme_constant_override("separation", 8)
-	root.add_child(enemy_row)
-	enemy_side = VBoxContainer.new()
-	enemy_side.custom_minimum_size = Vector2(SIDE_WIDTH, 0)
-	enemy_side.alignment = BoxContainer.ALIGNMENT_CENTER
-	enemy_row.add_child(enemy_side)
-	enemy_side.add_child(_side_label("Duo adverse", 16, Color("ff8787")))
-	enemy_side.add_child(_side_label("Duo IA", 14, Color(0.8, 0.82, 0.9)))
+	# Les ennemis en haut, centrés, avec une ligne qui dit qui ils sont.
+	field_label = Label.new()
+	field_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	field_label.add_theme_font_size_override("font_size", 15)
+	field_label.add_theme_color_override("font_color", Color("ff8787"))
+	root.add_child(field_label)
 	enemy_units = HBoxContainer.new()
+	enemy_units.alignment = BoxContainer.ALIGNMENT_CENTER
 	enemy_units.add_theme_constant_override("separation", 6)
-	enemy_row.add_child(enemy_units)
+	root.add_child(enemy_units)
 
-	# Zone centrale : bannière (Synergies, résultat) et journal (annonce de l'acolyte, résolution).
-	var middle := VBoxContainer.new()
+	# Au milieu, une seule carte à lire : ce que fait ton acolyte, puis ce qui se passe pendant le tour.
+	var middle := CenterContainer.new()
 	middle.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	middle.alignment = BoxContainer.ALIGNMENT_CENTER
 	root.add_child(middle)
-	banner = Label.new()
-	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	banner.add_theme_font_size_override("font_size", 22)
-	banner.add_theme_color_override("font_color", GOLD)
-	banner.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	middle.add_child(banner)
-	log_label = Label.new()
-	log_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	log_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	log_label.add_theme_font_size_override("font_size", 18)
-	log_label.add_theme_color_override("font_color", Color(0.85, 0.87, 0.95))
-	middle.add_child(log_label)
+	story_panel = PanelContainer.new()
+	story_panel.custom_minimum_size = Vector2(500, 132)
+	middle.add_child(story_panel)
+	var story := VBoxContainer.new()
+	story.alignment = BoxContainer.ALIGNMENT_CENTER
+	story.add_theme_constant_override("separation", 2)
+	story_panel.add_child(story)
+	story_title = _story_label(14, Color(0.65, 0.72, 0.9))
+	story.add_child(story_title)
+	story_main = _story_label(21, Color.WHITE)
+	story.add_child(story_main)
+	story_sub = _story_label(15, Color(0.8, 0.84, 0.95))
+	story_sub.max_lines_visible = 3
+	story.add_child(story_sub)
+	story_main.max_lines_visible = 2
+	_style_story("normal")
 
-	# Ton duo : à gauche, ton acolyte qui joue seul (et ce qu'il prépare), puis ton acolyte et toi.
-	var ally_row := HBoxContainer.new()
-	ally_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	ally_row.add_theme_constant_override("separation", 8)
-	root.add_child(ally_row)
-	var acolyte_panel := VBoxContainer.new()
-	acolyte_panel.custom_minimum_size = Vector2(SIDE_WIDTH, 0)
-	acolyte_panel.alignment = BoxContainer.ALIGNMENT_CENTER
-	acolyte_panel.add_theme_constant_override("separation", 4)
-	ally_row.add_child(acolyte_panel)
-	acolyte_title = _side_label("", 16, ACOLYTE_BLUE)
-	acolyte_panel.add_child(acolyte_title)
-	acolyte_info = _side_label("", 14, Color(0.8, 0.82, 0.9))
-	acolyte_info.custom_minimum_size = Vector2(SIDE_WIDTH, 80)
-	acolyte_panel.add_child(acolyte_info)
+	# Ton duo : ton acolyte à gauche, toi à droite.
 	ally_units = HBoxContainer.new()
+	ally_units.alignment = BoxContainer.ALIGNMENT_CENTER
 	ally_units.add_theme_constant_override("separation", 6)
-	ally_row.add_child(ally_units)
+	root.add_child(ally_units)
 
-	# Bas : les 3 compétences, puis l'aide au choix de cible.
+	# Bas : le pas à faire, l'encadré des Synergies, les 3 compétences, puis sa description et « Prêt ».
+	# Toutes les zones de texte ont une hauteur fixe : les boutons ne bougent jamais sous le doigt.
 	bottom_panel = PanelContainer.new()
 	root.add_child(bottom_panel)
 	var bottom := VBoxContainer.new()
-	bottom.add_theme_constant_override("separation", 6)
+	bottom.add_theme_constant_override("separation", 8)
 	bottom_panel.add_child(bottom)
-	skill_info = Label.new()
-	skill_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	skill_info.add_theme_font_size_override("font_size", 16)
-	# Hauteur fixe : les boutons ne doivent jamais bouger sous le doigt quand le texte change.
-	skill_info.custom_minimum_size = Vector2(0, 66)
-	skill_info.max_lines_visible = 3
-	bottom.add_child(skill_info)
+	step_label = Label.new()
+	step_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	step_label.add_theme_font_size_override("font_size", 23)
+	step_label.custom_minimum_size = Vector2(0, 32)
+	bottom.add_child(step_label)
+	synergy_panel = PanelContainer.new()
+	synergy_panel.custom_minimum_size = Vector2(0, 76)
+	bottom.add_child(synergy_panel)
+	var synergy_box := VBoxContainer.new()
+	synergy_box.alignment = BoxContainer.ALIGNMENT_CENTER
+	synergy_box.add_theme_constant_override("separation", 0)
+	synergy_panel.add_child(synergy_box)
+	synergy_title = _story_label(18, GOLD)
+	synergy_box.add_child(synergy_title)
+	synergy_text = _story_label(15, Color(1, 0.95, 0.8))
+	synergy_text.max_lines_visible = 2
+	synergy_box.add_child(synergy_text)
 	var buttons := HBoxContainer.new()
 	buttons.add_theme_constant_override("separation", 8)
 	bottom.add_child(buttons)
 	for tier in CombatUnit.TIERS:
-		var column := VBoxContainer.new()
-		column.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		column.add_theme_constant_override("separation", 2)
-		buttons.add_child(column)
 		var button := Button.new()
-		button.custom_minimum_size = Vector2(0, 84)
+		button.custom_minimum_size = Vector2(0, 88)
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		button.add_theme_font_size_override("font_size", 18)
 		button.pressed.connect(_on_skill_pressed.bind(tier))
-		column.add_child(button)
+		buttons.add_child(button)
 		skill_buttons[tier] = button
-		var synergy_label := Label.new()
-		synergy_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		synergy_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		synergy_label.custom_minimum_size = Vector2(0, 34)
-		synergy_label.max_lines_visible = 2
-		synergy_label.add_theme_font_size_override("font_size", 13)
-		synergy_label.add_theme_color_override("font_color", GOLD)
-		column.add_child(synergy_label)
-		synergy_labels[tier] = synergy_label
 	var row := HBoxContainer.new()
 	row.add_theme_constant_override("separation", 8)
 	bottom.add_child(row)
-	hint_label = Label.new()
-	hint_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	hint_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	hint_label.add_theme_font_size_override("font_size", 16)
-	hint_label.add_theme_color_override("font_color", GOLD)
-	hint_label.max_lines_visible = 2
-	row.add_child(hint_label)
+	skill_info = Label.new()
+	skill_info.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	skill_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	skill_info.add_theme_font_size_override("font_size", 15)
+	skill_info.add_theme_color_override("font_color", Color(0.8, 0.84, 0.95))
+	skill_info.custom_minimum_size = Vector2(0, 60)
+	skill_info.max_lines_visible = 3
+	skill_info.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	row.add_child(skill_info)
 	ready_button = Button.new()
 	ready_button.text = "Prêt"
-	ready_button.custom_minimum_size = Vector2(110, 50)
+	ready_button.custom_minimum_size = Vector2(130, 60)
+	ready_button.add_theme_font_size_override("font_size", 22)
 	ready_button.pressed.connect(_on_ready_pressed)
 	row.add_child(ready_button)
-	passive_info = Label.new()
-	passive_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	passive_info.add_theme_font_size_override("font_size", 14)
-	passive_info.add_theme_color_override("font_color", Color(0.7, 0.75, 0.9))
-	passive_info.custom_minimum_size = Vector2(0, 38)
-	passive_info.max_lines_visible = 2
-	bottom.add_child(passive_info)
 
 	overlay = IntentOverlay.new()
 	overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -309,15 +309,63 @@ func _build_layout() -> void:
 	add_child(flash_rect)
 
 
-func _side_label(text: String, font_size: int, color: Color) -> Label:
+## Met la colonne de l'écran à l'échelle de l'écran : sur un téléphone peu haut (barres du navigateur visibles),
+## tout rapetisse un peu, et rien ne passe sous le bas de l'écran.
+func _fit_layout() -> void:
+	if layout_root == null:
+		return
+	var margin := 10.0
+	var available := stage.size - Vector2(margin, margin) * 2.0
+	if available.x <= 0.0 or available.y <= 0.0:
+		return
+	var needed := layout_root.get_combined_minimum_size()
+	var k := minf(1.0, minf(available.y / maxf(needed.y, 1.0), available.x / maxf(needed.x, 1.0)))
+	layout_root.scale = Vector2(k, k)
+	layout_root.position = Vector2(margin, margin)
+	layout_root.size = available / k
+
+
+func _story_label(font_size: int, color: Color) -> Label:
 	var label := Label.new()
-	label.text = text
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.custom_minimum_size = Vector2(SIDE_WIDTH, 0)
 	label.add_theme_font_size_override("font_size", font_size)
 	label.add_theme_color_override("font_color", color)
 	return label
+
+
+## Le cadre d'une carte : « normal », « acolyte » (bleu), « gold » (Synergie), « enemy » (rouge), « off » (rien à dire).
+static func _card_style(kind: String) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(12)
+	style.set_content_margin_all(8)
+	style.bg_color = Color("1f2538")
+	style.border_color = Color("2f3856")
+	match kind:
+		"acolyte":
+			style.border_color = Color("5aa9ff")
+			style.bg_color = Color("18233d")
+		"gold":
+			style.border_color = Color("ffd43b")
+			style.bg_color = Color("3a3112")
+		"enemy":
+			style.border_color = Color("ff6b6b")
+			style.bg_color = Color("351a22")
+		"off":
+			style.bg_color = Color("191e2e")
+	style.set_border_width_all(3 if kind in ["gold", "acolyte", "enemy"] else 1)
+	return style
+
+
+func _style_story(kind: String) -> void:
+	story_panel.add_theme_stylebox_override("panel", _card_style(kind))
+
+
+func _set_story(title: String, main: String, sub: String = "", kind: String = "normal") -> void:
+	story_title.text = title
+	story_main.text = main
+	story_sub.text = sub
+	_style_story(kind)
 
 
 func _on_mute_pressed() -> void:
@@ -354,8 +402,8 @@ func _refresh_mute_button() -> void:
 	mute_button.text = "Son : non" if sfx.muted else "Son : oui"
 
 
-## Grande annonce au centre de l'écran (nom d'une forte, Synergie...).
-func _show_cutin(text: String, color: Color) -> void:
+## Grande annonce au centre de l'écran (nom d'une forte, Synergie...). hold : combien de temps elle reste lisible.
+func _show_cutin(text: String, color: Color, hold: float = 0.5) -> void:
 	cutin.text = text
 	cutin.add_theme_color_override("font_color", color)
 	cutin.pivot_offset = cutin.size / 2.0
@@ -363,7 +411,7 @@ func _show_cutin(text: String, color: Color) -> void:
 	cutin.modulate = Color(1, 1, 1, 1)
 	var tween := create_tween()
 	tween.tween_property(cutin, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_interval(0.5 / speed)
+	tween.tween_interval(hold / speed)
 	tween.tween_property(cutin, "modulate:a", 0.0, 0.25)
 
 
@@ -389,9 +437,15 @@ func _make_layer(separation: int = 12) -> Control:
 	layer.set_anchors_preset(Control.PRESET_FULL_RECT)
 	layer.mouse_filter = Control.MOUSE_FILTER_STOP
 	add_child(layer)
+	# Centrée quand elle tient dans l'écran, elle défile au doigt sinon.
+	var scroll := ScrollContainer.new()
+	scroll.set_anchors_preset(Control.PRESET_FULL_RECT)
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	layer.add_child(scroll)
 	var center := CenterContainer.new()
-	center.set_anchors_preset(Control.PRESET_FULL_RECT)
-	layer.add_child(center)
+	center.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	center.custom_minimum_size = Vector2(0, get_viewport_rect().size.y)
+	scroll.add_child(center)
 	var box := VBoxContainer.new()
 	box.custom_minimum_size = Vector2(480, 0)
 	box.add_theme_constant_override("separation", separation)
@@ -453,7 +507,7 @@ func _setup_views(enemies: Array) -> void:
 	views = {}
 	_clear_children(enemy_units)
 	_clear_children(ally_units)
-	enemy_side.visible = mode == "pvp"
+	field_label.text = "DUO ADVERSE · joué par l'IA" if mode == "pvp" else ""
 	var order: Array = []
 	order.append_array(enemies)
 	order.append(combat.acolyte_of(0))
@@ -472,6 +526,7 @@ func _setup_views(enemies: Array) -> void:
 		views[unit.id] = view
 		view.sync(unit, data)
 		stats[unit.id] = {"damage": 0, "heal": 0, "kos": 0}
+	_fit_layout.call_deferred()
 
 
 # ---------------------------------------------------------------------------
@@ -501,8 +556,10 @@ func _start_floor() -> void:
 	for unit in combat.team_units(1):
 		profile.see_monster(unit.class_id)
 	if tower.is_boss_floor():
+		field_label.text = "ÉTAGE %d · GARDIEN : %s" % [tower.current_floor, combat.team_units(1)[0].display_name.to_upper()]
 		_show_cutin("ÉTAGE %d : %s" % [tower.current_floor, combat.team_units(1)[0].display_name.to_upper()], Color("ffa94d"))
 	else:
+		field_label.text = "ÉTAGE %d · %s" % [tower.current_floor, family.to_upper()]
 		_show_cutin("ÉTAGE %d : %s" % [tower.current_floor, family.to_upper()], GOLD)
 	_begin_intent_phase()
 
@@ -640,9 +697,8 @@ func _begin_intent_phase() -> void:
 		view.threat_text = "FORTE PRÊTE" if unit.team == 1 and combat.can_use(unit, "forte") else ""
 	turn_label.text = "Tour %d" % combat.turn
 	sfx.play("tour")
-	banner.text = ""
 	if mode == "tour":
-		sudden_label.text = "La Tour — étage %d sur %d  ·  record : %d" % [tower.current_floor, tower.floor_count(), int(profile.tower_records.get(player_class, 0))]
+		sudden_label.text = "La Tour : étage %d sur %d  ·  ton record : %d" % [tower.current_floor, tower.floor_count(), int(profile.tower_records.get(player_class, 0))]
 		if combat.turn >= combat.exhaustion_turn:
 			sudden_label.text = "Les ennemis s'épuisent : plus de soins ni de barrières  ·  abandon au tour %d" % combat.forced_end_turn
 		sudden_label.add_theme_color_override("font_color", Color("ffa94d"))
@@ -657,9 +713,9 @@ func _begin_intent_phase() -> void:
 	bottom_panel.modulate = Color(1, 1, 1, 1 if player.is_alive() else 0.45)
 	announce = {}
 	_update_announce(true)
-	_refresh_acolyte_panel()
 	_refresh_skill_buttons()
 	_refresh_intents()
+	_maybe_show_tips()
 
 
 ## Recharges affichées sur un perso : 0 = prête, n = tours restants, -1 = déjà utilisée (une fois par combat).
@@ -698,7 +754,12 @@ func _process(delta: float) -> void:
 		stage.position = Vector2.ZERO
 	if phase != "intent":
 		return
+	# Une bulle d'aide ouverte met le chrono en pause.
+	if tip_layer != null:
+		return
 	time_left = maxf(time_left - delta, 0.0)
+	if selected_target != "" and not player_ready:
+		step_label.text = "3. Appuie sur Prêt (ou attends %d s)" % int(ceil(time_left))
 	timer_bar.value = time_left
 	timer_label.text = "%d" % int(ceil(time_left))
 	# Les 3 dernières secondes : le timer rougit et fait tic.
@@ -740,6 +801,7 @@ func _on_skill_pressed(tier: String) -> void:
 	_update_announce(false)
 	_refresh_skill_buttons()
 	_refresh_intents()
+	_maybe_show_tips()
 
 
 func _on_unit_tapped(unit_id: String) -> void:
@@ -788,86 +850,70 @@ func _on_ready_pressed() -> void:
 	_refresh_skill_buttons()
 
 
-## La colonne de ton acolyte : il joue seul ; s'il garde sa forte pour une Synergie, il le dit.
-func _refresh_acolyte_panel() -> void:
+## La carte du milieu pendant le choix : ce que ton acolyte va jouer, et pourquoi.
+func _refresh_story() -> void:
 	var aco := _acolyte()
-	if aco != null and not aco.is_alive():
-		acolyte_title.text = "%s est KO" % acolyte_name
-		acolyte_info.text = ""
+	if not _player().is_alive():
+		_set_story("TU ES KO", "%s continue seul" % acolyte_name, "Le tour part tout seul dans quelques secondes.", "off")
 		return
-	acolyte_title.text = acolyte_name
-	var waiting: Dictionary = announce.get("waiting", {})
-	if not waiting.is_empty():
-		acolyte_info.text = "Garde sa forte pour la Synergie %s au prochain tour" % waiting["synergy"]["name"]
+	if aco == null or not aco.is_alive():
+		_set_story("%s EST KO" % acolyte_name.to_upper(), "Tu joues seul ce tour-ci", "", "off")
+		return
+	var action: CombatAction = announce.get("action")
+	if action == null:
+		_set_story("", "", "", "off")
+		return
+	var sub := _announce_reason()
+	if sub == "":
+		sub = "Il joue seul, selon son rôle (%s)" % ROLE_LABELS.get(Duo.main_role(data, aco.class_id), "")
+	var kind := "acolyte"
+	if announce.has("waiting"):
+		var waiting: Dictionary = announce["waiting"]
+		sub = "Il garde sa forte pour une Synergie au prochain tour (%s, avec ta %s)" % [waiting["synergy"]["name"], data.skill_name(waiting["skill_id"])]
+		kind = "gold"
 	elif str(announce.get("rule", "")) == "avec_toi":
-		acolyte_info.text = "Joue la forte qu'il gardait : à toi de jouer la Synergie"
-	else:
-		acolyte_info.text = "Joue seul selon son rôle (%s)" % ROLE_LABELS.get(Duo.main_role(data, acolyte.get("class_id", "")), "")
+		sub = "La forte qu'il gardait pour votre Synergie : joue la tienne avec !"
+		kind = "gold"
+	_set_story("%s VA JOUER" % acolyte_name.to_upper(), "%s %s" % [data.skill_name(action.skill_id), _target_phrase(action)], sub, kind)
 
 
 func _refresh_skill_buttons() -> void:
 	var player := _player()
-	var aco := _acolyte()
+	var waiting_skill := str(announce.get("waiting", {}).get("skill_id", ""))
 	for tier in CombatUnit.TIERS:
 		var button: Button = skill_buttons[tier]
 		var skill_id: String = player.skills[tier]
 		var remaining := combat.cooldown_remaining(player, tier)
-		var label := "%s\n%s" % [data.skill_name(skill_id), TIER_LABELS[tier]]
+		var status: String = TIER_LABELS[tier]
 		var used_once: bool = bool(data.skill(skill_id).get("once_per_combat", false)) and bool(player.flags.get("used_" + skill_id, false))
 		if used_once:
-			label = "%s\nDéjà utilisée" % data.skill_name(skill_id)
+			status = "Déjà utilisée"
 		elif remaining > 0:
 			if tier == "forte" and combat.turn < combat.strong_available_from_turn and int(player.cooldown_until.get(tier, 0)) <= combat.turn:
-				label = "%s\nDès le tour %d" % [data.skill_name(skill_id), combat.strong_available_from_turn]
+				status = "Dès le tour %d" % combat.strong_available_from_turn
 			else:
-				label = "%s\nRecharge : %d" % [data.skill_name(skill_id), remaining]
-		button.text = label
+				status = "Revient dans %d" % remaining
 		button.disabled = phase != "intent" or not combat.can_use(player, tier)
-		button.modulate = Color(1.0, 0.9, 0.45) if tier == selected_tier else Color.WHITE
-		# Sous le bouton : la Synergie que cette compétence construirait avec l'annonce de l'acolyte.
-		var hint := ""
-		var hot := false
-		if phase == "intent" and synergy_options.has(tier):
-			var option: Dictionary = synergy_options[tier]
-			hint = "Synergie %s avec %s" % [option["synergy"]["name"], acolyte_name]
-			if option["targets"].size() < combat.valid_targets(player, skill_id).size():
-				hint = "Synergie %s : vise %s" % [option["synergy"]["name"], _names(option["targets"])]
-			hot = true
-		elif phase == "intent" and str(announce.get("waiting", {}).get("skill_id", "")) == skill_id:
-			hint = "Au prochain tour : Synergie %s avec %s" % [announce["waiting"]["synergy"]["name"], acolyte_name]
-			hot = true
-		elif aco != null and aco.is_alive():
-			for aco_tier in CombatUnit.TIERS:
-				var synergy := data.find_synergy(skill_id, aco.skills[aco_tier])
-				if not synergy.is_empty():
-					hint = "%s : avec sa %s" % [synergy["name"], data.skill_name(aco.skills[aco_tier])]
-					break
-		var synergy_label: Label = synergy_labels[tier]
-		synergy_label.text = hint
-		synergy_label.add_theme_color_override("font_color", GOLD if hot else Color(1, 0.83, 0.23, 0.5))
-		if hot and not button.disabled and tier != selected_tier:
-			button.modulate = Color(1.0, 0.95, 0.7)
-	passive_info.text = "Ton passif : %s — %s" % [data.passive_name(player.passive), data.passive_description(player.passive)]
+		# Le bouton qui déclenche une Synergie avec l'annonce de l'acolyte est bordé d'or et le dit.
+		var hot := phase == "intent" and synergy_options.has(tier) and not button.disabled
+		if hot:
+			status = "SYNERGIE !"
+		elif phase == "intent" and waiting_skill == skill_id:
+			status = "Synergie au prochain tour"
+		button.text = "%s\n%s" % [data.skill_name(skill_id), status]
+		_style_skill_button(button, tier == selected_tier, hot)
+	_refresh_synergy_panel()
 	if selected_tier != "":
 		var skill := data.skill(player.skills[selected_tier])
 		skill_info.text = "%s : %s" % [skill["name"], data.skill_description(player.skills[selected_tier])]
 	elif not player.is_alive():
 		skill_info.text = "%s continue seul." % acolyte_name
 	else:
-		skill_info.text = "Lis l'annonce de %s, puis choisis ta compétence. Sans choix : ta basique sur la même cible." % acolyte_name
+		skill_info.text = "Touche une compétence pour la choisir. Touche un perso pour voir ce qu'il sait faire."
 	ready_button.disabled = phase != "intent" or player_ready
 	ready_button.text = "Validé" if player_ready else "Prêt"
-	if not player.is_alive():
-		hint_label.text = "Tu es KO."
-	elif selected_tier == "":
-		hint_label.text = "1. Choisis une compétence"
-	elif selected_target == "":
-		hint_label.text = "2. Touche une cible (en surbrillance)"
-	else:
-		hint_label.text = "Intention prête. Tu peux encore changer."
-		var forecast := combat.preview(player, player.skills[selected_tier], combat.get_unit(selected_target))
-		if forecast["lethal"]:
-			hint_label.text = "Coup fatal si personne ne le soigne avant !"
+	ready_button.modulate = Color(0.6, 1.0, 0.65) if selected_target != "" and not player_ready and phase == "intent" else Color.WHITE
+	_refresh_step()
 	# Cibles possibles en surbrillance, avec la prévision du coup et l'étoile des Synergies.
 	var valid: Array = []
 	var synergy_targets: Array = []
@@ -900,6 +946,123 @@ func _refresh_skill_buttons() -> void:
 				view.preview_color = Color("51cf66")
 
 
+## Le pas à faire maintenant, en gros, au-dessus de tout le reste.
+func _refresh_step() -> void:
+	var color := Color.WHITE
+	if phase == "resolve":
+		step_label.text = "Le tour se joue… (touche pour accélérer)"
+		color = Color(0.75, 0.8, 0.95)
+	elif not _player().is_alive():
+		step_label.text = "Tu es KO : %s continue seul" % acolyte_name
+		color = Color(0.75, 0.8, 0.95)
+	elif player_ready:
+		step_label.text = "Validé : le tour commence"
+		color = Color("51cf66")
+	elif selected_tier == "":
+		step_label.text = "1. Choisis une compétence"
+	elif selected_target == "":
+		step_label.text = "2. Touche une cible (elles clignotent)"
+		color = GOLD
+	else:
+		step_label.text = "3. Appuie sur Prêt (ou attends %d s)" % int(ceil(time_left))
+		color = Color("51cf66")
+	step_label.add_theme_color_override("font_color", color)
+
+
+## L'encadré des Synergies : prête, possible (quel bouton jouer et ce que ça fait), au prochain tour, ou vos Synergies.
+func _refresh_synergy_panel() -> void:
+	var ready := _ready_synergy()
+	var kind := "off"
+	var title := ""
+	var text := ""
+	if phase == "intent" and not ready.is_empty():
+		kind = "gold"
+		title = "SYNERGIE PRÊTE : %s !" % ready["name"]
+		text = "Elle se déclenche ce tour-ci. %s" % data.synergy_description(ready)
+	elif phase == "intent" and not synergy_options.is_empty():
+		kind = "gold"
+		var option: Dictionary = synergy_options.get(selected_tier, synergy_options.values()[0])
+		var how := "Joue %s (bouton doré)" % data.skill_name(option["skill_id"])
+		if option["targets"].size() < combat.valid_targets(_player(), option["skill_id"]).size():
+			how += " sur %s" % _names(option["targets"])
+		title = "SYNERGIE POSSIBLE : %s" % option["synergy"]["name"]
+		text = "%s, avec %s de %s. %s" % [how, data.skill_name(option["acolyte_skill"]), acolyte_name, data.synergy_description(option["synergy"])]
+	elif phase == "intent" and announce.has("waiting"):
+		kind = "acolyte"
+		var waiting: Dictionary = announce["waiting"]
+		title = "AU PROCHAIN TOUR : SYNERGIE %s" % str(waiting["synergy"]["name"]).to_upper()
+		text = "%s garde sa forte. Ta %s revient au prochain tour : joue-la avec elle." % [acolyte_name, data.skill_name(waiting["skill_id"])]
+	else:
+		title = "Pas de Synergie ce tour-ci"
+		text = _duo_synergies_text()
+	synergy_panel.add_theme_stylebox_override("panel", _card_style(kind))
+	synergy_title.text = title
+	synergy_title.add_theme_color_override("font_color", GOLD if kind == "gold" else (ACOLYTE_BLUE if kind == "acolyte" else Color(0.6, 0.65, 0.8)))
+	synergy_text.text = text
+
+
+## Pendant la résolution, l'encadré rappelle ton choix et la Synergie qu'il doit déclencher.
+func _show_my_choice() -> void:
+	var mine := _player_action()
+	var ready := _ready_synergy()
+	synergy_panel.add_theme_stylebox_override("panel", _card_style("gold" if not ready.is_empty() else "off"))
+	synergy_title.add_theme_color_override("font_color", GOLD if not ready.is_empty() else Color(0.6, 0.65, 0.8))
+	synergy_title.text = "TON CHOIX : %s %s" % [data.skill_name(mine.skill_id), _target_phrase(mine)] if mine != null else "TON CHOIX : ta basique"
+	synergy_text.text = "Avec %s de %s : Synergie %s !" % [data.skill_name(announce["action"].skill_id), acolyte_name, ready["name"]] if not ready.is_empty() else ""
+
+
+## La Synergie que ton choix déclencherait avec l'annonce de l'acolyte (vide sinon).
+func _ready_synergy() -> Dictionary:
+	var mine := _player_action()
+	var aco_action: CombatAction = announce.get("action")
+	if mine == null or aco_action == null:
+		return {}
+	var synergy := data.find_synergy(mine.skill_id, aco_action.skill_id)
+	if synergy.is_empty() or (bool(synergy.get("same_target", false)) and mine.target_id != aco_action.target_id):
+		return {}
+	return synergy
+
+
+## Les Synergies de ton duo, pour les apprendre : « Bastion = Rempart (toi) + Prière (Saule) ».
+func _duo_synergies_text() -> String:
+	var player := _player()
+	var aco := _acolyte()
+	if aco == null:
+		return ""
+	var parts: Array = []
+	for tier in CombatUnit.TIERS:
+		for aco_tier in CombatUnit.TIERS:
+			var synergy := data.find_synergy(player.skills[tier], aco.skills[aco_tier])
+			if not synergy.is_empty():
+				parts.append("%s = %s (toi) + %s (%s)" % [synergy["name"], data.skill_name(player.skills[tier]), data.skill_name(aco.skills[aco_tier]), acolyte_name])
+	if parts.is_empty():
+		return "Ton duo n'a pas de Synergie."
+	return "Vos Synergies : " + " · ".join(parts)
+
+
+## Un bouton de compétence : bordé d'or quand il déclenche une Synergie, éclairé quand il est choisi.
+func _style_skill_button(button: Button, selected: bool, hot: bool) -> void:
+	for state in ["normal", "hover", "pressed", "focus"]:
+		button.remove_theme_stylebox_override(state)
+	button.remove_theme_color_override("font_color")
+	if button.disabled:
+		return
+	if not hot and not selected:
+		return
+	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(10)
+	style.set_content_margin_all(6)
+	style.bg_color = Color("6b5410") if hot else Color("2f4f86")
+	style.border_color = GOLD if hot else Color.WHITE
+	style.set_border_width_all(4 if selected else 3)
+	if hot and selected:
+		style.bg_color = Color("8a6a12")
+		style.border_color = Color.WHITE
+	for state in ["normal", "hover", "pressed", "focus"]:
+		button.add_theme_stylebox_override(state, style)
+	button.add_theme_color_override("font_color", Color("fff3bf") if hot else Color.WHITE)
+
+
 ## Les Intentions de ton duo : bulle au-dessus de chacun, trait vers sa cible, lien doré si une Synergie est possible.
 func _refresh_intents() -> void:
 	overlay.links = []
@@ -907,14 +1070,10 @@ func _refresh_intents() -> void:
 		if view.team == 0:
 			view.intent_text = ""
 			view.intent_star = false
+			view.aura = 0
 	var mine := _player_action()
 	var aco_action: CombatAction = announce.get("action")
-	var ready_synergy := {}
-	if mine != null and aco_action != null:
-		var synergy := data.find_synergy(mine.skill_id, aco_action.skill_id)
-		if not synergy.is_empty() and (not bool(synergy.get("same_target", false)) or mine.target_id == aco_action.target_id):
-			ready_synergy = synergy
-	var ready := not ready_synergy.is_empty()
+	var ready := not _ready_synergy().is_empty()
 	if mine != null:
 		views[player_id].intent_text = data.skill_name(mine.skill_id)
 		views[player_id].intent_alpha = 0.75
@@ -925,20 +1084,13 @@ func _refresh_intents() -> void:
 		aco_view.intent_star = announce.has("waiting")
 		aco_view.intent_alpha = 0.6
 		_add_intent_links(aco_action, Color(0.6, 0.8, 1.0, 0.55), ready)
+	# Une Synergie possible : ton acolyte brille en doré ; prête : vous brillez tous les deux.
 	if ready or not synergy_options.is_empty():
 		overlay.links.append({"from": views[player_id], "to": views[acolyte_id], "bond": true, "ready": ready})
-	# Bannière : la Synergie prête, sinon la première Synergie possible et comment la jouer.
-	if ready:
-		banner.text = "Synergie prête : %s !" % ready_synergy["name"]
-	elif not synergy_options.is_empty():
-		var option: Dictionary = synergy_options.values()[0]
-		var how := "joue %s" % data.skill_name(option["skill_id"])
-		if option["targets"].size() < combat.valid_targets(_player(), option["skill_id"]).size():
-			how += " sur %s" % _names(option["targets"])
-		banner.text = "Synergie possible : %s — %s" % [option["synergy"]["name"], how]
-	else:
-		banner.text = ""
-	log_label.text = _announce_sentence()
+		views[acolyte_id].aura = 2 if ready else 1
+		if ready:
+			views[player_id].aura = 2
+	_refresh_story()
 
 
 func _add_intent_links(action: CombatAction, color: Color, synergy: bool) -> void:
@@ -951,34 +1103,25 @@ func _add_intent_links(action: CombatAction, color: Color, synergy: bool) -> voi
 		overlay.links.append({"from": view, "to": views[action.target_id], "color": color, "synergy": synergy})
 
 
-## L'annonce de l'acolyte en une phrase : ce qu'il fait, sur qui, et la règle qui l'a décidé.
-func _announce_sentence() -> String:
-	var aco := _acolyte()
-	if aco == null or not aco.is_alive():
-		return "%s est KO : à toi de jouer seul." % acolyte_name if _player().is_alive() else ""
+## Pourquoi l'acolyte joue ce coup (la règle de son rôle qui a décidé), en quelques mots.
+func _announce_reason() -> String:
 	var action: CombatAction = announce.get("action")
 	if action == null:
 		return ""
-	var sentence := "%s : %s %s" % [acolyte_name, data.skill_name(action.skill_id), _target_phrase(action)]
 	var reasons: Dictionary = data.ai.get("reasons", {})
 	var rule := str(announce.get("rule", ""))
 	var reason := str(reasons.get(rule, "")) if rule != "basique" or combat.is_hostile(action.skill_id) else ""
-	if announce.has("waiting"):
-		var waiting: Dictionary = announce["waiting"]
-		reason = str(reasons.get("attend_synergie", "")).replace("{synergy}", str(waiting["synergy"]["name"])).replace("{skill}", data.skill_name(waiting["skill_id"]))
-	if reason != "":
-		sentence += " — " + reason
-	return sentence
+	return reason.left(1).to_upper() + reason.substr(1) if reason != "" else ""
 
 
 func _target_phrase(action: CombatAction) -> String:
 	match str(data.skill(action.skill_id).get("target")):
 		"enemies_all", "enemies_2":
-			return "sur le duo adverse"
+			return "sur les monstres" if mode == "tour" else "sur le duo adverse"
 		"allies_all":
 			return "sur votre duo"
 		"self":
-			return "sur lui"
+			return "sur toi" if action.actor_id == player_id else "sur lui"
 	if action.target_id == player_id:
 		return "sur toi"
 	if action.target_id == action.actor_id:
@@ -1020,7 +1163,6 @@ func _submit_turn() -> void:
 		actions.append(told if told != null else CombatAI.decide_acolyte(combat, aco)["action"])
 	# Le duo adverse : l'annonce de son acolyte, puis le choix de son joueur IA. Tu ne vois rien avant la révélation.
 	actions.append_array(CombatAI.choose_team(combat, 1))
-	_refresh_acolyte_panel()
 	_refresh_skill_buttons()
 	var events := combat.resolve_turn(actions)
 	_play_events(events)
@@ -1028,13 +1170,17 @@ func _submit_turn() -> void:
 
 func _play_events(events: Array) -> void:
 	overlay.links = []
-	hint_label.text = "Touche l'écran pour accélérer"
+	action_index = 0
+	action_count = 0
+	_refresh_step()
+	_show_my_choice()
 	for view in views.values():
 		view.targetable = false
 		view.selected_target = false
 		view.synergy_mark = false
 		view.preview_text = ""
 		view.threat_text = ""
+		view.aura = 0
 	for event in events:
 		await _play_event(event)
 	for view in views.values():
@@ -1054,8 +1200,11 @@ func _play_event(event: Dictionary) -> void:
 				view.intent_text = data.skill_name(action_dict["skill"])
 				view.intent_star = false
 				view.intent_alpha = 0.8
-			log_label.text = "Révélation : les 4 actions"
-			await _wait(1.1)
+			action_count = event["actions"].size()
+			story_note = ""
+			story_results = []
+			_set_story("TOUT LE MONDE A CHOISI", "%d actions ce tour-ci" % action_count, "Elles se jouent de la plus rapide à la plus lente (le numéro sur chaque perso).")
+			await _wait(1.3)
 		"order":
 			var index := 1
 			for unit_id in event["order"]:
@@ -1074,11 +1223,14 @@ func _play_event(event: Dictionary) -> void:
 			if targets.size() == 1 and targets[0] != event["actor"]:
 				target_text = " sur " + _short_name(targets[0])
 			elif targets.size() > 1:
-				target_text = " (%d cibles)" % targets.size()
-			log_label.text = "%s : %s%s" % [_short_name(event["actor"]), data.skill_name(event["skill"]), target_text]
-			if event.get("redirected", false):
-				log_label.text += " — provoqué !"
-			await _wait(0.45)
+				target_text = " sur " + _names(targets)
+			action_index += 1
+			var actor_unit := combat.get_unit(event["actor"])
+			var kind := "acolyte" if actor_unit.team == 0 else "enemy"
+			story_note = "Provoqué : il doit frapper celui qui l'a provoqué !" if event.get("redirected", false) else ""
+			story_results = []
+			_set_story("ACTION %d SUR %d" % [action_index, maxi(action_count, action_index)], "%s : %s%s" % [_short_name(event["actor"]), data.skill_name(event["skill"]), target_text], story_note, kind)
+			await _wait(0.7)
 		"damage":
 			var view: UnitView = views[event["target"]]
 			var amount := int(event["amount"])
@@ -1099,7 +1251,8 @@ func _play_event(event: Dictionary) -> void:
 				stats[source]["damage"] += amount
 				if int(event["hp"]) <= 0:
 					stats[source]["kos"] += 1
-			await _wait(0.24)
+			_add_story_result("%s -%d" % [_short_name(event["target"]), amount])
+			await _wait(0.3)
 		"heal":
 			if int(event["amount"]) > 0:
 				var view: UnitView = views[event["target"]]
@@ -1109,11 +1262,13 @@ func _play_event(event: Dictionary) -> void:
 				var healer := str(event.get("source", ""))
 				if stats.has(healer):
 					stats[healer]["heal"] += int(event["amount"])
-				await _wait(0.22)
+				_add_story_result("%s +%d" % [_short_name(event["target"]), int(event["amount"])])
+				await _wait(0.28)
 		"absorbed":
 			views[event["target"]].float_text("Bloqué", ACOLYTE_BLUE)
 			sfx.play("bloque")
-			await _wait(0.2)
+			_add_story_result("%s : coup bloqué" % _short_name(event["target"]))
+			await _wait(0.25)
 		"status":
 			var view: UnitView = views[event["target"]]
 			var unit := combat.get_unit(event["target"])
@@ -1129,7 +1284,7 @@ func _play_event(event: Dictionary) -> void:
 		"ko":
 			views[event["target"]].set_hp(0)
 			views[event["target"]].float_text("KO", Color("ff6b6b"), true)
-			log_label.text = "%s est KO !" % _short_name(event["target"])
+			_add_story_result("%s est KO !" % _short_name(event["target"]))
 			sfx.play("ko")
 			_shake(9.0)
 			_flash(Color(1, 0.3, 0.3), 0.25)
@@ -1138,29 +1293,54 @@ func _play_event(event: Dictionary) -> void:
 			var view: UnitView = views[event["target"]]
 			view.set_hp(int(event["hp"]))
 			view.float_text("Relevé !", Color("51cf66"), true)
-			log_label.text = "%s est relevé !" % _short_name(event["target"])
+			_add_story_result("%s est relevé !" % _short_name(event["target"]))
 			sfx.play("releve")
 			_flash(Color(0.5, 1, 0.6), 0.3)
 			await _wait(0.6)
 		"action_lost":
-			log_label.text = "%s est KO : son action est perdue." % _short_name(event["actor"])
+			story_note = "Tombé avant d'agir : son action est perdue."
+			story_results = []
+			_set_story("ACTION PERDUE", "%s est KO" % _short_name(event["actor"]), story_note, "off")
 			await _wait(0.4)
 		"synergy":
+			# Ta Synergie : grande annonce dorée et son effet. Celle d'en face : en rouge, pour qu'on ne confonde jamais.
 			var ours: bool = combat.get_unit(str(event["actors"][0])).team == 0
-			banner.text = "SYNERGIE : %s !" % event["name"]
+			var synergy := {}
+			for candidate in data.synergies:
+				if candidate["name"] == event["name"]:
+					synergy = candidate
 			if ours:
 				synergies_fired += 1
+				story_note = data.synergy_description(synergy)
+				story_results = []
+				_set_story("SYNERGIE DE TON DUO !", str(event["name"]), story_note, "gold")
+				_show_cutin("SYNERGIE !\n" + str(event["name"]), GOLD, 1.0)
+				_flash(GOLD, 0.4)
+			else:
+				story_note = data.synergy_description(synergy)
+				story_results = []
+				_set_story("SYNERGIE DU DUO ADVERSE", str(event["name"]), story_note, "enemy")
+				_show_cutin("Synergie adverse\n" + str(event["name"]), Color("ff8787"))
+				_flash(Color("ff6b6b"), 0.25)
 			for unit_id in event["actors"]:
-				views[unit_id].float_text("Synergie", GOLD, true)
+				views[unit_id].aura = 2 if ours else 0
+				views[unit_id].do_announce()
 			sfx.play("synergie")
-			_show_cutin("SYNERGIE !\n" + str(event["name"]), GOLD if ours else Color("ff8787"))
-			_flash(GOLD if ours else Color("ff6b6b"), 0.35)
 			_shake(7.0)
-			await _wait(1.0)
+			await _wait(1.4)
+			for unit_id in event["actors"]:
+				views[unit_id].aura = 0
 		"cooldown_reduced":
 			views[event["target"]].float_text("Recharge -%d" % int(event["amount"]), ACOLYTE_BLUE)
 		"turn_end":
 			await _wait(0.4)
+
+
+## Ce que l'action en cours a fait, ajouté sous elle dans la carte du milieu (« Toi -38 · Saule -20 »).
+func _add_story_result(text: String) -> void:
+	story_results.append(text)
+	var results := " · ".join(story_results)
+	story_sub.text = results if story_note == "" else "%s\n%s" % [story_note, results]
 
 
 func _short_name(unit_id: String) -> String:
@@ -1176,9 +1356,94 @@ func _wait(seconds: float) -> void:
 
 ## Pendant la résolution, toucher l'écran accélère l'animation du tour.
 func _input(event: InputEvent) -> void:
-	if phase == "resolve" and event is InputEventMouseButton and event.pressed:
+	if phase == "resolve" and tip_layer == null and event is InputEventMouseButton and event.pressed:
 		speed = 3.0
-		hint_label.text = "Accéléré"
+		step_label.text = "Accéléré"
+
+
+# ---------------------------------------------------------------------------
+# Aide : bulles du premier combat (une fois chacune) et bouton « ? »
+# ---------------------------------------------------------------------------
+
+## Les bulles d'aide, au bon moment, une seule fois chacune (gardées sur l'appareil). Le chrono est en pause.
+func _maybe_show_tips() -> void:
+	if phase != "intent" or tip_layer != null or not _player().is_alive():
+		return
+	var aco := _acolyte()
+	if not profile.tips_seen.has("annonce") and aco != null and aco.is_alive():
+		_show_tip("annonce", "bottom", "Ton acolyte annonce son coup", "Au début de chaque tour, %s choisit son coup tout seul et te l'annonce : regarde la carte bleue au milieu, et la bulle au-dessus de lui. Tu choisis ensuite le tien en le sachant." % acolyte_name)
+	elif not profile.tips_seen.has("choix"):
+		_show_tip("choix", "top", "À toi de jouer", "En bas, la ligne blanche te dit quoi faire :\n1. touche une compétence,\n2. touche une cible (elles clignotent),\n3. appuie sur Prêt.\nSans choix au bout de %d secondes, tu fais ta basique." % int(INTENT_SECONDS))
+	elif not profile.tips_seen.has("synergie") and (not synergy_options.is_empty() or announce.has("waiting")):
+		_show_tip("synergie", "top", "Une Synergie !", "Quand un bouton est bordé d'or et que %s brille, joue cette compétence ce tour-ci : avec son coup, elle déclenche un effet bonus. L'encadré doré te dit laquelle et ce qu'elle fait." % acolyte_name)
+	elif mode == "tour" and not profile.tips_seen.has("tour"):
+		_show_tip("tour", "bottom", "La Tour", "Tu affrontes des monstres : touche-en un pour voir ce qu'il sait faire. Entre deux étages, tu ne récupères que %d %% de tes PV : économise-toi." % int(round(float(data.tower.get("heal_between_floors", 0.2)) * 100.0)))
+
+
+func _show_tip(key: String, place: String, title: String, text: String) -> void:
+	_open_tip(title, text, place, func():
+		profile.tips_seen[key] = true
+		profile.save()
+		_maybe_show_tips())
+
+
+## Le bouton « ? » : comment se joue un tour, en clair. Le chrono est en pause pendant la lecture.
+func _show_help() -> void:
+	if tip_layer != null:
+		return
+	sfx.play("clic")
+	var lines := [
+		"Chaque tour, %s annonce son coup en premier (carte bleue au milieu). Il joue seul, selon son rôle." % acolyte_name,
+		"Toi : 1. une compétence, 2. une cible, 3. Prêt. Tout le monde agit ensuite, du plus rapide au plus lent.",
+		"Synergie : un bouton bordé d'or, joué en même temps que le coup de %s, déclenche un bonus. L'encadré doré te dit lequel." % acolyte_name,
+		"Recharges : sur chaque perso, M (moyenne) et F (forte). Vert = prête, un chiffre = tours restants. La forte n'arrive qu'au tour 3.",
+		"Touche n'importe quel perso pour voir ce qu'il sait faire.",
+	]
+	_open_tip("Comment jouer", "\n\n".join(lines), "center", func(): pass)
+
+
+## place : « top » ou « bottom » pour laisser voir ce que la bulle explique, « center » sinon.
+func _open_tip(title: String, text: String, place: String, on_close: Callable) -> void:
+	tip_layer = ColorRect.new()
+	(tip_layer as ColorRect).color = Color(0.03, 0.04, 0.08, 0.45)
+	tip_layer.set_anchors_preset(Control.PRESET_FULL_RECT)
+	tip_layer.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(tip_layer)
+	var column := VBoxContainer.new()
+	column.set_anchors_preset(Control.PRESET_FULL_RECT)
+	column.offset_top = 60
+	column.offset_bottom = -12
+	column.alignment = {"top": BoxContainer.ALIGNMENT_BEGIN, "bottom": BoxContainer.ALIGNMENT_END}.get(place, BoxContainer.ALIGNMENT_CENTER)
+	tip_layer.add_child(column)
+	var center := CenterContainer.new()
+	column.add_child(center)
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(470, 0)
+	var style := _card_style("gold")
+	style.bg_color = Color("1f2538")
+	style.set_content_margin_all(18)
+	card.add_theme_stylebox_override("panel", style)
+	center.add_child(card)
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 12)
+	card.add_child(box)
+	var head := _story_label(26, GOLD)
+	head.text = title
+	box.add_child(head)
+	var body := _story_label(18, Color.WHITE)
+	body.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	body.text = text
+	box.add_child(body)
+	var ok := Button.new()
+	ok.text = "Compris"
+	ok.custom_minimum_size = Vector2(0, 58)
+	ok.add_theme_font_size_override("font_size", 22)
+	ok.pressed.connect(func():
+		sfx.play("clic")
+		tip_layer.queue_free()
+		tip_layer = null
+		on_close.call())
+	box.add_child(ok)
 
 
 # ---------------------------------------------------------------------------
