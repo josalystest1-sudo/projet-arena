@@ -11,28 +11,28 @@
 
   "foi": {"name": "Foi", "class": "pretre", "lever": "foi_bonus", "params": {"foi_threshold": 0.4, "foi_bonus": 0.195}, "description": "Soins +{foi_bonus%} sur un allié sous {foi_threshold%} de PV."},
   "martyr": {"name": "Martyr", "class": "pretre", "lever": "martyr_share", "params": {"martyr_share": 0.07}, "description": "Encaisse {martyr_share%} des dégâts subis par son allié."},
-  "lumiere_interieure": {"name": "Lumière intérieure", "class": "pretre", "lever": "regen", "params": {"regen": 0.053}, "description": "Se soigne de {regen%} de ses PV à chaque fin de tour."},
+  "lumiere_interieure": {"name": "Lumière intérieure", "class": "pretre", "lever": "regen", "params": {"regen": 0.052}, "description": "Se soigne de {regen%} de ses PV à chaque fin de tour."},
   "sanctuaire": {"name": "Sanctuaire", "class": "pretre", "lever": "barrier_bonus", "params": {"barrier_bonus": 0.446}, "description": "Ses barrières sont {barrier_bonus%} plus grosses."},
 
   "opportuniste": {"name": "Opportuniste", "class": "voleur", "lever": "hit_target_bonus", "params": {"hit_target_bonus": 0.342}, "description": "+{hit_target_bonus%} de dégâts sur une cible déjà touchée ce tour."},
   "fuite": {"name": "Fuite", "class": "voleur", "params": {"dodges": 1}, "description": "Esquive la première attaque reçue du combat."},
   "doigts_agiles": {"name": "Doigts agiles", "class": "voleur", "params": {"moyenne_minus": 1}, "description": "La moyenne revient 1 tour plus tôt."},
-  "mise_a_mort": {"name": "Mise à mort", "class": "voleur", "lever": "execute_bonus", "params": {"execute_bonus": 0.325, "execute_threshold": 0.35}, "description": "+{execute_bonus%} de dégâts sur une cible sous {execute_threshold%} de PV."},
+  "mise_a_mort": {"name": "Mise à mort", "class": "voleur", "lever": "execute_bonus", "params": {"execute_bonus": 0.334, "execute_threshold": 0.35}, "description": "+{execute_bonus%} de dégâts sur une cible sous {execute_threshold%} de PV."},
 
   "oeil_de_faucon": {"name": "Œil de faucon", "class": "archer", "lever": "marked_target_bonus", "params": {"marked_target_bonus": 0.142}, "description": "+{marked_target_bonus%} de dégâts sur une cible marquée."},
-  "calme": {"name": "Calme", "class": "archer", "lever": "act_last_bonus", "params": {"act_last": 1, "act_last_bonus": 0.438}, "description": "Agit en dernier, mais +{act_last_bonus%} de dégâts."},
+  "calme": {"name": "Calme", "class": "archer", "lever": "act_last_bonus", "params": {"act_last": 1, "act_last_bonus": 0.419}, "description": "Agit en dernier, mais +{act_last_bonus%} de dégâts."},
   "sang_froid": {"name": "Sang-froid", "class": "archer", "params": {"immune": ["gele", "push_back"]}, "description": "Immunisé aux ralentissements (Gelé, Intention repoussée)."},
   "traqueur": {"name": "Traqueur", "class": "archer", "lever": "dot_target_bonus", "params": {"dot_target_bonus": 0.15}, "description": "+{dot_target_bonus%} de dégâts sur une cible qui saigne, brûle ou s'empoisonne."},
 
   "cardio": {"name": "Cardio", "class": "pugiliste", "lever": "quiet_turns_max", "params": {"speed_per_quiet_turn": 1, "quiet_turns_max": 6}, "description": "+{speed_per_quiet_turn} vitesse par tour sans être touché (jusqu'à +{quiet_turns_max}), remis à zéro au premier coup reçu."},
   "machoire_d_acier": {"name": "Mâchoire d'acier", "class": "pugiliste", "lever": "physical_reduction", "params": {"physical_reduction": 0.279}, "description": "-{physical_reduction%} de dégâts physiques subis (tranchant, contondant, perforant)."},
   "esquive": {"name": "Esquive", "class": "pugiliste", "lever": "dodge_again_from_turn", "params": {"dodges": 1, "dodge_again_from_turn": 5}, "description": "Annule la première attaque reçue du combat, puis une de plus à partir du tour {dodge_again_from_turn}."},
-  "enchaineur": {"name": "Enchaîneur", "class": "pugiliste", "lever": "combo_bonus", "params": {"combo_bonus": 0.08, "combo_max": 3}, "description": "+{combo_bonus%} de dégâts par coup consécutif sur la même cible (jusqu'à {combo_max})."},
+  "enchaineur": {"name": "Enchaîneur", "class": "pugiliste", "lever": "combo_bonus", "params": {"combo_bonus": 0.078, "combo_max": 3}, "description": "+{combo_bonus%} de dégâts par coup consécutif sur la même cible (jusqu'à {combo_max})."},
 
   "distillation": {"name": "Distillation", "class": "alchimiste", "params": {"status_turns_bonus": 1}, "description": "Les états qu'il pose sur les autres durent 1 tour de plus."},
   "peau_de_mercure": {"name": "Peau de mercure", "class": "alchimiste", "lever": "elemental_reduction", "params": {"elemental_reduction": 0.276}, "description": "-{elemental_reduction%} de dégâts élémentaires subis (feu, givre, foudre, ombre, lumière)."},
   "sang_acide": {"name": "Sang acide", "class": "alchimiste", "lever": "contact_riposte", "params": {"contact_riposte": 12}, "description": "Chaque ennemi qui le frappe au contact subit une riposte d'acide ({contact_riposte} de puissance)."},
-  "baume": {"name": "Baume", "class": "alchimiste", "lever": "ally_regen", "params": {"ally_regen": 0.027}, "description": "À chaque fin de tour, l'allié le plus blessé (lui compris) se soigne de {ally_regen%} de ses PV max."},
+  "baume": {"name": "Baume", "class": "alchimiste", "lever": "ally_regen", "params": {"ally_regen": 0.024}, "description": "À chaque fin de tour, l'allié le plus blessé (lui compris) se soigne de {ally_regen%} de ses PV max."},
 
   "rythme": {"name": "Rythme", "class": "barde", "params": {"moyenne_minus": 1}, "description": "La moyenne revient 1 tour plus tôt."},
   "inspiration": {"name": "Inspiration", "class": "barde", "lever": "synergy_team_bonus", "params": {"synergy_team_bonus": 0.109}, "description": "Chaque Synergie du duo galvanise l'équipe : +{synergy_team_bonus%} de dégâts jusqu'à la fin du tour suivant."},
