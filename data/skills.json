@@ -52,23 +52,23 @@
   },
   "nova": {
     "name": "Nova", "class": "mage", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 59}],
+    "effects": [{"type": "damage", "power": 61}],
     "description": "Explosion de feu sur tous les ennemis."
   },
   "bouclier_de_mana": {
     "name": "Bouclier de mana", "class": "mage", "tier": "forte", "element": "", "target": "ally",
-    "effects": [{"type": "barrier", "power": 182, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 177, "turns": 3}],
     "description": "Grosse barrière sur un allié pendant {turns} tours."
   },
 
   "chatiment": {
     "name": "Châtiment", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "enemy",
-    "effects": [{"type": "damage", "power": 33}],
+    "effects": [{"type": "damage", "power": 32}],
     "description": "Frappe de lumière sur un ennemi."
   },
   "priere": {
     "name": "Prière", "class": "pretre", "tier": "basique", "element": "lumiere", "target": "ally",
-    "effects": [{"type": "heal", "power": 54, "overflow_barrier": true, "overflow": 0.5}],
+    "effects": [{"type": "heal", "power": 55, "overflow_barrier": true, "overflow": 0.5}],
     "description": "Petit soin sur un allié ; {overflow%} de ce qui dépasse ses PV max devient une barrière."
   },
   "restauration": {
@@ -83,7 +83,7 @@
   },
   "egide": {
     "name": "Égide", "class": "pretre", "tier": "forte", "element": "lumiere", "target": "allies_all",
-    "effects": [{"type": "barrier", "power": 66, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 65, "turns": 3}],
     "description": "Barrière sur tout le duo pendant {turns} tours."
   },
   "resurrection": {
@@ -187,12 +187,12 @@
 
   "fiole": {
     "name": "Fiole", "class": "alchimiste", "tier": "basique", "element": "feu", "target": "enemy",
-    "effects": [{"type": "damage", "power": 36}],
+    "effects": [{"type": "damage", "power": 35}],
     "description": "Une fiole enflammée lancée sur un ennemi."
   },
   "elixir": {
     "name": "Élixir", "class": "alchimiste", "tier": "basique", "element": "", "target": "ally",
-    "effects": [{"type": "heal", "power": 42}, {"type": "status", "id": "vif", "turns": 2, "value": 4}],
+    "effects": [{"type": "heal", "power": 43}, {"type": "status", "id": "vif", "turns": 2, "value": 4}],
     "description": "Petit soin sur un allié, qui gagne +{value} vitesse pendant {turns} tours."
   },
   "acide": {
@@ -207,7 +207,7 @@
   },
   "bombe": {
     "name": "Bombe", "class": "alchimiste", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 27}],
+    "effects": [{"type": "damage", "power": 26}],
     "description": "Une bombe de feu sur tous les ennemis."
   },
   "catalyseur": {
@@ -290,12 +290,12 @@
   },
   "golem": {
     "name": "Golem", "class": "invocateur", "tier": "moyenne", "element": "contondant", "target": "self",
-    "effects": [{"type": "summon", "creature": "golem", "name": "Golem", "role": "protection", "hp": 0.45, "power": 0.765, "strike": 40, "element": "contondant", "turns": 3}],
+    "effects": [{"type": "summon", "creature": "golem", "name": "Golem", "role": "protection", "hp": 0.45, "power": 0.745, "strike": 40, "element": "contondant", "turns": 3}],
     "description": "Invoque un Golem pour {turns} tours ({hp%} de ses PV) : il encaisse à la place du duo tous les coups directs tant qu'il tient. Une créature à la fois."
   },
   "spectre": {
     "name": "Spectre", "class": "invocateur", "tier": "moyenne", "element": "ombre", "target": "self",
-    "effects": [{"type": "summon", "creature": "spectre", "name": "Spectre", "role": "degats", "hp": 0.25, "power": 0.637, "strike": 42, "element": "ombre", "turns": 3}],
+    "effects": [{"type": "summon", "creature": "spectre", "name": "Spectre", "role": "degats", "hp": 0.25, "power": 0.652, "strike": 42, "element": "ombre", "turns": 3}],
     "description": "Invoque un Spectre pour {turns} tours : à chaque fin de tour, il frappe seul la dernière cible de l'Invocateur. Une créature à la fois."
   },
   "sacrifice": {
