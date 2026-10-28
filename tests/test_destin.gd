@@ -211,6 +211,8 @@ func test_les_valeurs_propres_au_mini_destin() -> void:
 	var counts: Dictionary = config["mini_counts"]
 	var total := float(config["mini_total_value"])
 	var picks := {"basique": 0, "moyenne": 1, "forte": 0, "passive": 2}
+	var saved: Variant = config.get("mini_strength", {})
+	config["mini_strength"] = {}
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 31
 	var before := Destin._build(data, "mage", picks, rng, size, counts, total, true)
@@ -222,7 +224,6 @@ func test_les_valeurs_propres_au_mini_destin() -> void:
 		if node["type"] == "pivot" and pivot_label == "":
 			pivot_label = Destin.template_of(node)
 	assert_true(evolution_label != "" and pivot_label != "", "une évolution et un pivot dans le mini-Destin")
-	var saved: Variant = config.get("mini_strength", {})
 	config["mini_strength"] = {evolution_label: 2.0, pivot_label: 0.5}
 	rng.seed = 31
 	var after := Destin._build(data, "mage", picks, rng, size, counts, total, true)
