@@ -14,7 +14,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	column.add_child(UiKit.label("Ton acolyte, piloté par l'IA. Même niveau que toi, toujours.", 16, UiKit.SOFT))
 	var kit := UiKit.card(column, 6)
 	kit.add_child(UiKit.label("Ses trois voies", 20, UiKit.GOLD, false))
-	kit.add_child(UiKit.label("Elles s'allument seules : un nœud par niveau, toutes à partir du niveau 10 (○ : pas encore allumé).", 15, UiKit.SOFT, false))
+	kit.add_child(UiKit.label("Elles s'allument seules : un nœud par niveau, toutes à partir du niveau 10 (entre parenthèses : pas encore allumé).", 15, UiKit.SOFT, false))
 	kit.add_child(UiKit.label("Au centre : %s" % Texte.nom(app.acolyte_destin.moyeu), 16, Color.WHITE, false))
 	for v in range(app.acolyte_destin.voies.size()):
 		UiKit.voie_resume(kit, app.acolyte_destin, v, UiKit.ACOLYTE_BLUE)
