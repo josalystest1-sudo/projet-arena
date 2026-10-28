@@ -59,7 +59,7 @@ func test_les_evolutions_de_competence_du_destin() -> void:
 
 
 func test_les_etats_ont_des_drapeaux() -> void:
-	assert_eq(data.dot_statuses(), ["saignement", "brulure"], "les dégâts sur la durée, dans l'ordre des données")
+	assert_eq(data.dot_statuses(), ["saignement", "brulure", "poison"], "les dégâts sur la durée, dans l'ordre des données")
 	assert_true(data.status_flag("gele", "control"), "Gelé est un contrôle")
 	assert_false(data.status_flag("barriere", "negative"), "une barrière n'est pas négative")
 	assert_eq(data.status_kind("rempart"), "protection", "un Rempart protège (pour l'IA)")

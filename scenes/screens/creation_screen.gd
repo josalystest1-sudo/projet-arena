@@ -1,8 +1,6 @@
 ## Création du personnage (GDD) : le choix de la classe, puis la révélation du Destin, une compétence après l'autre.
 extends Control
 
-const CLASS_ORDER := ["guerrier", "mage", "pretre"]
-
 var app: ArenaApp
 var column: VBoxContainer
 
@@ -24,7 +22,7 @@ func _show_classes() -> void:
 	column.add_child(UiKit.label("Projet Arena", 42, UiKit.GOLD))
 	column.add_child(UiKit.label("Un seul personnage, un Destin unique, un acolyte à tes côtés.", 18, UiKit.SOFT))
 	column.add_child(UiKit.label("Choisis ta classe :", 22))
-	for class_id in CLASS_ORDER:
+	for class_id in app.data.class_ids:
 		var cls: Dictionary = app.data.classes[class_id]
 		var card := UiKit.card(column)
 		var row := HBoxContainer.new()
