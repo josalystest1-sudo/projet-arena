@@ -4,6 +4,7 @@ RPG mobile en duo (ton perso + un acolyte piloté par l'IA), tour par tour simul
 
 - `docs/GDD.md` : le game design document complet (source de vérité).
 - `CLAUDE.md` : le résumé lu par Claude Code à chaque session, avec les choix faits en cours de route.
+- `docs/SUIVI.md` : où en est le projet, ce qui attend une décision, les prochaines tâches, l'historique des PR.
 
 Le projet est entièrement développé avec Claude Code.
 
@@ -18,7 +19,7 @@ Le projet est entièrement développé avec Claude Code.
 | `scenes/ui/` | Les briques communes de l'interface : thème, boutons, cartes, portraits animés. |
 | `scenes/combat/` | L'écran de combat (affichage uniquement, aucune règle). |
 | `tests/` | Les tests automatiques du moteur, lancés en CI à chaque PR. |
-| `tools/` | Les simulateurs (duo contre duo, montées de la Tour), l'équilibrage (mesure et régleur automatique) et le générateur de bruitages provisoires. |
+| `tools/` | Les simulateurs (duo contre duo, montées de la Tour), l'équilibrage (mesure et régleur automatique), le générateur de bruitages provisoires et le pilote de navigateur pour les captures. |
 | `.github/workflows/` | Tests à chaque PR, export web publié sur GitHub Pages à chaque fusion sur `main`. |
 
 ## Lancer en local (pour les développeurs)
@@ -44,4 +45,12 @@ La Tour (menace de chaque monstre, puis difficulté de chaque étage) :
 godot --headless --path . --script res://tools/simulate_tour.gd -- 1000 1 /tmp/etages.csv
 python3 tools/menace.py /tmp/etages.csv [--ecrire]   # menace réelle des monstres (--ecrire : la règle dans data/bestiaire.json)
 python3 tools/regleur_tour.py 3 2000                 # chaque étage vers son taux de chute cible (data/tower.json)
+```
+
+Voir le jeu au format téléphone et prendre des captures (Node et Playwright, après l'export web) :
+
+```
+godot --headless --path . --export-release "Web" build/web/index.html
+(cd build/web && python3 -m http.server 8765) &
+OUT=/tmp/captures Q="?graine=7" node tools/navigateur.js '[{"wait":1000},{"shot":"accueil"},{"tap":[270,700]},{"swipe":[270,800,300]},{"shot":"apres"}]'
 ```

@@ -62,7 +62,7 @@ Chaque joueur reçoit, lors de son premier combat, un acolyte : un second person
 
 Ce qui rend le duo jouable, c'est qu'il **annonce son action en premier**, dès le début des 12 secondes : le joueur voit ce qu'il va faire et sur qui, et choisit en le sachant. Ce n'est pas du contrôle, c'est de l'information.
 
-L'acolyte doit être **prévisible plutôt que brillant** : un joueur qui connaît ses postures doit pouvoir anticiper chacun de ses coups. C'est ce qui rend le duo jouable, et c'est ce qui permet de lire le duo adverse.
+L'acolyte doit être **prévisible plutôt que brillant** : un joueur qui connaît ses règles doit pouvoir anticiper chacun de ses coups. C'est ce qui rend le duo jouable, et c'est ce qui permet de lire le duo adverse.
 
 **Classe fixe, évolution partagée.** La classe de l'acolyte ne change jamais librement. Quand le joueur évolue (niveau 30), l'acolyte évolue en même temps et c'est le joueur qui choisit son évolution parmi 3, dont une qui déplace son rôle. C'est le seul moment où la fonction de l'acolyte peut bouger, et il arrive juste quand le rôle du joueur lui-même peut bouger.
 
@@ -342,8 +342,8 @@ Un seul projet Godot 4 pour iOS et Android, un serveur Nakama qui arbitre les co
 
 Le prototype de combat en duo passe en premier, avant tout art et tout serveur : c'est lui qui prouve ou non que le jeu est addictif. Tout le reste s'empile dessus. Le prototype 3v3 déjà commencé n'est pas perdu : son moteur de règles sert de base, on remplace le format.
 
-1. **Prototype de combat en duo (web, local).** Le moteur de règles (recharges, Synergies, tour simultané, mort subite), 3 classes, l'acolyte avec ses 4 postures et son annonce, le duo du joueur contre un duo IA. Jouable dans un navigateur de téléphone. Critère de sortie : tu veux relancer un combat quand il se termine.
-2. **La Tour en prototype.** 10 étages générés avec les mêmes 3 classes, la gestion des PV et recharges entre étages. Critère : tu veux battre ton record.
+1. **Prototype de combat en duo (web, local).** Le moteur de règles (recharges, Synergies, tour simultané, mort subite), 3 classes, l'acolyte (qui joue seul, sans postures) et son annonce, le duo du joueur contre un duo IA. Jouable dans un navigateur de téléphone. Critère de sortie : tu veux relancer un combat quand il se termine.
+2. **La Tour en prototype.** 10 étages générés de 1 à 4 monstres tirés d'un bestiaire, la gestion des PV et recharges entre étages. Critère : tu veux battre ton record.
 3. **Les 10 classes et le Destin.** Les 10 kits complets (6 actives, 4 passifs), le générateur de Destin avec son budget de puissance, le mini-Destin de l'acolyte, l'écran de l'arbre, les Synergies joueur-acolyte.
 4. **Le simulateur.** Le moteur lancé sans interface, des centaines de milliers de combats en duo, le tableau des taux de victoire. Première passe d'équilibrage, réglage de la mort subite.
 5. **Serveur et PvP réel.** Nakama : comptes, personnages et acolytes persistants, matchmaking par ligue, combat arbitré côté serveur, Échos, classements PvP et Tour.
