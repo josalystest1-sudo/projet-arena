@@ -21,6 +21,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		"%d étages de monstres, de plus en plus forts : de 1 à 4 par étage, d'une même famille. Aux étages 5 et 10, un Gardien." % floors,
 		"Entre deux étages, tu gardes tes PV et tes recharges : seuls %d %% de tes PV te sont rendus (un acolyte tombé revient avec autant)." % int(round(float(app.data.tower.get("heal_between_floors", 0.2)) * 100.0)),
 		"Pas de mort subite. Au tour %d, les ennemis s'épuisent : ils ne soignent plus. Au tour %d, ils abandonnent." % [int(app.data.tower.get("exhaustion_turn", 12)), int(app.data.tower.get("turn_limit", 24))],
+		"Les monstres suivent ton niveau : ton Destin ne rend pas la Tour plus facile, ton record vaut à tout niveau.",
 		"La montée s'arrête quand ton duo tombe. Ton record est gardé pour ta classe.",
 	]:
 		rules.add_child(UiKit.label("• " + line, 16, UiKit.SOFT, false))

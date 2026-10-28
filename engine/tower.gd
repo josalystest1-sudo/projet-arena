@@ -20,14 +20,24 @@ var reached: int = 1
 var cleared_all: bool = false
 ## Les monstres de l'étage à venir, tirés d'avance pour pouvoir les annoncer entre deux étages.
 var planned: Array = []
+## Le niveau du duo qui monte : les monstres le suivent (data/tower.json, « level_scale » : PV et puissance
+## multipliés par 1 + level_scale × niveau), pour que le Destin ne rende pas la Tour plus facile avec les niveaux
+## (le record est par classe, quel que soit le niveau).
+var level: int = 0
 
 
-static func start(p_data: CombatData, duo_members: Array) -> Tower:
+static func start(p_data: CombatData, duo_members: Array, p_level: int = 0) -> Tower:
 	var tower := Tower.new()
 	tower.data = p_data
+	tower.level = maxi(0, p_level)
 	for member in duo_members:
 		tower.duo.append(member.duplicate(true))
 	return tower
+
+
+## De combien les monstres sont renforcés au niveau du duo (1,0 au niveau 0).
+func level_multiplier() -> float:
+	return 1.0 + float(data.tower.get("level_scale", 0.0)) * float(level)
 
 
 func floor_count() -> int:
@@ -76,8 +86,8 @@ func floor_enemies(rng: RandomNumberGenerator) -> Array:
 		seen[monster_id] = int(seen.get(monster_id, 0)) + 1
 		if int(seen[monster_id]) > 1:
 			name += " %d" % int(seen[monster_id])
-		enemies.append({"monster_id": monster_id, "name": name, "max_hp_mult": float(info.get("hp", 1.0)),
-			"power_mult": float(info.get("power", 1.0)), "heal_mult": float(data.tower.get("enemy_heal", 1.0))})
+		enemies.append({"monster_id": monster_id, "name": name, "max_hp_mult": float(info.get("hp", 1.0)) * level_multiplier(),
+			"power_mult": float(info.get("power", 1.0)) * level_multiplier(), "heal_mult": float(data.tower.get("enemy_heal", 1.0))})
 	return enemies
 
 

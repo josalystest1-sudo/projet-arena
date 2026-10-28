@@ -181,3 +181,23 @@ func test_le_placement_au_hasard_et_les_etiquettes_des_modeles() -> void:
 		for node in other["nodes"]:
 			var label := Destin.template_of(node)
 			assert_true(known.has(label), "%s : le nœud %d a un modèle connu des données (%s)" % [class_id, int(node["id"]), label])
+
+
+func test_les_points_selon_le_niveau_et_le_placement_automatique() -> void:
+	assert_eq(Destin.points_for_level(data, 1, false), 1, "niveau 1 : 1 point")
+	assert_eq(Destin.points_for_level(data, 30, false), int(data.destin_nodes["points"]), "niveau 30 : 30 points")
+	assert_eq(Destin.points_for_level(data, 45, false), int(data.destin_nodes["points"]), "jamais plus de 30")
+	assert_eq(Destin.points_for_level(data, 7, true), 3, "l'acolyte : un point tous les deux niveaux")
+	assert_eq(Destin.points_for_level(data, 30, true), int(data.destin_nodes["mini_points"]), "15 au niveau 30")
+	assert_eq(Destin.points_for_level(data, -2, false), 0, "pas de niveau négatif")
+	var tree := tree_for("archer", 8)
+	var taken := Destin.auto_points(tree, [0], 12)
+	assert_eq(taken.size(), 12, "12 points placés seuls")
+	assert_eq(taken[0], 0, "la racine d'abord")
+	for i in range(1, taken.size()):
+		assert_true(Destin.can_take(tree, taken.slice(0, i), taken[i]), "point %d relié aux précédents" % (i + 1))
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 3
+	var random := Destin.random_points(tree, 9, rng)
+	assert_eq(random.size(), 9, "9 points au hasard")
+	assert_eq(Destin.labels_of(tree, random).split("+").size(), 9, "une étiquette par nœud pris")

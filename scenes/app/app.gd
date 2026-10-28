@@ -193,13 +193,10 @@ func _new_acolyte_destin() -> void:
 ## Les points de l'acolyte se placent seuls : un tous les deux niveaux (15 points au niveau 30), sur le nœud
 ## disponible qui vaut le plus.
 func _place_acolyte_points() -> void:
-	var points := mini(profile.level / 2, int(data.destin_nodes.get("mini_points", 15)))
+	var points := Destin.points_for_level(data, profile.level, true)
 	var changed := false
-	while acolyte_taken.size() < points:
-		var next := Destin.auto_take(acolyte_destin, acolyte_taken)
-		if next < 0:
-			break
-		acolyte_taken.append(next)
+	if acolyte_taken.size() < points:
+		acolyte_taken = Destin.auto_points(acolyte_destin, acolyte_taken, points)
 		changed = true
 	if changed:
 		profile.acolyte_destin["taken"] = acolyte_taken.duplicate()
@@ -295,13 +292,7 @@ func random_enemy_duo() -> Array:
 		var member: Dictionary = team[i]
 		var mini := i > 0
 		var tree := Destin.generate(data, member["class_id"], member["picks"], rng.randi(), mini)
-		var taken: Array = [] if mini else [0]
-		var points := mini(profile.level / 2, int(data.destin_nodes.get("mini_points", 15))) if mini else profile.level
-		while taken.size() < points:
-			var next := Destin.auto_take(tree, taken)
-			if next < 0:
-				break
-			taken.append(next)
+		var taken := Destin.auto_points(tree, [] if mini else [0], Destin.points_for_level(data, profile.level, mini))
 		var theirs := Destin.mods_for(tree, taken)
 		member["mods"] = theirs["mods"]
 		member["skill_mods"] = theirs["skill_mods"]

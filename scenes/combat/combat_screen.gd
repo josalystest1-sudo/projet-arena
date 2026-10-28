@@ -534,7 +534,7 @@ func _setup_views(enemies: Array) -> void:
 
 func _start_tower() -> void:
 	sfx.play("clic")
-	tower = Tower.start(data, app.duo_members())
+	tower = Tower.start(data, app.duo_members(), app.profile.level)
 	_start_floor()
 
 
