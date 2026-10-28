@@ -40,7 +40,7 @@ const CLES_COUTS := ["degats", "soin", "barriere", "dot", "gardien", "renfort", 
 	"aveugle", "desarme", "egare", "silencie", "provoque", "enracine", "purge", "dissipe"]
 const CLES_ETAT := ["nom", "type", "texte", "pictogramme", "couleur", "negatif", "dissipable", "purgeable"]
 const TYPES_ETAT := ["controle", "affaiblissement", "deplacement", "dot", "hot", "protection", "renfort"]
-const CLES_TEXTES := ["formes", "ligne", "phrase", "fiche"]
+const CLES_TEXTES := ["formes", "ligne", "phrase", "fiche", "pictos"]
 const FORMES := ["diffuse", "concentree", "persistante", "vive"]
 const CLES_CLASSE := ["id", "nom", "genre", "role", "pv", "k", "acolyte", "moyeu", "voies"]
 const CLES_VOIE := ["id", "nom", "acolyte", "noeuds"]

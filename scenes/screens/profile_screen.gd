@@ -14,7 +14,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	column.add_child(duo)
 	var me := PortraitView.make(app.player_class, "Toi", app.class_label(app.player_class), 8.0)
 	me.title_color = UiKit.GOLD
-	var aco := PortraitView.make(app.acolyte["class_id"], app.acolyte_name, app.class_label(app.acolyte["class_id"]), 8.0)
+	var aco := PortraitView.make(app.acolyte_class(), app.acolyte_name, app.class_label(app.acolyte_class()), 8.0)
 	aco.title_color = UiKit.ACOLYTE_BLUE
 	duo.add_child(me)
 	duo.add_child(aco)
@@ -28,7 +28,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	duel.add_child(UiKit.label("Série en cours : %d · meilleure série : %d" % [profile.streak, profile.best_streak], 17, Color.WHITE, false))
 	var tower := UiKit.card(column, 4)
 	tower.add_child(UiKit.label("La Tour", 20, UiKit.GOLD, false))
-	for class_id in app.data.class_ids:
+	for class_id in app.data.ordre_classes:
 		var value := int(profile.tower_records.get(class_id, 0))
-		tower.add_child(UiKit.label("%s : %s" % [app.data.class_name_of(class_id), "étage %d" % value if value > 0 else "—"], 17, Color.WHITE, false))
+		tower.add_child(UiKit.label("%s : %s" % [app.data.classe(class_id)["nom"], "étage %d" % value if value > 0 else "—"], 17, Color.WHITE, false))
 	column.add_child(UiKit.label("Classements, saisons et profils des autres joueurs arriveront avec le serveur (étape 5).", 14, Color(0.6, 0.62, 0.7)))

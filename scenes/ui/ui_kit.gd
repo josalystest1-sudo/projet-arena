@@ -116,35 +116,53 @@ static func scroll_column(parent: Control, separation: int = 12) -> VBoxContaine
 	return column
 
 
-## Une compétence en clair : « Moyenne — Trait de givre » puis sa description.
-static func skill_block(parent: Node, data: CombatData, skill_id: String, accent: Color = Color.WHITE) -> void:
-	var skill := data.skill(skill_id)
-	parent.add_child(label("%s — %s" % [TIER_LABELS.get(skill.get("tier", ""), ""), skill.get("name", skill_id)], 19, accent, false))
-	parent.add_child(label(data.skill_description(skill_id), 16, SOFT, false))
+## La fiche d'un nœud (section 12.4) : nom, classe · voie · rang, pictogrammes, ligne chiffrée, phrase, ce que font
+## ses états, et ce qui vient après. `fiche` vient de Texte.fiche_destin.
+static func fiche_noeud(parent: Node, fiche: Dictionary, accent: Color = GOLD) -> void:
+	parent.add_child(label(str(fiche["nom"]), 21, accent, false))
+	parent.add_child(label(str(fiche["sous_titre"]), 14, SOFT, false))
+	parent.add_child(rangee_pictos(fiche["pictos"]))
+	parent.add_child(label(str(fiche["ligne"]) + ("  " + str(fiche["eclat"]) if str(fiche.get("eclat", "")) != "" else ""), 17, Color.WHITE, false))
+	parent.add_child(label(str(fiche["phrase"]), 16, SOFT, false))
+	for ligne_etat in fiche["etats"]:
+		parent.add_child(label(str(ligne_etat), 14, Color("c9a0ff"), false))
+	if str(fiche.get("apres", "")) != "":
+		parent.add_child(label(str(fiche["apres"]), 14, Color(0.6, 0.65, 0.8), false))
 
 
-static func passive_block(parent: Node, data: CombatData, passive_id: String) -> void:
-	parent.add_child(label("Passif — %s" % data.passive_name(passive_id), 19, Color(0.75, 0.9, 0.75), false))
-	parent.add_child(label(data.passive_description(passive_id), 16, SOFT, false))
+## Une rangée de pictogrammes : pour chaque effet, son dessin, sa cible et son nombre.
+static func rangee_pictos(pictos: Array, taille: float = 26.0) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 10)
+	for p in pictos:
+		var groupe := HBoxContainer.new()
+		groupe.add_theme_constant_override("separation", 2)
+		groupe.add_child(Picto.make(str(p["pictogramme"]), Color(str(p["couleur"])), taille))
+		groupe.add_child(Picto.make(str(p["cible"]), Color("aaa49b"), taille * 0.8))
+		if str(p["texte"]) != "":
+			var nombre := Label.new()
+			nombre.text = str(p["texte"])
+			nombre.add_theme_font_size_override("font_size", 16)
+			groupe.add_child(nombre)
+		for enfant in groupe.get_children():
+			(enfant as Control).size_flags_vertical = Control.SIZE_SHRINK_CENTER
+		row.add_child(groupe)
+	return row
 
 
-## Le budget de puissance du Destin : un kit dont les pièces se complètent moins bien reçoit un peu plus de PV et de
-## puissance, et inversement (aucun Destin ne doit dominer). Rien n'est affiché quand l'ajustement est nul.
-static func destin_balance(parent: Node, data: CombatData, skill_ids: Array, passive_id: String, own_class: String, partner_class: String, is_acolyte: bool = false) -> void:
-	var bonus := data.kit_bonus(skill_ids, passive_id, own_class, partner_class, is_acolyte)
-	var percent := int(round(bonus * 100.0))
-	if percent == 0:
-		return
-	var why := "ce kit et ce duo vont moins bien ensemble que d'autres" if percent > 0 else "ce kit et ce duo vont particulièrement bien ensemble"
-	parent.add_child(label("Équilibre du Destin : %s%d %% de PV et de puissance, parce que %s." % ["+" if percent > 0 else "-", absi(percent), why], 14, Color(0.6, 0.65, 0.8), false))
+## Une voie en une ligne : ses quatre nœuds (nom et forme), allumés ou à venir.
+static func voie_resume(parent: Node, destin: Destin, voie: int, accent: Color = GOLD) -> void:
+	var v: Dictionary = destin.voies[voie]
+	parent.add_child(label(str(v["nom"]), 18, accent, false))
+	var noms: Array[String] = []
+	for n in v["noeuds"]:
+		noms.append(("" if bool(n["allume"]) else "○ ") + Texte.nom(n))
+	parent.add_child(label(" → ".join(noms), 15, Color.WHITE, false))
 
 
-## Comment joue l'acolyte : il joue seul selon son rôle, annonce en premier, et attend un tour pour une Synergie.
-static func acolyte_rules_card(parent: Node, data: CombatData, class_id: String, acolyte_name: String) -> void:
-	var how := card(parent, 6)
-	how.add_child(label("Comment il joue", 20, GOLD, false))
-	how.add_child(label("%s joue seul, comme un second joueur : tu ne lui donnes aucun ordre. Au début de chaque tour, il annonce son coup au-dessus de lui ; tu choisis le tien en le sachant." % acolyte_name, 16, SOFT, false))
-	how.add_child(label(data.acolyte_rules(class_id), 16, Color.WHITE, false))
-	how.add_child(label(str(data.ai.get("synergy_wait", "")), 16, Color(1, 0.9, 0.6), false))
-	how.add_child(label(str(data.ai.get("always", "")), 15, SOFT, false))
-
+## Comment joue l'acolyte (section 10) : en premier, sans ordre, toujours le même choix dans la même situation.
+static func acolyte_rules_card(parent: Node, acolyte_name: String) -> void:
+	var how := card(parent, 4)
+	how.add_child(label("Comment joue %s" % acolyte_name, 20, ACOLYTE_BLUE, false))
+	how.add_child(label("Il choisit en premier, et tu vois son choix avant de jouer le tien. Tu ne lui donnes aucun ordre.", 16, Color.WHITE, false))
+	how.add_child(label("À chaque tour, il joue l'action qui rapporte le plus : frapper, soigner, protéger, ou couper une menace adverse. Dans la même situation, il fait toujours la même chose.", 15, SOFT, false))
