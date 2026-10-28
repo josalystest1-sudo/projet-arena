@@ -1,0 +1,13 @@
+{
+  "id": "diplomate",
+  "name": "Diplomate",
+  "roles": ["soutien", "front"],
+  "identity": "Il gagne sans frapper : il négocie, impose, retourne.",
+  "stats": {"max_hp": 225, "speed": 7, "power": 110},
+  "skills": {
+    "basique": ["argument", "encouragement"],
+    "moyenne": ["ultimatum", "treve"],
+    "forte": ["discours", "chantage"]
+  },
+  "passives": ["charisme", "impassible", "reseau", "protocole"]
+}
