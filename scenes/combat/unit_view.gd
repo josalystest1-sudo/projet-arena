@@ -23,6 +23,8 @@ var shown_hp: float = 1.0
 var target_hp: int = 1
 var ghost_hp: float = 1.0
 var barrier: int = 0
+## La créature de l'Invocateur : {name, hp, max_hp} ({} s'il n'en a pas).
+var creature: Dictionary = {}
 var alive: bool = true
 var status_tags: Array = []
 ## Intention affichée au-dessus du perso : texte de compétence (vide = rien).
@@ -94,6 +96,7 @@ func set_size_mode(mode: String) -> void:
 func sync(unit: CombatUnit, data: CombatData) -> void:
 	set_hp(unit.hp)
 	barrier = unit.barrier_amount()
+	creature = {"name": unit.creature["name"], "hp": int(unit.creature["hp"]), "max_hp": int(unit.creature["max_hp"])} if unit.has_creature() else {}
 	status_tags = []
 	for status in unit.statuses:
 		status_tags.append({"id": status["id"], "name": data.status_name(status["id"]), "negative": data.is_negative_status(status["id"]), "turns": status.get("turns", 0)})
@@ -265,6 +268,17 @@ func _draw() -> void:
 	draw_rect(bar, Color(0, 0, 0), false, 1.0)
 	_draw_centered(font, "%d / %d" % [int(round(shown_hp)), max_hp], Vector2(w / 2.0, y + 52), 15, Color(0.85, 0.85, 0.9))
 
+	# La créature de l'Invocateur : son nom et ses PV, sous ceux du perso.
+	var tags_y := y + 58
+	if not creature.is_empty() and alive:
+		var small := Rect2(Vector2(14, y + 58), Vector2(w - 28, 9))
+		var creature_ratio := clampf(float(creature["hp"]) / float(maxi(int(creature["max_hp"]), 1)), 0.0, 1.0)
+		draw_rect(small, Color(0.15, 0.15, 0.2))
+		draw_rect(Rect2(small.position, Vector2(small.size.x * creature_ratio, small.size.y)), Color("b197fc"))
+		draw_rect(small, Color(0, 0, 0), false, 1.0)
+		_draw_centered(font, "%s %d / %d" % [creature["name"], int(creature["hp"]), int(creature["max_hp"])], Vector2(w / 2.0, y + 80), 12, Color("d0bfff"))
+		tags_y = y + 86
+
 	# États.
 	var x := 8.0
 	for tag_info in status_tags:
@@ -273,8 +287,8 @@ func _draw() -> void:
 		if x + text_w > w:
 			break
 		var color := Color("e5484d") if tag_info["negative"] else Color("2fbf71")
-		draw_rect(Rect2(Vector2(x, y + 58), Vector2(text_w, 18)), Color(color, 0.35))
-		draw_string(font, Vector2(x + 4, y + 72), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
+		draw_rect(Rect2(Vector2(x, tags_y), Vector2(text_w, 18)), Color(color, 0.35))
+		draw_string(font, Vector2(x + 4, tags_y + 14), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
 		x += text_w + 4
 
 	# Textes flottants (dégâts, soins, Bloqué...), avec un petit effet de « pop ».

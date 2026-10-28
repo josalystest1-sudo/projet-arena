@@ -276,5 +276,36 @@
     "name": "Chantage", "class": "diplomate", "tier": "forte", "element": "lumiere", "target": "enemy",
     "effects": [{"type": "damage", "power": 42}, {"type": "status", "id": "chantage", "turns": 2}],
     "description": "Dégâts ; la cible ne peut pas utiliser sa forte au tour suivant."
+  },
+
+  "fouet_d_ombre": {
+    "name": "Fouet d'ombre", "class": "invocateur", "tier": "basique", "element": "ombre", "target": "enemy",
+    "effects": [{"type": "damage", "power": 40}],
+    "description": "Un fouet d'ombre sur un ennemi."
+  },
+  "ordre": {
+    "name": "Ordre", "class": "invocateur", "tier": "basique", "element": "ombre", "target": "enemy",
+    "effects": [{"type": "order", "power": 48, "fallback": 32}],
+    "description": "Sa créature attaque la cible ({power} de puissance) ; sans créature, l'Invocateur frappe lui-même, plus faiblement ({fallback})."
+  },
+  "golem": {
+    "name": "Golem", "class": "invocateur", "tier": "moyenne", "element": "contondant", "target": "self",
+    "effects": [{"type": "summon", "creature": "golem", "name": "Golem", "role": "protection", "hp": 0.45, "power": 0.7, "strike": 40, "element": "contondant", "turns": 3}],
+    "description": "Invoque un Golem pour {turns} tours ({hp%} de ses PV) : il encaisse à la place du duo tous les coups directs tant qu'il tient. Une créature à la fois."
+  },
+  "spectre": {
+    "name": "Spectre", "class": "invocateur", "tier": "moyenne", "element": "ombre", "target": "self",
+    "effects": [{"type": "summon", "creature": "spectre", "name": "Spectre", "role": "degats", "hp": 0.25, "power": 0.7, "strike": 42, "element": "ombre", "turns": 3}],
+    "description": "Invoque un Spectre pour {turns} tours : à chaque fin de tour, il frappe seul la dernière cible de l'Invocateur. Une créature à la fois."
+  },
+  "sacrifice": {
+    "name": "Sacrifice", "class": "invocateur", "tier": "forte", "element": "ombre", "target": "enemies_all",
+    "effects": [{"type": "sacrifice", "power": 34, "hp_share": 0.5, "fallback": 0.5}],
+    "description": "Sa créature explose sur tous les ennemis : des dégâts d'ombre, plus {hp_share%} des PV qu'il lui restait. Sans créature, la moitié des dégâts."
+  },
+  "lien": {
+    "name": "Lien", "class": "invocateur", "tier": "forte", "element": "", "target": "ally",
+    "effects": [{"type": "status", "id": "lien", "turns": 2}],
+    "description": "Pendant {turns} tours, les coups directs portés à un allié vont à la créature de l'Invocateur tant qu'elle tient."
   }
 }
