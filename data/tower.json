@@ -6,49 +6,49 @@
   "floors": [
     {
       "budget": 2.5,
-      "hp": 0.707,
-      "power": 0.707
+      "hp": 0.715,
+      "power": 0.715
     },
     {
       "budget": 3.5,
-      "hp": 0.862,
-      "power": 0.875
+      "hp": 0.855,
+      "power": 0.868
     },
     {
       "budget": 4,
-      "hp": 0.825,
-      "power": 0.849
+      "hp": 0.759,
+      "power": 0.781
     },
     {
       "budget": 4.5,
-      "hp": 0.617,
-      "power": 0.642
+      "hp": 0.568,
+      "power": 0.591
     },
     {
       "boss": true,
       "escort": 0,
-      "hp": 0.859,
-      "power": 0.904
+      "hp": 0.79,
+      "power": 0.832
     },
     {
       "budget": 5,
-      "hp": 0.772,
-      "power": 0.819
+      "hp": 0.71,
+      "power": 0.753
     },
     {
       "budget": 5.5,
-      "hp": 0.848,
-      "power": 0.906
+      "hp": 0.78,
+      "power": 0.834
     },
     {
       "budget": 6,
-      "hp": 0.868,
-      "power": 0.932
+      "hp": 0.799,
+      "power": 0.857
     },
     {
       "budget": 6.5,
-      "hp": 0.894,
-      "power": 0.966
+      "hp": 0.897,
+      "power": 0.969
     },
     {
       "boss": true,
