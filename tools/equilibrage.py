@@ -47,6 +47,8 @@ def main():
     print(f"{combats} combats · {sum(turns) / combats:.1f} tours en moyenne · {100 * ko / combats:.0f} % finis par KO · {100 * in_window / combats:.0f} % entre les tours 8 et 15")
 
     groups = defaultdict(lambda: defaultdict(lambda: [0, 0]))
+    # Les nœuds du Destin par rapport à la classe de celui qui les a pris (un modèle n'est pas tiré par n'importe qui).
+    relative = {"joueur": defaultdict(list), "acolyte": defaultdict(list)}
     for r in rows:
         won = int(r["gagne"])
 
@@ -81,6 +83,7 @@ def main():
                     seen.add(label)
                     add("Nœuds du Destin pris (" + side + ")", label)
                     add("Types de nœud pris (" + side + ")", label.split(":")[0])
+                    relative[side][label].append((won, r[side]))
 
     flagged = 0
     for group in ["Classes (dans le duo)", "Classes (en tant que joueur)", "Classes (en tant que acolyte)", "Compositions",
@@ -90,6 +93,18 @@ def main():
                   "Nœuds du Destin pris (joueur)", "Nœuds du Destin pris (acolyte)"]:
         if group in groups:
             flagged += table(group, groups[group])
+    for side in ("joueur", "acolyte"):
+        if not relative[side]:
+            continue
+        print(f"\nNœuds du Destin pris ({side}), écart à la classe de celui qui les a pris (50 = comme sa classe)")
+        base = groups["Classes (en tant que " + side + ")"]
+        for label, entries in sorted(relative[side].items(), key=lambda kv: -sum(w for w, _ in kv[1]) / max(len(kv[1]), 1)):
+            if len(entries) < 200:
+                continue
+            gap = sum(100.0 * w - 100.0 * base[c][0] / max(base[c][1], 1) for w, c in entries) / len(entries)
+            margin = 196.0 * math.sqrt(0.25 / len(entries))
+            mark = "  <-- hors fourchette" if abs(gap) - margin > 2.0 else ""
+            print(f"  {label:<44} {50.0 + gap:5.1f} % ± {margin:3.1f}  ({len(entries)}){mark}")
     flagged_kits = 0
     for group in ("Kits du joueur (Destins)", "Kits de l'acolyte (Destins)"):
         kits = groups[group]

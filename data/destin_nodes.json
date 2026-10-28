@@ -16,7 +16,7 @@
     "cle": 0
   },
   "total_value": 82.0,
-  "best_value": 66.0,
+  "best_value": 67.2,
   "mini_total_value": 20.0,
   "mini_best_value": 20.0,
   "tolerance": 0.02,
@@ -28,7 +28,7 @@
       "mods": {
         "hp_pct": 0.03
       },
-      "value": 0.88
+      "value": 0.97
     },
     {
       "id": "puissance",
@@ -36,7 +36,7 @@
       "mods": {
         "power_pct": 0.025
       },
-      "value": 1.08
+      "value": 1.22
     },
     {
       "id": "vitesse",
@@ -44,7 +44,7 @@
       "mods": {
         "speed_bonus": 1
       },
-      "value": 1.69,
+      "value": 2.11,
       "integer": true
     },
     {
@@ -53,7 +53,7 @@
       "mods": {
         "<element>_bonus": 0.06
       },
-      "value": 0.88
+      "value": 0.97
     },
     {
       "id": "reduction",
@@ -61,7 +61,7 @@
       "mods": {
         "reduction": 0.03
       },
-      "value": 1.17
+      "value": 1.34
     },
     {
       "id": "regen",
@@ -69,7 +69,7 @@
       "mods": {
         "regen": 0.01
       },
-      "value": 1.32
+      "value": 1.51
     },
     {
       "id": "soins",
@@ -77,7 +77,7 @@
       "mods": {
         "heal_bonus": 0.08
       },
-      "value": 0.82,
+      "value": 0.63,
       "needs": "heal"
     },
     {
@@ -86,7 +86,7 @@
       "mods": {
         "barrier_bonus": 0.1
       },
-      "value": 1.11,
+      "value": 0.99,
       "needs": "barrier"
     }
   ],
@@ -97,7 +97,7 @@
       "skill_mods": {
         "power_bonus": 0.15
       },
-      "value": 1.78
+      "value": 1.52
     },
     "duration": {
       "name": "{skill} : un tour de plus",
@@ -105,7 +105,7 @@
       "skill_mods": {
         "turns_bonus": 1
       },
-      "value": 1.19
+      "value": 1.2
     },
     "cooldown": {
       "name": "{skill} revient plus tôt",
@@ -113,7 +113,7 @@
       "skill_mods": {
         "cooldown_minus": 1
       },
-      "value": 1.29
+      "value": 0.84
     },
     "bounce": {
       "name": "{skill} rebondit",
@@ -121,12 +121,12 @@
       "skill_mods": {
         "bounce": 0.5
       },
-      "value": 3.86
+      "value": 4.18
     },
     "passive": {
       "name": "{passive} renforcé",
       "description": "Le passif {passive} est {n} % plus fort.",
-      "value": 1.21,
+      "value": 0.86,
       "share": 0.25
     },
     "passive_flat": {
@@ -135,7 +135,7 @@
       "mods": {
         "power_pct": 0.04
       },
-      "value": 1.24
+      "value": 1.14
     }
   },
   "pivots": {
@@ -147,7 +147,7 @@
         "mods": {
           "hp_pct": 0.08
         },
-        "value": 1.09
+        "value": 0.7
       },
       {
         "id": "cuirasse",
@@ -156,7 +156,7 @@
         "mods": {
           "reduction": 0.04
         },
-        "value": 1.08
+        "value": 0.73
       }
     ],
     "degats": [
@@ -167,7 +167,7 @@
         "mods": {
           "damage_bonus": 0.06
         },
-        "value": 2.37
+        "value": 2.33
       },
       {
         "id": "element",
@@ -176,7 +176,7 @@
         "mods": {
           "<element>_bonus": 0.1
         },
-        "value": 2.37
+        "value": 2.43
       }
     ],
     "soutien": [
@@ -187,7 +187,7 @@
         "mods": {
           "ally_regen": 0.015
         },
-        "value": 3.28
+        "value": 3.24
       },
       {
         "id": "durable",
@@ -196,7 +196,7 @@
         "mods": {
           "status_turns_bonus": 1
         },
-        "value": 2.74
+        "value": 2.31
       }
     ]
   },
@@ -210,7 +210,7 @@
       "skill_mods": {
         "zone_once": 1
       },
-      "value": 8.02
+      "value": 6.67
     },
     {
       "id": "gratuite",
@@ -220,7 +220,7 @@
       "skill_mods": {
         "free_once": 1
       },
-      "value": 3.75
+      "value": 3.36
     },
     {
       "id": "puissance",
@@ -229,7 +229,23 @@
       "mods": {
         "power_pct": 0.1
       },
-      "value": 7.48
+      "value": 9.09
     }
-  ]
+  ],
+  "mini_strength": {
+    "stat:puissance": 1.017,
+    "stat:vitesse": 0.873,
+    "stat:soins": 0.761,
+    "stat:barrieres": 1.463,
+    "evolution:duration": 0.918,
+    "evolution:cooldown": 1.159,
+    "evolution:bounce": 0.982,
+    "evolution:passive_flat": 0.891,
+    "pivot:solide": 0.784,
+    "pivot:cuirasse": 0.746,
+    "pivot:baume": 0.867,
+    "evolution:power": 0.968,
+    "evolution:passive": 1.082,
+    "pivot:durable": 0.992
+  }
 }

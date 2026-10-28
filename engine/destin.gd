@@ -34,7 +34,7 @@ static func generate(data: CombatData, class_id: String, picks: Dictionary, seed
 	var best_tree := {}
 	var best_gap := INF
 	for attempt in range(ATTEMPTS):
-		var tree := _build(data, class_id, picks, rng, size, counts, total_target)
+		var tree := _build(data, class_id, picks, rng, size, counts, total_target, mini)
 		tree["seed"] = seed_value
 		tree["mini"] = mini
 		tree["best"] = best_value(tree, points)
@@ -50,7 +50,7 @@ static func generate(data: CombatData, class_id: String, picks: Dictionary, seed
 
 ## Un arbre : sa forme (un parent par nœud, trois enfants au plus), puis le contenu de chaque nœud, puis la mise
 ## à l'échelle des nœuds de Stat pour que la valeur totale tombe juste.
-static func _build(data: CombatData, class_id: String, picks: Dictionary, rng: RandomNumberGenerator, size: int, counts: Dictionary, total_target: float) -> Dictionary:
+static func _build(data: CombatData, class_id: String, picks: Dictionary, rng: RandomNumberGenerator, size: int, counts: Dictionary, total_target: float, mini: bool = false) -> Dictionary:
 	var max_children := int(data.destin_nodes.get("max_children", 3))
 	var nodes: Array = []
 	var children: Array = []
@@ -115,6 +115,35 @@ static func _build(data: CombatData, class_id: String, picks: Dictionary, rng: R
 			"cle":
 				_fill_key(data, node, class_id, kit, rng)
 
+	# Dans un mini-Destin, un modèle n'a pas la même force que chez le joueur (l'acolyte est de la classe complémentaire,
+	# ses points vont sur un petit arbre) : ses bonus et sa valeur sont multipliés par le facteur du modèle
+	# (« mini_strength »). Les chiffres entiers (vitesse, tours, recharges, Clés) ne bougent pas.
+	if mini:
+		var factors: Dictionary = data.destin_nodes.get("mini_strength", {})
+		for node in nodes:
+			var factor := float(factors.get(template_of(node), 1.0))
+			if factor == 1.0 or bool(node.get("integer", false)):
+				continue
+			var scaled := false
+			if node.has("mods"):
+				var mods: Dictionary = node["mods"]
+				for key in mods:
+					if mods[key] is float:
+						mods[key] = float(mods[key]) * factor
+						scaled = true
+			if node.has("skill_mods"):
+				var skill_mods: Dictionary = node["skill_mods"]
+				for key in skill_mods:
+					if skill_mods[key] is float:
+						skill_mods[key] = float(skill_mods[key]) * factor
+						scaled = true
+			if scaled:
+				node["value"] = float(node["value"]) * factor
+				if node.has("base_value"):
+					node["base_value"] = float(node["base_value"]) * factor
+				if node["type"] == "stat":
+					_name_stat(node)
+
 	# Mise à l'échelle des Stats : la valeur totale de l'arbre est la même pour tous.
 	var fixed := 0.0
 	var stat_total := 0.0
@@ -123,7 +152,7 @@ static func _build(data: CombatData, class_id: String, picks: Dictionary, rng: R
 			stat_total += float(node["value"])
 		else:
 			fixed += float(node["value"])
-	var factor := clampf((total_target - fixed) / maxf(stat_total, 0.001), 0.5, 2.5)
+	var factor := clampf((total_target - fixed) / maxf(stat_total, 0.001), 0.4, 2.5)
 	for node in nodes:
 		if node["type"] == "stat":
 			_scale_stat(node, factor)

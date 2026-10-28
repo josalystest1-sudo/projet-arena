@@ -201,3 +201,58 @@ func test_les_points_selon_le_niveau_et_le_placement_automatique() -> void:
 	var random := Destin.random_points(tree, 9, rng)
 	assert_eq(random.size(), 9, "9 points au hasard")
 	assert_eq(Destin.labels_of(tree, random).split("+").size(), 9, "une étiquette par nœud pris")
+
+
+func test_les_valeurs_propres_au_mini_destin() -> void:
+	# « mini_strength » multiplie les bonus et la valeur d'un modèle dans le mini-Destin de l'acolyte, pas dans le Destin du joueur.
+	# (Construction directe d'un arbre à graine fixe, sans la recherche de la cible, pour comparer le même arbre.)
+	var config: Dictionary = data.destin_nodes
+	var size := int(config["mini_size"])
+	var counts: Dictionary = config["mini_counts"]
+	var total := float(config["mini_total_value"])
+	var picks := {"basique": 0, "moyenne": 1, "forte": 0, "passive": 2}
+	var saved: Variant = config.get("mini_strength", {})
+	config["mini_strength"] = {}
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 31
+	var before := Destin._build(data, "mage", picks, rng, size, counts, total, true)
+	var evolution_label := ""
+	var pivot_label := ""
+	for node in before["nodes"]:
+		if node["type"] == "evolution" and evolution_label == "":
+			evolution_label = Destin.template_of(node)
+		if node["type"] == "pivot" and pivot_label == "":
+			pivot_label = Destin.template_of(node)
+	assert_true(evolution_label != "" and pivot_label != "", "une évolution et un pivot dans le mini-Destin")
+	config["mini_strength"] = {evolution_label: 2.0, pivot_label: 0.5}
+	rng.seed = 31
+	var after := Destin._build(data, "mage", picks, rng, size, counts, total, true)
+	var seen := 0
+	for i in range(after["nodes"].size()):
+		var node: Dictionary = after["nodes"][i]
+		var label := Destin.template_of(node)
+		assert_eq(label, Destin.template_of(before["nodes"][i]), "même arbre, nœud %d" % i)
+		var old_node: Dictionary = before["nodes"][i]
+		if label == evolution_label:
+			var has_float := false
+			for key in old_node.get("skill_mods", {}):
+				if old_node["skill_mods"][key] is float:
+					has_float = true
+					assert_eq(float(node["skill_mods"][key]), float(old_node["skill_mods"][key]) * 2.0, "%s : bonus doublé dans le mini-Destin" % label)
+			if has_float:
+				assert_eq(float(node["value"]), float(old_node["value"]) * 2.0, "%s : deux fois plus cher" % label)
+			else:
+				assert_eq(float(node["value"]), float(old_node["value"]), "%s : un chiffre entier ne bouge pas" % label)
+			seen += 1
+		elif label == pivot_label:
+			for key in old_node["mods"]:
+				assert_eq(float(node["mods"][key]), float(old_node["mods"][key]) * 0.5, "%s : bonus de moitié" % label)
+			assert_eq(float(node["value"]), float(old_node["value"]) * 0.5, "%s : moitié prix" % label)
+			seen += 1
+	assert_true(seen >= 2, "les deux modèles concernés sont dans l'arbre")
+	rng.seed = 31
+	var big := Destin._build(data, "mage", picks, rng, int(config["size"]), config["counts"], float(config["total_value"]), false)
+	config["mini_strength"] = saved
+	rng.seed = 31
+	var big_before := Destin._build(data, "mage", picks, rng, int(config["size"]), config["counts"], float(config["total_value"]), false)
+	assert_eq(big["nodes"], big_before["nodes"], "le Destin du joueur ne change pas")
