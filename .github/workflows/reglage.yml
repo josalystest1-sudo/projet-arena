@@ -1,0 +1,635 @@
+# Réglage de l'équilibrage sur les machines de GitHub (gratuites pour un dépôt public), en parallèle.
+# À lancer depuis l'onglet Actions (bouton « Run workflow ») : chaque passe fait jouer des centaines de milliers de
+# combats répartis sur plusieurs machines, puis tools/regleur.py corrige les chiffres de data/ ; les passes
+# s'enchaînent. À la fin : une vérification sur des combats neufs (rapport dans le résumé du run) et une branche
+# « reglage-<numéro> » qui porte les données réglées, à fusionner dans la branche de travail.
+name: Réglage de l'équilibrage (simulation sur GitHub)
+
+on:
+  workflow_dispatch:
+    inputs:
+      passes:
+        description: "Nombre de passes de réglage (1 à 6)"
+        default: "4"
+      combats:
+        description: "Combats par passe (répartis sur les machines)"
+        default: "400000"
+      machines:
+        description: "Machines en parallèle par passe (20 au plus)"
+        default: "16"
+      branche:
+        description: "Branche de départ (code et données)"
+        default: "main"
+
+permissions:
+  contents: write
+
+env:
+  GODOT_VERSION: "4.5"
+
+jobs:
+  preparer:
+    name: Préparation
+    runs-on: ubuntu-latest
+    outputs:
+      machines: ${{ steps.liste.outputs.machines }}
+    steps:
+      - id: liste
+        run: python3 -c "import json; print('machines=' + json.dumps(list(range(1, int('${{ inputs.machines }}') + 1))))" >> "$GITHUB_OUTPUT"
+  simuler-1:
+    name: "Passe 1 : simulation"
+    needs: [preparer]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 1 }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        machine: ${{ fromJSON(needs.preparer.outputs.machines) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Cache de Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux
+      - name: Téléchargement de Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot
+          curl -sSL -o /tmp/godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+      - name: Import du projet
+        run: timeout 300 ~/godot/godot --headless --path . --import > /dev/null 2>&1 || true
+      - name: Combats (deux processus, un par cœur)
+        run: |
+          par_machine=$(( ${{ inputs.combats }} / ${{ inputs.machines }} ))
+          moitie=$(( par_machine / 2 ))
+          mkdir -p sims
+          for p in 0 1; do
+            graine=$(( 1 * 100000 + ${{ matrix.machine }} * 10 + p ))
+            timeout 3000 ~/godot/godot --headless --path . --script res://tools/equilibrage.gd -- $moitie $graine sims/passe1_m${{ matrix.machine }}_$p.csv > /dev/null 2>&1 &
+          done
+          wait
+          wc -l sims/*.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sim-1-${{ matrix.machine }}
+          path: sims/*.csv
+          retention-days: 3
+
+  regler-1:
+    name: "Passe 1 : réglage"
+    needs: [simuler-1]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 1 }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Les combats de la passe
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sim-1-*
+          path: sims
+          merge-multiple: true
+      - name: Réglage des chiffres
+        run: |
+          mkdir -p etat
+          echo "## Passe 1" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          EQUILIBRAGE_DIR=etat python3 tools/regleur.py regler 1 sims/*.csv | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p reglage && cp -r data reglage/ && cp etat/amortissement.json reglage/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: donnees-1
+          path: reglage
+          retention-days: 30
+
+  simuler-2:
+    name: "Passe 2 : simulation"
+    needs: [preparer, regler-1]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 2 }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        machine: ${{ fromJSON(needs.preparer.outputs.machines) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Données réglées par la passe 1
+        uses: actions/download-artifact@v4
+        with:
+          name: donnees-1
+          path: reglage
+      - name: Mise en place des données réglées
+        run: |
+          cp -r reglage/data/. data/
+          mkdir -p etat && cp reglage/amortissement.json etat/ 2>/dev/null || true
+      - name: Cache de Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux
+      - name: Téléchargement de Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot
+          curl -sSL -o /tmp/godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+      - name: Import du projet
+        run: timeout 300 ~/godot/godot --headless --path . --import > /dev/null 2>&1 || true
+      - name: Combats (deux processus, un par cœur)
+        run: |
+          par_machine=$(( ${{ inputs.combats }} / ${{ inputs.machines }} ))
+          moitie=$(( par_machine / 2 ))
+          mkdir -p sims
+          for p in 0 1; do
+            graine=$(( 2 * 100000 + ${{ matrix.machine }} * 10 + p ))
+            timeout 3000 ~/godot/godot --headless --path . --script res://tools/equilibrage.gd -- $moitie $graine sims/passe2_m${{ matrix.machine }}_$p.csv > /dev/null 2>&1 &
+          done
+          wait
+          wc -l sims/*.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sim-2-${{ matrix.machine }}
+          path: sims/*.csv
+          retention-days: 3
+
+  regler-2:
+    name: "Passe 2 : réglage"
+    needs: [simuler-2]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 2 }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Données réglées par la passe 1
+        uses: actions/download-artifact@v4
+        with:
+          name: donnees-1
+          path: reglage
+      - name: Mise en place des données réglées
+        run: |
+          cp -r reglage/data/. data/
+          mkdir -p etat && cp reglage/amortissement.json etat/ 2>/dev/null || true
+      - name: Les combats de la passe
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sim-2-*
+          path: sims
+          merge-multiple: true
+      - name: Réglage des chiffres
+        run: |
+          mkdir -p etat
+          echo "## Passe 2" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          EQUILIBRAGE_DIR=etat python3 tools/regleur.py regler 2 sims/*.csv | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p reglage && cp -r data reglage/ && cp etat/amortissement.json reglage/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: donnees-2
+          path: reglage
+          retention-days: 30
+
+  simuler-3:
+    name: "Passe 3 : simulation"
+    needs: [preparer, regler-2]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 3 }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        machine: ${{ fromJSON(needs.preparer.outputs.machines) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Données réglées par la passe 2
+        uses: actions/download-artifact@v4
+        with:
+          name: donnees-2
+          path: reglage
+      - name: Mise en place des données réglées
+        run: |
+          cp -r reglage/data/. data/
+          mkdir -p etat && cp reglage/amortissement.json etat/ 2>/dev/null || true
+      - name: Cache de Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux
+      - name: Téléchargement de Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot
+          curl -sSL -o /tmp/godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+      - name: Import du projet
+        run: timeout 300 ~/godot/godot --headless --path . --import > /dev/null 2>&1 || true
+      - name: Combats (deux processus, un par cœur)
+        run: |
+          par_machine=$(( ${{ inputs.combats }} / ${{ inputs.machines }} ))
+          moitie=$(( par_machine / 2 ))
+          mkdir -p sims
+          for p in 0 1; do
+            graine=$(( 3 * 100000 + ${{ matrix.machine }} * 10 + p ))
+            timeout 3000 ~/godot/godot --headless --path . --script res://tools/equilibrage.gd -- $moitie $graine sims/passe3_m${{ matrix.machine }}_$p.csv > /dev/null 2>&1 &
+          done
+          wait
+          wc -l sims/*.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sim-3-${{ matrix.machine }}
+          path: sims/*.csv
+          retention-days: 3
+
+  regler-3:
+    name: "Passe 3 : réglage"
+    needs: [simuler-3]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 3 }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Données réglées par la passe 2
+        uses: actions/download-artifact@v4
+        with:
+          name: donnees-2
+          path: reglage
+      - name: Mise en place des données réglées
+        run: |
+          cp -r reglage/data/. data/
+          mkdir -p etat && cp reglage/amortissement.json etat/ 2>/dev/null || true
+      - name: Les combats de la passe
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sim-3-*
+          path: sims
+          merge-multiple: true
+      - name: Réglage des chiffres
+        run: |
+          mkdir -p etat
+          echo "## Passe 3" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          EQUILIBRAGE_DIR=etat python3 tools/regleur.py regler 3 sims/*.csv | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p reglage && cp -r data reglage/ && cp etat/amortissement.json reglage/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: donnees-3
+          path: reglage
+          retention-days: 30
+
+  simuler-4:
+    name: "Passe 4 : simulation"
+    needs: [preparer, regler-3]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 4 }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        machine: ${{ fromJSON(needs.preparer.outputs.machines) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Données réglées par la passe 3
+        uses: actions/download-artifact@v4
+        with:
+          name: donnees-3
+          path: reglage
+      - name: Mise en place des données réglées
+        run: |
+          cp -r reglage/data/. data/
+          mkdir -p etat && cp reglage/amortissement.json etat/ 2>/dev/null || true
+      - name: Cache de Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux
+      - name: Téléchargement de Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot
+          curl -sSL -o /tmp/godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+      - name: Import du projet
+        run: timeout 300 ~/godot/godot --headless --path . --import > /dev/null 2>&1 || true
+      - name: Combats (deux processus, un par cœur)
+        run: |
+          par_machine=$(( ${{ inputs.combats }} / ${{ inputs.machines }} ))
+          moitie=$(( par_machine / 2 ))
+          mkdir -p sims
+          for p in 0 1; do
+            graine=$(( 4 * 100000 + ${{ matrix.machine }} * 10 + p ))
+            timeout 3000 ~/godot/godot --headless --path . --script res://tools/equilibrage.gd -- $moitie $graine sims/passe4_m${{ matrix.machine }}_$p.csv > /dev/null 2>&1 &
+          done
+          wait
+          wc -l sims/*.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sim-4-${{ matrix.machine }}
+          path: sims/*.csv
+          retention-days: 3
+
+  regler-4:
+    name: "Passe 4 : réglage"
+    needs: [simuler-4]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 4 }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Données réglées par la passe 3
+        uses: actions/download-artifact@v4
+        with:
+          name: donnees-3
+          path: reglage
+      - name: Mise en place des données réglées
+        run: |
+          cp -r reglage/data/. data/
+          mkdir -p etat && cp reglage/amortissement.json etat/ 2>/dev/null || true
+      - name: Les combats de la passe
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sim-4-*
+          path: sims
+          merge-multiple: true
+      - name: Réglage des chiffres
+        run: |
+          mkdir -p etat
+          echo "## Passe 4" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          EQUILIBRAGE_DIR=etat python3 tools/regleur.py regler 4 sims/*.csv | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p reglage && cp -r data reglage/ && cp etat/amortissement.json reglage/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: donnees-4
+          path: reglage
+          retention-days: 30
+
+  simuler-5:
+    name: "Passe 5 : simulation"
+    needs: [preparer, regler-4]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 5 }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        machine: ${{ fromJSON(needs.preparer.outputs.machines) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Données réglées par la passe 4
+        uses: actions/download-artifact@v4
+        with:
+          name: donnees-4
+          path: reglage
+      - name: Mise en place des données réglées
+        run: |
+          cp -r reglage/data/. data/
+          mkdir -p etat && cp reglage/amortissement.json etat/ 2>/dev/null || true
+      - name: Cache de Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux
+      - name: Téléchargement de Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot
+          curl -sSL -o /tmp/godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+      - name: Import du projet
+        run: timeout 300 ~/godot/godot --headless --path . --import > /dev/null 2>&1 || true
+      - name: Combats (deux processus, un par cœur)
+        run: |
+          par_machine=$(( ${{ inputs.combats }} / ${{ inputs.machines }} ))
+          moitie=$(( par_machine / 2 ))
+          mkdir -p sims
+          for p in 0 1; do
+            graine=$(( 5 * 100000 + ${{ matrix.machine }} * 10 + p ))
+            timeout 3000 ~/godot/godot --headless --path . --script res://tools/equilibrage.gd -- $moitie $graine sims/passe5_m${{ matrix.machine }}_$p.csv > /dev/null 2>&1 &
+          done
+          wait
+          wc -l sims/*.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sim-5-${{ matrix.machine }}
+          path: sims/*.csv
+          retention-days: 3
+
+  regler-5:
+    name: "Passe 5 : réglage"
+    needs: [simuler-5]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 5 }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Données réglées par la passe 4
+        uses: actions/download-artifact@v4
+        with:
+          name: donnees-4
+          path: reglage
+      - name: Mise en place des données réglées
+        run: |
+          cp -r reglage/data/. data/
+          mkdir -p etat && cp reglage/amortissement.json etat/ 2>/dev/null || true
+      - name: Les combats de la passe
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sim-5-*
+          path: sims
+          merge-multiple: true
+      - name: Réglage des chiffres
+        run: |
+          mkdir -p etat
+          echo "## Passe 5" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          EQUILIBRAGE_DIR=etat python3 tools/regleur.py regler 5 sims/*.csv | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p reglage && cp -r data reglage/ && cp etat/amortissement.json reglage/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: donnees-5
+          path: reglage
+          retention-days: 30
+
+  simuler-6:
+    name: "Passe 6 : simulation"
+    needs: [preparer, regler-5]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 6 }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        machine: ${{ fromJSON(needs.preparer.outputs.machines) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Données réglées par la passe 5
+        uses: actions/download-artifact@v4
+        with:
+          name: donnees-5
+          path: reglage
+      - name: Mise en place des données réglées
+        run: |
+          cp -r reglage/data/. data/
+          mkdir -p etat && cp reglage/amortissement.json etat/ 2>/dev/null || true
+      - name: Cache de Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux
+      - name: Téléchargement de Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot
+          curl -sSL -o /tmp/godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+      - name: Import du projet
+        run: timeout 300 ~/godot/godot --headless --path . --import > /dev/null 2>&1 || true
+      - name: Combats (deux processus, un par cœur)
+        run: |
+          par_machine=$(( ${{ inputs.combats }} / ${{ inputs.machines }} ))
+          moitie=$(( par_machine / 2 ))
+          mkdir -p sims
+          for p in 0 1; do
+            graine=$(( 6 * 100000 + ${{ matrix.machine }} * 10 + p ))
+            timeout 3000 ~/godot/godot --headless --path . --script res://tools/equilibrage.gd -- $moitie $graine sims/passe6_m${{ matrix.machine }}_$p.csv > /dev/null 2>&1 &
+          done
+          wait
+          wc -l sims/*.csv
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sim-6-${{ matrix.machine }}
+          path: sims/*.csv
+          retention-days: 3
+
+  regler-6:
+    name: "Passe 6 : réglage"
+    needs: [simuler-6]
+    if: ${{ !cancelled() && needs.preparer.result == 'success' && fromJSON(inputs.passes) >= 6 }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Données réglées par la passe 5
+        uses: actions/download-artifact@v4
+        with:
+          name: donnees-5
+          path: reglage
+      - name: Mise en place des données réglées
+        run: |
+          cp -r reglage/data/. data/
+          mkdir -p etat && cp reglage/amortissement.json etat/ 2>/dev/null || true
+      - name: Les combats de la passe
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sim-6-*
+          path: sims
+          merge-multiple: true
+      - name: Réglage des chiffres
+        run: |
+          mkdir -p etat
+          echo "## Passe 6" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          EQUILIBRAGE_DIR=etat python3 tools/regleur.py regler 6 sims/*.csv | tee -a "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p reglage && cp -r data reglage/ && cp etat/amortissement.json reglage/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: donnees-6
+          path: reglage
+          retention-days: 30
+
+  verifier:
+    name: Vérification sur des combats neufs
+    needs: [regler-1, regler-2, regler-3, regler-4, regler-5, regler-6]
+    if: ${{ !cancelled() && needs.regler-1.result == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branche }}
+      - name: Toutes les données réglées
+        uses: actions/download-artifact@v4
+        with:
+          pattern: donnees-*
+          path: toutes
+      - name: La dernière passe
+        run: |
+          derniere=$(ls -d toutes/donnees-* | sed 's/.*donnees-//' | sort -n | tail -1)
+          echo "Dernière passe réglée : $derniere"
+          cp -r toutes/donnees-$derniere/data/. data/
+          mkdir -p reglage && cp -r data reglage/
+      - name: Cache de Godot
+        id: cache-godot
+        uses: actions/cache@v4
+        with:
+          path: ~/godot
+          key: godot-${{ env.GODOT_VERSION }}-linux
+      - name: Téléchargement de Godot
+        if: steps.cache-godot.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/godot
+          curl -sSL -o /tmp/godot.zip "https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip"
+          unzip -q /tmp/godot.zip -d ~/godot
+          mv ~/godot/Godot_v${GODOT_VERSION}-stable_linux.x86_64 ~/godot/godot
+      - name: Import du projet
+        run: timeout 300 ~/godot/godot --headless --path . --import > /dev/null 2>&1 || true
+      - name: 48 000 combats neufs, puis le rapport
+        run: |
+          mkdir -p sims
+          for p in 0 1; do
+            timeout 3000 ~/godot/godot --headless --path . --script res://tools/equilibrage.gd -- 24000 $(( 900 + p )) sims/verif_$p.csv > /dev/null 2>&1 &
+          done
+          wait
+          python3 tools/equilibrage.py sims/verif_0.csv sims/verif_1.csv > rapport.txt
+          echo "## Vérification (48 000 combats neufs)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          head -1 rapport.txt >> "$GITHUB_STEP_SUMMARY"
+          grep -A12 "^Classes (dans le duo)" rapport.txt >> "$GITHUB_STEP_SUMMARY"
+          grep "hors fourchette\|kits mesurés" rapport.txt >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rapport
+          path: rapport.txt
+          retention-days: 30
+      - name: Publication sur une branche reglage-<numéro>
+        run: |
+          git config user.name "Réglage automatique"
+          git config user.email "reglage@users.noreply.github.com"
+          git checkout -b "reglage-${{ github.run_number }}"
+          git add data
+          git commit -m "Réglage automatique (run ${{ github.run_number }}, ${{ inputs.passes }} passes de ${{ inputs.combats }} combats)" || echo "rien à publier"
+          git push origin "reglage-${{ github.run_number }}"
+          echo "Branche publiée : reglage-${{ github.run_number }}" >> "$GITHUB_STEP_SUMMARY"
