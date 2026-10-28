@@ -2,8 +2,8 @@
 
 Usage : python3 tools/equilibrage.py fichier1.csv [fichier2.csv ...]
 
-Pour chaque élément du jeu (classe, compétence, passif, composition de duo, Synergie, kit complet),
-affiche son taux de victoire et marque ceux qui sortent de la fourchette du GDD (48 à 52 %).
+Pour chaque élément du jeu (classe, compétence, passif, composition de duo, Synergie, kit complet, et avec le Destin
+les modèles de nœuds pris), affiche son taux de victoire et marque ceux qui sortent de la fourchette du GDD (48 à 52 %).
 Un élément n'est déclaré hors fourchette que si l'écart dépasse aussi le bruit de mesure.
 """
 import csv
@@ -69,11 +69,27 @@ def main():
         add("Kits du joueur (Destins)", " ".join([r["joueur"], r["j_basique"], r["j_moyenne"], r["j_forte"], r["j_passif"]]))
         add("Kits de l'acolyte (Destins)", " ".join([r["acolyte"], r["a_basique"], r["a_moyenne"], r["a_forte"], r["a_passif"]]))
         add("Affrontements", " + ".join(sorted([r["joueur"], r["acolyte"]])) + "  contre  " + " + ".join(sorted(r["adverse"].split("+"))))
+        # Avec le Destin (tools/equilibrage.gd lancé avec un niveau) : les nœuds pris, par modèle et par type, et le
+        # niveau (les deux duos jouent au même niveau : chaque ligne doit rester à 50 %).
+        if r.get("niveau", "0") not in ("", "0"):
+            add("Niveaux (les deux duos au même niveau)", f"niveau {int(r['niveau']):2d}")
+            for side, column in (("joueur", "j_destin"), ("acolyte", "a_destin")):
+                seen = set()
+                for label in filter(None, r.get(column, "").split("+")):
+                    if label in seen:
+                        continue
+                    seen.add(label)
+                    add("Nœuds du Destin pris (" + side + ")", label)
+                    add("Types de nœud pris (" + side + ")", label.split(":")[0])
 
     flagged = 0
     for group in ["Classes (dans le duo)", "Classes (en tant que joueur)", "Classes (en tant que acolyte)", "Compositions",
                   "Duos (joueur + acolyte)", "Compétences", "Passifs", "Synergies possibles dans le duo", "Affrontements"]:
         flagged += table(group, groups[group])
+    for group in ["Niveaux (les deux duos au même niveau)", "Types de nœud pris (joueur)", "Types de nœud pris (acolyte)",
+                  "Nœuds du Destin pris (joueur)", "Nœuds du Destin pris (acolyte)"]:
+        if group in groups:
+            flagged += table(group, groups[group])
     flagged_kits = 0
     for group in ("Kits du joueur (Destins)", "Kits de l'acolyte (Destins)"):
         kits = groups[group]

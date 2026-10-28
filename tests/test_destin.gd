@@ -159,3 +159,25 @@ func test_l_evolution_rebond() -> void:
 	var main := damage_from(events, "a1", "b2")
 	assert_eq(main, int(round(skill_power("boule_de_feu") * class_power("mage"))), "la cible prend tout")
 	assert_eq(damage_from(events, "a1", "b1"), int(round(skill_power("boule_de_feu") * class_power("mage") * 0.5 * (1.0 - pp("peau_de_fer", "reduction")))), "le second ennemi, la moitié (Peau de fer)")
+
+
+func test_le_placement_au_hasard_et_les_etiquettes_des_modeles() -> void:
+	# Le simulateur place les points au hasard (chaque modèle de nœud doit être mesuré) et nomme les modèles pris.
+	var tree := tree_for("voleur", 5)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 1
+	var taken: Array = []
+	for i in range(int(data.destin_nodes["points"])):
+		var pick := Destin.random_take(tree, taken, rng)
+		assert_true(Destin.can_take(tree, taken, pick), "point %d : un nœud disponible" % (i + 1))
+		taken.append(pick)
+	assert_eq(taken.size(), int(data.destin_nodes["points"]), "tous les points placés")
+	assert_eq(Destin.random_take(tree, range(tree["nodes"].size()), rng), -1, "arbre plein : plus rien à prendre")
+	var known := Destin.template_ids(data)
+	assert_true(known.has("stat:pv") and known.has("evolution:passive_flat") and known.has("pivot:solide") and known.has("cle:zone"), "les étiquettes des données")
+	for i in range(6):
+		var class_id: String = data.class_ids[i % data.class_ids.size()]
+		var other := tree_for(class_id, 900 + i, i % 2 == 1, CombatUnit.random_picks(rng))
+		for node in other["nodes"]:
+			var label := Destin.template_of(node)
+			assert_true(known.has(label), "%s : le nœud %d a un modèle connu des données (%s)" % [class_id, int(node["id"]), label])
