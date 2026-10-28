@@ -28,7 +28,10 @@ var monster_ranks: Dictionary = {}
 ## En duo, le partenaire compte aussi : « duo_items » (un élément selon la classe du partenaire, ex. un Bouclier de mana
 ## à côté d'un Guerrier), « duo_classes » (la composition du duo) et « duo_orders » (qui en est le joueur et qui
 ## l'acolyte : « mage>guerrier », un Mage avec son acolyte Guerrier). Un acolyte, toujours joué par l'IA, a aussi son
-## ajustement par classe : « acolyte_classes ».
+## ajustement par classe : « acolyte_classes ». Enfin, un même kit n'a pas la même force joué par le joueur et joué
+## par l'acolyte (un Destin de joueur n'est jamais joué en acolyte) : « kits » donne, par côté (« joueur », « acolyte »)
+## et par kit complet (clé : classe puis ses quatre éléments, ex. « pretre:priere+restauration+egide+foi »), le reste
+## à corriger une fois tout le reste appliqué.
 var destins: Dictionary = {}
 
 
@@ -110,7 +113,17 @@ func kit_bonus(skill_ids: Array, passive_id: String, own_class: String = "", par
 		total += float(destins.get("duo_orders", {}).get(order, 0.0))
 	if is_acolyte:
 		total += float(destins.get("acolyte_classes", {}).get(own_class, 0.0))
+	if own_class != "":
+		var side := "acolyte" if is_acolyte else "joueur"
+		total += float(destins.get("kits", {}).get(side, {}).get(kit_key(own_class, skill_ids, passive_id), 0.0))
 	return total
+
+
+## Clé d'un kit complet : sa classe, puis ses trois compétences (basique, moyenne, forte) et son passif.
+static func kit_key(class_id: String, skill_ids: Array, passive_id: String) -> String:
+	var items: Array = skill_ids.duplicate()
+	items.append(passive_id)
+	return "%s:%s" % [class_id, "+".join(items)]
 
 
 ## Un chiffre d'un passif (data/passives.json, « params »).

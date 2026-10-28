@@ -8,7 +8,7 @@
     ],
     "same_target": false,
     "params": {
-      "bonus": 0.392
+      "bonus": 0.387
     },
     "description": "Les ennemis provoqués subissent la Nova à +{bonus%}."
   },

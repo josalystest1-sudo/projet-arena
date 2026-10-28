@@ -67,17 +67,21 @@ def main():
         for synergy in filter(None, r["synergies_possibles"].split("+")):
             add("Synergies possibles dans le duo", synergy)
         add("Kits du joueur (Destins)", " ".join([r["joueur"], r["j_basique"], r["j_moyenne"], r["j_forte"], r["j_passif"]]))
+        add("Kits de l'acolyte (Destins)", " ".join([r["acolyte"], r["a_basique"], r["a_moyenne"], r["a_forte"], r["a_passif"]]))
         add("Affrontements", " + ".join(sorted([r["joueur"], r["acolyte"]])) + "  contre  " + " + ".join(sorted(r["adverse"].split("+"))))
 
     flagged = 0
     for group in ["Classes (dans le duo)", "Classes (en tant que joueur)", "Classes (en tant que acolyte)", "Compositions",
                   "Duos (joueur + acolyte)", "Compétences", "Passifs", "Synergies possibles dans le duo", "Affrontements"]:
         flagged += table(group, groups[group])
-    kits = groups["Kits du joueur (Destins)"]
-    flagged_kits = table("Kits du joueur (Destins) hors fourchette", kits, min_games=150, show_all=False)
-    rates = [100.0 * w / g for w, g in kits.values() if g >= 150]
-    if rates:
-        print(f"  {len(rates)} kits mesurés : de {min(rates):.1f} % à {max(rates):.1f} %")
+    flagged_kits = 0
+    for group in ("Kits du joueur (Destins)", "Kits de l'acolyte (Destins)"):
+        kits = groups[group]
+        flagged_kits += table(group + " hors fourchette", kits, min_games=150, show_all=False)
+        rates = [100.0 * w / g for w, g in kits.values() if g >= 150]
+        if rates:
+            inside = sum(1 for v in rates if LOW <= v <= HIGH)
+            print(f"  {len(rates)} kits mesurés : de {min(rates):.1f} % à {max(rates):.1f} %, {inside} dans 48-52")
     print(f"\nHors fourchette (hors kits) : {flagged}   kits hors fourchette : {flagged_kits}")
 
 
