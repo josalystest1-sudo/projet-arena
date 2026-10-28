@@ -1,0 +1,14 @@
+{
+  "id": "guerrier",
+  "name": "Guerrier",
+  "roles": ["front", "degats"],
+  "identity": "Le mur qui frappe : il tient la ligne et choisit qui on attaque.",
+  "elements": ["tranchant", "contondant"],
+  "stats": {"max_hp": 288, "speed": 9, "power": 84},
+  "skills": {
+    "basique": ["taillade", "coup_de_bouclier"],
+    "moyenne": ["provocation", "rempart"],
+    "forte": ["fendoir", "cri_de_guerre"]
+  },
+  "passives": ["peau_de_fer", "second_souffle", "veteran", "colere"]
+}

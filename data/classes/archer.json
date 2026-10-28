@@ -1,14 +1,225 @@
 {
   "id": "archer",
-  "name": "Archer",
-  "roles": ["degats", "soutien"],
-  "identity": "Il marque et il saigne ses proies à distance.",
-  "elements": ["perforant"],
-  "stats": {"max_hp": 207, "speed": 10, "power": 120},
-  "skills": {
-    "basique": ["tir", "tir_rapide"],
-    "moyenne": ["marque", "piege"],
-    "forte": ["fleche_barbelee", "pluie_de_fleches"]
+  "nom": "Archer",
+  "genre": "m",
+  "role": "degats",
+  "pv": 900,
+  "k": 1.0,
+  "acolyte": "guerrier",
+  "moyeu": {
+    "nom": "Flèche",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
   },
-  "passives": ["oeil_de_faucon", "calme", "sang_froid", "traqueur"]
+  "voies": [
+    {
+      "id": "precision",
+      "nom": "Voie de la Précision",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Tir précis",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Tir perçant",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Flèche lourde",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 140, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Flèche du jugement",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "volee",
+      "nom": "Voie de la Volée",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Volée",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 54, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Pluie de flèches",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 77, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Déluge",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 108, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Ciel noir",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 140, "cible": "tous_les_ennemis"},
+            {"type": "affaiblissement", "pourcent": 20, "tours": 2, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pieges",
+      "nom": "Voie des Pièges",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Flèche entravante",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Piège",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 2, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Flèche aveuglante",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Filet",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "enracine", "tours": 2, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 40, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "feu_gregeois",
+      "nom": "Voie du Feu grégeois",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Flèche enflammée",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 40, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 14, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Tir incendiaire",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "brulure", "par_tour": 24, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 33, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Mur de flammes",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "brulure", "par_tour": 22, "tours": 4, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 46, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Pluie de feu",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "brulure", "par_tour": 30, "tours": 5, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 72, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "retrait",
+      "nom": "Voie du Retrait",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Pas en arrière",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Pansement",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 110, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Œil de faucon",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Dernière flèche",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 150, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 90, "cible": "soi"}
+          ]
+        }
+      ]
+    }
+  ]
 }

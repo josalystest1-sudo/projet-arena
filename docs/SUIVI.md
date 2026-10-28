@@ -1,10 +1,12 @@
 # Suivi du projet
 
-Mis à jour le **28 octobre 2026** (fin de journée). Ce fichier dit où en est le projet, ce qui attend Gautier et ce qui vient ensuite. Il est lu au début de chaque session (avec `CLAUDE.md`) et mis à jour à la fin de chaque PR. Les règles du jeu sont dans `docs/GDD.md`, les choix techniques et les chiffres dans `CLAUDE.md` (« Choix faits par Claude Code »).
+Mis à jour le **28 octobre 2026** (soir : combat V2, étape 1). Ce fichier dit où en est le projet, ce qui attend Gautier et ce qui vient ensuite. Il est lu au début de chaque session (avec `CLAUDE.md`) et mis à jour à la fin de chaque PR. Les règles du jeu sont dans `docs/GDD.md`, les choix techniques et les chiffres dans `CLAUDE.md` (« Choix faits par Claude Code »).
 
 ## Où on en est
 
-Les prototypes des étapes 1 à 3 sont jouables sur téléphone : le **combat en duo** (ton perso et ton acolyte contre un duo IA, **10 classes**, le Destin et le mini-Destin) et **la Tour** (10 étages de monstres). Le 28 octobre, journée entière sur le PC de Gautier (PR #23 à #30) : les 10 classes, la Tour, les nœuds du Destin (par côté), les Synergies et la durée des combats sont **équilibrés au simulateur** et vérifiés sur des combats neufs (classes, compositions, passifs, compétences et Synergies tous entre 48 et 52 % ou dans la marge ; 90 % des combats entre les tours 8 et 15, 83 % avec le Destin aux niveaux élevés) ; la Tour suit le niveau du duo. Le simulateur tourne 3,4 fois plus vite. L'étape 4 est faite pour l'essentiel ; il reste les kits (de 31 à 65 % selon le côté).
+**Le combat V2, « l'Arbre vivant » (`docs/SPEC-COMBAT-V2.md`, validée par Gautier le 28 octobre) remplace tout le combat.** Le Destin devient une roue : un moyeu (l'action de base) et 5 voies de 4 nœuds, dont une Clé ; jouer, c'est avancer d'un nœud sur une voie ; les jalons, les nœuds éteints et les menaces se voient des deux côtés. La spécification répond aux questions 4 (stratégie du combat : on voit venir les Clés de l'adversaire et on peut y répondre) et 5 (l'Invocateur devient une classe de Dégâts). Le travail suit son plan en 8 étapes, une PR chacune. **Étape 1 faite** (données des 10 classes, outil de budget). Pendant les étapes 2 à 7, les PR vont sur la branche `combat-v2` : l'adresse de test garde l'ancien combat, jouable, jusqu'à l'étape 8.
+
+Avant la V2 : les prototypes des étapes 1 à 3 de la feuille de route (combat en duo à 10 classes, Destin, Tour de 10 étages) étaient jouables et équilibrés au simulateur (PR #23 à #31).
 
 **À tester :** https://josalystest1-sudo.github.io/projet-arena/ (mis à jour à chaque fusion sur `main`, une à deux minutes après).
 
@@ -16,22 +18,21 @@ Les prototypes des étapes 1 à 3 sont jouables sur téléphone : le **combat en
 | 2. La Tour en prototype | **Fait, à valider** | PR #9, #13 (monstres et bestiaire). Critère (« on veut battre son record ») pas encore confirmé. |
 | 3. 10 classes, Destin, mini-Destin, Synergies | **Fait, à valider** | PR #17 à #23. Équilibrage des 10 classes et de la Tour vérifié sur des combats neufs (PR #23). |
 | 4. Simulateur d'équilibrage | **Fait pour l'essentiel** | Duels et Tour : `tools/equilibrage.gd`, `tools/regleur.py`, `tools/simulate_tour.gd`, `tools/menace.py`, `tools/regleur_tour.py`, `tools/profil.gd`. Fait : les nœuds du Destin mesurés et réglés (PR #24). La Tour suit le niveau (PR #25). La durée des combats est dans la cible du GDD (PR #26). Les nœuds du Destin ont leur valeur par côté (PR #27). Reste : les Synergies hors fourchette (c'est leur effet à revoir), la durée des combats aux niveaux élevés. |
+| **Combat V2** (avant l'étape 5) | **En cours** | Plan de `docs/SPEC-COMBAT-V2.md`, section 15 : 1. données et budget (**fait**, PR #34) ; 2. moteur de règles ; 3. générateur et Destin ; 4. IA, bestiaire, Tour ; 5. simulateur et équilibrage jusqu'aux six critères ; 6. écran de combat ; 7. résolution et fin ; 8. export web et test sur téléphone. |
 | 5. Serveur, comptes, PvP réel, Échos | À faire | Pas avant l'étape 4. |
 | 6. Art PixelLab et les 13 écrans | À faire | Sprites provisoires d'ici là. Les écrans existent déjà en version simple (création, rencontre, Vitrine, Acolyte, Compétences, La Tour, Bestiaire, Profil, Paramètres). |
 | 7 à 10. Évolutions, boutique, bêta, lancement | À faire | |
 
 ## En attente de Gautier
 
-1. **Les critères de sortie** (le GDD dit de ne pas passer à l'étape suivante sans avoir testé la précédente sur téléphone) : après quelques combats, as-tu envie d'en relancer un ? À la Tour, as-tu envie de battre ton record ? Les 10 classes et le Destin sont maintenant jouables et équilibrés : c'est le bon moment pour tester.
-2. **Les kits qui ne frappent presque pas** (Diplomate Encouragement + Trêve + Discours, Alchimiste Élixir + Fumigène + Catalyseur…) perdent deux combats sur trois malgré leur ajustement au plafond. Faut-il qu'une compétence de Soutien porte toujours un petit coup (comme Prière, Cri de guerre et Encouragement aujourd'hui), ou garder des kits « purs » mais faibles ? Tant que tu n'as pas tranché, les kits restent entre 31 et 65 %.
-3. **La Tour selon la classe** : un Prêtre monte en moyenne à l'étage 9, un Barde à l'étage 5. Le record est par classe, donc ce n'est pas bloquant ; veux-tu quand même que la Tour soit aussi dure pour toutes les classes ?
-4. **La stratégie du combat** (retour du 28 octobre après-midi) : les fortes qui se chargent et s'annoncent un tour à l'avance (piste 1, recommandée), ou les ennemis de l'IA qui annoncent leur coup (piste 2) ? C'est le prochain chantier dès que tu as choisi.
-5. **L'Invocateur** : Front (comme dans le GDD, d'où un Archer ou un Mage en acolyte) ou Dégâts ?
+1. **Les critères de sortie** (le GDD dit de ne pas passer à l'étape suivante sans avoir testé la précédente sur téléphone) : ils seront à vérifier sur le combat V2, à l'étape 8 de son plan.
+2. ~~Les kits qui ne frappent presque pas~~, ~~la Tour selon la classe~~, ~~la stratégie du combat~~, ~~l'Invocateur~~ : tranchés par la spécification du combat V2 (chaque Soutien a une voie de dégâts ; la Tour doit être aussi dure pour chaque classe, à 5 points près ; menaces visibles ; l'Invocateur est Dégâts).
 
-Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape 3 (28 octobre).
+Dernier retour : la spécification du combat V2, validée, avec la consigne de suivre son plan dans l'ordre et de ne pas s'arrêter après l'étape 5 avant que les six critères d'équilibrage soient tenus (28 octobre, soir).
 
 ## Prochaines tâches (dans l'ordre)
 
+0. **Combat V2**, dans l'ordre de la section 15 de la spécification : ~~1. données et budget~~ (PR #34) ; 2. moteur de règles (l'ancien moteur et ses tests supprimés) ; 3. générateur de Destin, écran de la roue ; 4. IA, bestiaire, Tour ; 5. simulateur, régleur et réglage jusqu'aux six critères de la section 11.2 ; 6. écran de combat ; 7. résolution et fin de combat ; 8. export web et test sur téléphone. Ce qui suit (anciennes tâches) date du combat V1.
 1. ~~Équilibrer les Destins séparément côté joueur et côté acolyte.~~ Fait (PR #16) : côté joueur 45,5–52,9 % (77 kits sur 96 dans 48–52), côté acolyte 45,9–53,8 % (83 sur 96), Tour reréglée.
 2. **Étape 3**, en plusieurs PR :
    - ~~le moteur rendu générique~~ fait (PR #17) ;
@@ -75,6 +76,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | 28 oct, après-midi | « Le jeu est pas mal » ; « pour l'Invocateur on ne voit pas ses invocations » | La créature n'a qu'une barre de PV et des textes : un sprite à côté de son maître est prévu, à vérifier à l'écran avec Gautier. |
 | 28 oct, après-midi | « Pourquoi l'Invocateur se retrouve avec un Archer en acolyte ? » | Le GDD classe l'Invocateur en Front (sa créature encaisse) : un Front reçoit un Dégâts ou un Soutien. Question posée : le rebasculer en Dégâts ? |
 | 28 oct, après-midi | « Pas très stratégique : on fait son attaque la plus puissante quand elle est dispo, si on est assez fort ça passe, sinon jamais ; il manque la sensation "il faut que je réfléchisse pour ce combat" » | Diagnostic : rien à anticiper, puisqu'on ne voit jamais ce que l'ennemi a choisi. Deux pistes proposées : (1) les fortes se chargent et s'annoncent un tour à l'avance (pour tous, PvP compris) ; (2) les ennemis de l'IA annoncent leur coup comme l'acolyte (Tour et duos IA). En attente de son choix. |
+| 28 oct, soir | Spécification du combat V2 « l'Arbre vivant », validée : « applique son plan dans l'ordre, une PR par étape, n'invente rien, note les choix dans le journal » | Étape 1 (PR #34) : données des 10 classes recopiées de la spécification, tous les nœuds dans leur budget. |
 
 ## Historique des PR
 
@@ -113,6 +115,8 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | #31 | 28 oct | La Tour revérifiée et reréglée après les réglages de la journée (6,0 % au sommet). |
 | #32 | 28 oct | Suivi de fin de journée : questions à poser à Gautier (kits qui ne frappent pas, Tour selon la classe). |
 | #33 | 28 oct | Retours de Gautier après ses tests sur téléphone (stratégie du combat, Invocateur, invocations invisibles) et les pistes proposées. |
+| — | 28 oct | Spécification du combat V2 (`docs/SPEC-COMBAT-V2.md`) et journal des choix. |
+| #34 | 28 oct | Combat V2, étape 1 : données (règles, 16 états, textes, 10 classes en roues de 5 voies), budget de chaque nœud vérifié en CI (`tools/budget.gd`), tests 1 à 4. Anciennes données dans `data/v1/`. |
 
 ## Reprendre le travail (pour Claude Code)
 

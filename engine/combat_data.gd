@@ -1,9 +1,10 @@
 ## Chargement des données de jeu : classes, compétences, passifs, Synergies, états, règles, IA, Tour.
-## Module pur : aucune dépendance aux nœuds de scène. Les données vivent dans res://data/.
+## Module pur : aucune dépendance aux nœuds de scène. Les données du combat V1 vivent dans res://data/v1/ (le combat V2,
+## docs/SPEC-COMBAT-V2.md, a les siennes dans res://data/ ; ce module disparaît à l'étape 2 de la V2).
 class_name CombatData
 extends RefCounted
 
-const DATA_DIR := "res://data/"
+const DATA_DIR := "res://data/v1/"
 
 var classes: Dictionary = {}
 ## Les classes dans l'ordre des données (data/classes.json) : celui des écrans.

@@ -1,14 +1,228 @@
 {
   "id": "mage",
-  "name": "Mage",
-  "roles": ["degats", "soutien"],
-  "identity": "Les éléments en zone.",
-  "elements": ["feu", "givre", "foudre"],
-  "stats": {"max_hp": 201, "speed": 8, "power": 102},
-  "skills": {
-    "basique": ["boule_de_feu", "etincelle"],
-    "moyenne": ["trait_de_givre", "arc_de_foudre"],
-    "forte": ["nova", "bouclier_de_mana"]
+  "nom": "Mage",
+  "genre": "m",
+  "role": "degats",
+  "pv": 900,
+  "k": 1.0,
+  "acolyte": "guerrier",
+  "moyeu": {
+    "nom": "Trait arcanique",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
   },
-  "passives": ["resonance", "focalisation", "brasier", "meteorologue"]
+  "voies": [
+    {
+      "id": "brasier",
+      "nom": "Voie du Brasier",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Étincelle",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 45, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 12, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Boule de feu",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Embrasement",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 38, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 25, "tours": 4, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Tempête de feu",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 105, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 25, "tours": 4, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "givre",
+      "nom": "Voie du Givre",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Éclat de givre",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Gel",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Blizzard",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 73, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Hiver",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 97, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "foudre",
+      "nom": "Voie de la Foudre",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Arc",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Éclair",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Chaîne",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 140, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Foudre céleste",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "voile",
+      "nom": "Voie du Voile",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Voile",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Silence",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 2, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 10, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Miroir",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 154, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Bannissement",
+          "genre": "m",
+          "effets": [
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "etat", "nom": "silencie", "tours": 2, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arcane",
+      "nom": "Voie de l'Arcane",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Siphon",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 40, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 33, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Drain",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Renvoi",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 30, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Apothéose",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 130, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 50, "tours": 2, "cible": "soi"}
+          ]
+        }
+      ]
+    }
+  ]
 }

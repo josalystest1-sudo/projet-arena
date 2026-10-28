@@ -52,6 +52,9 @@ jobs:
       - name: Tests (on ne publie jamais une version qui échoue)
         run: timeout 600 ~/godot/godot --headless --path . --script res://tests/run_tests.gd
 
+      - name: Budget de chaque nœud (combat V2, docs/SPEC-COMBAT-V2.md, 7.4)
+        run: timeout 120 ~/godot/godot --headless --path . --script res://tools/budget.gd
+
       - name: Export web
         run: |
           mkdir -p build/web

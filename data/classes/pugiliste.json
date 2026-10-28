@@ -1,14 +1,227 @@
 {
   "id": "pugiliste",
-  "name": "Pugiliste",
-  "roles": ["front", "degats"],
-  "identity": "Combos et contres : chaque coup prépare le suivant.",
-  "elements": ["contondant"],
-  "stats": {"max_hp": 264, "speed": 10, "power": 85},
-  "skills": {
-    "basique": ["jab", "direct"],
-    "moyenne": ["garde_haute", "crochet"],
-    "forte": ["uppercut", "enchainement"]
+  "nom": "Pugiliste",
+  "genre": "m",
+  "role": "front",
+  "pv": 1200,
+  "k": 0.9,
+  "acolyte": "barde",
+  "moyeu": {
+    "nom": "Direct",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
   },
-  "passives": ["cardio", "machoire_d_acier", "esquive", "enchaineur"]
+  "voies": [
+    {
+      "id": "poings",
+      "nom": "Voie des Poings",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Crochet",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Uppercut",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Enchaînement",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 140, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "KO",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "souffle",
+      "nom": "Voie du Souffle",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Souffle",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 78, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Posture de fer",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 143, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Concentration",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "soi"},
+            {"type": "soin", "valeur": 78, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Second vent",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 150, "cible": "soi"},
+            {"type": "barriere", "valeur": 136, "cible": "soi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "prise",
+      "nom": "Voie de la Prise",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Saisie",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Clé de bras",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 40, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Étranglement",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 2, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Projection",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tourbillon",
+      "nom": "Voie du Tourbillon",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Balayage",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 54, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Coup de pied circulaire",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 77, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Tornade",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 108, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Onde de choc",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 142, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "defi",
+      "nom": "Voie du Défi",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Défi",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Garde",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 86, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Contre",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"},
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Mur de chair",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 200, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 38, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
 }

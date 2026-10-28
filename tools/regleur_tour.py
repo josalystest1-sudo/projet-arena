@@ -16,7 +16,7 @@ import sys
 from collections import defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-TOWER = os.path.join(ROOT, "data", "tower.json")
+TOWER = os.path.join(ROOT, "data", "v1", "tower.json")
 GODOT = os.environ.get("GODOT", os.path.expanduser("~/godot/godot"))
 OUT = os.environ.get("TOUR_DIR", "/tmp/regleur_tour")
 # Part des duos qui tombent à chaque étage, parmi ceux qui l'atteignent (les étages 5 et 10 sont des Gardiens).

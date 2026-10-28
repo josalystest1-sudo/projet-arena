@@ -1,14 +1,227 @@
 {
   "id": "invocateur",
-  "name": "Invocateur",
-  "roles": ["front", "degats"],
-  "identity": "Il ne combat pas seul : sa créature encaisse à sa place.",
-  "elements": ["contondant", "ombre"],
-  "stats": {"max_hp": 270, "speed": 7, "power": 99},
-  "skills": {
-    "basique": ["fouet_d_ombre", "ordre"],
-    "moyenne": ["golem", "spectre"],
-    "forte": ["sacrifice", "lien"]
+  "nom": "Invocateur",
+  "genre": "m",
+  "role": "degats",
+  "pv": 900,
+  "k": 1.0,
+  "acolyte": "pugiliste",
+  "moyeu": {
+    "nom": "Griffe",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
   },
-  "passives": ["symbiose", "essaim", "pacte", "nourrice"]
+  "voies": [
+    {
+      "id": "meute",
+      "nom": "Voie de la Meute",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Loup",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 12, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 36, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Meute",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 20, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Nuée de corbeaux",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 20, "tours": 4, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 52, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Béhémoth",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 45, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 72, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "gardien",
+      "nom": "Voie du Gardien",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Esprit gardien",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 27, "tours": 4, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Totem de vie",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 30, "tours": 4, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Carapace",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 154, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grand gardien",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 40, "tours": 5, "cible": "duo"},
+            {"type": "barriere", "valeur": 67, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "liens",
+      "nom": "Voie des Liens",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Entrave",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Lianes",
+          "genre": "fp",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 42, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Étreinte",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Prison d'épines",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 25, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 40, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "elementaire",
+      "nom": "Voie de l'Élémentaire",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Flammèche",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Golem",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Élémentaire",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Titan",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pacte",
+      "nom": "Voie du Pacte",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Pacte",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 40, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 33, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Sacrifice",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 111, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Lien vital",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 60, "cible": "duo"},
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Communion",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 100, "cible": "duo"},
+            {"type": "renfort", "pourcent": 30, "tours": 2, "cible": "duo"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
 }

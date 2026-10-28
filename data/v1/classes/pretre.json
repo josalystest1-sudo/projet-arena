@@ -1,0 +1,14 @@
+{
+  "id": "pretre",
+  "name": "Prêtre",
+  "roles": ["soutien", "front"],
+  "identity": "Il répare, il relève, il tient.",
+  "elements": ["lumiere"],
+  "stats": {"max_hp": 253, "speed": 7, "power": 95},
+  "skills": {
+    "basique": ["chatiment", "priere"],
+    "moyenne": ["restauration", "purification"],
+    "forte": ["egide", "resurrection"]
+  },
+  "passives": ["foi", "martyr", "lumiere_interieure", "sanctuaire"]
+}

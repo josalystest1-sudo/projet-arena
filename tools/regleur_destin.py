@@ -27,7 +27,7 @@ import sys
 from collections import defaultdict
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-NODES = os.path.join(ROOT, "data", "destin_nodes.json")
+NODES = os.path.join(ROOT, "data", "v1", "destin_nodes.json")
 GODOT = os.environ.get("GODOT", os.path.expanduser("~/godot/godot"))
 OUT = os.environ.get("DESTIN_DIR", "/tmp/regleur_destin")
 # Un nœud n'est qu'un des 30 points d'un personnage : son effet sur le taux de victoire est dilué, d'où un gain fort.

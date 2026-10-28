@@ -1,14 +1,230 @@
 {
   "id": "diplomate",
-  "name": "Diplomate",
-  "roles": ["soutien", "front"],
-  "identity": "Il gagne sans frapper : il négocie, impose, retourne.",
-  "elements": ["lumiere", "contondant"],
-  "stats": {"max_hp": 259, "speed": 7, "power": 101},
-  "skills": {
-    "basique": ["argument", "encouragement"],
-    "moyenne": ["ultimatum", "treve"],
-    "forte": ["discours", "chantage"]
+  "nom": "Diplomate",
+  "genre": "m",
+  "role": "soutien",
+  "pv": 1000,
+  "k": 1.0,
+  "acolyte": "invocateur",
+  "moyeu": {
+    "nom": "Réplique",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
   },
-  "passives": ["charisme", "impassible", "reseau", "protocole"]
+  "voies": [
+    {
+      "id": "intimidation",
+      "nom": "Voie de l'Intimidation",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Menace",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Ultimatum",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 25, "tours": 2, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 5, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Humiliation",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Capitulation",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "traite",
+      "nom": "Voie du Traité",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Trêve",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Pacte",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 143, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Alliance",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 154, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Armistice",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 143, "cible": "duo"},
+            {"type": "purge", "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rhetorique",
+      "nom": "Voie de la Rhétorique",
+      "acolyte": true,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Confusion",
+          "genre": "f",
+          "effets": [
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 10, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Contre-argument",
+          "genre": "m",
+          "effets": [
+            {"type": "dissipe", "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Discrédit",
+          "genre": "m",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 30, "tours": 2, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 48, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Volte-face",
+          "genre": "f",
+          "effets": [
+            {"type": "egare", "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "silencie", "tours": 2, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 27, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "eloquence",
+      "nom": "Voie de l'Éloquence",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Encouragement",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "un_allie"},
+            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Harangue",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 30, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Plaidoyer",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 120, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grand discours",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 108, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "duel",
+      "nom": "Voie du Duel",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Estocade",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Riposte",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 64, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Botte secrète",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 140, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Mise à mort",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 170, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
 }
