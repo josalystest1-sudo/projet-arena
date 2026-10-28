@@ -1,0 +1,235 @@
+{
+  "size": 45,
+  "points": 30,
+  "mini_size": 15,
+  "mini_points": 15,
+  "counts": {
+    "stat": 22,
+    "evolution": 14,
+    "pivot": 7,
+    "cle": 2
+  },
+  "mini_counts": {
+    "stat": 8,
+    "evolution": 5,
+    "pivot": 2,
+    "cle": 0
+  },
+  "total_value": 82.0,
+  "best_value": 63.0,
+  "mini_total_value": 20.0,
+  "mini_best_value": 20.0,
+  "tolerance": 0.02,
+  "max_children": 3,
+  "stats": [
+    {
+      "id": "pv",
+      "name": "+{n} % de PV",
+      "mods": {
+        "hp_pct": 0.03
+      },
+      "value": 1.0
+    },
+    {
+      "id": "puissance",
+      "name": "+{n} % de puissance",
+      "mods": {
+        "power_pct": 0.025
+      },
+      "value": 1.2
+    },
+    {
+      "id": "vitesse",
+      "name": "+{n} vitesse",
+      "mods": {
+        "speed_bonus": 1
+      },
+      "value": 1.6,
+      "integer": true
+    },
+    {
+      "id": "element",
+      "name": "+{n} % de dégâts de {element}",
+      "mods": {
+        "<element>_bonus": 0.06
+      },
+      "value": 1.0
+    },
+    {
+      "id": "reduction",
+      "name": "-{n} % de dégâts subis",
+      "mods": {
+        "reduction": 0.03
+      },
+      "value": 1.3
+    },
+    {
+      "id": "regen",
+      "name": "+{n} % de PV récupérés à chaque fin de tour",
+      "mods": {
+        "regen": 0.01
+      },
+      "value": 1.5
+    },
+    {
+      "id": "soins",
+      "name": "+{n} % de soins",
+      "mods": {
+        "heal_bonus": 0.08
+      },
+      "value": 1.0,
+      "needs": "heal"
+    },
+    {
+      "id": "barrieres",
+      "name": "+{n} % de barrières",
+      "mods": {
+        "barrier_bonus": 0.1
+      },
+      "value": 1.0,
+      "needs": "barrier"
+    }
+  ],
+  "evolutions": {
+    "power": {
+      "name": "{skill} : +{n} %",
+      "description": "{skill} fait {n} % de dégâts (ou de soins, ou de barrière) en plus.",
+      "skill_mods": {
+        "power_bonus": 0.15
+      },
+      "value": 2.0
+    },
+    "duration": {
+      "name": "{skill} : un tour de plus",
+      "description": "L'état posé par {skill} dure un tour de plus.",
+      "skill_mods": {
+        "turns_bonus": 1
+      },
+      "value": 1.5
+    },
+    "cooldown": {
+      "name": "{skill} revient plus tôt",
+      "description": "{skill} revient un tour plus tôt.",
+      "skill_mods": {
+        "cooldown_minus": 1
+      },
+      "value": 2.2
+    },
+    "bounce": {
+      "name": "{skill} rebondit",
+      "description": "{skill} touche aussi un second ennemi, à {n} % de sa force.",
+      "skill_mods": {
+        "bounce": 0.5
+      },
+      "value": 2.0
+    },
+    "passive": {
+      "name": "{passive} renforcé",
+      "description": "Le passif {passive} est {n} % plus fort.",
+      "value": 1.5,
+      "share": 0.25
+    },
+    "passive_flat": {
+      "name": "{passive} affirmé",
+      "description": "Avec {passive} : +{n} % de puissance.",
+      "mods": {
+        "power_pct": 0.04
+      },
+      "value": 1.5
+    }
+  },
+  "pivots": {
+    "front": [
+      {
+        "id": "solide",
+        "name": "Pivot : solide",
+        "description": "Ton rôle de Front : +{n} % de PV.",
+        "mods": {
+          "hp_pct": 0.08
+        },
+        "value": 2.2
+      },
+      {
+        "id": "cuirasse",
+        "name": "Pivot : cuirasse",
+        "description": "Ton rôle de Front : -{n} % de dégâts subis.",
+        "mods": {
+          "reduction": 0.04
+        },
+        "value": 2.0
+      }
+    ],
+    "degats": [
+      {
+        "id": "mordant",
+        "name": "Pivot : mordant",
+        "description": "Ton rôle de Dégâts : +{n} % de dégâts.",
+        "mods": {
+          "damage_bonus": 0.06
+        },
+        "value": 2.2
+      },
+      {
+        "id": "element",
+        "name": "Pivot : élément",
+        "description": "Ton rôle de Dégâts : +{n} % de dégâts de {element}.",
+        "mods": {
+          "<element>_bonus": 0.1
+        },
+        "value": 2.0
+      }
+    ],
+    "soutien": [
+      {
+        "id": "baume",
+        "name": "Pivot : baume",
+        "description": "Ton rôle de Soutien : à chaque fin de tour, le plus blessé de ton duo récupère {n} % de ses PV.",
+        "mods": {
+          "ally_regen": 0.015
+        },
+        "value": 2.2
+      },
+      {
+        "id": "durable",
+        "name": "Pivot : durable",
+        "description": "Ton rôle de Soutien : les états que tu poses durent un tour de plus.",
+        "mods": {
+          "status_turns_bonus": 1
+        },
+        "value": 2.0
+      }
+    ]
+  },
+  "cles": [
+    {
+      "id": "zone",
+      "tier": "basique",
+      "needs": "enemy_damage",
+      "name": "Clé : {skill} en zone",
+      "description": "Une fois par combat, {skill} frappe tous les ennemis.",
+      "skill_mods": {
+        "zone_once": 1
+      },
+      "value": 5.0
+    },
+    {
+      "id": "gratuite",
+      "tier": "forte",
+      "name": "Clé : {skill} libre",
+      "description": "La première {skill} du combat ne lance pas sa recharge.",
+      "skill_mods": {
+        "free_once": 1
+      },
+      "value": 5.0
+    },
+    {
+      "id": "puissance",
+      "name": "Clé : puissance",
+      "description": "+{n} % de puissance.",
+      "mods": {
+        "power_pct": 0.1
+      },
+      "value": 5.5
+    }
+  ]
+}

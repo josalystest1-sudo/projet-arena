@@ -641,6 +641,8 @@ func _end_climb() -> void:
 		box.add_child(_label("Premier record pour ton %s." % cls_name, 20, Color("51cf66")))
 	else:
 		box.add_child(_label("Record de ton %s : étage %d" % [cls_name, previous], 20, Color("ffa94d")))
+	var floors_won := tower.floor_count() if tower.cleared_all else reached - 1
+	box.add_child(_label(_xp_line(40 * floors_won + (100 if tower.cleared_all else 0)), 18, GOLD))
 	box.add_child(_spacer(10))
 	var again := Button.new()
 	again.text = "Recommencer la Tour"
@@ -1394,6 +1396,17 @@ func _play_event(event: Dictionary) -> void:
 			await _wait(0.4)
 
 
+## L'XP gagnée, et le niveau s'il monte : « +120 XP · niveau 3 : un point de Destin à placer ».
+func _xp_line(amount: int) -> String:
+	var result := app.gain_xp(amount)
+	var left := app.destin_points_left()
+	if int(result["levels"]) > 0:
+		return "+%d XP · Niveau %d ! %s" % [amount, int(result["level"]), ("%d point%s de Destin à placer (onglet Compétences)" % [left, "s" if left > 1 else ""]) if left > 0 else ""]
+	if profile.level >= PlayerProfile.MAX_LEVEL:
+		return "Niveau %d (le maximum)" % profile.level
+	return "+%d XP · niveau %d (%d / %d XP)%s" % [amount, profile.level, profile.xp, PlayerProfile.xp_to_next(profile.level), (" · %d point%s de Destin à placer" % [left, "s" if left > 1 else ""]) if left > 0 else ""]
+
+
 ## Ce que l'action en cours a fait, ajouté sous elle dans la carte du milieu (« Toi -38 · Saule -20 »).
 func _add_story_result(text: String) -> void:
 	story_results.append(text)
@@ -1550,6 +1563,7 @@ func _show_end() -> void:
 	else:
 		streak_text = "Record : %d victoire%s d'affilée" % [profile.best_streak, "s" if profile.best_streak > 1 else ""]
 	box.add_child(_label(streak_text, 20, Color("51cf66") if won else Color("ffa94d")))
+	box.add_child(_label(_xp_line(120 if won else 80), 18, GOLD))
 	box.add_child(_spacer(10))
 	var again := Button.new()
 	again.text = "Rejouer" if not won else "Combat suivant"

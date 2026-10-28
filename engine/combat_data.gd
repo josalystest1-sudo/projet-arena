@@ -36,6 +36,8 @@ var monster_ranks: Dictionary = {}
 ## et par kit complet (clé : classe puis ses quatre éléments, ex. « pretre:priere+restauration+egide+foi »), le reste
 ## à corriger une fois tout le reste appliqué.
 var destins: Dictionary = {}
+## Les modèles de nœuds du Destin (data/destin_nodes.json) : tailles, parts, valeurs en points de puissance.
+var destin_nodes: Dictionary = {}
 
 
 static func load_default() -> CombatData:
@@ -54,6 +56,7 @@ static func load_from_dir(dir: String) -> CombatData:
 	data.ai = _read_json(dir + "ia.json")
 	data.tower = _read_json(dir + "tower.json")
 	data.destins = _read_json(dir + "destins.json")
+	data.destin_nodes = _read_json(dir + "destin_nodes.json")
 	for class_id in _read_json(dir + "classes.json"):
 		data.class_ids.append(str(class_id))
 		data.classes[class_id] = _read_json(dir + "classes/" + class_id + ".json")
