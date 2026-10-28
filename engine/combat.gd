@@ -92,6 +92,10 @@ static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_
 	combat.strong_available_from_turn = int(rules.get("strong_available_from_turn", combat.strong_available_from_turn))
 	for team in [0, 1]:
 		var members: Array = team_a if team == 0 else team_b
+		# En duo, les deux kits ensemble : l'ajustement par paire de kits selon leurs Synergies possibles.
+		var pair_bonus := 0.0
+		if members.size() == 2 and not members[0].has("monster_id") and not members[1].has("monster_id"):
+			pair_bonus = p_data.synergy_pairs_bonus(str(members[0]["class_id"]), members[0].get("picks", {}), str(members[1]["class_id"]), members[1].get("picks", {}))
 		for slot in range(members.size()):
 			var member: Dictionary = members[slot]
 			var unit_id := "%s%d" % ["a" if team == 0 else "b", slot + 1]
@@ -109,6 +113,8 @@ static func create(p_data: CombatData, team_a: Array, team_b: Array, p_priority_
 				var partner_class := str(members[1 - slot].get("class_id", "")) if members.size() == 2 else ""
 				unit = CombatUnit.from_class(p_data, member["class_id"], picks, unit_id, team, slot, partner_class, bool(member.get("is_acolyte", false)))
 			unit.is_player = bool(member.get("is_player", false))
+			if pair_bonus != 0.0:
+				unit.apply_mods(p_data, {"hp_pct": pair_bonus, "power_pct": pair_bonus})
 			if member.has("mods") or member.has("skill_mods"):
 				unit.apply_mods(p_data, member.get("mods", {}), member.get("skill_mods", {}))
 			if member.has("max_hp_mult"):

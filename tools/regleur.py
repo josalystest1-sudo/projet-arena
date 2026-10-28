@@ -12,7 +12,9 @@ Usage : python3 tools/regleur.py <tours de réglage> <combats par tour>
    - une compétence ou un passif : son chiffre (écart au taux de sa classe, pour ne pas corriger deux fois) ;
    - une Synergie : son chiffre (écart entre les duos qui l'ont et ce qu'on attend de leurs deux kits : un duo qui
      a une Synergie possible est une paire de kits précise, dont la force propre masquait l'effet de la Synergie ;
-     comparée à la composition, Golem + Prière restait à 30 % avec un chiffre à sa borne) ;
+     comparée à la composition, Golem + Prière restait à 30 % avec un chiffre à sa borne) ; et, sur le même écart,
+     l'ajustement de la paire de kits qui l'a (« synergy_pairs », plafonné à ±10 % : quand la Synergie ne change
+     rien, c'est la paire de kits qui va mal ensemble) ;
    - le budget de puissance du Destin (data/destins.json, ajustements de PV et de puissance) : un élément sans chiffre
      (« kit_items »), la composition du duo (« duo_classes »), qui en est le joueur (« duo_orders »), une classe jouée
      en acolyte (« acolyte_classes »), et chaque kit complet, côté joueur et côté acolyte séparément (« kits » : un
@@ -68,6 +70,11 @@ COMPO_GAIN = 0.25
 # Le reste d'un kit complet, par côté (joueur ou acolyte) : comparé à sa classe jouée du même côté (chaque kit est
 # mesuré directement, environ 1 250 parties par kit et par côté avec 400 000 combats).
 KIT_GAIN = 0.5
+# Une paire de kits qui a une Synergie possible et va trop bien (ou trop mal) ensemble, une fois chaque kit réglé de
+# son côté et le chiffre de la Synergie à sa borne : ajustement de PV et de puissance des deux membres (« synergy_pairs »,
+# plafonné à ±10 % en tout par le moteur). Gain modeste : le chiffre de la Synergie corrige déjà le même écart.
+PAIR_SYNERGY_GAIN = 0.3
+PAIR_SYNERGY_LIMIT = 0.1
 # Bornes des chiffres de Synergie : au-delà, une Synergie change de nature (ou ne se joue pas assez pour être réglée
 # par sa force : il faut alors revoir son effet).
 SYNERGY_LIMITS = {"mult": (0.5, 1.5), "share": (0.3, 1.0), "bonus": (0.05, 1.0)}
@@ -112,7 +119,7 @@ def write_passives(passives):
 
 def write_destins(destins):
     lines = ["{"]
-    sections = ("kit_items", "kit_pairs", "kit_triples", "duo_classes", "duo_orders", "acolyte_classes", "duo_items", "kits")
+    sections = ("kit_items", "kit_pairs", "kit_triples", "duo_classes", "duo_orders", "acolyte_classes", "duo_items", "synergy_pairs", "kits")
     for n, section in enumerate(sections):
         values = destins.get(section, {})
         lines.append(f'  "{section}": {{')
@@ -351,6 +358,14 @@ def tune(rates):
         old = inner.get(kit, 0.0)
         inner[kit] = round(min(PAIR_LIMIT, max(-PAIR_LIMIT, old - KIT_GAIN * damp(key, deviation) * deviation / 100.0)), 3)
         report.append(f"budget du kit {kit} en {side} ({deviation:+.1f}) : {old:+.3f} -> {inner[kit]:+.3f}")
+    # Les paires de kits selon leurs Synergies possibles : l'écart de la Synergie à ce qu'on attend des deux kits.
+    pairs = destins.setdefault("synergy_pairs", {})
+    for synergy_id, (deviation, games) in sorted(SYNERGY_GAPS.items()):
+        if games < 300 or abs(deviation) < max(1.5, 196.0 * math.sqrt(0.25 / games)):
+            continue
+        old = pairs.get(synergy_id, 0.0)
+        pairs[synergy_id] = round(min(PAIR_SYNERGY_LIMIT, max(-PAIR_SYNERGY_LIMIT, old - PAIR_SYNERGY_GAIN * damp("paire:" + synergy_id, deviation) * deviation / 100.0)), 3)
+        report.append(f"paire de kits {synergy_id} ({deviation:+.1f}) : {old:+.3f} -> {pairs[synergy_id]:+.3f}")
     write_destins(destins)
     for passive_id, passive in passives.items():
         key = passive.get("lever")

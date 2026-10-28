@@ -37,6 +37,27 @@ func test_l_ajustement_total_d_un_kit_est_plafonne() -> void:
 	data.destins = {"kit_pairs": {}}
 
 
+func test_l_ajustement_par_paire_de_kits_selon_la_synergie() -> void:
+	# « synergy_pairs » : les deux membres d'un duo qui peut déclencher Bastion (Rempart + Prière) reçoivent l'ajustement.
+	data.destins = {"synergy_pairs": {"rempart_priere": 0.05}}
+	var with_bastion := Combat.create(data, duo_team(["guerrier", "pretre"], {"guerrier": {"moyenne": 1}, "pretre": {"basique": 1}}), duo_team(["mage", "guerrier"]))
+	var guerrier := with_bastion.get_unit("a1")
+	var pretre := with_bastion.get_unit("a2")
+	var synergies := Duo.kit_synergies(data, "guerrier", {"moyenne": 1}, "pretre", {"basique": 1})
+	var has_bastion := false
+	for synergy in synergies:
+		if str(synergy["id"]) == "rempart_priere":
+			has_bastion = true
+	assert_true(has_bastion, "ce duo peut déclencher Bastion")
+	assert_eq(guerrier.max_hp, int(round(float(data.classes["guerrier"]["stats"]["max_hp"]) * 1.05)), "le Guerrier : +5 % de PV")
+	assert_eq(pretre.power, int(round(float(data.classes["pretre"]["stats"]["power"]) * 1.05)), "le Prêtre : +5 % de puissance")
+	var mage := with_bastion.get_unit("b1")
+	assert_eq(mage.max_hp, int(data.classes["mage"]["stats"]["max_hp"]), "le duo d'en face, sans Bastion : rien")
+	data.destins = {"synergy_pairs": {"rempart_priere": 0.3}}
+	assert_eq(data.synergy_pairs_bonus("guerrier", {"moyenne": 1}, "pretre", {"basique": 1}), CombatData.MAX_PAIR_BONUS, "plafonné à 10 %")
+	data.destins = {"kit_pairs": {}}
+
+
 func test_les_ajustements_des_donnees_restent_petits() -> void:
 	# Le budget du Destin corrige à la marge : aucun ajustement ne dépasse 15 % (au-delà, c'est l'effet qu'il faut revoir).
 	var real := CombatData.load_default()

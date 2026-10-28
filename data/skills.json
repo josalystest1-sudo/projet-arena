@@ -42,22 +42,22 @@
   },
   "trait_de_givre": {
     "name": "Trait de givre", "class": "mage", "tier": "moyenne", "element": "givre", "target": "enemy",
-    "effects": [{"type": "damage", "power": 49}, {"type": "act_last"}],
+    "effects": [{"type": "damage", "power": 50}, {"type": "act_last"}],
     "description": "Dégâts de givre ; la cible agit en dernier."
   },
   "arc_de_foudre": {
     "name": "Arc de foudre", "class": "mage", "tier": "moyenne", "element": "foudre", "target": "enemies_2",
-    "effects": [{"type": "damage", "power": 43}],
+    "effects": [{"type": "damage", "power": 42}],
     "description": "La foudre frappe la cible et un second ennemi."
   },
   "nova": {
     "name": "Nova", "class": "mage", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 61}],
+    "effects": [{"type": "damage", "power": 60}],
     "description": "Explosion de feu sur tous les ennemis."
   },
   "bouclier_de_mana": {
     "name": "Bouclier de mana", "class": "mage", "tier": "forte", "element": "", "target": "ally",
-    "effects": [{"type": "barrier", "power": 177, "turns": 3}],
+    "effects": [{"type": "barrier", "power": 179, "turns": 3}],
     "description": "Grosse barrière sur un allié pendant {turns} tours."
   },
 
@@ -207,7 +207,7 @@
   },
   "bombe": {
     "name": "Bombe", "class": "alchimiste", "tier": "forte", "element": "feu", "target": "enemies_all",
-    "effects": [{"type": "damage", "power": 25}],
+    "effects": [{"type": "damage", "power": 24}],
     "description": "Une bombe de feu sur tous les ennemis."
   },
   "catalyseur": {
@@ -269,12 +269,12 @@
   },
   "discours": {
     "name": "Discours", "class": "diplomate", "tier": "forte", "element": "", "target": "allies_all",
-    "effects": [{"type": "status", "id": "galvanise", "turns": 3, "value": 40}],
+    "effects": [{"type": "status", "id": "galvanise", "turns": 3, "value": 44}],
     "description": "Tout le duo inflige +{value} % de dégâts pendant {turns} tours."
   },
   "chantage": {
     "name": "Chantage", "class": "diplomate", "tier": "forte", "element": "lumiere", "target": "enemy",
-    "effects": [{"type": "damage", "power": 27}, {"type": "status", "id": "chantage", "turns": 2}],
+    "effects": [{"type": "damage", "power": 26}, {"type": "status", "id": "chantage", "turns": 2}],
     "description": "Dégâts ; la cible ne peut pas utiliser sa forte au tour suivant."
   },
 
