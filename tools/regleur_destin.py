@@ -6,9 +6,11 @@ Usage : python3 tools/regleur_destin.py <passes> <combats par passe>            
 
 Les combats viennent de tools/equilibrage.gd lancé avec le niveau « alea » : les deux duos au même niveau, les points
 de Destin placés au hasard. Pour chaque modèle de nœud (« stat:pv », « evolution:power », « pivot:solide »,
-« cle:zone »…), on mesure le taux de victoire des personnages qui l'ont pris, côtés joueur et acolyte confondus.
-Un modèle au-dessus de 50 % est plus fort que sa valeur ne le dit : sa valeur monte (et inversement), d'au plus
-15 % par passe, avec amortissement. Comme tous les arbres sont ramenés à la même valeur totale, un nœud qui vaut
+« cle:zone »…), on mesure le taux de victoire des personnages qui l'ont pris, côté joueur et côté acolyte séparément.
+Un modèle au-dessus de 50 % est plus fort que sa valeur ne le dit : côté joueur, sa valeur monte (et inversement) ;
+côté acolyte, c'est son facteur du mini-Destin (« mini_values » : un même modèle n'a pas la même force chez
+l'acolyte, de la classe complémentaire, dont les points vont sur un petit arbre). D'au plus 15 % par passe, avec
+amortissement. Comme tous les arbres sont ramenés à la même valeur totale, un nœud qui vaut
 plus laisse moins de place aux autres bonus de son arbre : c'est ainsi que la valeur rejoint la force réelle.
 Les valeurs sont ensuite remises à l'échelle pour que la valeur nominale d'un arbre (22 Stats, 14 Évolutions,
 7 Pivots, 2 Clés) ne bouge pas, puis la cible « meilleure valeur avec 30 points » est recalibrée sur des arbres neufs
@@ -31,6 +33,7 @@ GAIN = 3.0
 MAX_STEP = 0.15
 MIN_GAMES = 300
 MIN_VALUE = 0.3
+MIN_FACTOR, MAX_FACTOR = 0.4, 2.5
 # Un nœud de Stat est petit ou grand (une ou deux unités, 65 / 35 %) : sa valeur nominale moyenne.
 STAT_UNITS = 1.35
 DAMPING = {}
@@ -75,7 +78,8 @@ def nominal_value(config):
 
 
 def measure(files):
-    rates = defaultdict(lambda: [0, 0])
+    """Taux par modèle, côté joueur (« j ») et côté acolyte (« a »), et par niveau."""
+    rates = {"j": defaultdict(lambda: [0, 0]), "a": defaultdict(lambda: [0, 0])}
     levels = defaultdict(lambda: [0, 0])
     for path in files:
         with open(path, encoding="utf-8") as f:
@@ -85,10 +89,10 @@ def measure(files):
                 won = int(row["gagne"])
                 levels[int(row["niveau"])][0] += won
                 levels[int(row["niveau"])][1] += 1
-                for column in ("j_destin", "a_destin"):
+                for side, column in (("j", "j_destin"), ("a", "a_destin")):
                     for label in set(filter(None, row.get(column, "").split("+"))):
-                        rates[label][0] += won
-                        rates[label][1] += 1
+                        rates[side][label][0] += won
+                        rates[side][label][1] += 1
     return rates, levels
 
 
@@ -104,21 +108,39 @@ def damp(key, deviation):
 def tune(config, rates):
     report = []
     before = nominal_value(config)
+    minis = config.setdefault("mini_values", {})
     for label, kind, template in templates(config):
-        wins, games = rates.get(label, (0, 0))
+        # Côté joueur : la valeur du modèle.
+        wins, games = rates["j"].get(label, (0, 0))
         if games < MIN_GAMES:
-            report.append(f"{label:<22} pas assez de parties ({games})")
+            report.append(f"{label:<22} joueur : pas assez de parties ({games})")
+        else:
+            rate = 100.0 * wins / games
+            deviation = rate - 50.0
+            if abs(deviation) >= 0.5:
+                # Plus fort que sa valeur : la valeur monte (le contraire du régleur des compétences, qui baisse leur chiffre).
+                factor = 1.0 + GAIN * damp("j:" + label, deviation) * deviation / 100.0
+                factor = min(1.0 + MAX_STEP, max(1.0 - MAX_STEP, factor))
+                old = float(template["value"])
+                template["value"] = round(max(MIN_VALUE, old * factor), 2)
+                report.append(f"{label:<22} joueur {rate:5.1f} % ({games}) : valeur {old} -> {template['value']}")
+        # Côté acolyte : le facteur du mini-Destin (les Clés n'y existent pas).
+        wins, games = rates["a"].get(label, (0, 0))
+        if kind == "cle" or games < MIN_GAMES:
             continue
         rate = 100.0 * wins / games
         deviation = rate - 50.0
         if abs(deviation) < 0.5:
             continue
-        # Plus fort que sa valeur : la valeur monte (le contraire du régleur des compétences, qui baisse leur chiffre).
-        factor = 1.0 + GAIN * damp(label, deviation) * deviation / 100.0
+        factor = 1.0 + GAIN * damp("a:" + label, deviation) * deviation / 100.0
         factor = min(1.0 + MAX_STEP, max(1.0 - MAX_STEP, factor))
-        old = float(template["value"])
-        template["value"] = round(max(MIN_VALUE, old * factor), 2)
-        report.append(f"{label:<22} {rate:5.1f} % ({games}) : valeur {old} -> {template['value']}")
+        old_factor = float(minis.get(label, 1.0))
+        new_factor = round(min(MAX_FACTOR, max(MIN_FACTOR, old_factor * factor)), 3)
+        if new_factor == 1.0:
+            minis.pop(label, None)
+        else:
+            minis[label] = new_factor
+        report.append(f"{label:<22} acolyte {rate:5.1f} % ({games}) : facteur du mini-Destin {old_factor} -> {new_factor}")
     # Remise à l'échelle : la valeur nominale d'un arbre ne bouge pas, pour que total_value reste atteignable.
     after = nominal_value(config)
     scale = before / after if after > 0 else 1.0
@@ -159,17 +181,19 @@ def save_damping():
 
 def show(rates, levels):
     print("  niveau : " + ", ".join(f"{level} {100.0 * w / g:.1f} %" for level, (w, g) in sorted(levels.items()) if g))
-    for label, (wins, games) in sorted(rates.items(), key=lambda kv: -kv[1][0] / max(kv[1][1], 1)):
-        print(f"  {label:<22} {100.0 * wins / games:5.1f} %  ({games})")
+    for side, name in (("j", "joueur"), ("a", "acolyte")):
+        print(f"  --- {name}")
+        for label, (wins, games) in sorted(rates[side].items(), key=lambda kv: -kv[1][0] / max(kv[1][1], 1)):
+            print(f"  {label:<22} {100.0 * wins / games:5.1f} %  ({games})")
 
 
 def one_pass(label, files):
     rates, levels = measure(files)
     config = load_nodes()
-    measured = [100.0 * w / g for w, g in rates.values() if g >= MIN_GAMES]
+    measured = [100.0 * w / g for side in ("j", "a") for w, g in rates[side].values() if g >= MIN_GAMES]
     combats = sum(g for _, g in levels.values()) // 2
     if measured:
-        print(f"== Réglage du Destin {label} : {combats} combats, {len(measured)} modèles mesurés, de {min(measured):.1f} à {max(measured):.1f} %", flush=True)
+        print(f"== Réglage du Destin {label} : {combats} combats, {len(measured)} modèles mesurés (les deux côtés), de {min(measured):.1f} à {max(measured):.1f} %", flush=True)
     else:
         print(f"== Réglage du Destin {label} : rien à mesurer", flush=True)
     show(rates, levels)

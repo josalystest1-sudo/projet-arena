@@ -34,7 +34,7 @@ static func generate(data: CombatData, class_id: String, picks: Dictionary, seed
 	var best_tree := {}
 	var best_gap := INF
 	for attempt in range(ATTEMPTS):
-		var tree := _build(data, class_id, picks, rng, size, counts, total_target)
+		var tree := _build(data, class_id, picks, rng, size, counts, total_target, mini)
 		tree["seed"] = seed_value
 		tree["mini"] = mini
 		tree["best"] = best_value(tree, points)
@@ -50,7 +50,7 @@ static func generate(data: CombatData, class_id: String, picks: Dictionary, seed
 
 ## Un arbre : sa forme (un parent par nœud, trois enfants au plus), puis le contenu de chaque nœud, puis la mise
 ## à l'échelle des nœuds de Stat pour que la valeur totale tombe juste.
-static func _build(data: CombatData, class_id: String, picks: Dictionary, rng: RandomNumberGenerator, size: int, counts: Dictionary, total_target: float) -> Dictionary:
+static func _build(data: CombatData, class_id: String, picks: Dictionary, rng: RandomNumberGenerator, size: int, counts: Dictionary, total_target: float, mini: bool = false) -> Dictionary:
 	var max_children := int(data.destin_nodes.get("max_children", 3))
 	var nodes: Array = []
 	var children: Array = []
@@ -114,6 +114,17 @@ static func _build(data: CombatData, class_id: String, picks: Dictionary, rng: R
 				_fill_pivot(data, node, class_id, secondary, rng)
 			"cle":
 				_fill_key(data, node, class_id, kit, rng)
+
+	# Dans un mini-Destin, un modèle n'a pas la même force que chez le joueur (l'acolyte est de la classe complémentaire,
+	# ses points vont sur un petit arbre) : sa valeur est multipliée par le facteur du modèle (« mini_values »).
+	if mini:
+		var factors: Dictionary = data.destin_nodes.get("mini_values", {})
+		for node in nodes:
+			var factor := float(factors.get(template_of(node), 1.0))
+			if factor != 1.0:
+				node["value"] = float(node["value"]) * factor
+				if node.has("base_value"):
+					node["base_value"] = float(node["base_value"]) * factor
 
 	# Mise à l'échelle des Stats : la valeur totale de l'arbre est la même pour tous.
 	var fixed := 0.0
