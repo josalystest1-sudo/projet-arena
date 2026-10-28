@@ -49,6 +49,8 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	canvas.gui_input.connect(_on_canvas_input)
 	scroll.add_child(canvas)
 	_layout()
+	# À l'ouverture, la racine est au milieu de l'écran (l'arbre peut être plus large que lui).
+	scroll.ready.connect(func(): scroll.set_deferred("scroll_horizontal", int((canvas.custom_minimum_size.x - scroll.size.x) / 2.0)))
 	# Le nœud choisi, et le bouton pour y placer un point.
 	var panel := PanelContainer.new()
 	column.add_child(panel)
