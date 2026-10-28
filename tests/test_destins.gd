@@ -23,6 +23,20 @@ func test_un_kit_est_ajuste_selon_le_cote_ou_il_est_joue() -> void:
 	data.destins = {"kit_pairs": {}}
 
 
+func test_l_ajustement_total_d_un_kit_est_plafonne() -> void:
+	# Plusieurs ajustements qui s'additionnent (élément, composition, acolyte, kit) ne dépassent jamais ±25 % en tout.
+	var key := CombatData.kit_key("pretre", ["priere", "restauration", "egide"], "foi")
+	data.destins = {"kit_items": {"priere": 0.15, "foi": 0.15}, "duo_classes": {"mage+pretre": 0.15}, "acolyte_classes": {"pretre": 0.15},
+		"kits": {"acolyte": {key: 0.15}}}
+	var bonus := data.kit_bonus(["priere", "restauration", "egide"], "foi", "pretre", "mage", true)
+	assert_eq(bonus, CombatData.MAX_KIT_BONUS, "0,75 en tout, plafonné à 0,25")
+	data.destins = {"kit_items": {"priere": -0.15, "foi": -0.15}, "kits": {"joueur": {key: -0.15}}}
+	assert_eq(data.kit_bonus(["priere", "restauration", "egide"], "foi", "pretre", "mage", false), -CombatData.MAX_KIT_BONUS, "et vers le bas")
+	data.destins = {"kit_items": {"priere": 0.05}}
+	assert_eq(data.kit_bonus(["priere", "restauration", "egide"], "foi", "pretre", "mage", false), 0.05, "sous le plafond : inchangé")
+	data.destins = {"kit_pairs": {}}
+
+
 func test_les_ajustements_des_donnees_restent_petits() -> void:
 	# Le budget du Destin corrige à la marge : aucun ajustement ne dépasse 15 % (au-delà, c'est l'effet qu'il faut revoir).
 	var real := CombatData.load_default()

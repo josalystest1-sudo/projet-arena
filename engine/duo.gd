@@ -59,13 +59,25 @@ static func kit_synergies(data: CombatData, class_a: String, picks_a: Dictionary
 static func draw_acolyte(data: CombatData, player_class: String, player_picks: Dictionary, rng: RandomNumberGenerator) -> Dictionary:
 	var classes := acolyte_classes(data, player_class)
 	var class_id: String = classes[rng.randi_range(0, classes.size() - 1)]
+	var candidates := acolyte_candidates(data, player_class, player_picks, class_id)
+	return {"class_id": class_id, "picks": candidates[rng.randi_range(0, candidates.size() - 1)]}
+
+
+## Les kits d'une classe d'acolyte qui ont au moins une Synergie avec le kit du joueur (tous, s'il n'y en a aucun).
+## Gardés en mémoire par kit de joueur et classe d'acolyte (CombatData.duo_cache) : le simulateur tire des milliers de duos.
+static func acolyte_candidates(data: CombatData, player_class: String, player_picks: Dictionary, class_id: String) -> Array:
+	data.refresh_caches()
+	var key := "%s|%d%d%d%d|%s" % [player_class, int(player_picks.get("basique", 0)), int(player_picks.get("moyenne", 0)), int(player_picks.get("forte", 0)), int(player_picks.get("passive", 0)), class_id]
+	if data.duo_cache.has(key):
+		return data.duo_cache[key]
 	var candidates: Array[Dictionary] = []
 	for picks in all_picks(data, class_id):
 		if not kit_synergies(data, player_class, player_picks, class_id, picks).is_empty():
 			candidates.append(picks)
 	if candidates.is_empty():
 		candidates = all_picks(data, class_id)
-	return {"class_id": class_id, "picks": candidates[rng.randi_range(0, candidates.size() - 1)]}
+	data.duo_cache[key] = candidates
+	return candidates
 
 
 ## Un duo complet pour Combat.create : le personnage principal puis son acolyte.

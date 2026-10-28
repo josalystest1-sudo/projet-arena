@@ -12,7 +12,8 @@ func test_les_passifs_sont_lus_par_parametres() -> void:
 	var mage := combat.get_unit("b2")
 	var before := combat._damage_amount(combat.get_unit("a1"), mage, 40, 1.0, true, "tranchant")
 	mage.passive = "cuir_epais"
-	assert_eq(combat._damage_amount(combat.get_unit("a1"), mage, 40, 1.0, true, "tranchant"), int(round(before * 0.5)), "le nouveau passif réduit les dégâts de moitié")
+	# À l'arrondi près (le moteur arrondit après la réduction, pas avant).
+	assert_between(float(combat._damage_amount(combat.get_unit("a1"), mage, 40, 1.0, true, "tranchant")), round(before * 0.5) - 1.0, round(before * 0.5) + 1.0, "le nouveau passif réduit les dégâts de moitié")
 	assert_eq(data.passive_description("cuir_epais"), "-50 % de dégâts subis.", "sa description se remplit avec ses chiffres")
 
 
