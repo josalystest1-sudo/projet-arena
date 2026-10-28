@@ -99,8 +99,13 @@ static func pair_key(a: String, b: String) -> String:
 	return "%s+%s" % [a, b] if a < b else "%s+%s" % [b, a]
 
 
+## Plafond de l'ajustement total d'un kit : au-delà, ce n'est plus un réglage à la marge, c'est l'effet qu'il faut revoir
+## (le régleur à 10 classes avait fini par cumuler jusqu'à +60 % sur certains kits).
+const MAX_KIT_BONUS := 0.25
+
+
 ## L'ajustement de PV et de puissance d'un kit (3 compétences + 1 passif) : ses éléments, ses paires, et en duo
-## (partner_class non vide) ses éléments selon la classe du partenaire et la composition du duo.
+## (partner_class non vide) ses éléments selon la classe du partenaire et la composition du duo. Plafonné à ±25 %.
 func kit_bonus(skill_ids: Array, passive_id: String, own_class: String = "", partner_class: String = "", is_acolyte: bool = false) -> float:
 	var singles: Dictionary = destins.get("kit_items", {})
 	var pairs: Dictionary = destins.get("kit_pairs", {})
@@ -124,7 +129,7 @@ func kit_bonus(skill_ids: Array, passive_id: String, own_class: String = "", par
 	if own_class != "":
 		var side := "acolyte" if is_acolyte else "joueur"
 		total += float(destins.get("kits", {}).get(side, {}).get(kit_key(own_class, skill_ids, passive_id), 0.0))
-	return total
+	return clampf(total, -MAX_KIT_BONUS, MAX_KIT_BONUS)
 
 
 ## Clé d'un kit complet : sa classe, puis ses trois compétences (basique, moyenne, forte) et son passif.
@@ -274,12 +279,34 @@ func monsters_of(family: String = "", with_guardians: bool = true) -> Array[Stri
 func find_synergy(skill_a: String, skill_b: String) -> Dictionary:
 	if skill_a == skill_b:
 		return {}
+	refresh_caches()
+	var key := skill_a + "|" + skill_b
+	if _synergy_cache.has(key):
+		return _synergy_cache[key]
+	var result := {}
 	for synergy in synergies:
 		var pair: Array = synergy["skills"]
 		if (_matches(pair[0], skill_a, skill_b) and _matches(pair[1], skill_b, skill_a)) \
 				or (_matches(pair[0], skill_b, skill_a) and _matches(pair[1], skill_a, skill_b)):
-			return synergy
-	return {}
+			result = synergy
+			break
+	_synergy_cache[key] = result
+	return result
+
+
+## Mémoires des recherches (couple de compétences -> Synergie, et kits d'acolyte possibles par kit de joueur) : le
+## simulateur fait des centaines de recherches par duo tiré, et les tirages représentaient les trois quarts du temps
+## d'un combat simulé. Elles se vident d'elles-mêmes si la liste des Synergies change (les tests en ajoutent).
+var _synergy_cache: Dictionary = {}
+var duo_cache: Dictionary = {}
+var _cache_synergy_count: int = -1
+
+
+func refresh_caches() -> void:
+	if _cache_synergy_count != synergies.size():
+		_synergy_cache.clear()
+		duo_cache.clear()
+		_cache_synergy_count = synergies.size()
 
 
 ## La compétence correspond-elle à un membre du couple ? Un joker « *palier » accepte toute compétence de ce palier
