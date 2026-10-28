@@ -943,5 +943,256 @@
       "turns": 2
     },
     "description": "Le duo prend de l'élan : +{value} vitesse pendant {turns} tours."
+  },
+  {
+    "id": "spectre_nova",
+    "name": "Ombre et feu",
+    "skills": [
+      "spectre",
+      "nova"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "creature_strike"
+    },
+    "lever": "power",
+    "params": {
+      "power": 45
+    },
+    "description": "Dans le souffle de la Nova, le Spectre frappe aussitôt la cible ({power} de puissance)."
+  },
+  {
+    "id": "golem_bouclier_de_mana",
+    "name": "Cœur de pierre",
+    "skills": [
+      "golem",
+      "bouclier_de_mana"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "creature_heal"
+    },
+    "lever": "power",
+    "params": {
+      "power": 40
+    },
+    "description": "Le mana soude la pierre : le Golem récupère des PV ({power} de puissance de l'Invocateur)."
+  },
+  {
+    "id": "ordre_dague",
+    "name": "Tenaille",
+    "skills": [
+      "ordre",
+      "dague"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "extra_damage",
+      "skill": "dague",
+      "element": "perforant"
+    },
+    "lever": "damage",
+    "params": {
+      "damage": 28
+    },
+    "description": "Prise en tenaille entre la créature et la dague : {damage} dégâts perforants de plus sur la cible."
+  },
+  {
+    "id": "fouet_d_ombre_lancer",
+    "name": "Nuit noire",
+    "skills": [
+      "fouet_d_ombre",
+      "lancer"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "amplify",
+      "skill": "lancer"
+    },
+    "lever": "bonus",
+    "params": {
+      "bonus": 0.5
+    },
+    "description": "Deux lames d'ombre : le Lancer fait +{bonus%} de dégâts."
+  },
+  {
+    "id": "sacrifice_pluie_de_fleches",
+    "name": "Cendres",
+    "skills": [
+      "sacrifice",
+      "pluie_de_fleches"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "to": "enemies",
+      "status": "brulure",
+      "turns": 2,
+      "value": 10
+    },
+    "lever": "value",
+    "params": {
+      "value": 10,
+      "turns": 2
+    },
+    "description": "Les flèches traversent l'explosion : tous les ennemis brûlent ({value} dégâts en fin de tour pendant {turns} tours)."
+  },
+  {
+    "id": "lien_fleche_barbelee",
+    "name": "Chaîne",
+    "skills": [
+      "lien",
+      "fleche_barbelee"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "creature_strike"
+    },
+    "lever": "power",
+    "params": {
+      "power": 40
+    },
+    "description": "La créature liée se jette sur la cible de la flèche ({power} de puissance)."
+  },
+  {
+    "id": "golem_priere",
+    "name": "Argile bénie",
+    "skills": [
+      "golem",
+      "priere"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "creature_heal"
+    },
+    "lever": "power",
+    "params": {
+      "power": 35
+    },
+    "description": "La Prière soigne aussi le Golem ({power} de puissance de l'Invocateur)."
+  },
+  {
+    "id": "spectre_chatiment",
+    "name": "Jugement de l'ombre",
+    "skills": [
+      "spectre",
+      "chatiment"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "creature_strike"
+    },
+    "lever": "power",
+    "params": {
+      "power": 42
+    },
+    "description": "Le Spectre frappe aussitôt la cible du Châtiment ({power} de puissance)."
+  },
+  {
+    "id": "lien_egide",
+    "name": "Pacte sacré",
+    "skills": [
+      "lien",
+      "egide"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "creature_heal_absorbed"
+    },
+    "description": "Sous l'Égide, la créature récupère tous les dégâts qu'elle a encaissés ce tour."
+  },
+  {
+    "id": "sacrifice_acide",
+    "name": "Nuage corrosif",
+    "skills": [
+      "sacrifice",
+      "acide"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "add_status",
+      "to": "enemies",
+      "status": "affaibli",
+      "turns": 2,
+      "value": 25
+    },
+    "lever": "value",
+    "params": {
+      "value": 25,
+      "turns": 2
+    },
+    "description": "L'explosion répand l'Acide sur tous les ennemis : ils infligent {value} % de dégâts en moins pendant {turns} tours."
+  },
+  {
+    "id": "lien_fumigene",
+    "name": "Rappel",
+    "skills": [
+      "lien",
+      "fumigene"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "cooldown_minus",
+      "skill": "lien",
+      "tier": "moyenne"
+    },
+    "params": {
+      "amount": 1
+    },
+    "description": "Dans la fumée, l'Invocateur rappelle sa créature plus tôt : sa moyenne revient {amount} tour plus tôt."
+  },
+  {
+    "id": "spectre_dissonance",
+    "name": "Ritournelle",
+    "skills": [
+      "spectre",
+      "dissonance"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "creature_strike"
+    },
+    "lever": "power",
+    "params": {
+      "power": 40
+    },
+    "description": "Le Spectre répond à la Dissonance : il frappe aussitôt sa cible ({power} de puissance)."
+  },
+  {
+    "id": "ordre_encouragement",
+    "name": "Meneur",
+    "skills": [
+      "ordre",
+      "encouragement"
+    ],
+    "same_target": false,
+    "effect": {
+      "type": "amplify",
+      "skill": "ordre"
+    },
+    "lever": "bonus",
+    "params": {
+      "bonus": 0.5
+    },
+    "description": "Encouragé, l'Invocateur commande mieux : l'Ordre fait +{bonus%} de dégâts."
+  },
+  {
+    "id": "fouet_d_ombre_argument",
+    "name": "Coup de canne et d'ombre",
+    "skills": [
+      "fouet_d_ombre",
+      "argument"
+    ],
+    "same_target": true,
+    "effect": {
+      "type": "extra_damage",
+      "skill": "fouet_d_ombre",
+      "element": "ombre"
+    },
+    "lever": "damage",
+    "params": {
+      "damage": 26
+    },
+    "description": "L'ombre s'enroule sur la canne : {damage} dégâts d'ombre de plus sur la cible."
   }
 ]

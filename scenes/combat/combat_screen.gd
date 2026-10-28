@@ -1331,6 +1331,35 @@ func _play_event(event: Dictionary) -> void:
 			_add_story_result("%s : toutes ses recharges sont prêtes" % _short_name(event["target"]))
 		"status_removed":
 			views[event["target"]].float_text("Purifié", Color("51cf66"))
+		"creature_summoned":
+			var view: UnitView = views[event["owner"]]
+			view.sync(combat.get_unit(event["owner"]), data)
+			view.float_text("%s !" % str(event["name"]), Color("b197fc"), true)
+			sfx.play("releve")
+			_add_story_result("%s invoque un %s (%d PV)" % [_short_name(event["owner"]), str(event["name"]), int(event["max_hp"])])
+			await _wait(0.35)
+		"creature_hit":
+			var view: UnitView = views[event["owner"]]
+			view.sync(combat.get_unit(event["owner"]), data)
+			view.float_text("-%d (créature)" % int(event["amount"]), Color("b197fc"))
+			sfx.play("bloque")
+			_add_story_result("la créature de %s encaisse %d" % [_short_name(event["owner"]), int(event["amount"])])
+			await _wait(0.25)
+		"creature_attack":
+			story_note = "%s de %s frappe %s." % [str(event["name"]), _short_name(event["owner"]), _short_name(event["target"])]
+			views[event["owner"]].do_lunge()
+		"creature_died":
+			views[event["owner"]].sync(combat.get_unit(event["owner"]), data)
+			views[event["owner"]].float_text("%s détruit" % str(event["name"]), Color("ff6b6b"))
+			_add_story_result("le %s de %s est détruit" % [str(event["name"]), _short_name(event["owner"])])
+			await _wait(0.3)
+		"creature_gone":
+			views[event["owner"]].sync(combat.get_unit(event["owner"]), data)
+			views[event["owner"]].float_text("%s s'efface" % str(event["name"]), Color(0.7, 0.7, 0.8))
+		"creature_heal":
+			if int(event["amount"]) > 0:
+				views[event["owner"]].sync(combat.get_unit(event["owner"]), data)
+				views[event["owner"]].float_text("+%d (créature)" % int(event["amount"]), Color("51cf66"))
 		"synergy":
 			# Ta Synergie : grande annonce dorée et son effet. Celle d'en face : en rouge, pour qu'on ne confonde jamais.
 			var ours: bool = combat.get_unit(str(event["actors"][0])).team == 0

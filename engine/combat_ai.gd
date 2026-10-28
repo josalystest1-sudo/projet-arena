@@ -177,6 +177,13 @@ static func skill_kind(data: CombatData, skill_id: String) -> String:
 			status_kinds.append(data.status_kind(str(effect["id"])))
 	if types.has("revive"):
 		return "releve"
+	if types.has("summon"):
+		# Un Golem protège, un Spectre attaque : la compétence le dit (« role »).
+		for effect in data.skill(skill_id).get("effects", []):
+			if str(effect["type"]) == "summon":
+				return str(effect.get("role", "protection"))
+	if types.has("order") or types.has("sacrifice"):
+		return "degats"
 	if types.has("heal") or types.has("cleanse"):
 		return "soin"
 	if types.has("barrier") or types.has("absorb_next_hit") or types.has("taunt"):
@@ -297,7 +304,8 @@ static func _pick(combat: Combat, unit: CombatUnit, tiers: Array, kinds: Array, 
 		var skill_id: String = unit.skills[tier]
 		if not kinds.has(skill_kind(combat.data, skill_id)):
 			continue
-		var targets_self := str(combat.data.skill(skill_id).get("target", "enemy")) == "self"
+		# Une invocation se lance sur soi mais protège tout le duo : elle sert à protéger n'importe quel allié.
+		var targets_self := str(combat.data.skill(skill_id).get("target", "enemy")) == "self" and not _has_effect(combat, skill_id, "summon")
 		if (self_only and not targets_self) or (targets_self and rule in ["protege", "secours", "soin"] and ally != unit):
 			continue
 		var target := _target_for(combat, unit, skill_id, ally, enemy)
@@ -392,8 +400,16 @@ static func _wasted(combat: Combat, unit: CombatUnit, skill_id: String, target: 
 				for tier in ["moyenne", "forte"]:
 					pending += combat.cooldown_remaining(target, tier)
 				return pending == 0
+			"summon":
+				# Inutile si la même créature est là pour encore au moins deux tours.
+				return unit.has_creature() and str(unit.creature.get("kind", "")) == str(effect.get("creature", "")) and int(unit.creature.get("turns", 0)) >= 2
+			"sacrifice":
+				# Sans créature, le Sacrifice ne vaut pas une forte.
+				return not unit.has_creature()
 			"status":
-				pass
+				# Un Lien sans créature ne protège rien.
+				if str(effect.get("id", "")) == "lien" and not unit.has_creature():
+					return true
 			_:
 				only_statuses = false
 	# Une compétence qui ne pose que des états (Piège, Voile, Totem) est inutile si tous sont déjà posés pour au moins
