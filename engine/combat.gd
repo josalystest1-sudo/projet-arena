@@ -567,6 +567,11 @@ func _resolve_targets(actor: CombatUnit, action: CombatAction) -> Array[CombatUn
 	var target_type := str(skill.get("target", "enemy"))
 	var chosen := get_unit(action.target_id)
 	var result: Array[CombatUnit] = []
+	# Clé du Destin : une fois par combat, la compétence frappe tous les ennemis.
+	if target_type == "enemy" and actor.skill_mod(action.skill_id, "zone_once") > 0.0 and not actor.flags.get("zone_once_" + action.skill_id, false):
+		actor.flags["zone_once_" + action.skill_id] = true
+		target_type = "enemies_all"
+		_emit({"type": "zone_cast", "actor": actor.id, "skill": action.skill_id})
 	match target_type:
 		"enemy", "enemies_2":
 			var provoker := _provoker_of(actor)
@@ -649,6 +654,16 @@ func _apply_effect(actor: CombatUnit, effect: Dictionary, targets: Array[CombatU
 					# Brasier : chaque coup de feu brûle la cible.
 					if _pv(actor, "burn_value") > 0.0 and element == "feu" and target.is_alive():
 						_add_status(target, {"id": "brulure", "turns": int(_pv(actor, "burn_turns", 1)), "value": int(_pv(actor, "burn_value")), "source": actor.id})
+			# Évolution du Destin : le coup rebondit sur un second ennemi, à une part de sa force.
+			var bounce := actor.skill_mod(skill_id, "bounce")
+			if bounce > 0.0 and targets.size() == 1 and str(skill.get("target", "")) == "enemy":
+				for other in enemies_of(actor, true):
+					if other != targets[0] and not is_untargetable(other):
+						_emit({"type": "bounce", "actor": actor.id, "skill": skill_id, "target": other.id})
+						var dealt := _deal_damage(actor, other, _effect_power(actor, skill_id, effect), element, _effect_mult(actor, other, effect, skill_id) * bounce, false, skill_id)
+						if dealt > 0:
+							_current_hits[other.id] = true
+						break
 		"heal":
 			for target in targets:
 				if bool(effect.get("overflow_barrier", false)):
@@ -1074,6 +1089,12 @@ func _add_status(target: CombatUnit, status: Dictionary) -> bool:
 func _start_cooldown(unit: CombatUnit, tier: String) -> void:
 	var cooldown := int(cooldown_by_tier.get(tier, 0))
 	if cooldown <= 0:
+		return
+	# Clé du Destin : la première fois du combat, la compétence ne lance pas sa recharge.
+	var skill_id: String = unit.skills[tier]
+	if unit.skill_mod(skill_id, "free_once") > 0.0 and not unit.flags.get("free_once_" + skill_id, false):
+		unit.flags["free_once_" + skill_id] = true
+		_emit({"type": "free_cast", "actor": unit.id, "skill": skill_id})
 		return
 	# Météorologue, Rythme, Doigts agiles, nœuds de Destin : une recharge plus courte.
 	cooldown -= int(_pv(unit, tier + "_minus")) + int(unit.skill_mod(unit.skills[tier], "cooldown_minus"))

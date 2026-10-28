@@ -3,6 +3,7 @@
   "name": "Alchimiste",
   "roles": ["soutien", "degats"],
   "identity": "Potions et acides : il change les règles du tour.",
+  "elements": ["feu", "givre"],
   "stats": {"max_hp": 210, "speed": 8, "power": 108},
   "skills": {
     "basique": ["fiole", "elixir"],

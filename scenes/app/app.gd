@@ -19,6 +19,7 @@ const SCREENS := {
 	"bestiaire": preload("res://scenes/screens/bestiary_screen.gd"),
 	"profile": preload("res://scenes/screens/profile_screen.gd"),
 	"settings": preload("res://scenes/screens/settings_screen.gd"),
+	"destin": preload("res://scenes/screens/destin_screen.gd"),
 	"versus": preload("res://scenes/screens/versus_screen.gd"),
 	"combat": preload("res://scenes/combat/combat_screen.gd"),
 }
@@ -33,6 +34,11 @@ var player_class: String = ""
 var player_picks: Dictionary = {}
 var acolyte: Dictionary = {}
 var acolyte_name: String = ""
+## Le Destin du joueur (l'arbre, regénéré depuis sa graine) et les nœuds pris ; le mini-Destin de l'acolyte (points placés seuls).
+var destin: Dictionary = {}
+var destin_taken: Array = []
+var acolyte_destin: Dictionary = {}
+var acolyte_taken: Array = []
 
 var content: Control
 var nav_bar: HBoxContainer
@@ -157,7 +163,69 @@ func load_saved_duo() -> bool:
 	player_picks = saved["player_picks"]
 	acolyte = {"class_id": saved["acolyte_class"], "picks": saved["acolyte_picks"]}
 	acolyte_name = str(saved.get("acolyte_name", ACOLYTE_NAMES[0]))
+	# Les profils d'avant le Destin n'en ont pas : on en tire un.
+	if profile.destin.is_empty():
+		_new_destin()
+	if profile.acolyte_destin.is_empty():
+		_new_acolyte_destin()
+	_load_destins()
 	return true
+
+
+## Regénère les deux arbres depuis leurs graines et relit les points placés.
+func _load_destins() -> void:
+	destin = Destin.generate(data, player_class, player_picks, int(profile.destin["seed"]))
+	destin_taken = profile.destin.get("taken", []).duplicate()
+	acolyte_destin = Destin.generate(data, acolyte["class_id"], acolyte["picks"], int(profile.acolyte_destin["seed"]), true)
+	acolyte_taken = profile.acolyte_destin.get("taken", []).duplicate()
+	_place_acolyte_points()
+
+
+## Un nouveau Destin : une graine, et le premier point sur la racine (le seul choix possible).
+func _new_destin() -> void:
+	profile.destin = {"seed": rng.randi(), "taken": [0]}
+
+
+func _new_acolyte_destin() -> void:
+	profile.acolyte_destin = {"seed": rng.randi(), "taken": []}
+
+
+## Les points de l'acolyte se placent seuls : un tous les deux niveaux (15 points au niveau 30), sur le nœud
+## disponible qui vaut le plus.
+func _place_acolyte_points() -> void:
+	var points := mini(profile.level / 2, int(data.destin_nodes.get("mini_points", 15)))
+	var changed := false
+	while acolyte_taken.size() < points:
+		var next := Destin.auto_take(acolyte_destin, acolyte_taken)
+		if next < 0:
+			break
+		acolyte_taken.append(next)
+		changed = true
+	if changed:
+		profile.acolyte_destin["taken"] = acolyte_taken.duplicate()
+		profile.save()
+
+
+func destin_points_left() -> int:
+	return maxi(0, profile.level - destin_taken.size())
+
+
+## Place un point sur un nœud (relié à un nœud pris, un point par niveau). Renvoie vrai si c'est fait.
+func take_destin_node(node_id: int) -> bool:
+	if destin_points_left() <= 0 or not Destin.can_take(destin, destin_taken, node_id):
+		return false
+	destin_taken.append(node_id)
+	profile.destin["taken"] = destin_taken.duplicate()
+	profile.save()
+	return true
+
+
+## De l'XP après un combat ; l'acolyte monte en même temps. Renvoie {levels, level}.
+func gain_xp(amount: int) -> Dictionary:
+	var result := profile.gain_xp(amount)
+	_place_acolyte_points()
+	profile.save()
+	return result
 
 
 func save_duo() -> void:
@@ -171,36 +239,72 @@ func save_duo() -> void:
 func create_character(class_id: String) -> void:
 	player_class = class_id
 	player_picks = CombatUnit.random_picks(rng)
+	profile.level = 1
+	profile.xp = 0
+	_new_destin()
 	draw_acolyte()
+	_load_destins()
 	save_duo()
 
 
 func draw_acolyte() -> void:
 	acolyte = Duo.draw_acolyte(data, player_class, player_picks, rng)
 	acolyte_name = ACOLYTE_NAMES[rng.randi_range(0, ACOLYTE_NAMES.size() - 1)]
+	_new_acolyte_destin()
 
 
-## Prototype seulement : un autre tirage pour le joueur. L'acolyte reste s'il fait toujours Synergie avec lui.
+## Prototype seulement : un autre tirage pour le joueur (et donc un autre Destin). L'acolyte reste s'il fait toujours Synergie avec lui.
 func reroll_player() -> void:
 	player_picks = CombatUnit.random_picks(rng)
+	_new_destin()
 	if Duo.kit_synergies(data, player_class, player_picks, acolyte["class_id"], acolyte["picks"]).is_empty():
 		var keep_name := acolyte_name
 		draw_acolyte()
 		acolyte_name = keep_name
+	_load_destins()
 	save_duo()
 
 
 func reroll_acolyte() -> void:
 	draw_acolyte()
+	_load_destins()
 	save_duo()
 
 
-## Le duo pour le moteur : toi, puis ton acolyte.
+## Le duo pour le moteur : toi, puis ton acolyte, avec les nœuds de Destin pris.
 func duo_members() -> Array:
 	var team := Duo.members(player_class, player_picks, acolyte)
 	team[0]["name"] = "Toi"
 	team[0]["is_player"] = true
 	team[1]["name"] = acolyte_name
+	var mine := Destin.mods_for(destin, destin_taken)
+	team[0]["mods"] = mine["mods"]
+	team[0]["skill_mods"] = mine["skill_mods"]
+	var theirs := Destin.mods_for(acolyte_destin, acolyte_taken)
+	team[1]["mods"] = theirs["mods"]
+	team[1]["skill_mods"] = theirs["skill_mods"]
+	return team
+
+
+## Le duo IA d'en face : de ton niveau, avec un Destin et un mini-Destin dont les points sont placés seuls (comme le
+## fera le matchmaking par niveau de l'étape 5). Sans ça, chaque niveau gagné te donnerait l'avantage sur un adversaire
+## sans Destin.
+func random_enemy_duo() -> Array:
+	var team := Duo.random_duo(data, rng)
+	for i in range(team.size()):
+		var member: Dictionary = team[i]
+		var mini := i > 0
+		var tree := Destin.generate(data, member["class_id"], member["picks"], rng.randi(), mini)
+		var taken: Array = [] if mini else [0]
+		var points := mini(profile.level / 2, int(data.destin_nodes.get("mini_points", 15))) if mini else profile.level
+		while taken.size() < points:
+			var next := Destin.auto_take(tree, taken)
+			if next < 0:
+				break
+			taken.append(next)
+		var theirs := Destin.mods_for(tree, taken)
+		member["mods"] = theirs["mods"]
+		member["skill_mods"] = theirs["skill_mods"]
 	return team
 
 

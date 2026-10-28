@@ -19,6 +19,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	proto.add_child(UiKit.label("Dans le vrai jeu, ton Destin et ton acolyte ne changent jamais. Ici, pour essayer tous les kits, tu peux tirer à nouveau.", 15, UiKit.SOFT, false))
 	proto.add_child(UiKit.button("Autre tirage pour toi", _reroll_player, 52))
 	proto.add_child(UiKit.button("Autre acolyte", _reroll_acolyte, 52))
+	proto.add_child(UiKit.button("Gagner un niveau (pour tester l'arbre du Destin)", _level_up, 52))
 	proto.add_child(UiKit.button("Nouveau personnage (autre classe)", func(): app.show_screen("creation"), 52))
 	erase_button = UiKit.button("Effacer toutes mes données", _erase, 52)
 	proto.add_child(erase_button)
@@ -35,6 +36,12 @@ func _toggle_sound() -> void:
 
 func _refresh_sound() -> void:
 	sound_button.text = "Son : coupé" if app.sfx.muted else "Son : activé"
+
+
+func _level_up() -> void:
+	app.sfx.play("clic")
+	app.gain_xp(PlayerProfile.xp_to_next(app.profile.level) - app.profile.xp)
+	app.show_screen("destin")
 
 
 func _reroll_player() -> void:

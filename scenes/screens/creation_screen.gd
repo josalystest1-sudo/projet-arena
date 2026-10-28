@@ -64,6 +64,9 @@ func _reveal_destiny() -> void:
 	var passive := VBoxContainer.new()
 	UiKit.passive_block(passive, app.data, app.player_passive())
 	blocks.append(passive)
+	var tree := VBoxContainer.new()
+	tree.add_child(UiKit.label("Ton arbre de Destin : %d nœuds, tirés une seule fois. Tu y placeras un point par niveau." % app.destin.get("nodes", []).size(), 15, UiKit.SOFT, false))
+	blocks.append(tree)
 	var next := UiKit.main_button("Rencontrer ton acolyte", func(): app.show_screen("meet"))
 	next.modulate.a = 0.0
 	for block in blocks:

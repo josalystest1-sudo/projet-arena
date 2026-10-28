@@ -19,6 +19,13 @@ var tower_records: Dictionary = {}
 var monsters_seen: Dictionary = {}
 ## Les bulles d'aide du combat déjà lues (identifiant -> true) : chacune ne s'affiche qu'une fois.
 var tips_seen: Dictionary = {}
+## Le niveau (1 à 30 : un point de Destin par niveau) et l'XP vers le niveau suivant (au prototype, une courbe rapide).
+var level: int = 1
+var xp: int = 0
+const MAX_LEVEL := 30
+## Le Destin du joueur et le mini-Destin de l'acolyte : {seed, taken} (l'arbre se regénère à l'identique depuis sa graine).
+var destin: Dictionary = {}
+var acolyte_destin: Dictionary = {}
 
 
 static func load_profile() -> PlayerProfile:
@@ -34,6 +41,10 @@ static func load_profile() -> PlayerProfile:
 		profile.tower_records = cfg.get_value("tour", "records", {})
 		profile.monsters_seen = cfg.get_value("tour", "monstres", {})
 		profile.tips_seen = cfg.get_value("aide", "vues", {})
+		profile.level = int(cfg.get_value("progression", "niveau", 1))
+		profile.xp = int(cfg.get_value("progression", "xp", 0))
+		profile.destin = cfg.get_value("destin", "joueur", {})
+		profile.acolyte_destin = cfg.get_value("destin", "acolyte", {})
 	return profile
 
 
@@ -48,7 +59,31 @@ func save() -> void:
 	cfg.set_value("tour", "records", tower_records)
 	cfg.set_value("tour", "monstres", monsters_seen)
 	cfg.set_value("aide", "vues", tips_seen)
+	cfg.set_value("progression", "niveau", level)
+	cfg.set_value("progression", "xp", xp)
+	cfg.set_value("destin", "joueur", destin)
+	cfg.set_value("destin", "acolyte", acolyte_destin)
 	cfg.save(PATH)
+
+
+## L'XP qu'il faut pour passer du niveau donné au suivant (prototype : rapide, pour tester l'arbre ; le GDD vise
+## 20 à 60 minutes par niveau au début).
+static func xp_to_next(from_level: int) -> int:
+	return 150 + 50 * from_level
+
+
+## Ajoute de l'XP ; renvoie {levels: niveaux gagnés, level: le niveau atteint}.
+func gain_xp(amount: int) -> Dictionary:
+	var gained := 0
+	if level < MAX_LEVEL:
+		xp += amount
+		while level < MAX_LEVEL and xp >= xp_to_next(level):
+			xp -= xp_to_next(level)
+			level += 1
+			gained += 1
+		if level >= MAX_LEVEL:
+			xp = 0
+	return {"levels": gained, "level": level}
 
 
 ## Enregistre un résultat. Renvoie {previous_streak, new_record}.
