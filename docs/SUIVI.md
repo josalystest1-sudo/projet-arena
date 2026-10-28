@@ -25,6 +25,8 @@ Les prototypes des étapes 1 à 3 sont jouables sur téléphone : le **combat en
 1. **Les critères de sortie** (le GDD dit de ne pas passer à l'étape suivante sans avoir testé la précédente sur téléphone) : après quelques combats, as-tu envie d'en relancer un ? À la Tour, as-tu envie de battre ton record ? Les 10 classes et le Destin sont maintenant jouables et équilibrés : c'est le bon moment pour tester.
 2. **Les kits qui ne frappent presque pas** (Diplomate Encouragement + Trêve + Discours, Alchimiste Élixir + Fumigène + Catalyseur…) perdent deux combats sur trois malgré leur ajustement au plafond. Faut-il qu'une compétence de Soutien porte toujours un petit coup (comme Prière, Cri de guerre et Encouragement aujourd'hui), ou garder des kits « purs » mais faibles ? Tant que tu n'as pas tranché, les kits restent entre 31 et 65 %.
 3. **La Tour selon la classe** : un Prêtre monte en moyenne à l'étage 9, un Barde à l'étage 5. Le record est par classe, donc ce n'est pas bloquant ; veux-tu quand même que la Tour soit aussi dure pour toutes les classes ?
+4. **La stratégie du combat** (retour du 28 octobre après-midi) : les fortes qui se chargent et s'annoncent un tour à l'avance (piste 1, recommandée), ou les ennemis de l'IA qui annoncent leur coup (piste 2) ? C'est le prochain chantier dès que tu as choisi.
+5. **L'Invocateur** : Front (comme dans le GDD, d'où un Archer ou un Mage en acolyte) ou Dégâts ?
 
 Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape 3 (28 octobre).
 
@@ -70,6 +72,9 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | 28 oct | « Il me reste 22 $ de crédit, ça continue de baisser » | Les machines de GitHub sont gratuites, mais chaque échange avec Claude coûte, d'autant plus que la conversation est longue. Session arrêtée ; reprise le lendemain sur le PC de Gautier. |
 | 28 oct | « Tu as la journée jusqu'à 17 h pour avancer le plus possible » ; « est-ce qu'il n'y a pas moyen d'aller plus vite tout en restant local ? » ; « ne sacrifie pas la performance au profit de la rapidité » | Les simulations tournent sur son PC (24 processus) ; le simulateur rendu 3,4 fois plus rapide sans changer un résultat (PR #23) ; les passes de réglage gardent leurs 400 000 combats. |
 | 28 oct | Fermeture de League of Legends et d'Overwolf pendant les calculs | Gain d'environ 10 % : la simulation occupait déjà 22 cœurs sur 28. |
+| 28 oct, après-midi | « Le jeu est pas mal » ; « pour l'Invocateur on ne voit pas ses invocations » | La créature n'a qu'une barre de PV et des textes : un sprite à côté de son maître est prévu, à vérifier à l'écran avec Gautier. |
+| 28 oct, après-midi | « Pourquoi l'Invocateur se retrouve avec un Archer en acolyte ? » | Le GDD classe l'Invocateur en Front (sa créature encaisse) : un Front reçoit un Dégâts ou un Soutien. Question posée : le rebasculer en Dégâts ? |
+| 28 oct, après-midi | « Pas très stratégique : on fait son attaque la plus puissante quand elle est dispo, si on est assez fort ça passe, sinon jamais ; il manque la sensation "il faut que je réfléchisse pour ce combat" » | Diagnostic : rien à anticiper, puisqu'on ne voit jamais ce que l'ennemi a choisi. Deux pistes proposées : (1) les fortes se chargent et s'annoncent un tour à l'avance (pour tous, PvP compris) ; (2) les ennemis de l'IA annoncent leur coup comme l'acolyte (Tour et duos IA). En attente de son choix. |
 
 ## Historique des PR
 
@@ -107,6 +112,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | #30 | 28 oct | Un ajustement par paire de kits qui a une Synergie possible (`synergy_pairs`, plafonné à ±10 %), réglé sur l'écart de la Synergie aux kits ; reréglage. |
 | #31 | 28 oct | La Tour revérifiée et reréglée après les réglages de la journée (6,0 % au sommet). |
 | #32 | 28 oct | Suivi de fin de journée : questions à poser à Gautier (kits qui ne frappent pas, Tour selon la classe). |
+| #33 | 28 oct | Retours de Gautier après ses tests sur téléphone (stratégie du combat, Invocateur, invocations invisibles) et les pistes proposées. |
 
 ## Reprendre le travail (pour Claude Code)
 
