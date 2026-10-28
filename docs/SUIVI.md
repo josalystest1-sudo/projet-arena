@@ -43,7 +43,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 - **Le réglage automatique a trois pièges connus** (tous corrigés dans PR #23, voir `CLAUDE.md`) : des ajustements qui s'additionnent sur un même kit, un levier où un chiffre plus grand affaiblit (Charisme, Esquive), un chiffre à virgule arrondi en entier (la part de puissance des créatures). Toujours vérifier sur des combats neufs avant de fusionner.
 - **Cycle entre compositions** (mesuré à 3 classes) : Guerrier + Mage bat Mage + Prêtre 55 %, Mage + Prêtre bat Guerrier + Prêtre 56 %, Guerrier + Prêtre bat Guerrier + Mage 55 %. La force d'un duo ne peut pas le corriger. Le Guerrier + Prêtre gagne surtout au décompte des PV : piste de la mort subite (étape 4). À remesurer à 10 classes (les affrontements vont de 43 à 55 %).
 - **Le pilier « le duo gagne »** n'est pas encore démontré au simulateur : un joueur IA qui lit l'annonce de son acolyte gagne 52,9 % contre un qui l'ignore. Il faudra une IA qui prépare ses coups sur plusieurs tours (étape 4), et surtout le ressenti de Gautier.
-- **La Tour selon la classe** : étage moyen atteint, de 5,7 (Barde) à 9,2 (Prêtre) ; les Soutiens qui frappent peu montent moins haut. Le record étant par classe, ce n'est pas bloquant, mais l'écart a grandi avec les 10 classes.
+- **La Tour selon la classe** : étage moyen atteint, de 5,4 (Barde) à 9,2 (Prêtre) ; les Soutiens qui frappent peu montent moins haut. Le record étant par classe, ce n'est pas bloquant, mais l'écart a grandi avec les 10 classes.
 - **Durée des combats** : 90,5 % entre les tours 8 et 15 sans Destin (PR #26, +15 % de PV) ; avec le Destin aux niveaux 1 à 30, 83 % (PR #28 : nœuds défensifs renforcés, nœuds d'attaque adoucis ; 76 % avant). Le reste viendra d'un plafonnement global des bonus d'attaque de l'arbre, à voir avec les évolutions (étape 7).
 - **La règle d'attente de l'acolyte** (garder sa forte un tour pour une Synergie) ne sert que dans environ 2 combats sur 100 avec 3 classes ; elle prendra de l'importance avec les 10 classes.
 - **Ce qui est provisoire** : sprites en pixels dessinés en code (PixelLab à l'étape 6), bruitages synthétiques, noms des monstres et de l'acolyte (en attente de l'univers), données gardées sur l'appareil (comptes à l'étape 5), courbe d'XP rapide et bouton « Gagner un niveau » (pour tester l'arbre du Destin).
@@ -103,6 +103,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | #28 | 28 oct | Les nœuds de PV, de réduction et de régénération du Destin pèsent plus, pour que les combats restent dans la cible aux niveaux élevés ; valeurs reréglées. |
 | #29 | 28 oct | Les Synergies mesurées par rapport aux deux kits du duo ; le joueur IA ne joue plus une protection ou un soin pour une Synergie sans besoin (Golem + Prière nuisait) ; outil de diagnostic d'une Synergie ; reréglage. |
 | #30 | 28 oct | Un ajustement par paire de kits qui a une Synergie possible (`synergy_pairs`, plafonné à ±10 %), réglé sur l'écart de la Synergie aux kits ; reréglage. |
+| #31 | 28 oct | La Tour revérifiée et reréglée après les réglages de la journée (6,0 % au sommet). |
 
 ## Reprendre le travail (pour Claude Code)
 

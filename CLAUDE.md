@@ -182,6 +182,10 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 - Stats de départ : Voleur 185 PV, vitesse 11 ; Archer 180 PV, vitesse 10 ; Pugiliste 230 PV, vitesse 10 (les puissances sont réglées par le régleur). Première simulation avant réglage : Pugiliste 62 %, Voleur 57 %, Archer 36 %, Guerrier 38 % (il n'avait été réglé que contre Mage et Prêtre) ; Crochet 76 %, Esquive 71 %, Calme 30 %.
 - **Réglage sur GitHub (PR #18, puis run 1)** : 6 passes de 400 000 combats sur 16 machines (40 minutes), puis vérification locale sur 48 000 combats neufs : classes 49,2–51,0 %, compositions 48,8–50,9 %, compétences et passifs dans la fourchette, kits côté joueur 44,5–56,5 % (123 sur 192 dans 48–52), côté acolyte 42,5–58,4 % (112 sur 192). Les combats sont plus courts qu'à 3 classes : 9,4 tours en moyenne, 95 % finis par KO, 88 % entre les tours 8 et 15 (les nouvelles classes frappent plus vite : Poison, Spectre, Coup bas). Le réglage complet des kits attend les 10 classes (PR d'équilibrage).
 
+**La Tour revérifiée (2026-10-28, PR #31, étape 4)**
+
+- Les PR #28 à #30 avaient changé les duels (nœuds du Destin, règle d'IA, paires de kits) sans retoucher la Tour, réglée après la PR #26 : 8,4 % des montées au sommet sur 2 400 montées neuves. Trois passes de 20 000 montées, puis vérification : **6,0 % au sommet**, 7,0 tours par étage, 64 % des montées s'arrêtent entre les étages 4 et 8 ; étage moyen de 5,4 (Barde) à 9,2 (Prêtre). Règle : après tout réglage des duels, revérifier la Tour (une montée, c'est aussi l'IA du joueur et les Synergies du duo).
+
 **Les paires de kits (2026-10-28, PR #30, étape 4)**
 
 - Après la PR #29, 13 Synergies restaient hors fourchette alors que la Synergie elle-même n'y était pour rien (Golem + Prière : 31 %, testée avec et sans) : c'est la **paire de kits** qui va mal (ou trop bien) ensemble, et aucun levier ne la visait (le kit entier est réglé par côté, mais pas l'assemblage des deux ; les « duo_items » retirés en PR #23 s'en approchaient mais s'additionnaient sans plafond).
