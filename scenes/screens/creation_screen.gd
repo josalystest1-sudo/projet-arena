@@ -68,7 +68,7 @@ func _reveal_destiny() -> void:
 		UiKit.voie_resume(block, app.destin, v)
 		blocks.append(block)
 	var aide := VBoxContainer.new()
-	aide.add_child(UiKit.label("Jouer, c'est avancer d'un nœud sur une voie, jusqu'à sa Clé. Tu allumes un nœud de plus à chaque niveau (○ : pas encore allumé).", 15, UiKit.SOFT, false))
+	aide.add_child(UiKit.label("Jouer, c'est avancer d'un nœud sur une voie, jusqu'à sa Clé. Tu allumes un nœud de plus à chaque niveau (entre parenthèses : pas encore allumé).", 15, UiKit.SOFT, false))
 	blocks.append(aide)
 	var next := UiKit.main_button("Rencontrer ton acolyte", func(): app.show_screen("meet"))
 	next.modulate.a = 0.0

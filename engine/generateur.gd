@@ -25,21 +25,45 @@ const MULTI := ["tous_les_ennemis", "duo"]
 ## (PAR_DEFAUT : l'allumage par défaut ; sinon la liste des nœuds allumés par le joueur, dans l'ordre, ex. « v2.n2 »,
 ## « v1.e1 »).
 static func generer(classe_id: String, graine: int, niveau: int, allumage: Array[String] = PAR_DEFAUT, donnees: Donnees = null) -> Destin:
-	return _generer(classe_id, graine, niveau, allumage, 5, donnees)
+	return _generer(classe_id, graine, niveau, allumage, [], false, donnees)
 
 
 ## L'acolyte d'un joueur : la classe fixée par celle du joueur (section 3.2), ses 3 premières voies, la graine du
 ## joueur XOR 0x5A5A5A5A ; toutes ses voies allumées à partir du niveau 10, l'allumage par défaut avant.
 static func acolyte(classe_joueur: String, graine_joueur: int, niveau: int, donnees: Donnees = null) -> Destin:
 	var d := donnees if donnees != null else Donnees.defaut()
-	return _generer(str(d.classe(classe_joueur)["acolyte"]), graine_joueur ^ XOR_ACOLYTE, niveau, PAR_DEFAUT, 3, d)
+	var classe := str(d.classe(classe_joueur)["acolyte"])
+	var voies: Array = []
+	for v in range(3):
+		voies.append(d.classe(classe)["voies"][v]["id"])
+	return _generer(classe, graine_joueur ^ XOR_ACOLYTE, niveau, PAR_DEFAUT, voies, true, d)
 
 
-static func _generer(classe_id: String, graine: int, niveau: int, allumage: Array[String], nb_voies: int, donnees: Donnees) -> Destin:
+## Un monstre de la Tour (section 10.4) : sa classe, ses seules voies (dans l'ordre du bestiaire), son multiplicateur
+## de PV ; formes tirées avec la graine, allumage par défaut au niveau du joueur.
+static func monstre(monstre_id: String, graine: int, niveau: int, donnees: Donnees = null) -> Destin:
 	var d := donnees if donnees != null else Donnees.defaut()
-	var destin := Destin.de_base(d, classe_id, nb_voies, false)
+	var def: Dictionary = d.bestiaire["monstres"][monstre_id]
+	var destin := _generer(str(def["classe"]), graine, niveau, PAR_DEFAUT, def["voies"], false, d)
+	destin.nom = str(def["nom"])
+	destin.sprite = monstre_id
+	destin.pv_mult = float(def["pv_mult"])
+	return destin
+
+
+## voies : les identifiants des voies gardées, dans cet ordre (vide : toutes, dans l'ordre de la classe).
+static func _generer(classe_id: String, graine: int, niveau: int, allumage: Array[String], voies: Array, est_acolyte: bool, donnees: Donnees) -> Destin:
+	var d := donnees if donnees != null else Donnees.defaut()
+	var destin := Destin.de_base(d, classe_id, 5, false)
+	if not voies.is_empty():
+		var gardees: Array = []
+		for id in voies:
+			for voie in destin.voies:
+				if voie["id"] == id:
+					gardees.append(voie)
+		destin.voies = gardees
 	destin.graine = graine
-	destin.acolyte = nb_voies == 3
+	destin.acolyte = est_acolyte
 	var rng := RandomNumberGenerator.new()
 	for v in range(destin.voies.size()):
 		var voie: Dictionary = destin.voies[v]
@@ -53,20 +77,20 @@ static func _generer(classe_id: String, graine: int, niveau: int, allumage: Arra
 			voie["noeuds"][r] = forme_noeud
 	var liste := allumage
 	if allumage == PAR_DEFAUT:
-		liste = allumage_defaut(destin.voies.size(), niveau)
+		liste = allumage_defaut(destin.voies.size(), niveau, est_acolyte)
 	allumer(destin, liste, niveau)
 	return destin
 
 
 ## L'allumage par défaut (section 3.1) : à chaque niveau, N2 de chaque voie, puis N3, puis les Clés, puis É1, É3, É2
-## de chaque voie. L'acolyte (3 voies) : tout est allumé à partir du niveau 10 (12 nœuds actifs, É1 et É3 de sa
+## de chaque voie (un monstre de la Tour aussi, sur ses seules voies). L'acolyte : tout est allumé à partir du niveau 10 (12 nœuds actifs, É1 et É3 de sa
 ## première voie) ; avant, les N2, N3 et Clés dans le même ordre.
-static func allumage_defaut(nb_voies: int, niveau: int) -> Array[String]:
+static func allumage_defaut(nb_voies: int, niveau: int, est_acolyte: bool = false) -> Array[String]:
 	var ordre: Array[String] = []
 	for rang in [2, 3, 4]:
 		for v in range(nb_voies):
 			ordre.append("v%d.n%d" % [v + 1, rang])
-	if nb_voies == 3:
+	if est_acolyte:
 		if niveau >= 10:
 			ordre.append_array(["v1.e1", "v1.e3"])
 			return ordre

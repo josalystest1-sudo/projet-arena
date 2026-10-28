@@ -15,7 +15,7 @@
       "dot": "{par_tour}×{tours} {etat}",
       "gardien": "{par_tour}×{tours} {etat}",
       "renfort": "+{pourcent} % {etat} {tours} t",
-      "affaiblissement": "−{pourcent} % {etat} {tours} t",
+      "affaiblissement": "-{pourcent} % {etat} {tours} t",
       "etat": "{etat} {tours}",
       "egare": "{etat}",
       "purge": "Purge",

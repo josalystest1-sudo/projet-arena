@@ -1,0 +1,9 @@
+{
+  "pv_entre_etages": 0.2,
+  "monstres_max": 4,
+  "pv_mult_min": 1.6,
+  "pv_mult_max": 2.4,
+  "tirages": 60,
+  "gardien_tous_les": 5,
+  "abandon_tour": 24
+}

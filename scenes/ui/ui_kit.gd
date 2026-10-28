@@ -156,8 +156,8 @@ static func voie_resume(parent: Node, destin: Destin, voie: int, accent: Color =
 	parent.add_child(label(str(v["nom"]), 18, accent, false))
 	var noms: Array[String] = []
 	for n in v["noeuds"]:
-		noms.append(("" if bool(n["allume"]) else "○ ") + Texte.nom(n))
-	parent.add_child(label(" → ".join(noms), 15, Color.WHITE, false))
+		noms.append(Texte.nom(n) if bool(n["allume"]) else "(%s)" % Texte.nom(n))
+	parent.add_child(label(" · ".join(noms), 15, Color.WHITE, false))
 
 
 ## Comment joue l'acolyte (section 10) : en premier, sans ordre, toujours le même choix dans la même situation.

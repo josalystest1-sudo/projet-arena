@@ -128,7 +128,7 @@ static func pictos(noeud: Dictionary, valeurs: float = 1.0, pourcents: float = 1
 			"renfort":
 				n = "+%d %%" % Regles.plancher(float(ef["pourcent"]) * pourcents)
 			"affaiblissement":
-				n = "−%d %%" % Regles.plancher(float(ef["pourcent"]) * pourcents)
+				n = "-%d %%" % Regles.plancher(float(ef["pourcent"]) * pourcents)
 			"etat":
 				n = str(int(ef["tours"]))
 		p["texte"] = n
