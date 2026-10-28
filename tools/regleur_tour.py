@@ -42,18 +42,36 @@ def simulate(count, seed):
     return rows
 
 
+def read_rows(files):
+    rows = []
+    for path in files:
+        with open(path, encoding="utf-8") as f:
+            rows += list(csv.DictReader(f))
+    return rows
+
+
 def main():
+    if len(sys.argv) > 1 and sys.argv[1] == "regler":
+        # Sur GitHub Actions : les montées ont été simulées par d'autres machines, on ne fait que régler.
+        # python3 tools/regleur_tour.py regler <étiquette> fichier1.csv [fichier2.csv ...]
+        one_pass(sys.argv[2], read_rows(sys.argv[3:]))
+        return
     passes = int(sys.argv[1]) if len(sys.argv) > 1 else 4
     count = int(sys.argv[2]) if len(sys.argv) > 2 else 2000
     for n in range(1, passes + 1):
-        rows = simulate(count, 100 + n)
+        one_pass(str(n), simulate(count, 100 + n))
+
+
+def one_pass(label, rows):
+    if True:
+        count = sum(1 for r in rows if int(r["etage"]) == 1)
         played, lost = defaultdict(int), defaultdict(int)
         for r in rows:
             played[int(r["etage"])] += 1
             lost[int(r["etage"])] += 1 - int(r["gagne"])
         tower = json.load(open(TOWER, encoding="utf-8"))
         summit = played[len(tower["floors"])] - lost[len(tower["floors"])]
-        print(f"== Passe {n} : {count} montées, sommet {100 * summit / count:.1f} %", flush=True)
+        print(f"== Passe {label} : {count} montées, sommet {100 * summit / max(count, 1):.1f} %", flush=True)
         for i, floor in enumerate(tower["floors"]):
             number = i + 1
             rate = lost[number] / max(played[number], 1)
