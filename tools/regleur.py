@@ -435,28 +435,44 @@ def tune(rates):
     return report
 
 
-def main():
-    rounds = int(sys.argv[1]) if len(sys.argv) > 1 else 5
-    count = int(sys.argv[2]) if len(sys.argv) > 2 else 12000
+def load_damping():
     state_path = os.path.join(OUT, "amortissement.json")
     if os.path.exists(state_path):
         with open(state_path, encoding="utf-8") as f:
             DAMPING.update(json.load(f))
+
+
+def save_damping():
+    os.makedirs(OUT, exist_ok=True)
+    with open(os.path.join(OUT, "amortissement.json"), "w", encoding="utf-8") as f:
+        json.dump(DAMPING, f)
+
+
+def one_round(label, files):
+    """Une passe de réglage à partir de fichiers CSV déjà simulés : mesure, puis correction des chiffres de data/."""
+    rates = measure(files)
+    pairs = measure_pairs(files)
+    spread = [v for k, v in rates.items() if k.startswith(("comp:", "passif:", "classe:"))]
+    worst_pair = max(abs(o - e) for o, e, _, _ in pairs.values())
+    kits = [v for k, v in rates.items() if k.startswith("kit:")]
+    print(f"\n== Réglage {label} : écart max à 50 % = {max(abs(v - 50) for v in spread):.1f} points ; pire paire : {worst_pair:.1f} points"
+          f" ; kits (par côté) de {min(kits):.1f} à {max(kits):.1f} %, {sum(1 for v in kits if 48 <= v <= 52)} sur {len(kits)} dans 48-52", flush=True)
+    for line in tune(rates) + tune_pairs(pairs):
+        print("  " + line, flush=True)
+    save_damping()
+
+
+def main():
+    load_damping()
+    if len(sys.argv) > 1 and sys.argv[1] == "regler":
+        # Sur GitHub Actions : les combats ont été simulés par d'autres machines, on ne fait que régler.
+        # python3 tools/regleur.py regler <étiquette> fichier1.csv [fichier2.csv ...]
+        one_round(sys.argv[2], sys.argv[3:])
+        return
+    rounds = int(sys.argv[1]) if len(sys.argv) > 1 else 5
+    count = int(sys.argv[2]) if len(sys.argv) > 2 else 12000
     for r in range(1, rounds + 1):
-        files = simulate(r, count)
-        rates = measure(files)
-        pairs = measure_pairs(files)
-        spread = [v for k, v in rates.items() if k.startswith(("comp:", "passif:", "classe:"))]
-        worst_pair = max(abs(o - e) for o, e, _, _ in pairs.values())
-        kits = [v for k, v in rates.items() if k.startswith("kit:")]
-        print(f"\n== Réglage {r} : écart max à 50 % = {max(abs(v - 50) for v in spread):.1f} points ; pire paire : {worst_pair:.1f} points"
-              f" ; kits (par côté) de {min(kits):.1f} à {max(kits):.1f} %, {sum(1 for v in kits if 48 <= v <= 52)} sur {len(kits)} dans 48-52")
-        for line in tune(rates) + tune_pairs(pairs):
-            print("  " + line)
-        os.makedirs(OUT, exist_ok=True)
-        with open(state_path, "w", encoding="utf-8") as f:
-            json.dump(DAMPING, f)
-        sys.stdout.flush()
+        one_round(str(r), simulate(r, count))
 
 
 if __name__ == "__main__":

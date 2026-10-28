@@ -4,7 +4,7 @@
   "roles": ["soutien", "front"],
   "identity": "Il répare, il relève, il tient.",
   "elements": ["lumiere"],
-  "stats": {"max_hp": 220, "speed": 7, "power": 117},
+  "stats": {"max_hp": 220, "speed": 7, "power": 112},
   "skills": {
     "basique": ["chatiment", "priere"],
     "moyenne": ["restauration", "purification"],
