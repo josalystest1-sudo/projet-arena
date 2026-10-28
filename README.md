@@ -39,6 +39,8 @@ python3 tools/equilibrage.py /tmp/equilibrage.csv
 python3 tools/regleur.py 8 16000   # règle les chiffres de data/ par passes successives (4 processus Godot)
 ```
 
+Le même réglage sur les machines de GitHub, en parallèle et gratuitement : onglet Actions → « Réglage de l'équilibrage (simulation sur GitHub) » → « Run workflow » (passes, combats par passe, machines, branche de départ). À la fin, la branche `reglage-<numéro>` porte les données réglées et le résumé du run donne le rapport.
+
 La Tour (menace de chaque monstre, puis difficulté de chaque étage) :
 
 ```
