@@ -3,7 +3,7 @@
   "name": "Archer",
   "roles": ["degats", "soutien"],
   "identity": "Il marque et il saigne ses proies à distance.",
-  "stats": {"max_hp": 180, "speed": 10, "power": 108},
+  "stats": {"max_hp": 180, "speed": 10, "power": 114},
   "skills": {
     "basique": ["tir", "tir_rapide"],
     "moyenne": ["marque", "piege"],

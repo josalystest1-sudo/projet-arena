@@ -52,7 +52,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 31
+      "damage": 30
     },
     "description": "La cible gelée subit {damage} dégâts de lumière supplémentaires."
   },
@@ -71,7 +71,7 @@
     "lever": "bonus",
     "params": {
       "extra_turns": 2,
-      "bonus": 0.507
+      "bonus": 0.505
     },
     "description": "Le saignement de la cible dure {extra_turns} tours de plus et fait +{bonus%} de dégâts."
   },
@@ -108,7 +108,7 @@
     },
     "lever": "mult",
     "params": {
-      "mult": 1.315
+      "mult": 1.362
     },
     "description": "Le Châtiment frappe aussi l'autre ennemi provoqué, à {mult%} de sa force."
   },
@@ -126,7 +126,7 @@
     },
     "lever": "mult",
     "params": {
-      "mult": 1.198
+      "mult": 1.215
     },
     "description": "La Prière soigne aussi l'autre membre du duo, à {mult%} de sa force ; comme pour la Prière, une part de ce qui dépasse ses PV max devient une barrière."
   },
@@ -145,7 +145,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.5
+      "bonus": 0.474
     },
     "description": "Le Fendoir fait +{bonus%} de dégâts sur la cible empoisonnée."
   },
@@ -185,7 +185,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 25,
+      "value": 24,
       "turns": 2
     },
     "description": "La cible, accablée, inflige {value} % de dégâts en moins pendant {turns} tours."
@@ -223,7 +223,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 30
+      "damage": 28
     },
     "description": "La dague ouvre, le crochet conclut : {damage} dégâts contondants de plus sur la cible."
   },
@@ -241,7 +241,7 @@
     },
     "lever": "share",
     "params": {
-      "share": 0.5
+      "share": 0.514
     },
     "description": "Le Pugiliste couvre aussi le Voleur : il reçoit une garde à {share%} de la sienne."
   },
@@ -260,7 +260,7 @@
     },
     "lever": "bonus",
     "params": {
-      "bonus": 0.4
+      "bonus": 0.383
     },
     "description": "Le Fendoir fait +{bonus%} de dégâts sur la cible marquée."
   },
@@ -281,7 +281,7 @@
     },
     "lever": "value",
     "params": {
-      "value": 3,
+      "value": 4,
       "turns": 2
     },
     "description": "Le duo, galvanisé derrière son piège, prend de vitesse : +{value} vitesse pendant {turns} tours."
@@ -335,7 +335,7 @@
     },
     "lever": "share",
     "params": {
-      "share": 0.3
+      "share": 0.301
     },
     "description": "Le sang versé revigore le duo : {share%} des dégâts du couple soignent le plus blessé."
   },
@@ -392,7 +392,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 40
+      "power": 42
     },
     "description": "La foudre crépite autour de la garde : barrière sur tout le duo."
   },
@@ -411,7 +411,7 @@
     },
     "lever": "damage",
     "params": {
-      "damage": 35
+      "damage": 36
     },
     "description": "La cible sonnée subit {damage} dégâts de lumière supplémentaires."
   },
@@ -428,7 +428,7 @@
     },
     "lever": "power",
     "params": {
-      "power": 25
+      "power": 24
     },
     "description": "Chaque coup est une prière : tout le duo se soigne."
   },
