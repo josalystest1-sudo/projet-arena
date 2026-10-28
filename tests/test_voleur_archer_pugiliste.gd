@@ -283,7 +283,8 @@ func test_synergies_de_l_archer() -> void:
 	var combat := duo_combat(AG, GM)
 	jump_to_turn(combat, 3)
 	var events := fire(combat, [action("a1", "marque", "b2"), action("a2", "fendoir", "b2")], "Proie")
-	assert_eq(damage_from(events, "a2", "b2", "hit"), int(round(skill_power("fendoir") * class_power("guerrier") * (1.0 + sp("marque_fendoir", "bonus")) * 1.25)), "Fendoir renforcé")
+	var marked := 1.0 + float(skill_power("marque", "status")) / 100.0
+	assert_eq(damage_from(events, "a2", "b2", "hit"), int(round(skill_power("fendoir") * class_power("guerrier") * (1.0 + sp("marque_fendoir", "bonus")) * marked)), "Fendoir renforcé")
 	# Guet-apens : le duo gagne de la vitesse.
 	var trap := duo_combat(AG, GM, {"archer": {"moyenne": 1}, "guerrier": {"forte": 1}})
 	jump_to_turn(trap, 3)
@@ -358,7 +359,7 @@ func test_un_acolyte_pugiliste_se_met_en_garde_quand_il_a_perdu_des_pv() -> void
 	assert_eq(decision["action"].skill_id, "garde_haute", "entamé : il se met en garde")
 	assert_eq(decision["action"].target_id, "a2", "sur lui-même")
 	assert_eq(decision["rule"], "protege", "règle : il protège")
-	combat.get_unit("a2").add_status({"id": "garde", "turns": 2, "value": 30})
+	combat.get_unit("a2").add_status({"id": "garde", "turns": 2, "value": skill_power("garde_haute", "status")})
 	assert_eq(CombatAI.decide_acolyte(combat, combat.get_unit("a2"))["action"].skill_id, "jab", "déjà en garde : il frappe")
 
 
