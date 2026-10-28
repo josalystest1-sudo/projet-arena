@@ -40,7 +40,8 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	# L'arbre, dans une zone qui défile.
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	# Les rangées les plus larges débordent du téléphone : l'arbre défile aussi de gauche à droite.
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_AUTO
 	column.add_child(scroll)
 	canvas = Control.new()
 	canvas.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -66,7 +67,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	legend.add_theme_constant_override("separation", 10)
 	box.add_child(legend)
 	for type in ["stat", "evolution", "pivot", "cle"]:
-		legend.add_child(UiKit.label("● " + TYPE_LABELS[type].split(" ")[0], 13, TYPE_COLORS[type]))
+		legend.add_child(UiKit.label({"stat": "S : Stat", "evolution": "É : Évolution", "pivot": "P : Pivot", "cle": "C : Clé"}[type], 13, TYPE_COLORS[type]))
 	_refresh_header()
 
 
@@ -81,7 +82,10 @@ func _layout() -> void:
 		if not rows.has(depth):
 			rows[depth] = []
 		rows[depth].append(node)
-	var width := maxf(size.x, 520.0)
+	var widest := 1
+	for depth in rows:
+		widest = maxi(widest, rows[depth].size())
+	var width := maxf(520.0, float(widest) * 50.0)
 	for depth in range(max_depth + 1):
 		var row: Array = rows.get(depth, [])
 		row.sort_custom(func(a, b):
@@ -139,7 +143,7 @@ func _draw_tree() -> void:
 			canvas.draw_arc(pos, radius, 0.0, TAU, 32, Color(color, 0.45), 1.5, true)
 		if id == selected:
 			canvas.draw_arc(pos, radius + 7.0, 0.0, TAU, 32, Color.WHITE, 3.0, true)
-		var letter := {"stat": "S", "evolution": "É", "pivot": "P", "cle": "C"}[str(node["type"])]
+		var letter: String = {"stat": "S", "evolution": "É", "pivot": "P", "cle": "C"}.get(str(node["type"]), "?")
 		var text_w := font.get_string_size(letter, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x
 		canvas.draw_string(font, pos + Vector2(-text_w / 2.0, 6), letter, HORIZONTAL_ALIGNMENT_LEFT, -1, 15, Color(0.05, 0.05, 0.1) if is_taken else Color.WHITE)
 
