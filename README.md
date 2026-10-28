@@ -48,7 +48,7 @@ Le Destin (valeurs des nœuds, étape 4) : les mêmes combats avec un niveau (`a
 ```
 godot --headless --path . --script res://tools/equilibrage.gd -- 20000 1 /tmp/destin.csv alea
 python3 tools/equilibrage.py /tmp/destin.csv        # sections « Nœuds du Destin pris »
-python3 tools/regleur_destin.py 4 8000               # 4 passes (4 processus Godot), puis recalibrage de best_value
+python3 tools/regleur_destin.py 4 8000               # 4 passes (4 processus Godot) : valeurs côté joueur, facteurs du mini-Destin côté acolyte, puis recalibrage de best_value
 godot --headless --path . --script res://tools/calibrer_destin.gd -- 120   # la valeur naturelle des arbres neufs
 ```
 

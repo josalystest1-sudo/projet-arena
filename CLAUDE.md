@@ -182,6 +182,13 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 - Stats de départ : Voleur 185 PV, vitesse 11 ; Archer 180 PV, vitesse 10 ; Pugiliste 230 PV, vitesse 10 (les puissances sont réglées par le régleur). Première simulation avant réglage : Pugiliste 62 %, Voleur 57 %, Archer 36 %, Guerrier 38 % (il n'avait été réglé que contre Mage et Prêtre) ; Crochet 76 %, Esquive 71 %, Calme 30 %.
 - **Réglage sur GitHub (PR #18, puis run 1)** : 6 passes de 400 000 combats sur 16 machines (40 minutes), puis vérification locale sur 48 000 combats neufs : classes 49,2–51,0 %, compositions 48,8–50,9 %, compétences et passifs dans la fourchette, kits côté joueur 44,5–56,5 % (123 sur 192 dans 48–52), côté acolyte 42,5–58,4 % (112 sur 192). Les combats sont plus courts qu'à 3 classes : 9,4 tours en moyenne, 95 % finis par KO, 88 % entre les tours 8 et 15 (les nouvelles classes frappent plus vite : Poison, Spectre, Coup bas). Le réglage complet des kits attend les 10 classes (PR d'équilibrage).
 
+**Le Destin par côté (2026-10-28, PR #27, étape 4)**
+
+- Constat de la PR #24 : un même modèle de nœud n'a pas la même force chez le joueur et chez l'acolyte (« +soins » et les Pivots de Front à 44–47 % côté joueur, 56 % côté acolyte ; les Pivots de Dégâts l'inverse). L'acolyte est de la classe complémentaire et ses 15 points vont sur un petit arbre : ce qui vaut pour l'un ne vaut pas pour l'autre.
+- **`mini_values`** (`data/destin_nodes.json`) : par modèle, un facteur qui multiplie sa valeur dans le mini-Destin seulement (1 par défaut, entre 0,4 et 2,5 ; appliqué dans `Destin._build` avant la mise à l'échelle des Stats). Le Destin du joueur ne change pas.
+- `tools/regleur_destin.py` mesure les deux côtés séparément : côté joueur, il règle la valeur du modèle ; côté acolyte, son facteur. Même gain, même pas maximal, même amortissement (clés « j: » et « a: »).
+- Résultats : voir ci-dessous.
+
 **La Tour suit le niveau du duo (2026-10-28, PR #25, étape 4)**
 
 - Le GDD ne dit rien du niveau à la Tour. Sans rien, le Destin la rendait plus facile à chaque niveau (au niveau 30 sans renfort des monstres, bien plus de montées au sommet qu'au niveau 0 ; le record par classe n'aurait plus eu de sens entre joueurs de niveaux différents). Choix : **les monstres suivent le niveau** : PV et puissance × (1 + `level_scale` × niveau), `data/tower.json`, `Tower.start(data, duo, niveau)`, l'écran de la Tour le dit. Les Destins des deux membres du duo sont pris en compte, les monstres n'ont pas de Destin.
