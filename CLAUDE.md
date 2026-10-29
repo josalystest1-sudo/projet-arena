@@ -4,6 +4,8 @@ Ce fichier est lu au début de chaque session. Il résume ce qu'il faut savoir p
 
 **Avancement : `docs/SUIVI.md`** (où on en est, ce qui attend Gautier, les prochaines tâches, l'historique des PR et de ses retours). Le lire juste après ce fichier, et le mettre à jour à chaque PR.
 
+**Changement majeur du 29 octobre 2026 : `docs/GDD_V2.md` remplace le GDD sur tout ce qu'il traite.** Le duo joueur + acolyte est remplacé par un **trio** joueur + 2 Échos (personnages de vrais joueurs pilotés par l'IA, rôles Front + Dégâts + Soutien) ; la Tour devient fixe (on reprend où on s'est arrêté, paliers tous les 5 étages, aucune limite de tours en PvE) ; l'adversaire est opaque en combat ; les Soutiens n'ont pas besoin de faire des dégâts ; PvP classé limité à 5 par jour ; donjons à 3 joueurs avec routes secrètes et boss unique au serveur ; guildes et territoires ; équipement à la Diablo sans méta. Tout ce qui suit dans ce fichier et qui parle de l'acolyte décrit le prototype actuel, à faire évoluer dans l'ordre donné au § 12 du GDD V2. Les mécaniques de combat sont inventoriées dans `docs/MECANIQUES.md`.
+
 **Changement majeur du 27 octobre 2026 :** le jeu passe du 3v3 entre humains au **duo** (joueur + acolyte IA). Le prototype 3v3 de l'étape 1 reste la base technique ; son format doit être remplacé. Tout ce qui parle de « 3 alliés », d'Intentions visibles entre humains ou de file par rôle est caduc.
 
 ## Qui est le propriétaire du projet et comment travailler avec lui

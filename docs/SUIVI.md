@@ -28,6 +28,8 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 
 ## Prochaines tâches (dans l'ordre)
 
+**Depuis le 29 octobre, la suite est l'ordre de construction du § 12 de `docs/GDD_V2.md`** (d'abord le trio avec Échos générés), après la PR d'équilibrage des 10 classes ci-dessous. Lire le GDD V2 avant de commencer ; les réponses de Gautier aux questions du § 13 sont à ajouter au tableau des retours.
+
 1. ~~Équilibrer les Destins séparément côté joueur et côté acolyte.~~ Fait (PR #16) : côté joueur 45,5–52,9 % (77 kits sur 96 dans 48–52), côté acolyte 45,9–53,8 % (83 sur 96), Tour reréglée.
 2. **Étape 3**, en plusieurs PR :
    - ~~le moteur rendu générique~~ fait (PR #17) ;
@@ -59,6 +61,7 @@ Dernier retour : feu vert pour rééquilibrer les Destins puis attaquer l'étape
 | 28 oct | « On ne peut pas faire défiler un écran vers le bas » | PR #14 : défilement au doigt partout, écran de combat qui tient sur un téléphone peu haut. |
 | 28 oct | « C'est beaucoup plus clair » | Prochaines étapes proposées. |
 | 28 oct | Feu vert : Destins par côté, puis l'étape 3 ; « avance au maximum » | PR #16 (Destins par côté), puis l'étape 3 en plusieurs PR. |
+| 29 oct | Grande session de conception : trio avec Échos à la place de l'acolyte, adversaire opaque, Soutiens sans dégâts, Tour fixe sans limite de tours, PvP à 5 par jour, donjons à routes et boss unique au serveur, guildes, territoires, équipement | `docs/GDD_V2.md` (décisions étiquetées Décidé / Proposé / Ouvert, 9 questions en attente) et `docs/MECANIQUES.md`. |
 | 28 oct | « Il me reste 22 $ de crédit, ça continue de baisser » | Les machines de GitHub sont gratuites, mais chaque échange avec Claude coûte, d'autant plus que la conversation est longue. Session arrêtée ; la suite est écrite ci-dessous pour une conversation courte. |
 | 28 oct | « Pas de crédits cloud : la solution la plus rapide, performante et gratuite » | Un seul Claude à la fois (plus d'agents en parallèle) ; les simulations longues sur les machines de GitHub, gratuites pour un dépôt public (PR #18). |
 
