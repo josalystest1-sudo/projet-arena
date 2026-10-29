@@ -34,6 +34,7 @@ const SCREENS := {
 	"arene": preload("res://scenes/screens/arene_screen.gd"),
 	"donjon": preload("res://scenes/screens/donjon_screen.gd"),
 	"comptoir": preload("res://scenes/screens/comptoir_screen.gd"),
+	"marche": preload("res://scenes/screens/marche_screen.gd"),
 	"trio": preload("res://scenes/screens/trio_screen.gd"),
 	"profile": preload("res://scenes/screens/profile_screen.gd"),
 	"settings": preload("res://scenes/screens/settings_screen.gd"),
@@ -302,6 +303,9 @@ func _publier_perso_async() -> void:
 	if not serveur.est_connecte() and not await serveur.connecter():
 		publication = "hors ligne : " + serveur.erreur
 		return
+	if str(profile.serveur.get("compte_jour", "")) == "":
+		profile.serveur["compte_jour"] = Time.get_date_string_from_system()
+		profile.save()
 	publication = "publié" if await serveur.publier(fiche_publique()) else "non publié : " + serveur.erreur
 
 
@@ -635,6 +639,93 @@ func abandonner_donjon() -> void:
 		donjon_en_cours.abandonner()
 		donjon_en_cours = null
 	profile.save()
+
+
+# ---------------------------------------------------------------------------
+# Le Marché (engine/marche.gd ; les annonces sur le serveur)
+# ---------------------------------------------------------------------------
+
+## L'âge du compte en jours (depuis la première connexion ; les outils du prototype peuvent le vieillir).
+func jours_compte() -> int:
+	var jour := str(profile.serveur.get("compte_jour", ""))
+	if jour == "":
+		return 0
+	return maxi(0, Arene.jours(Time.get_date_string_from_system()) - Arene.jours(jour))
+
+
+## Prototype : vieillir le compte de n jours (pour ouvrir le Marché sans attendre).
+func vieillir_compte(n: int) -> void:
+	var jour := str(profile.serveur.get("compte_jour", Time.get_date_string_from_system()))
+	var unix := (Arene.jours(jour) - n) * 86400
+	profile.serveur["compte_jour"] = Time.get_datetime_string_from_unix_time(unix).substr(0, 10)
+	profile.save()
+
+
+func marche_ouvert() -> bool:
+	return Marche.ouvert(profile.level, jours_compte(), data)
+
+
+func marche_manque() -> String:
+	return Marche.manque(profile.level, jours_compte(), data)
+
+
+## Mettre un objet du sac en vente à ce prix (dans sa fourchette ; annonces_max au plus). L'objet quitte le sac.
+func deposer_annonce(index_sac: int, prix: int) -> bool:
+	if not marche_ouvert() or index_sac < 0 or index_sac >= profile.sac.size():
+		return false
+	var objet: Dictionary = profile.sac[index_sac]
+	if not Marche.prix_valide(objet, prix, data) or not serveur.est_connecte():
+		return false
+	var miennes := 0
+	for a in await serveur.annonces(1000):
+		if bool(a.get("mienne", false)):
+			miennes += 1
+	if miennes >= int(data.marche["annonces_max"]):
+		return false
+	var id := "%s-%d-%d" % [serveur.compte_id, Time.get_unix_time_from_system(), rng.randi_range(0, 9999)]
+	if not await serveur.deposer(Marche.annonce(objet, prix, serveur.compte_id, id)):
+		return false
+	profile.sac.remove_at(index_sac)
+	profile.save()
+	return true
+
+
+## Retirer une de ses annonces : l'objet revient dans le sac.
+func retirer_annonce(id: String) -> bool:
+	var a: Dictionary = await serveur.retirer(id)
+	if a.is_empty():
+		return false
+	profile.sac.append(a["objet"].duplicate(true))
+	profile.save()
+	return true
+
+
+## Acheter une annonce à ce prix : l'Or part, l'objet arrive dans le sac, encore échangeable. Faux si l'Or manque ou si
+## l'annonce est déjà partie (au premier acheteur).
+func acheter_annonce(id: String, prix: int) -> bool:
+	if not marche_ouvert() or profile.monnaie_or < prix:
+		return false
+	var a: Dictionary = await serveur.acheter(id)
+	if a.is_empty() or int(a["prix"]) != prix:
+		return false
+	profile.monnaie_or -= prix
+	var objet: Dictionary = a["objet"].duplicate(true)
+	objet["lie"] = false
+	profile.sac.append(objet)
+	profile.save()
+	return true
+
+
+## Encaisser ses ventes : l'Or net (après la taxe) arrive. Renvoie [{annonce, net}].
+func encaisser_ventes() -> Array:
+	if not serveur.est_connecte():
+		return []
+	var ventes: Array = await serveur.encaisser()
+	for v in ventes:
+		profile.monnaie_or += int(v["net"])
+	if not ventes.is_empty():
+		profile.save()
+	return ventes
 
 
 # ---------------------------------------------------------------------------

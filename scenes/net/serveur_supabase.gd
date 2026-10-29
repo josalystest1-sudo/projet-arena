@@ -128,6 +128,61 @@ func _lire(chemin: String, niveau: int, n: int) -> Array:
 	return Serveur.plus_proches(fiches, niveau, n)
 
 
+# --- Le Marché : la table « annonces » (docs/serveur/supabase.sql) ; jamais essayé contre un vrai projet. ------------
+
+func annonces(n: int) -> Array:
+	erreur = ""
+	if not est_connecte() and not await connecter():
+		return []
+	var r := await _requete_connectee(HTTPClient.METHOD_GET, "/rest/v1/annonces?select=*&acheteur=is.null&order=cree.desc&limit=%d" % n)
+	if int(r["code"]) != 200 or not r["corps"] is Array:
+		erreur = "lecture impossible (%s)" % _texte_erreur(r)
+		return []
+	var out: Array = []
+	for a in r["corps"]:
+		if a is Dictionary and Marche.annonce_valide(a, donnees):
+			a["mienne"] = str(a["vendeur"]) == compte_id
+			out.append(a)
+	return out
+
+
+func deposer(annonce: Dictionary) -> bool:
+	erreur = ""
+	if not est_connecte() and not await connecter():
+		return false
+	var corps := {"id": annonce["id"], "vendeur": compte_id, "objet": annonce["objet"], "prix": int(annonce["prix"]),
+		"rarete": str(annonce.get("rarete", "")), "niveau": int(annonce.get("niveau", 1))}
+	var r := await _requete_connectee(HTTPClient.METHOD_POST, "/rest/v1/annonces", corps, "return=minimal")
+	if int(r["code"]) in [200, 201, 204]:
+		return true
+	erreur = "dépôt refusé (%s)" % _texte_erreur(r)
+	return false
+
+
+func retirer(id: String) -> Dictionary:
+	var r := await _requete_connectee(HTTPClient.METHOD_DELETE, "/rest/v1/annonces?id=eq.%s&vendeur=eq.%s&acheteur=is.null" % [id, compte_id], null, "return=representation")
+	if int(r["code"]) == 200 and r["corps"] is Array and not r["corps"].is_empty():
+		return r["corps"][0]
+	return {}
+
+
+## Au premier acheteur : la mise à jour ne touche la ligne que si personne ne l'a prise avant.
+func acheter(id: String) -> Dictionary:
+	var r := await _requete_connectee(HTTPClient.METHOD_PATCH, "/rest/v1/annonces?id=eq.%s&acheteur=is.null&vendeur=neq.%s" % [id, compte_id], {"acheteur": compte_id}, "return=representation")
+	if int(r["code"]) == 200 and r["corps"] is Array and not r["corps"].is_empty():
+		return r["corps"][0]
+	return {}
+
+
+func encaisser() -> Array:
+	var r := await _requete_connectee(HTTPClient.METHOD_PATCH, "/rest/v1/annonces?vendeur=eq.%s&acheteur=not.is.null&encaisse=is.false" % compte_id, {"encaisse": true}, "return=representation")
+	var out: Array = []
+	if int(r["code"]) == 200 and r["corps"] is Array:
+		for a in r["corps"]:
+			out.append({"annonce": a, "net": Marche.net(int(a["prix"]), donnees)})
+	return out
+
+
 func nombre_personnages() -> int:
 	return int(profile.serveur.get("nombre", 0))
 

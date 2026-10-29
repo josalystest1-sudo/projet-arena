@@ -1,0 +1,7 @@
+{
+  "niveau_min": 15,
+  "jours_min": 7,
+  "taxe": 0.15,
+  "annonces_max": 5,
+  "simule": {"annonces": 12, "raretes": {"commun": 45, "rare": 35, "epique": 15, "legendaire": 5}, "vente_par_jour": 0.5}
+}

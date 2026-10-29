@@ -81,6 +81,30 @@ func classement(_saison: int, _n: int) -> Array:
 	return []
 
 
+## Le Marché (engine/marche.gd). Les annonces en vente, n au plus, les tiennes marquées `mienne` ; déposer une annonce
+## (vrai si c'est fait) ; retirer une des tiennes (l'annonce retirée, vide sinon) ; acheter (l'annonce si elle est
+## encore là : au premier acheteur ; vide sinon ; jamais une des tiennes) ; encaisser tes ventes pas encore encaissées
+## ([{annonce, net}]).
+func annonces(_n: int) -> Array:
+	return []
+
+
+func deposer(_annonce: Dictionary) -> bool:
+	return false
+
+
+func retirer(_id: String) -> Dictionary:
+	return {}
+
+
+func acheter(_id: String) -> Dictionary:
+	return {}
+
+
+func encaisser() -> Array:
+	return []
+
+
 ## Le nombre de fiches publiées (la tienne comprise).
 func nombre_personnages() -> int:
 	return 0
