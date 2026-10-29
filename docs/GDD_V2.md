@@ -117,7 +117,7 @@ Modifiées le 29 octobre :
 
 - Plusieurs donjons ouverts en même temps, **un par tranche de niveau**, communs au serveur ; on y va avec sa guilde, ses amis ou des inconnus. **[Décidé]** Ils sont placés sur la carte du monde, avec leur niveau. **[Décidé]**
 - Un donjon est un arbre de routes : **trois portes** à chaque embranchement ; une route fait X combats ; au bout, **un élite**, sauf sur une seule route : **le boss**. Après chaque vague, le trio **vote** la porte suivante (majorité ; trois votes différents : celui qui a le plus de routes explorées tranche). **[Décidé ; départage : Proposé]**
-- Entrer coûte des Éclats (une part va à la guilde qui tient le territoire, § 9). Pas de limite de tours, abandon libre.
+- Entrer coûte des Éclats (une part va à la guilde qui tient le territoire, § 9). Pas de limite de tours, abandon libre. Fait en solo (PR #65) : trois donjons par tranche de niveau, l'arbre, les portes sans nom, la carte personnelle, les fragments, l'élite et le boss (sans paliers à secret encore), les récompenses ; les trois humains, le vote et la carte de guilde avec le serveur.
 
 ### 8.2 Les portes sans nom
 

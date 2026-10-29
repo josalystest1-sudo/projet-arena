@@ -73,6 +73,11 @@ const CLES_ARENE_SAISON := ["debut", "jours"]
 const CLES_ARENE_COFFRE := ["commun", "rare", "epique"]
 const CLES_ARENE_ADVERSAIRE := ["niveau_ecart", "equipement"]
 const CLES_ARENE_LIGUES := ["aspirants", "elus", "ascendants"]
+## Les donjons (data/donjons.json, GDD V2 § 8) : portes par embranchement, profondeur, PV rendus entre les vagues,
+## force de l'élite et du boss, récompenses, et chaque donjon (famille, tranche de niveau, niveau, entrée, boss).
+const CLES_DONJONS := ["portes", "profondeur", "pv_entre_vagues", "elite_mult", "boss_mult", "recompenses", "donjons"]
+const CLES_DONJON := ["id", "nom", "famille", "niveau_min", "niveau_max", "niveau", "entree", "boss", "description"]
+const CLES_RECOMPENSE_DONJON := ["rarete", "fragments", "eclats"]
 const CLES_OBJECTIF := ["id", "texte", "compteur", "cible", "xp", "eclats"]
 const CLES_BATIMENT := ["id", "nom", "texte", "ecran", "options", "x", "y", "dispo", "forme"]
 const CLES_BATIMENT_OBLIGATOIRES := ["id", "nom", "texte", "ecran", "x", "y", "dispo"]
@@ -106,6 +111,8 @@ var ville: Dictionary = {}
 var objectifs: Dictionary = {}
 ## L'Arène classée (data/arene.json, GDD V2 § 7).
 var objets_arene: Dictionary = {}
+## Les donjons (data/donjons.json, GDD V2 § 8).
+var donjons: Dictionary = {}
 ## Ce qui ne va pas dans les données : une ligne par problème (vide si tout est connu et cohérent).
 var erreurs: Array[String] = []
 ## Une mémoire de calculs qui ne dépendent que des données (les formes de chaque nœud, pour le générateur).
@@ -137,6 +144,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.ville = _lire(dossier + "ville.json", donnees.erreurs)
 	donnees.objectifs = _lire(dossier + "objectifs.json", donnees.erreurs)
 	donnees.objets_arene = _lire(dossier + "arene.json", donnees.erreurs)
+	donnees.donjons = _lire(dossier + "donjons.json", donnees.erreurs)
 	donnees.valider()
 	return donnees
 
@@ -220,6 +228,7 @@ func valider() -> void:
 			erreurs.append(ou + " : famille ou rang inconnu")
 		if float(m.get("pv_mult", 0.0)) < 0.5 or float(m.get("pv_mult", 0.0)) > 1.5:
 			erreurs.append(ou + " : pv_mult hors de 0,5 à 1,5")
+	_valider_donjons()
 
 
 ## L'équipement (data/items.json) : toutes les clés connues ; chaque base sur un emplacement connu, avec des lignes
@@ -368,6 +377,38 @@ func _valider_arene() -> void:
 	_cles(objets_arene.get("ligues", {}), CLES_ARENE_LIGUES, CLES_ARENE_LIGUES, "arene.json ligues")
 	if not objets_arene.get("noms") is Array or objets_arene["noms"].is_empty():
 		erreurs.append("arene.json : des noms d'adversaires attendus")
+
+
+## Les donjons (data/donjons.json) : clés connues, chiffres cohérents, chaque donjon sur une famille du bestiaire avec un
+## Gardien du bestiaire pour boss et une tranche de niveau ; les récompenses sur des raretés connues. (Appelée après le
+## bestiaire et l'équipement.)
+func _valider_donjons() -> void:
+	_cles(donjons, CLES_DONJONS, CLES_DONJONS, "donjons.json")
+	if not donjons is Dictionary or not donjons.get("donjons") is Array:
+		return
+	if int(donjons.get("portes", 0)) < 2 or int(donjons.get("profondeur", 0)) < 1:
+		erreurs.append("donjons.json : au moins deux portes et une profondeur de 1")
+	for quoi in ["elite", "boss"]:
+		var r: Variant = donjons.get("recompenses", {}).get(quoi, {})
+		_cles(r, CLES_RECOMPENSE_DONJON, CLES_RECOMPENSE_DONJON, "donjons.json récompense " + quoi)
+		if r is Dictionary and not objets.get("raretes", {}).has(str(r.get("rarete", ""))):
+			erreurs.append("donjons.json récompense %s : rareté inconnue" % quoi)
+	var ids: Array = []
+	var monstres: Dictionary = bestiaire.get("monstres", {})
+	for dj in donjons["donjons"]:
+		var ou := "donjons.json donjon %s" % (dj.get("id", "?") if dj is Dictionary else "?")
+		_cles(dj, CLES_DONJON, CLES_DONJON, ou)
+		if not dj is Dictionary:
+			continue
+		if ids.has(dj.get("id", "")):
+			erreurs.append(ou + " : identifiant en double")
+		ids.append(dj.get("id", ""))
+		if not bestiaire.get("familles", {}).has(str(dj.get("famille", ""))):
+			erreurs.append(ou + " : famille inconnue")
+		if not monstres.has(str(dj.get("boss", ""))) or str(monstres[str(dj.get("boss", ""))].get("rang", "")) != "gardien":
+			erreurs.append(ou + " : le boss doit être un Gardien du bestiaire")
+		if int(dj.get("niveau_min", 0)) < 1 or int(dj.get("niveau_max", 0)) < int(dj.get("niveau_min", 0)) or int(dj.get("niveau", 0)) < 1 or int(dj.get("entree", -1)) < 0:
+			erreurs.append(ou + " : niveaux et entrée incohérents")
 
 
 ## Les erreurs d'un fichier de classe (vide s'il est conforme à la section 13.1).

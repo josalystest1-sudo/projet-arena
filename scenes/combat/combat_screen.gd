@@ -42,6 +42,8 @@ const PLACES_MONSTRES := {
 var app: ArenaApp
 var e: EtatCombat
 var tour: Tour = null
+## Une descente de donjon (une vague, l'élite ou le boss), ou null.
+var donjon: Donjon = null
 var noms := {}
 ## Un combat classé de l'Arène (ses points en jeu) ou un amical.
 var classe := false
@@ -89,6 +91,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	app = p_app
 	e = options["etat"]
 	tour = options.get("tour", null)
+	donjon = options.get("donjon", null)
 	noms = options.get("noms", {})
 	classe = bool(options.get("classe", false))
 	_construire()
@@ -950,6 +953,9 @@ func _on_quitter() -> void:
 	if tour != null:
 		app.fin_tour(tour)
 		app.show_screen("tower")
+	elif donjon != null:
+		app.abandonner_donjon()
+		app.show_screen("donjon")
 	else:
 		app.fin_duel(false, classe)
 		app.show_screen("ville")
@@ -961,4 +967,6 @@ func _fin() -> void:
 	var options := {"etat": e, "noms": noms, "trace": trace, "synergies": synergies, "parts": parts, "classe": classe}
 	if tour != null:
 		options["tour"] = tour
+	if donjon != null:
+		options["donjon"] = donjon
 	app.show_screen("fin", options)

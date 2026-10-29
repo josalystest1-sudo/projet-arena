@@ -26,6 +26,7 @@ const SCREENS := {
 	"ville": preload("res://scenes/screens/ville_screen.gd"),
 	"tableau": preload("res://scenes/screens/tableau_screen.gd"),
 	"arene": preload("res://scenes/screens/arene_screen.gd"),
+	"donjon": preload("res://scenes/screens/donjon_screen.gd"),
 	"trio": preload("res://scenes/screens/trio_screen.gd"),
 	"profile": preload("res://scenes/screens/profile_screen.gd"),
 	"settings": preload("res://scenes/screens/settings_screen.gd"),
@@ -55,6 +56,9 @@ var echos_choisis: Dictionary = {}
 var echos: Array[Destin] = []
 ## Les deux roues, regénérées depuis la graine, le niveau et les nœuds allumés.
 var destin: Destin
+## La descente de donjon en cours (null entre deux) ; elle vit le temps de l'application (fermer le jeu l'abandonne,
+## la carte est gardée au fil des vagues).
+var donjon_en_cours: Donjon = null
 ## Le revenu passif réclamé à l'ouverture du jeu ({eclats, xp, record} ; vide s'il n'y en a pas eu), montré une fois par
 ## l'accueil.
 var revenu_du_jour: Dictionary = {}
@@ -435,6 +439,72 @@ func reclamer_objectif(id: String) -> Dictionary:
 	profile.eclats += int(r["eclats"])
 	gain_xp(int(r["xp"]))
 	return r
+
+
+# ---------------------------------------------------------------------------
+# Les donjons (en solo, en attendant le serveur)
+# ---------------------------------------------------------------------------
+
+## La carte d'un donjon pour ce joueur : {chasse, explorees, revelees, boss}.
+func carte_donjon(id: String) -> Dictionary:
+	if not profile.donjons.has(id):
+		profile.donjons[id] = {"chasse": 0, "explorees": [], "revelees": [], "boss": 0}
+	return profile.donjons[id]
+
+
+## Entrer dans un donjon : l'entrée en Éclats, puis la descente commence (aux portes). Faux s'il manque des Éclats.
+func commencer_donjon(id: String) -> bool:
+	var def := Donjon.definition(id, data)
+	if def.is_empty() or profile.eclats < int(def["entree"]):
+		return false
+	profile.eclats -= int(def["entree"])
+	var carte := carte_donjon(id)
+	donjon_en_cours = Donjon.commencer(id, trio(), profile.level, graine, int(carte["chasse"]), data)
+	profile.save()
+	return true
+
+
+## La fin d'un combat de donjon : la carte retient le chemin ; une descente finie donne sa récompense (l'objet dans le
+## sac, les Éclats, les fragments qui révèlent une porte du boss ; le boss vaincu lance une nouvelle chasse et remet la
+## carte à zéro). Renvoie {resultat, butin, eclats, fragments, revelee, suite} (suite : « portes », « fini »).
+func fin_combat_donjon(dj: Donjon, e: EtatCombat) -> Dictionary:
+	dj.terminer(e)
+	var carte := carte_donjon(dj.id)
+	for c in dj.chemins_explores():
+		if not carte["explorees"].has(c):
+			carte["explorees"].append(c)
+	var out := {"resultat": dj.resultat, "butin": {}, "eclats": 0, "fragments": 0, "revelee": "", "suite": "portes" if dj.phase == "portes" else "fini"}
+	if dj.phase == "fini":
+		var r := dj.recompense()
+		if not r.is_empty():
+			var objet := dj.butin(_nouvelle_graine())
+			profile.sac.append(objet)
+			profile.eclats += int(r["eclats"])
+			out["butin"] = objet
+			out["eclats"] = int(r["eclats"])
+			out["fragments"] = int(r["fragments"])
+			for i in range(int(r["fragments"])):
+				var cle := Donjon.reveler(dj.id, dj.chasse, carte, data)
+				if cle != "":
+					carte["revelees"].append(cle)
+					out["revelee"] = cle
+			if dj.resultat == "boss":
+				carte["boss"] = int(carte["boss"]) + 1
+				carte["chasse"] = int(carte["chasse"]) + 1
+				carte["explorees"] = []
+				carte["revelees"] = []
+				compter("gardiens")
+		donjon_en_cours = null
+	profile.save()
+	return out
+
+
+## Abandonner la descente en cours (entre deux vagues, ou en plein combat) : la carte est gardée.
+func abandonner_donjon() -> void:
+	if donjon_en_cours != null:
+		donjon_en_cours.abandonner()
+		donjon_en_cours = null
+	profile.save()
 
 
 ## Le meilleur record de la Tour, toutes classes confondues (la « hauteur » du revenu passif).
