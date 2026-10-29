@@ -2,7 +2,7 @@
 ## Combat V2 (docs/SPEC-COMBAT-V2.md) : un perso, c'est une classe et une graine (sa roue du Destin en sort à
 ## l'identique) et la liste des nœuds qu'il a allumés ; son acolyte se déduit de sa classe et de sa graine.
 ## Écrans : création, rencontre de l'acolyte, Vitrine (accueil), Acolyte, Destin (la roue), La Tour et son bestiaire,
-## Profil, Paramètres, face-à-face, combat.
+## Profil, Paramètres, face-à-face, combat, fin de combat.
 ## Affichage et navigation seulement : toute la règle vit dans res://engine.
 class_name ArenaApp
 extends Control
@@ -23,6 +23,7 @@ const SCREENS := {
 	"bestiaire": preload("res://scenes/screens/bestiary_screen.gd"),
 	"versus": preload("res://scenes/screens/versus_screen.gd"),
 	"combat": preload("res://scenes/combat/combat_screen.gd"),
+	"fin": preload("res://scenes/screens/fin_screen.gd"),
 }
 
 var data: Donnees
