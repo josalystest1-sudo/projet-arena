@@ -222,7 +222,7 @@ Trois volontés de Gautier, compatibles : celui qui a eu la chance d'un grand ob
 
 **Existe (prototype web, 28 octobre)** : moteur pur et testé (168 tests), 10 classes, 63 Synergies, Destin (45 nœuds, mini-Destin), niveaux et XP, Tour à monstres (10 étages, bestiaire), duel en duo contre une IA, simulateur et régleur (en local et sur GitHub Actions), écrans de création, accueil, compétences, Destin, Tour, bestiaire, profil, paramètres.
 
-**Ordre** (chaque bloc doit être amusant seul avant le suivant) :
+**Ordre** (chaque bloc doit être amusant seul avant le suivant). **Décision de Gautier du 29 octobre au soir : on construit tout le jeu d'abord, sans équilibrage ; l'équilibrage global vient ensuite, puis les graphismes** (`docs/PLAN.md`, phases 9 et 10) :
 1. **Le trio avec Échos générés** : composition par rôle, annonces en chaîne, Synergies avec les deux, IA de bon sens et tableau des erreurs, adversaire opaque, écran de composition du trio ; retrait de l'acolyte fixe et de la rencontre ; Soutiens « toujours utiles » et geste de classe ; rééquilibrage (duel 3v3, Tour en trio).
 2. **La Tour infinie** : étages générés, paliers, rejouer depuis un palier, sans limite de tours, soins des monstres qui s'affaiblissent, Faveurs, revenu passif ; réglage « à quel niveau on passe tel étage ».
 3. **L'équipement** : données, Forge (inventaire, fiche, comparaison, reforge), butin de la Tour (lié / échangeable), Éclats, passe de simulateur sur les lignes.
@@ -230,7 +230,9 @@ Trois volontés de Gautier, compatibles : celui qui a eu la chance d'un grand ob
 5. **Serveur et comptes** : vrais Échos, récompenses de sélection, PvP asynchrone classé, chat, Marché et Comptoir (or, fourchettes, taxe, anonymat, seuils de compte), classements, saisons.
 6. **Guildes et donjons à routes** : Influence, rôles, bannière, carte du monde, portes sans nom, cartes, fragments, élites, boss unique et ses paliers, coup final de guilde, grimoires, appel.
 7. **Territoires et guerres du soir**, classement de guilde, ligues de guilde.
-8. **Évolutions de rang 1 et 2, classes de grimoire** (30 + 90 + les grimoires : le plus gros chantier de contenu), PvP synchrone à 6, art, boutique, bêta, lancement.
+8. **Évolutions de rang 1 et 2, classes de grimoire** (30 + 90 + les grimoires : le plus gros chantier de contenu), PvP synchrone à 6.
+9. **L'équilibrage global** de tout le jeu.
+10. **Les graphismes** (art, animations, écrans soignés), la boutique, la bêta, le lancement.
 
 ## 13. Questions encore ouvertes
 
