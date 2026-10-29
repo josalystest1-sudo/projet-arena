@@ -54,10 +54,12 @@ static func nouveau_combat(camp_a: Array, camp_b: Array, niveau: int, mode: Stri
 			var bonus: Array = []
 			for v in range(destin.voies.size()):
 				bonus.append([destin.bonus_valeurs(v, 1), destin.bonus_valeurs(v, 2), destin.bonus_valeurs(v, 3), destin.bonus_valeurs(v, 4)])
-			var pv_max := plancher(float(destin.pv_base) * destin.pv_mult * m * (1.0 + destin.bonus_pv()))
+			# L'équipement (engine/equipement.gd) : ses PV max et sa Force entrent ici ; ses autres lignes à chaque valeur
+			# (valeur). Sans équipement, × 1 : le combat est le même au bit près.
+			var pv_max := plancher(float(destin.pv_base) * destin.pv_mult * m * (1.0 + destin.bonus_pv()) * (1.0 + float(destin.mods.get("pv", 0.0))))
 			e.statique[id] = {"camp": c[0], "place": place, "classe": destin.classe_id, "nom": destin.nom, "sprite": destin.sprite,
-				"role": destin.role, "k": destin.k, "pv_max": pv_max, "moyeu": destin.moyeu, "voies": destin.voies,
-				"bonus": bonus}
+				"role": destin.role, "k": destin.k * (1.0 + float(destin.mods.get("force", 0.0))), "pv_max": pv_max, "moyeu": destin.moyeu,
+				"voies": destin.voies, "bonus": bonus, "mods": destin.mods.duplicate()}
 			var nv := destin.voies.size()
 			var eteints: Array = []
 			for v in range(nv):
@@ -469,21 +471,21 @@ static func _appliquer(e: EtatCombat, a: Dictionary, index: int, ef: Dictionary,
 						retires.append(str(nom))
 				_ev(e, phase, id, nid, t, "purge", retires.size(), 0, ",".join(retires))
 		"degats":
-			var base := valeur(e, id, voie, rang, float(ef["valeur"])) * maxf(0.0, forces) * mort_subite(e)
+			var base := valeur(e, id, voie, rang, float(ef["valeur"]), "degats") * maxf(0.0, forces) * mort_subite(e)
 			if instant[id]["desarme"]:
 				base *= DESARME
 			for t in touches:
 				var montant := plancher(base * float(mods["degats"].get("%s|%d|%s" % [id, index, t], 1.0)))
 				_blesser(e, phase, id, nid, t, montant, false, "degats")
 		"soin":
-			var base := valeur(e, id, voie, rang, float(ef["valeur"])) * maxf(0.0, forces) * usure_soins(e, id)
+			var base := valeur(e, id, voie, rang, float(ef["valeur"]), "soin") * maxf(0.0, forces) * usure_soins(e, id)
 			for t in touches:
 				var montant := plancher(base)
 				if instant[t]["poison"]:
 					montant = plancher(float(montant) * POISON_SOINS)
 				_soigner(e, phase, id, nid, t, montant, "soin")
 		"barriere":
-			var base := valeur(e, id, voie, rang, float(ef["valeur"])) * maxf(0.0, forces)
+			var base := valeur(e, id, voie, rang, float(ef["valeur"]), "barriere") * maxf(0.0, forces)
 			for t in touches:
 				var montant := plancher(base * float(mods["barriere"].get("%s|%d|%s" % [id, index, t], 1.0)))
 				if instant[t]["brulure"]:
@@ -500,13 +502,13 @@ static func _appliquer(e: EtatCombat, a: Dictionary, index: int, ef: Dictionary,
 				_poser(e, t, str(ef["nom"]), int(ef["tours"]), 0.0, id)
 				_ev(e, phase, id, nid, t, "etat", int(ef["tours"]), 0, str(ef["nom"]))
 		"dot":
-			var par_tour := plancher(valeur(e, id, voie, rang, float(ef["par_tour"])) * maxf(0.0, forces))
+			var par_tour := plancher(valeur(e, id, voie, rang, float(ef["par_tour"]), "dot") * maxf(0.0, forces))
 			for t in touches:
 				var tours := int(ef["tours"]) + int(mods["dot"].get("%s|%d|%s" % [id, index, t], 0))
 				_poser(e, t, str(ef["sous_type"]), tours, float(par_tour), id)
 				_ev(e, phase, id, nid, t, "etat", par_tour, 0, "%s:%d" % [ef["sous_type"], tours])
 		"gardien":
-			var par_tour := plancher(valeur(e, id, voie, rang, float(ef["par_tour"])) * maxf(0.0, forces) * usure_soins(e, id))
+			var par_tour := plancher(valeur(e, id, voie, rang, float(ef["par_tour"]), "gardien") * maxf(0.0, forces) * usure_soins(e, id))
 			for t in touches:
 				_poser(e, t, "gardien", int(ef["tours"]), float(par_tour), id)
 				_ev(e, phase, id, nid, t, "etat", par_tour, 0, "gardien:%d" % int(ef["tours"]))
@@ -527,11 +529,13 @@ static func _appliquer(e: EtatCombat, a: Dictionary, index: int, ef: Dictionary,
 				_ev(e, phase, id, nid, t, "egare")
 
 
-## Une valeur numérique d'un nœud (dégâts, soin, barrière, DoT, Gardien) : × M(niveau) × k de la classe × éclats.
-static func valeur(e: EtatCombat, id: String, voie: int, rang: int, base: float) -> float:
+## Une valeur numérique d'un nœud (dégâts, soin, barrière, DoT, Gardien) : × M(niveau) × k de la classe × (éclats +
+## équipement). type : le type de l'effet (« degats », « soin », « barriere », « dot », « gardien »), pour la ligne
+## d'équipement qui s'y applique ; avec le rang, les lignes Clés et Ouvertures (engine/equipement.gd, bonus).
+static func valeur(e: EtatCombat, id: String, voie: int, rang: int, base: float, type: String = "") -> float:
 	var fiche := e.fiche(id)
 	var bonus := 0.0 if rang == 0 else float(fiche["bonus"][voie][rang - 1])
-	return base * multiplicateur_niveau(e) * float(fiche["k"]) * (1.0 + bonus)
+	return base * multiplicateur_niveau(e) * float(fiche["k"]) * (1.0 + bonus + Equipement.bonus(fiche.get("mods", {}), rang, type))
 
 
 ## Un pourcentage d'un nœud (Renfort, Affaiblissement), en fraction : × éclats seulement (ni M ni k).

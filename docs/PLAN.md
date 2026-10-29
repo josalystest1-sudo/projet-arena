@@ -98,7 +98,7 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 
 ### Phase 3 — L'équipement
 
-**PR 3.1 — Données et moteur**
+**PR 3.1 — Données et moteur** (**faite**, PR #60 : `data/items.json`, `engine/equipement.gd` ; dans le moteur V2, pas de `combat_unit.gd` : les bonus passent par `Destin.mods`, lu par `Regles.nouveau_combat` (PV max, Force) et `Regles.valeur` (les autres lignes, selon le type de l'effet et le rang) ; décisions de Gautier : +50 %, fantasy classique, huit lignes par effet)
 - `data/items.json` : bases (nom, emplacement, niveau min, réserve de lignes, fourchettes par ligne, traits légendaires possibles), raretés (nombre de lignes, budget), plafonds par statistique, table de butin par source (étage, Gardien, premier passage ou non).
 - `engine/equipment.gd` (module pur, graine fournie) : tirage d'un objet (lignes, chiffres dans les fourchettes sous budget, qualité en %), `mods_for(items)` (mêmes clés que le Destin), plafonds, lié / échangeable, reforge d'une ligne (graine).
 - `engine/combat_unit.gd` : `apply_mods` additionne Destin + équipement (+ Faveurs en Tour).
@@ -156,7 +156,7 @@ Art PixelLab (personnages, monstres, ville, carte du monde), animations, écrans
 
 - Phase 1, PR 1.4 : l'adversaire opaque lui manque-t-il ? Le résumé de l'adversaire en fin de combat lui plaît-il ?
 - Phase 2 : la courbe niveau → étage (à quel niveau le Gardien 5, le 10) ; les Faveurs proposées.
-- Phase 3 : l'écart de puissance voulu entre équipé et non équipé ; les noms des objets (univers).
+- ~~Phase 3 : l'écart de puissance voulu entre équipé et non équipé ; les noms des objets (univers).~~ Tranché le 29 octobre au soir : +50 % (cinq objets épiques de son niveau), fantasy classique en attendant l'univers, huit lignes par effet.
 - Phase 5 : la durée de saison (3 mois), les plafonds d'or et d'Éclats.
 - Phase 6 : qui reçoit le grimoire ; les premiers boss et leurs conditions ; le nombre d'embranchements par donjon.
 - Toujours : l'univers et le nom du jeu, dès que l'art (phase 10) approche.

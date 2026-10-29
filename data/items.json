@@ -1,0 +1,48 @@
+{
+  "emplacements": {
+    "arme": {"nom": "Arme"},
+    "armure": {"nom": "Armure"},
+    "anneau": {"nom": "Anneau"},
+    "amulette": {"nom": "Amulette"},
+    "talisman": {"nom": "Talisman"}
+  },
+  "lignes": {
+    "pv": {"nom": "PV max", "texte": "+{v} % de PV max", "fourchette": [3, 6], "plafond": 25},
+    "force": {"nom": "Force", "texte": "+{v} % de force (toutes les valeurs)", "fourchette": [2, 4], "plafond": 15},
+    "degats": {"nom": "Dégâts", "texte": "+{v} % de dégâts directs", "fourchette": [3, 6], "plafond": 25},
+    "soins": {"nom": "Soins", "texte": "+{v} % de soins et de Gardiens", "fourchette": [3, 6], "plafond": 25},
+    "barrieres": {"nom": "Barrières", "texte": "+{v} % de barrières", "fourchette": [4, 8], "plafond": 30},
+    "dot": {"nom": "Poisons et brûlures", "texte": "+{v} % de dégâts sur la durée", "fourchette": [4, 8], "plafond": 30},
+    "cle": {"nom": "Clés", "texte": "+{v} % sur les Clés", "fourchette": [4, 8], "plafond": 30},
+    "ouverture": {"nom": "Ouvertures", "texte": "+{v} % sur le moyeu et les ouvertures", "fourchette": [4, 8], "plafond": 30}
+  },
+  "raretes": {
+    "commun": {"nom": {"m": "commun", "f": "commune"}, "rang": 1, "lignes": 1, "echelle": 1.0},
+    "rare": {"nom": {"m": "rare", "f": "rare"}, "rang": 2, "lignes": 2, "echelle": 1.15},
+    "epique": {"nom": {"m": "épique", "f": "épique"}, "rang": 3, "lignes": 3, "echelle": 1.3},
+    "legendaire": {"nom": {"m": "légendaire", "f": "légendaire"}, "rang": 4, "lignes": 4, "echelle": 1.5}
+  },
+  "niveau": {"plancher": 0.5, "plein": 30},
+  "bases": {
+    "epee": {"nom": "Épée", "genre": "f", "emplacement": "arme", "lignes": ["degats", "force", "cle", "ouverture"]},
+    "baton": {"nom": "Bâton", "genre": "m", "emplacement": "arme", "lignes": ["soins", "force", "dot", "cle"]},
+    "arc": {"nom": "Arc", "genre": "m", "emplacement": "arme", "lignes": ["degats", "dot", "ouverture", "cle"]},
+    "dague": {"nom": "Dague", "genre": "f", "emplacement": "arme", "lignes": ["degats", "dot", "ouverture", "force"]},
+    "cotte": {"nom": "Cotte de mailles", "genre": "f", "emplacement": "armure", "lignes": ["pv", "barrieres", "force", "ouverture"]},
+    "robe": {"nom": "Robe", "genre": "f", "emplacement": "armure", "lignes": ["pv", "soins", "barrieres", "cle"]},
+    "cuir": {"nom": "Armure de cuir", "genre": "f", "emplacement": "armure", "lignes": ["pv", "degats", "dot", "ouverture"]},
+    "anneau": {"nom": "Anneau", "genre": "m", "emplacement": "anneau", "lignes": ["force", "cle", "pv", "degats"]},
+    "sceau": {"nom": "Sceau", "genre": "m", "emplacement": "anneau", "lignes": ["soins", "barrieres", "pv", "ouverture"]},
+    "amulette": {"nom": "Amulette", "genre": "f", "emplacement": "amulette", "lignes": ["pv", "soins", "force", "dot"]},
+    "pendentif": {"nom": "Pendentif", "genre": "m", "emplacement": "amulette", "lignes": ["pv", "cle", "barrieres", "degats"]},
+    "talisman": {"nom": "Talisman", "genre": "m", "emplacement": "talisman", "lignes": ["cle", "ouverture", "force", "dot"]},
+    "relique": {"nom": "Relique", "genre": "f", "emplacement": "talisman", "lignes": ["soins", "barrieres", "cle", "pv"]},
+    "idole": {"nom": "Idole", "genre": "f", "emplacement": "talisman", "lignes": ["degats", "dot", "ouverture", "soins"]}
+  },
+  "butin": {
+    "etage": {"commun": 70, "rare": 30},
+    "gardien": {"epique": 100},
+    "rejoue": 0.5
+  },
+  "reforge": {"cout": 20, "pente": 1.0}
+}

@@ -55,6 +55,17 @@ const CLES_FAVEUR := ["nom", "texte", "valeur", "max"]
 const CLES_FAVEUR_OBLIGATOIRES := ["nom", "texte", "valeur"]
 ## Les six Faveurs que le moteur sait appliquer (engine/tour.gd et scenes/app/app.gd).
 const FAVEURS := ["vigueur", "puissance", "repit", "egide", "effroi", "savoir"]
+## L'équipement (data/items.json, engine/equipement.gd) : les emplacements, les huit lignes que le moteur sait
+## appliquer, les raretés, l'échelle du niveau, les bases, le butin par source, la reforge.
+const CLES_OBJETS := ["emplacements", "lignes", "raretes", "niveau", "bases", "butin", "reforge"]
+const CLES_EMPLACEMENT := ["nom"]
+const LIGNES := ["pv", "force", "degats", "soins", "barrieres", "dot", "cle", "ouverture"]
+const CLES_LIGNE := ["nom", "texte", "fourchette", "plafond"]
+const CLES_RARETE := ["nom", "rang", "lignes", "echelle"]
+const CLES_NIVEAU := ["plancher", "plein"]
+const CLES_BASE := ["nom", "genre", "emplacement", "lignes"]
+const CLES_BUTIN := ["etage", "gardien", "rejoue"]
+const CLES_REFORGE := ["cout", "pente"]
 
 var regles: Dictionary = {}
 var etats: Dictionary = {}
@@ -68,6 +79,8 @@ var bestiaire: Dictionary = {}
 var tour: Dictionary = {}
 ## Les Faveurs de la Tour (data/faveurs.json, GDD V2 § 6) : identifiant -> {nom, texte, valeur, max}.
 var faveurs: Dictionary = {}
+## L'équipement (data/items.json, GDD V2 § 10.1) : emplacements, lignes, raretés, niveau, bases, butin, reforge.
+var objets: Dictionary = {}
 ## Ce qui ne va pas dans les données : une ligne par problème (vide si tout est connu et cohérent).
 var erreurs: Array[String] = []
 ## Une mémoire de calculs qui ne dépendent que des données (les formes de chaque nœud, pour le générateur).
@@ -95,6 +108,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.bestiaire = _lire(dossier + "bestiaire.json", donnees.erreurs)
 	donnees.tour = _lire(dossier + "tour.json", donnees.erreurs)
 	donnees.faveurs = _lire(dossier + "faveurs.json", donnees.erreurs)
+	donnees.objets = _lire(dossier + "items.json", donnees.erreurs)
 	donnees.valider()
 	return donnees
 
@@ -153,6 +167,7 @@ func valider() -> void:
 			erreurs.append(ou + " : plafond plus bas que la valeur d'un cumul")
 		if not "{v}" in str(faveurs[id].get("texte", "")):
 			erreurs.append(ou + " : le texte doit contenir « {v} »")
+	_valider_objets()
 	_cles(bestiaire, CLES_BESTIAIRE, CLES_BESTIAIRE, "bestiaire.json")
 	for id in bestiaire.get("monstres", {}):
 		var m: Dictionary = bestiaire["monstres"][id]
@@ -173,6 +188,78 @@ func valider() -> void:
 			erreurs.append(ou + " : famille ou rang inconnu")
 		if float(m.get("pv_mult", 0.0)) < 0.5 or float(m.get("pv_mult", 0.0)) > 1.5:
 			erreurs.append(ou + " : pv_mult hors de 0,5 à 1,5")
+
+
+## L'équipement (data/items.json) : toutes les clés connues ; chaque base sur un emplacement connu, avec des lignes
+## connues, toutes différentes, assez nombreuses pour la rareté la plus riche ; chaque fourchette croissante et sous
+## son plafond ; le butin sur des raretés connues.
+func _valider_objets() -> void:
+	_cles(objets, CLES_OBJETS, CLES_OBJETS, "items.json")
+	if not objets is Dictionary or not objets.has("lignes"):
+		return
+	for id in objets.get("emplacements", {}):
+		_cles(objets["emplacements"][id], CLES_EMPLACEMENT, CLES_EMPLACEMENT, "items.json emplacement " + str(id))
+	_cles(objets["lignes"], LIGNES, LIGNES, "items.json lignes")
+	for id in objets["lignes"]:
+		var ou := "items.json ligne " + str(id)
+		var l: Variant = objets["lignes"][id]
+		_cles(l, CLES_LIGNE, CLES_LIGNE, ou)
+		if not l is Dictionary:
+			continue
+		var f: Variant = l.get("fourchette", [])
+		if not f is Array or f.size() != 2 or float(f[0]) <= 0.0 or float(f[1]) <= float(f[0]):
+			erreurs.append(ou + " : fourchette attendue [min, max] avec 0 < min < max")
+		elif float(l.get("plafond", 0.0)) < float(f[1]):
+			erreurs.append(ou + " : plafond plus bas que le haut de la fourchette")
+		if not "{v}" in str(l.get("texte", "")):
+			erreurs.append(ou + " : le texte doit contenir « {v} »")
+	var lignes_max := 0
+	for id in objets.get("raretes", {}):
+		var ou := "items.json rareté " + str(id)
+		_cles(objets["raretes"][id], CLES_RARETE, CLES_RARETE, ou)
+		if objets["raretes"][id] is Dictionary:
+			_cles(objets["raretes"][id].get("nom", {}), ["m", "f"], ["m", "f"], ou + " nom")
+			lignes_max = maxi(lignes_max, int(objets["raretes"][id].get("lignes", 0)))
+			if float(objets["raretes"][id].get("echelle", 0.0)) <= 0.0 or int(objets["raretes"][id].get("lignes", 0)) <= 0:
+				erreurs.append(ou + " : échelle et nombre de lignes positifs attendus")
+	_cles(objets.get("niveau", {}), CLES_NIVEAU, CLES_NIVEAU, "items.json niveau")
+	if objets.get("niveau", {}) is Dictionary:
+		var p := float(objets["niveau"].get("plancher", 0.0))
+		if p <= 0.0 or p > 1.0 or float(objets["niveau"].get("plein", 0.0)) < 1.0:
+			erreurs.append("items.json niveau : plancher entre 0 et 1, plein d'au moins 1")
+	for id in objets.get("bases", {}):
+		var ou := "items.json base " + str(id)
+		var b: Variant = objets["bases"][id]
+		_cles(b, CLES_BASE, CLES_BASE, ou)
+		if not b is Dictionary:
+			continue
+		if not objets.get("emplacements", {}).has(str(b.get("emplacement", ""))):
+			erreurs.append(ou + " : emplacement inconnu")
+		if not str(b.get("genre", "")) in ["m", "f"]:
+			erreurs.append(ou + " : genre inconnu")
+		var vues: Array = []
+		for l in b.get("lignes", []):
+			if not objets["lignes"].has(str(l)):
+				erreurs.append("%s : ligne inconnue « %s »" % [ou, l])
+			elif vues.has(l):
+				erreurs.append("%s : ligne en double « %s »" % [ou, l])
+			vues.append(l)
+		if vues.size() < lignes_max:
+			erreurs.append("%s : %d lignes, il en faut %d pour la rareté la plus riche" % [ou, vues.size(), lignes_max])
+	_cles(objets.get("butin", {}), CLES_BUTIN, CLES_BUTIN, "items.json butin")
+	if objets.get("butin", {}) is Dictionary:
+		for source in ["etage", "gardien"]:
+			var poids: Variant = objets["butin"].get(source, {})
+			if not poids is Dictionary or poids.is_empty():
+				erreurs.append("items.json butin %s : des poids par rareté attendus" % source)
+				continue
+			for r in poids:
+				if not objets.get("raretes", {}).has(str(r)) or float(poids[r]) <= 0.0:
+					erreurs.append("items.json butin %s : rareté inconnue ou poids nul « %s »" % [source, r])
+		var rejoue := float(objets["butin"].get("rejoue", -1.0))
+		if rejoue < 0.0 or rejoue > 1.0:
+			erreurs.append("items.json butin : rejoue entre 0 et 1 attendu")
+	_cles(objets.get("reforge", {}), CLES_REFORGE, CLES_REFORGE, "items.json reforge")
 
 
 ## Les erreurs d'un fichier de classe (vide s'il est conforme à la section 13.1).
