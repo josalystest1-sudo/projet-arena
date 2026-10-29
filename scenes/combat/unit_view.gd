@@ -144,9 +144,13 @@ func _draw() -> void:
 	# Le nom tient à côté des PV : la police rapetisse pour un nom long (« Loup gris » sous un petit monstre).
 	var place := largeur - largeur_pv - 6.0
 	var taille_nom := 14
-	while taille_nom > 10 and police.get_string_size(nom, HORIZONTAL_ALIGNMENT_LEFT, -1, taille_nom).x > place:
+	while taille_nom > 9 and police.get_string_size(nom, HORIZONTAL_ALIGNMENT_LEFT, -1, taille_nom).x > place:
 		taille_nom -= 1
-	draw_string(police, Vector2(x0, y + 22.0), nom, HORIZONTAL_ALIGNMENT_LEFT, place, taille_nom, TEXTE)
+	# Encore trop long (« Chaman gobelin » sous un petit monstre) : coupé, avec un point.
+	var affiche := nom
+	while affiche.length() > 3 and police.get_string_size(affiche, HORIZONTAL_ALIGNMENT_LEFT, -1, taille_nom).x > place:
+		affiche = affiche.substr(0, affiche.length() - 2) + "."
+	draw_string(police, Vector2(x0, y + 22.0), affiche, HORIZONTAL_ALIGNMENT_LEFT, place, taille_nom, TEXTE)
 	draw_string(police, Vector2(x0, y + 22.0), texte_pv, HORIZONTAL_ALIGNMENT_RIGHT, largeur, 14, Color("aaa49b"))
 	# Les pastilles : menaces, puis états.
 	var n := mini(menaces.size(), 3) + mini(etats.size(), 3) + (1 if menaces.size() > 3 or etats.size() > 3 else 0)
