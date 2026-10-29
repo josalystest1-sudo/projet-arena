@@ -6,6 +6,8 @@
 ## Affichage seulement : toute la règle vient de res://engine (Regles, IA, Texte, Tour).
 extends Control
 
+const ResolutionVue := preload("res://scenes/combat/resolution_view.gd")
+
 const HAUT := 58.0
 const HUD_H := 430.0
 const OR := Color("e3b85f")
@@ -561,6 +563,7 @@ func _resoudre() -> void:
 	phase = "resolution"
 	_fermer_popup()
 	_fermer_feuille()
+	var avant := e
 	e = Regles.resoudre_tour(e, declarations)
 	for id in trace:
 		var a: Dictionary = e.actions_jouees.get(id, {})
@@ -569,7 +572,12 @@ func _resoudre() -> void:
 	for ev in e.journal:
 		if ev["type"] == "synergie" and e.camp(str(ev["acteur"])) == "a":
 			synergies.append(str(ev["detail"]))
-	# La résolution animée (cut-ins) et l'écran de fin viennent à l'étape 7 du plan.
+	var vue := ResolutionVue.new()
+	vue.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(vue)
+	vue.jouer(app, avant, e, noms, vues)
+	await vue.termine
+	vue.queue_free()
 	_maj()
 	if e.fini or (tour != null and tour.abandonne(e)):
 		_fin()
@@ -596,14 +604,7 @@ func _on_quitter() -> void:
 func _fin() -> void:
 	phase = "fin"
 	lbl_chrono.text = ""
-	if tour == null:
-		app.fin_duel(e.vainqueur == "a")
-		app.show_screen("home")
-		return
-	tour.terminer(e)
-	if tour.fini:
-		app.fin_tour(tour)
-		app.show_screen("tower")
-	else:
-		app.gain_xp(40)
-		app.show_screen("combat", {"etat": tour.combat(), "tour": tour, "noms": noms})
+	var options := {"etat": e, "noms": noms, "trace": trace, "synergies": synergies}
+	if tour != null:
+		options["tour"] = tour
+	app.show_screen("fin", options)
