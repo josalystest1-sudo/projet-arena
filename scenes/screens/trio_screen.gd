@@ -43,7 +43,7 @@ func _construire() -> void:
 		var texte := "Monter la Tour" if etage <= 1 else "Monter la Tour (étage %d)" % etage
 		column.add_child(UiKit.main_button(texte, monter) if mode == "tour" else UiKit.button(texte, monter, 64))
 	if mode != "":
-		column.add_child(UiKit.button("Retour", func(): app.show_screen("home" if mode == "duel" else "tower"), 52))
+		column.add_child(UiKit.button("Retour", func(): app.show_screen("ville" if mode == "duel" else "tower"), 52))
 
 
 ## La fiche d'un membre du trio. role : celui d'un Écho (« » pour le joueur), pour en proposer un autre.

@@ -43,6 +43,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		for p in plus_bas:
 			ligne.add_child(UiKit.button("Étage %d" % p, _monter.bind(p), 48, 16))
 	column.add_child(UiKit.button("Le bestiaire", func(): app.show_screen("bestiaire"), 52))
+	column.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 52))
 	var records := UiKit.card(column, 2)
 	records.add_child(UiKit.label("Records par classe", 18, UiKit.GOLD, false))
 	for class_id in app.data.ordre_classes:

@@ -107,10 +107,10 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	column.add_child(suite_boutons)
 	if tour == null:
 		suite_boutons.add_child(UiKit.main_button("Rejouer", func(): app.show_screen("versus")))
-		suite_boutons.add_child(UiKit.button("Retour à la Vitrine", func(): app.show_screen("home"), 56))
+		suite_boutons.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 56))
 	elif tour.fini:
 		suite_boutons.add_child(UiKit.main_button("Remonter", func(): app.show_screen("tower")))
-		suite_boutons.add_child(UiKit.button("Retour à la Vitrine", func(): app.show_screen("home"), 56))
+		suite_boutons.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 56))
 	else:
 		suite_boutons.add_child(UiKit.main_button("Étage suivant", func(): app.show_screen("combat", {"etat": tour.combat(), "tour": tour, "noms": noms})))
 		suite_boutons.add_child(UiKit.button("Arrêter la montée", func():
