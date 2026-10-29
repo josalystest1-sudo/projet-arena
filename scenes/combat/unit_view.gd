@@ -1,6 +1,8 @@
 ## Un personnage dans l'arène du combat V2 (docs/SPEC-COMBAT-V2.md, section 12.2) : son sprite (de face s'il est
 ## ennemi, tourné vers l'adversaire s'il est allié) et sa plaque : la barre de PV (rouge côté ennemi, teal côté allié),
-## puis ses menaces et ses états en pastilles (3 de chaque au plus, « +n » au-delà). Anneau doré en pointillé : la
+## puis ses menaces (un allié seulement : l'adversaire est caché) et ses états en pastilles (3 de chaque au plus, « +n »
+## au-delà). Un ennemi dont la Clé est prête a une lueur violette qui pulse, et une pastille « Clé » en tête des
+## autres. Anneau doré en pointillé : la
 ## cible ennemie choisie ; teal : la cible alliée. Toucher : le choisir pour cible ; appui long : sa fiche. Toucher
 ## (ou appui long sur) une pastille : ce qu'elle fait. Affichage seulement.
 class_name UnitView
@@ -37,6 +39,8 @@ var menaces: Array = []
 var etats: Array = []
 var cible_ennemie := false
 var cible_alliee := false
+## La Clé d'un ennemi est prête (jouable ce tour-ci) : la lueur.
+var cle_prete := false
 var _t := 0.0
 var _phase := 0.0
 var _appui := -1.0
@@ -130,6 +134,10 @@ func _draw() -> void:
 	draw_set_transform(Vector2(rs.get_center().x, rs.end.y - 2.0), 0.0, Vector2(1.0, 0.25))
 	draw_circle(Vector2.ZERO, rs.size.x * 0.32, Color(0, 0, 0, 0.35))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	if cle_prete and not ko:
+		var pouls := 0.5 + 0.5 * sin(_t * 5.0)
+		draw_circle(rs.get_center(), rs.size.x * 0.48, Color(VIOLET, 0.10 + 0.12 * pouls))
+		draw_arc(rs.get_center(), rs.size.x * (0.46 + 0.03 * pouls), 0.0, TAU, 40, Color(VIOLET, 0.55 + 0.35 * pouls), 3.0)
 	if cible_ennemie or cible_alliee:
 		_anneau(rs.get_center(), rs.size.x * 0.56, OR if cible_ennemie else TEAL)
 	var teinte := TEAL if allie else ROUGE
@@ -173,6 +181,8 @@ func _draw() -> void:
 		if p.has("cible"):
 			Picto.dessiner(self, str(p["cible"]), r.position + Vector2(r.size.y * 1.15, r.size.y * 0.55), r.size.y * 0.45, Color("aaa49b"))
 		draw_string(police, Vector2(r.end.x - 13.0, r.position.y + r.size.y * 0.72), str(p.get("texte", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, TEXTE)
+		if p.has("libelle"):
+			draw_string(police, Vector2(r.position.x, r.position.y + r.size.y * 0.72), str(p["libelle"]), HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 14, VIOLET)
 		if p.get("barre", false):
 			draw_line(r.position + Vector2(3, r.size.y - 3), r.end - Vector2(3, r.size.y - 3), ROUGE, 2.0)
 	# Les nombres qui montent.
@@ -185,8 +195,13 @@ func _draw() -> void:
 		draw_string(police, pos, str(f[0]), HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(f[1], a))
 
 
-## Ce que montre la pastille i : { type : « menace », « etat » ou « plus », i : son rang dans menaces ou etats }.
+## Ce que montre la pastille i : { type : « cle » (la Clé d'un ennemi est prête), « menace », « etat » ou « plus »,
+## i : son rang dans menaces ou etats }.
 func contenu_pastille(i: int) -> Dictionary:
+	if cle_prete and not ko:
+		if i == 0:
+			return {"type": "cle", "i": 0}
+		i -= 1
 	var nm := mini(menaces.size(), 3)
 	if i < nm:
 		return {"type": "menace", "i": i}
@@ -196,11 +211,14 @@ func contenu_pastille(i: int) -> Dictionary:
 
 
 func _nb_pastilles() -> int:
-	return mini(menaces.size(), 3) + mini(etats.size(), 3) + (1 if menaces.size() > 3 or etats.size() > 3 else 0)
+	var n := mini(menaces.size(), 3) + mini(etats.size(), 3) + (1 if menaces.size() > 3 or etats.size() > 3 else 0)
+	return n + (1 if cle_prete and not ko else 0)
 
 
 func _pastille(i: int) -> Dictionary:
 	var c := contenu_pastille(i)
+	if c["type"] == "cle":
+		return {"libelle": "Clé", "bord": VIOLET, "halo": true}
 	if c["type"] == "menace":
 		var m: Dictionary = menaces[c["i"]]
 		return {"pictogramme": m["pictogramme"], "couleur": m["couleur"], "cible": m["cible"], "texte": str(m["echeance"]),

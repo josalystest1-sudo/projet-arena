@@ -1,11 +1,13 @@
 ## L'écran de combat V2 (docs/SPEC-COMBAT-V2.md, section 12.2) : une seule scène d'arène. Le duo ennemi en haut à
 ## droite, le duo du joueur en bas à gauche (à la Tour, 1 à 4 monstres en haut, le plus gros au centre). En haut : le
-## tour, le chrono, « Quitter », puis le bandeau « en face » : ce que chaque ennemi peut jouer ce tour-ci, toujours
-## visible. En bas : le bandeau des Synergies, la bande de la voie en cours, les six cases fixes (moyeu en bas à gauche,
-## puis les voies ; dorées si elles complètent une Synergie avec ce que l'acolyte a annoncé), une ligne d'aide (ce que
-## fait la case choisie). Les acolytes annoncent leur choix en premier (pastille et trait vers la cible). Jouer :
-## toucher une case, puis la toucher encore. Toucher une pastille, un jeton ou un point d'une voie : sa fiche, jusqu'au
-## toucher suivant ; un appui long : la même, tant que le doigt reste posé.
+## tour, le chrono, « Quitter ». En bas : le bandeau des Synergies, la bande de la voie en cours, les six cases fixes
+## (moyeu en bas à gauche, puis les voies ; dorées si elles complètent une Synergie avec ce que l'acolyte a annoncé),
+## une ligne d'aide (ce que fait la case choisie). L'acolyte du joueur annonce son choix en premier (pastille et trait
+## vers la cible). Jouer : toucher une case, puis la toucher encore. Toucher une pastille ou un point d'une voie : sa
+## fiche, jusqu'au toucher suivant ; un appui long : la même, tant que le doigt reste posé.
+## L'adversaire est caché (décision de Gautier du 29 octobre, docs/GDD_V2.md § 4.2) : ni ses voies, ni ses menaces, ni
+## l'annonce de son acolyte ; seulement son nom, sa classe, ses PV, ses états (avec leurs tours) et une lueur quand sa
+## Clé est prête. On le découvre en le regardant jouer : sa fiche (appui long) liste ce qu'on l'a vu jouer.
 ## Affichage seulement : toute la règle vient de res://engine (Regles, IA, Texte, Tour).
 extends Control
 
@@ -43,7 +45,6 @@ var lbl_tour: Label
 var lbl_chrono: Label
 var btn_quitter: Button
 var bande: BandeVoie
-var adverse: BandeAdverse
 var bandeau: BandeauSynergie
 var cases := {}
 var aide: Label
@@ -60,6 +61,8 @@ var _annonces := {}
 var feuille: Control = null
 ## Le tracé des deux joueurs sur leur roue (pour la fin du combat) et les Synergies du duo.
 var trace := {"a1": [], "b1": []}
+## Ce qu'on a vu jouer chaque ennemi, dans l'ordre, sans doublon (sa fiche le rappelle).
+var vus := {}
 var synergies: Array = []
 var _quitter_arme := 0.0
 var _dernier_tic := 0
@@ -114,10 +117,6 @@ func _construire() -> void:
 	btn_quitter.add_theme_color_override("font_color", ATTENUE)
 	btn_quitter.pressed.connect(_on_quitter)
 	add_child(btn_quitter)
-	# Le bandeau « en face ».
-	adverse = BandeAdverse.new()
-	adverse.jeton_touche.connect(func(id, v, r, ancre, tenu): _ouvrir_fiche(_fiche_noeud(id, v, r), ancre, tenu, "%s|%d|%d" % [id, v, r]))
-	add_child(adverse)
 	# Le bas : le bandeau des Synergies, la bande de la voie, les six cases, l'aide.
 	var hud := VBoxContainer.new()
 	hud.name = "hud"
@@ -161,13 +160,7 @@ func _placer() -> void:
 	lbl_chrono.size = Vector2(size.x, 44)
 	btn_quitter.position = Vector2(size.x - 110, 10)
 	btn_quitter.size = Vector2(100, 36)
-	var nb_ennemis := 0
-	for id in e.ordre:
-		if e.camp(id) == "b":
-			nb_ennemis += 1
-	adverse.position = Vector2(0, HAUT)
-	adverse.size = Vector2(size.x, adverse.hauteur(nb_ennemis))
-	arene.position = Vector2(0, HAUT + adverse.size.y)
+	arene.position = Vector2(0, HAUT)
 	arene.size = Vector2(size.x, size.y - HUD_H - arene.position.y)
 	traits.size = arene.size
 	var monstres: Array = []
@@ -261,7 +254,9 @@ func _maj() -> void:
 		v.cible_ennemie = id == cible_e and phase == "choix"
 		v.cible_alliee = id == cible_a and phase == "choix" and id != "a1"
 		v.menaces = []
-		for m in Regles.menaces(e, id):
+		# L'adversaire est caché : pas de menaces, seulement la lueur quand sa Clé est prête.
+		v.cle_prete = e.camp(id) == "b" and phase == "choix" and _cle_prete(id)
+		for m in Regles.menaces(e, id) if e.camp(id) == "a" else []:
 			var n := e.noeud(id, int(m["voie"]), int(m["rang"]))
 			var pic := Texte.picto(n["effets"][0])
 			pic["cible"] = str(app.data.textes["pictos"]["cibles"][str(n["effets"][0]["cible"])])
@@ -280,7 +275,6 @@ func _maj() -> void:
 	_calculer_synergies()
 	_maj_cases()
 	_maj_bandeau()
-	_maj_adverse()
 	_maj_aide()
 
 
@@ -390,11 +384,7 @@ func _acolyte_de(id: String) -> String:
 	return ""
 
 
-func _cle_action(a: Dictionary) -> String:
-	return "%s|%d|%d" % [a["source"], int(a["voie"]), int(a["rang"]) if a["source"] == "voie" else 0]
-
-
-# --- Les Synergies et le bandeau « en face » ------------------------------------------
+# --- Les Synergies -----------------------------------------------------------------------
 
 ## Les Synergies que chaque case du joueur compléterait avec l'annonce de son acolyte (avec la cible choisie : exact ;
 ## seulement en visant un autre perso : ailleurs).
@@ -468,61 +458,12 @@ func _rappel_synergies() -> Array[String]:
 		"(toi et ton acolyte, le même tour ; sur la même cible, sauf Renfort + coup)"]
 
 
-## Le bandeau « en face » : une ligne par ennemi ; ce qu'il peut jouer ce tour-ci, ou ce qu'il a annoncé.
-func _maj_adverse() -> void:
-	var lignes: Array = []
-	for id in e.ordre:
-		if e.camp(id) != "b":
-			continue
-		var l := {"id": id, "nom": _nom(id), "titre": "", "note": "", "note_or": false, "ko": not e.vivant(id), "jetons": []}
-		lignes.append(l)
-		if not e.vivant(id):
-			continue
-		if declarations.has(id) and e.fiche(id)["place"] == "acolyte" and phase == "choix":
-			var a: Dictionary = declarations[id]
-			l["titre"] = "va jouer"
-			l["jetons"].append(_jeton(id, a, true))
-			var cible := _cible_de(id, a)
-			if cible != "":
-				l["note"] = "sur " + ("toi" if cible == "a1" else _nom(cible))
-			continue
-		var legales := Regles.actions_legales(e, id)
-		if legales.is_empty():
-			l["note"] = "ne peut rien jouer"
-			continue
-		l["titre"] = "peut jouer"
-		var syn := {}
-		var acol := _acolyte_de(id)
-		if acol != "" and declarations.has(acol) and phase == "choix":
-			for o in Regles.synergies_possibles(e, id, declarations[acol]):
-				syn[_cle_action(o["action"])] = o["noms"]
-		var noms_syn: Array = []
-		# Les voies d'abord, le moyeu (toujours là) en dernier.
-		legales.push_back(legales.pop_front())
-		for a in legales:
-			var j := _jeton(id, a, false)
-			if syn.has(_cle_action(a)):
-				j["synergie"] = true
-				for n in syn[_cle_action(a)]:
-					if not n in noms_syn:
-						noms_syn.append(n)
-			l["jetons"].append(j)
-		if not noms_syn.is_empty():
-			l["note"] = "Synergie : " + ", ".join(noms_syn)
-			l["note_or"] = true
-	adverse.lignes = lignes
-
-
-func _jeton(id: String, a: Dictionary, annonce: bool) -> Dictionary:
-	var voie := int(a["voie"])
-	var rang := int(a["rang"]) if a["source"] == "voie" else 0
-	var pictos := _pictos_en_combat(id, voie, rang)
-	var texte := ""
-	for p in pictos:
-		if str(p["texte"]) != "":
-			texte = str(p["texte"])
-			break
-	return {"voie": voie, "rang": rang, "pictos": pictos, "texte": texte, "cle": rang == 4, "synergie": false, "annonce": annonce}
+## Un ennemi a-t-il sa Clé prête (jouable ce tour-ci) ? Le seul signal qu'on voit de ses voies.
+func _cle_prete(id: String) -> bool:
+	for a in Regles.actions_legales(e, id):
+		if a["source"] == "voie" and int(a["rang"]) == 4:
+			return true
+	return false
 
 
 func _raison(voie: int, rang: int) -> String:
@@ -613,12 +554,20 @@ func _on_perso_appui_long(id: String) -> void:
 	_ouvrir_feuille(id)
 
 
-## Une pastille sous un perso : la fiche de la menace (le nœud), de l'état, ou la liste de tout ce qu'il porte.
+## Une pastille sous un perso : la Clé prête d'un ennemi, la fiche de la menace (le nœud), de l'état, ou la liste de
+## tout ce qu'il porte.
 func _on_pastille(id: String, index: int, ancre: Vector2, tenu: bool) -> void:
 	var v: UnitView = vues[id]
 	var c := v.contenu_pastille(index)
 	var cle := "%s|pastille|%d" % [id, index]
 	match str(c["type"]):
+		"cle":
+			var box := _nouveau_popup(tenu, cle, VIOLET)
+			if box == null:
+				return
+			box.add_child(UiKit.label("Clé prête", 21, VIOLET, false))
+			box.add_child(UiKit.label("%s peut lancer son gros coup ce tour-ci. Tu ne sais pas lequel : ses voies sont cachées." % _nom(id), 17, TEXTE, false))
+			_montrer_popup(box, ancre)
 		"menace":
 			var m: Dictionary = v.menaces[c["i"]]
 			_ouvrir_fiche(_fiche_noeud(id, int(m["voie"]), int(m["rang"])), ancre, tenu, cle)
@@ -717,13 +666,14 @@ func _ouvrir_fiche_etat(id: String, nom_etat: String, ancre: Vector2, tenu: bool
 	_montrer_popup(box, ancre)
 
 
-## Tout ce que porte un perso : ses menaces et ses états, une ligne chacun.
+## Tout ce que porte un perso : ses menaces (un allié seulement : l'adversaire est caché) et ses états, une ligne
+## chacun.
 func _ouvrir_liste(id: String, ancre: Vector2, tenu: bool, cle: String) -> void:
 	var box := _nouveau_popup(tenu, cle)
 	if box == null:
 		return
 	box.add_child(UiKit.label(_nom(id), 21, OR, false))
-	for m in Regles.menaces(e, id):
+	for m in Regles.menaces(e, id) if e.camp(id) == "a" else []:
 		var f := _fiche_noeud(id, int(m["voie"]), int(m["rang"]))
 		box.add_child(UiKit.label("%s : %s · %s" % [f["nom"], f["ligne"], f["echeance"]], 15, TEXTE, false))
 	for nom_etat in e.perso(id)["etats"]:
@@ -765,7 +715,8 @@ func _fermer_popup() -> void:
 		popup = null
 
 
-## La fiche d'un personnage (maquette « Enemy Sheet Screen ») : nom, classe, PV, états, et ses voies.
+## La fiche d'un personnage (maquette « Enemy Sheet Screen ») : nom, classe, PV, états, et ses voies ; pour un ennemi,
+## caché, seulement sa Clé prête et ce qu'on l'a vu jouer.
 func _ouvrir_feuille(id: String) -> void:
 	_fermer_feuille()
 	feuille = ColorRect.new()
@@ -797,6 +748,26 @@ func _ouvrir_feuille(id: String) -> void:
 		if r > 0:
 			etats.append("%s (%d tour%s)" % [e.defs_etats[nom]["nom"], r, "s" if r > 1 else ""])
 	col.add_child(UiKit.label("États : " + (", ".join(etats) if not etats.is_empty() else "aucun"), 15, VIOLET, false))
+	if e.camp(id) == "b":
+		if e.vivant(id) and phase == "choix" and _cle_prete(id):
+			col.add_child(UiKit.label("Sa Clé est prête : il peut lancer son gros coup ce tour-ci.", 15, VIOLET, false))
+		var deja: Array = vus.get(id, [])
+		col.add_child(UiKit.label("Vu jouer : " + (", ".join(deja) if not deja.is_empty() else "rien encore"), 15, TEXTE, false))
+		col.add_child(UiKit.label("Ses voies sont cachées : tu les découvres en le regardant jouer.", 14, ATTENUE, false))
+	else:
+		_feuille_voies(col, id)
+	var boutons := HBoxContainer.new()
+	boutons.add_theme_constant_override("separation", 10)
+	col.add_child(boutons)
+	if e.camp(id) == "b" and e.vivant(id) and phase == "choix":
+		boutons.add_child(UiKit.main_button("Le prendre pour cible", func():
+			_on_perso_touche(id)
+			_fermer_feuille(), 56))
+	boutons.add_child(UiKit.button("Fermer", _fermer_feuille, 56))
+
+
+## Les voies d'un allié dans sa fiche : son moyeu, puis la bande de chaque voie et son prochain nœud.
+func _feuille_voies(col: VBoxContainer, id: String) -> void:
 	var moyeu := _fiche_noeud(id, -1, 0)
 	col.add_child(UiKit.label("Moyeu, toujours jouable : %s · %s" % [moyeu["nom"], moyeu["ligne"]], 14, TEXTE, false))
 	col.add_child(UiKit.label("Ses voies, et le prochain nœud de chacune (touche un point : sa fiche)", 14, ATTENUE, false))
@@ -806,14 +777,6 @@ func _ouvrir_feuille(id: String) -> void:
 		b.noeud_touche.connect(func(voie, rang, ancre, tenu): _ouvrir_fiche(_fiche_noeud(id, voie, rang), ancre, tenu, "%s|%d|%d" % [id, voie, rang]))
 		col.add_child(b)
 		col.add_child(_ligne_prochain(id, v))
-	var boutons := HBoxContainer.new()
-	boutons.add_theme_constant_override("separation", 10)
-	col.add_child(boutons)
-	if e.camp(id) == "b" and e.vivant(id) and phase == "choix":
-		boutons.add_child(UiKit.main_button("Le prendre pour cible", func():
-			_on_perso_touche(id)
-			_fermer_feuille(), 56))
-	boutons.add_child(UiKit.button("Fermer", _fermer_feuille, 56))
 
 
 ## Sous la bande d'une voie : son prochain nœud, ce qu'il fait et quand il sera jouable.
@@ -836,15 +799,16 @@ func _fermer_feuille() -> void:
 		feuille = null
 
 
-# --- Les annonces des acolytes -------------------------------------------------------
+# --- L'annonce de l'acolyte ----------------------------------------------------------
 
+## L'annonce de l'acolyte du joueur (celle de l'acolyte adverse est cachée, comme tout l'adversaire).
 func _dessiner_traits() -> void:
 	_annonces = {}
 	if phase != "choix":
 		return
 	var police := ThemeDB.fallback_font
 	for id in declarations:
-		if e.fiche(id)["place"] != "acolyte":
+		if e.fiche(id)["place"] != "acolyte" or e.camp(id) != "a":
 			continue
 		var a: Dictionary = declarations[id]
 		var n := Regles.noeud_de(e, a)
@@ -893,6 +857,13 @@ func _resoudre() -> void:
 		var a: Dictionary = e.actions_jouees.get(id, {})
 		if not a.is_empty() and (tour == null or id == "a1"):
 			trace[id].append({"nom": Texte.nom(Regles.noeud_de(e, a)), "cle": int(a["rang"]) == 4 and a["source"] == "voie"})
+	for id in e.actions_jouees:
+		if e.camp(id) == "b":
+			var nom := Texte.nom(Regles.noeud_de(e, e.actions_jouees[id]))
+			if not vus.has(id):
+				vus[id] = []
+			if not nom in vus[id]:
+				vus[id].append(nom)
 	for ev in e.journal:
 		if ev["type"] == "synergie" and e.camp(str(ev["acteur"])) == "a":
 			synergies.append(str(ev["detail"]))
