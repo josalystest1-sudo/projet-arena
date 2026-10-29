@@ -2,7 +2,7 @@
 ## prochain nœud d'une voie. Elle montre ses pictogrammes et sa cible, son nom, sa ligne chiffrée ; grisée avec la raison
 ## (sablier, flocon, bâillon, racine, chaînes) si elle ne peut pas être jouée ; un œil barré sous Aveuglé pour un nœud à
 ## une seule cible ennemie ; dorée, avec le nom de la Synergie, si elle complète une Synergie avec ce que l'acolyte a
-## annoncé (« Brisure → Loup » : seulement en visant ce perso). Premier toucher : elle se soulève ; second : elle est
+## annoncé (« Brisure : vise Loup » : seulement en visant ce perso). Premier toucher : elle se soulève ; second : elle est
 ## jouée (verrouillée). Appui long : la fiche du nœud (ou, verrouillée, la déverrouiller). Affichage seulement.
 class_name CaseNoeud
 extends Control
