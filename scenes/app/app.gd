@@ -27,6 +27,7 @@ const SCREENS := {
 	"tableau": preload("res://scenes/screens/tableau_screen.gd"),
 	"arene": preload("res://scenes/screens/arene_screen.gd"),
 	"donjon": preload("res://scenes/screens/donjon_screen.gd"),
+	"comptoir": preload("res://scenes/screens/comptoir_screen.gd"),
 	"trio": preload("res://scenes/screens/trio_screen.gd"),
 	"profile": preload("res://scenes/screens/profile_screen.gd"),
 	"settings": preload("res://scenes/screens/settings_screen.gd"),
@@ -505,6 +506,52 @@ func abandonner_donjon() -> void:
 		donjon_en_cours.abandonner()
 		donjon_en_cours = null
 	profile.save()
+
+
+# ---------------------------------------------------------------------------
+# Le Comptoir et l'Or
+# ---------------------------------------------------------------------------
+
+## L'étal du jour (deux objets liés à ton niveau), avec « achete » pour ceux déjà pris aujourd'hui.
+func etal_du_jour() -> Array:
+	var aujourd_hui := Time.get_date_string_from_system()
+	if profile.etal_jour != aujourd_hui:
+		profile.etal_jour = aujourd_hui
+		profile.etal_achetes = []
+		profile.save()
+	var out := Comptoir.etal_du_jour(aujourd_hui, profile.level, data)
+	for i in range(out.size()):
+		out[i]["achete"] = profile.etal_achetes.has(i)
+	return out
+
+
+## Acheter un objet de l'étal contre des Éclats : il va dans le sac, lié. Faux s'il est déjà acheté ou s'il manque des
+## Éclats.
+func acheter_etal(index: int) -> bool:
+	var etal := etal_du_jour()
+	if index < 0 or index >= etal.size() or bool(etal[index]["achete"]):
+		return false
+	var objet: Dictionary = etal[index]
+	var prix := Comptoir.prix_etal(objet, data)
+	if profile.eclats < prix:
+		return false
+	profile.eclats -= prix
+	objet.erase("achete")
+	profile.sac.append(objet)
+	profile.etal_achetes.append(index)
+	profile.save()
+	return true
+
+
+## Vendre un objet échangeable du sac au prix plancher : l'Or gagné (0 : rien vendu).
+func vendre(index_sac: int) -> int:
+	if index_sac < 0 or index_sac >= profile.sac.size() or not Comptoir.vendable(profile.sac[index_sac]):
+		return 0
+	var prix := Comptoir.prix_plancher(profile.sac[index_sac], data)
+	profile.sac.remove_at(index_sac)
+	profile.monnaie_or += prix
+	profile.save()
+	return prix
 
 
 ## Le meilleur record de la Tour, toutes classes confondues (la « hauteur » du revenu passif).

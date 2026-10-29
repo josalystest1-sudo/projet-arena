@@ -78,6 +78,10 @@ const CLES_ARENE_LIGUES := ["aspirants", "elus", "ascendants"]
 const CLES_DONJONS := ["portes", "profondeur", "pv_entre_vagues", "elite_mult", "boss_mult", "recompenses", "donjons"]
 const CLES_DONJON := ["id", "nom", "famille", "niveau_min", "niveau_max", "niveau", "entree", "boss", "description"]
 const CLES_RECOMPENSE_DONJON := ["rarete", "fragments", "eclats"]
+## Le Comptoir (data/comptoir.json, GDD V2 § 10.2) : prix plancher par rareté, pente du niveau, base de qualité, multiples
+## du Marché, l'étal du jour (raretés vendues et leur prix en Éclats).
+const CLES_COMPTOIR := ["plancher", "niveau_pente", "qualite_base", "marche", "etal"]
+const CLES_ETAL := ["raretes", "prix"]
 const CLES_OBJECTIF := ["id", "texte", "compteur", "cible", "xp", "eclats"]
 const CLES_BATIMENT := ["id", "nom", "texte", "ecran", "options", "x", "y", "dispo", "forme"]
 const CLES_BATIMENT_OBLIGATOIRES := ["id", "nom", "texte", "ecran", "x", "y", "dispo"]
@@ -113,6 +117,8 @@ var objectifs: Dictionary = {}
 var objets_arene: Dictionary = {}
 ## Les donjons (data/donjons.json, GDD V2 § 8).
 var donjons: Dictionary = {}
+## Le Comptoir (data/comptoir.json, GDD V2 § 10.2).
+var comptoir: Dictionary = {}
 ## Ce qui ne va pas dans les données : une ligne par problème (vide si tout est connu et cohérent).
 var erreurs: Array[String] = []
 ## Une mémoire de calculs qui ne dépendent que des données (les formes de chaque nœud, pour le générateur).
@@ -145,6 +151,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.objectifs = _lire(dossier + "objectifs.json", donnees.erreurs)
 	donnees.objets_arene = _lire(dossier + "arene.json", donnees.erreurs)
 	donnees.donjons = _lire(dossier + "donjons.json", donnees.erreurs)
+	donnees.comptoir = _lire(dossier + "comptoir.json", donnees.erreurs)
 	donnees.valider()
 	return donnees
 
@@ -229,6 +236,25 @@ func valider() -> void:
 		if float(m.get("pv_mult", 0.0)) < 0.5 or float(m.get("pv_mult", 0.0)) > 1.5:
 			erreurs.append(ou + " : pv_mult hors de 0,5 à 1,5")
 	_valider_donjons()
+	_valider_comptoir()
+
+
+## Le Comptoir (data/comptoir.json) : clés connues, un plancher et un multiple de Marché par rareté connue, une pente et
+## une base de qualité cohérentes, un étal sur des raretés connues avec leur prix.
+func _valider_comptoir() -> void:
+	_cles(comptoir, CLES_COMPTOIR, CLES_COMPTOIR, "comptoir.json")
+	if not comptoir is Dictionary or not comptoir.has("etal"):
+		return
+	var raretes: Array = objets.get("raretes", {}).keys()
+	_cles(comptoir.get("plancher", {}), raretes, raretes, "comptoir.json plancher")
+	_cles(comptoir.get("marche", {}), raretes, raretes, "comptoir.json marche")
+	if float(comptoir.get("niveau_pente", -1.0)) < 0.0 or float(comptoir.get("qualite_base", -1.0)) < 0.0 or float(comptoir.get("qualite_base", 2.0)) > 1.0:
+		erreurs.append("comptoir.json : pente du niveau positive et base de qualité entre 0 et 1 attendues")
+	_cles(comptoir["etal"], CLES_ETAL, CLES_ETAL, "comptoir.json etal")
+	if comptoir["etal"] is Dictionary:
+		for r in comptoir["etal"].get("raretes", []):
+			if not raretes.has(str(r)) or not comptoir["etal"].get("prix", {}).has(str(r)):
+				erreurs.append("comptoir.json etal : rareté inconnue ou sans prix « %s »" % r)
 
 
 ## L'équipement (data/items.json) : toutes les clés connues ; chaque base sur un emplacement connu, avec des lignes

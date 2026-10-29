@@ -135,6 +135,9 @@ func _fiche(ou: String, cle: Variant) -> void:
 		column.add_child(UiKit.main_button("Équiper" + ("" if f["lie"] else " (il devient lié)"), _equiper.bind(int(cle)), 72))
 		recycler_bouton = UiKit.button("Recycler (+%d Éclats)" % Equipement.recyclage(objet, app.data), _recycler.bind(int(cle)), 52)
 		column.add_child(recycler_bouton)
+		if Comptoir.vendable(objet):
+			column.add_child(UiKit.label("Échangeable : le Comptoir l'achète %d Or (prix plancher)." % Comptoir.prix_plancher(objet, app.data), 14, ATTENUE))
+			column.add_child(UiKit.button("Vendre au Comptoir", func(): app.show_screen("comptoir"), 48, 16))
 	else:
 		column.add_child(UiKit.main_button("Retirer (il va dans ton sac)", _retirer.bind(str(cle)), 72))
 	column.add_child(UiKit.button("Retour à la Forge", func(): app.show_screen("forge"), 56))

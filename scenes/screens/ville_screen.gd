@@ -47,6 +47,8 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	var profile := app.profile
 	var record := app.meilleur_record()
 	var facts: Array = ["niveau %d" % profile.level, "%d Éclat%s" % [profile.eclats, "s" if profile.eclats > 1 else ""]]
+	if profile.monnaie_or > 0:
+		facts.append("%d Or" % profile.monnaie_or)
 	facts.append("Tour : étage %d" % record if record > 0 else "Tour : pas encore tentée")
 	haut_col.add_child(UiKit.label(" · ".join(facts), 15, UiKit.SOFT))
 	# La carte : le reste de l'écran.

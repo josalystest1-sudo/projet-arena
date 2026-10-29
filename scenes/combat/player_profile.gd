@@ -38,6 +38,11 @@ var objectifs_reclames: Array = []
 var arene: Dictionary = {}
 ## Les donjons (engine/donjon.gd) : par donjon, {chasse, explorees: [chemins], revelees: [chemins], boss: nombre}.
 var donjons: Dictionary = {}
+## Le Comptoir (engine/comptoir.gd) : l'Or (la monnaie échangeable), le jour de l'étal et les objets de l'étal achetés
+## ce jour-là (leurs index).
+var monnaie_or: int = 0
+var etal_jour: String = ""
+var etal_achetes: Array = []
 ## Les monstres déjà croisés à la Tour (identifiant -> true), pour le bestiaire.
 var monsters_seen: Dictionary = {}
 ## Les bulles d'aide du combat déjà lues (identifiant -> true) : chacune ne s'affiche qu'une fois.
@@ -70,6 +75,9 @@ static func load_profile() -> PlayerProfile:
 		profile.objectifs_reclames = cfg.get_value("objectifs", "reclames", [])
 		profile.arene = cfg.get_value("arene", "etat", {})
 		profile.donjons = cfg.get_value("donjons", "cartes", {})
+		profile.monnaie_or = int(cfg.get_value("comptoir", "or", 0))
+		profile.etal_jour = str(cfg.get_value("comptoir", "etal_jour", ""))
+		profile.etal_achetes = cfg.get_value("comptoir", "etal_achetes", [])
 		profile.monsters_seen = cfg.get_value("tour", "monstres", {})
 		profile.tips_seen = cfg.get_value("aide", "vues", {})
 		profile.level = int(cfg.get_value("progression", "niveau", 1))
@@ -97,6 +105,9 @@ func save() -> void:
 	cfg.set_value("objectifs", "reclames", objectifs_reclames)
 	cfg.set_value("arene", "etat", arene)
 	cfg.set_value("donjons", "cartes", donjons)
+	cfg.set_value("comptoir", "or", monnaie_or)
+	cfg.set_value("comptoir", "etal_jour", etal_jour)
+	cfg.set_value("comptoir", "etal_achetes", etal_achetes)
 	cfg.set_value("tour", "monstres", monsters_seen)
 	cfg.set_value("aide", "vues", tips_seen)
 	cfg.set_value("progression", "niveau", level)
