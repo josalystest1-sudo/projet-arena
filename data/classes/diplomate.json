@@ -3,8 +3,8 @@
   "nom": "Diplomate",
   "genre": "m",
   "role": "soutien",
-  "pv": 435,
-  "k": 1.1777,
+  "pv": 880,
+  "k": 1.2,
   "acolyte": "invocateur",
   "moyeu": {
     "nom": "Réplique",

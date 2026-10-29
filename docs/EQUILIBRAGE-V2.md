@@ -4967,3 +4967,1789 @@ Les données repartent de celles de la PR #39 (vérifiées), avec l'IA corrigée
 ### Boutons touchés, et pourquoi
 
 Aucun (mesure seule).
+
+## Passe 71 (graines à partir de 7100214)
+
+**2 critères tenus sur 6.** 50000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : guerrier 45,7 %, mage 43,9 %, voleur 44,6 %, archer 41,7 %, alchimiste 63,5 %, barde 56,7 %, diplomate 54,4 %, pugiliste 39,7 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre mage 62,0 %, guerrier contre archer 64,8 %, guerrier contre pretre 36,6 %, guerrier contre alchimiste 25,4 %, guerrier contre invocateur 35,6 %, guerrier contre barde 32,8 %, guerrier contre diplomate 32,0 %, guerrier contre pugiliste 64,2 %, mage contre pretre 38,6 %, mage contre alchimiste 34,2 %, mage contre invocateur 38,0 %, mage contre barde 33,6 %, mage contre diplomate 38,2 %, voleur contre alchimiste 36,8 %, voleur contre barde 38,4 %, voleur contre diplomate 33,4 %, archer contre guerrier 37,6 %, archer contre pretre 29,8 %, archer contre alchimiste 34,0 %, archer contre invocateur 37,4 %, archer contre barde 33,8 %, archer contre diplomate 38,2 %, pretre contre guerrier 63,4 %, pretre contre archer 66,0 %, pretre contre alchimiste 22,0 %, pretre contre barde 36,2 %, pretre contre pugiliste 60,2 %, alchimiste contre guerrier 71,4 %, alchimiste contre mage 68,0 %, alchimiste contre archer 63,0 %, alchimiste contre pretre 71,4 %, alchimiste contre invocateur 63,2 %, alchimiste contre diplomate 61,2 %, alchimiste contre pugiliste 69,2 %, invocateur contre guerrier 62,6 %, invocateur contre mage 63,4 %, invocateur contre alchimiste 36,0 %, invocateur contre pugiliste 65,2 %, barde contre guerrier 67,2 %, barde contre voleur 61,2 %, barde contre archer 64,8 %, barde contre pretre 60,4 %, barde contre alchimiste 34,4 %, barde contre pugiliste 66,8 %, diplomate contre guerrier 61,0 %, diplomate contre mage 62,8 %, diplomate contre voleur 64,2 %, diplomate contre archer 61,4 %, diplomate contre alchimiste 36,0 %, diplomate contre pugiliste 62,0 %, pugiliste contre guerrier 32,6 %, pugiliste contre alchimiste 30,6 %, pugiliste contre invocateur 38,2 %, pugiliste contre barde 30,4 %, pugiliste contre diplomate 37,8 %
+- ❌ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)** : alchimiste Réactive 63,5 %, barde Réactive 56,7 %, pugiliste Réactive 39,7 %
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : guerrier étage 10 60,3 %, guerrier étage 20 11,0 %, mage étage 20 10,3 %, voleur étage 10 76,0 %, voleur étage 20 14,7 %, archer étage 10 64,0 %, pretre étage 10 64,7 %, pretre étage 20 11,7 %, alchimiste étage 10 74,7 %, alchimiste étage 20 22,3 %, invocateur étage 10 77,3 %, invocateur étage 20 26,0 %, barde étage 10 82,7 %, barde étage 20 22,7 %, diplomate étage 10 76,3 %, diplomate étage 20 21,0 %, pugiliste étage 10 80,0 %, pugiliste étage 20 21,3 %, écart entre classes : étage 10 de 60,0 % à 82,7 %, étage 20 de 9,7 % à 26,0 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 54 | 62 | 50 | 65 | 37 | 25 | 36 | 33 | 32 | 64 | **45,7 %** |
+| Mage | 42 | 49 | 50 | 56 | 39 | 34 | 38 | 34 | 38 | 60 | **43,9 %** |
+| Voleur | 46 | 51 | 50 | 47 | 46 | 37 | 41 | 38 | 33 | 56 | **44,6 %** |
+| Archer | 38 | 46 | 53 | 52 | 30 | 34 | 37 | 34 | 38 | 55 | **41,7 %** |
+| Prêtre | 63 | 59 | 55 | 66 | 46 | 22 | 49 | 36 | 48 | 60 | **50,5 %** |
+| Alchimiste | 71 | 68 | 59 | 63 | 71 | 49 | 63 | 60 | 61 | 69 | **63,5 %** |
+| Invocateur | 63 | 63 | 57 | 60 | 53 | 36 | 47 | 45 | 40 | 65 | **53,0 %** |
+| Barde | 67 | 58 | 61 | 65 | 60 | 34 | 56 | 46 | 53 | 67 | **56,7 %** |
+| Diplomate | 61 | 63 | 64 | 61 | 45 | 36 | 59 | 42 | 50 | 62 | **54,4 %** |
+| Pugiliste | 33 | 42 | 46 | 47 | 41 | 31 | 38 | 30 | 38 | 51 | **39,7 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 36,5 % | 10,0 % | 45,7 % | 47,4 % | 65,5 % | 38,7 % | 89,4 % | 68,2 % | 97,5 % | 60,3 % | 11,0 % | 11,8 |
+| Mage | 41,5 % | 9,5 % | 43,9 % | 30,2 % | 62,8 % | 54,3 % | 31,4 % | 39,2 % | 91,1 % | 60,0 % | 10,3 % | 11,5 |
+| Voleur | 51,0 % | 20,5 % | 44,6 % | 48,5 % | 29,7 % | 66,6 % | 39,2 % | 48,3 % | 92,6 % | 76,0 % | 14,7 % | 12,9 |
+| Archer | 40,0 % | 10,0 % | 41,7 % | 47,5 % | 41,7 % | 63,7 % | 26,6 % | 39,0 % | 90,7 % | 64,0 % | 9,7 % | 11,7 |
+| Prêtre | 25,0 % | 5,5 % | 50,5 % | 52,4 % | 77,3 % | 42,4 % | 83,7 % | 77,6 % | 97,0 % | 64,7 % | 11,7 % | 11,9 |
+| Alchimiste | 40,0 % | 11,5 % | 63,5 % | 52,7 % | 49,6 % | 58,0 % | 38,5 % | 72,1 % | 96,9 % | 74,7 % | 22,3 % | 14,1 |
+| Invocateur | 48,0 % | 10,0 % | 53,0 % | 45,2 % | 54,2 % | 58,3 % | 59,4 % | 53,1 % | 93,0 % | 77,3 % | 26,0 % | 14,2 |
+| Barde | 45,0 % | 11,5 % | 56,7 % | 48,5 % | 41,9 % | 56,9 % | 60,9 % | 68,9 % | 94,0 % | 82,7 % | 22,7 % | 14,5 |
+| Diplomate | 35,0 % | 6,5 % | 54,4 % | 38,0 % | 62,1 % | 95,4 % | 53,7 % | 86,1 % | 97,2 % | 76,3 % | 21,0 % | 13,7 |
+| Pugiliste | 15,5 % | 3,5 % | 39,7 % | 44,2 % | 46,6 % | 72,2 % | 87,9 % | 44,3 % | 97,0 % | 80,0 % | 21,3 % | 13,8 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 71)
+- k_classe Guerrier : 0,826 → 0,838 (45,7 % de victoires)
+- k_classe Mage : 0,875 → 0,881 (43,9 % de victoires)
+- k_classe Voleur : 0,859 → 0,853 (44,6 % de victoires)
+- k_classe Archer : 0,899 → 0,905 (41,7 % de victoires)
+- k_classe Prêtre : 0,880 → 0,882 (50,5 % de victoires)
+- k_classe Alchimiste : 1,058 → 1,032 (63,5 % de victoires)
+- k_classe Invocateur : 0,975 → 0,954 (53,0 % de victoires)
+- k_classe Barde : 1,076 → 1,061 (56,7 % de victoires)
+- k_classe Diplomate : 1,178 → 1,199 (54,4 % de victoires)
+- k_classe Pugiliste : 0,974 → 0,993 (39,7 % de victoires)
+- Tour : force des monstres au départ 0,396 → 0,495, en plus par étage 0,027 → 0,034 (étage 10 atteint dans 71,6 % des montées, étage 20 dans 17,1 %)
+- Tour, Guerrier : pente des monstres 0,781 → 0,836 (étage 20 dans 11,0 % des montées)
+- Tour, Guerrier : facteur des monstres 1,728 → 1,573 (étage 10 dans 60,3 % des montées)
+- Tour, Mage : pente des monstres 1,216 → 1,284 (étage 20 dans 10,3 % des montées)
+- Tour, Mage : facteur des monstres 0,727 → 0,659 (étage 10 dans 60,0 % des montées)
+- Tour, Voleur : pente des monstres 0,469 → 0,537 (étage 20 dans 14,7 % des montées)
+- Tour, Voleur : facteur des monstres 0,984 → 1,019 (étage 10 dans 76,0 % des montées)
+- Tour, Archer : pente des monstres 1,563 → 1,630 (étage 20 dans 9,7 % des montées)
+- Tour, Archer : facteur des monstres 0,610 → 0,573 (étage 10 dans 64,0 % des montées)
+- Tour, Prêtre : pente des monstres 0,947 → 1,026 (étage 20 dans 11,7 % des montées)
+- Tour, Prêtre : facteur des monstres 1,137 → 1,074 (étage 10 dans 64,7 % des montées)
+- Tour, Alchimiste : pente des monstres 1,028 → 1,182 (étage 20 dans 22,3 % des montées)
+- Tour, Alchimiste : facteur des monstres 0,981 → 1,005 (étage 10 dans 74,7 % des montées)
+- Tour, Invocateur : pente des monstres 1,155 → 1,328 (étage 20 dans 26,0 % des montées)
+- Tour, Invocateur : facteur des monstres 0,923 → 0,965 (étage 10 dans 77,3 % des montées)
+- Tour, Barde : pente des monstres 1,561 → 1,795 (étage 20 dans 22,7 % des montées)
+- Tour, Barde : facteur des monstres 0,718 → 0,781 (étage 10 dans 82,7 % des montées)
+- Tour, Diplomate : pente des monstres 0,955 → 1,099 (étage 20 dans 21,0 % des montées)
+- Tour, Diplomate : facteur des monstres 1,373 → 1,425 (étage 10 dans 76,3 % des montées)
+- Tour, Pugiliste : pente des monstres 0,972 → 1,118 (étage 20 dans 21,3 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,900 → 0,961 (étage 10 dans 80,0 % des montées)
+
+## Passe 72 (graines à partir de 7200217)
+
+**2 critères tenus sur 6.** 50000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : guerrier 46,4 %, mage 46,6 %, voleur 46,9 %, pretre 53,6 %, alchimiste 55,4 %, barde 57,6 %, diplomate 53,2 %, pugiliste 41,6 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre pretre 32,4 %, guerrier contre alchimiste 34,0 %, guerrier contre barde 34,2 %, guerrier contre diplomate 35,4 %, guerrier contre pugiliste 67,6 %, mage contre pugiliste 60,6 %, archer contre pretre 37,4 %, archer contre pugiliste 65,2 %, pretre contre guerrier 63,8 %, pretre contre mage 62,8 %, pretre contre archer 62,2 %, pretre contre alchimiste 37,8 %, pretre contre barde 39,0 %, pretre contre pugiliste 61,6 %, alchimiste contre guerrier 66,0 %, alchimiste contre pretre 60,8 %, alchimiste contre barde 60,4 %, alchimiste contre pugiliste 61,2 %, invocateur contre diplomate 39,8 %, invocateur contre pugiliste 63,2 %, barde contre guerrier 64,8 %, barde contre voleur 60,8 %, barde contre archer 62,0 %, barde contre pugiliste 67,6 %, diplomate contre guerrier 64,0 %, diplomate contre alchimiste 38,4 %, diplomate contre pugiliste 60,2 %, pugiliste contre guerrier 35,0 %, pugiliste contre pretre 37,4 %, pugiliste contre alchimiste 38,4 %, pugiliste contre barde 35,2 %, pugiliste contre diplomate 38,4 %
+- ❌ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)** : alchimiste Réactive 55,4 %, barde Réactive 57,6 %
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : mage étage 20 2,3 %, voleur étage 10 30,0 %, voleur étage 20 2,3 %, pretre étage 20 3,7 %, alchimiste étage 10 34,7 %, alchimiste étage 20 3,7 %, invocateur étage 20 4,3 %, diplomate étage 10 37,7 %, diplomate étage 20 1,7 %, pugiliste étage 20 3,0 %, écart entre classes : étage 10 de 30,0 % à 54,3 %, étage 20 de 1,7 % à 5,3 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 52 | 56 | 55 | 57 | 32 | 34 | 41 | 34 | 35 | 68 | **46,4 %** |
+| Mage | 48 | 46 | 46 | 48 | 42 | 47 | 40 | 44 | 45 | 61 | **46,6 %** |
+| Voleur | 47 | 51 | 50 | 46 | 46 | 49 | 43 | 42 | 40 | 56 | **46,9 %** |
+| Archer | 44 | 52 | 56 | 51 | 37 | 50 | 47 | 45 | 44 | 65 | **49,2 %** |
+| Prêtre | 64 | 63 | 53 | 62 | 48 | 38 | 55 | 39 | 52 | 62 | **53,6 %** |
+| Alchimiste | 66 | 51 | 50 | 49 | 61 | 48 | 53 | 60 | 55 | 61 | **55,4 %** |
+| Invocateur | 60 | 57 | 59 | 55 | 45 | 48 | 51 | 49 | 40 | 63 | **52,7 %** |
+| Barde | 65 | 60 | 61 | 62 | 57 | 43 | 54 | 52 | 56 | 68 | **57,6 %** |
+| Diplomate | 64 | 55 | 60 | 59 | 44 | 38 | 60 | 44 | 48 | 60 | **53,2 %** |
+| Pugiliste | 35 | 43 | 50 | 44 | 37 | 38 | 42 | 35 | 38 | 53 | **41,6 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 50,0 % | 11,0 % | 46,4 % | 47,0 % | 68,3 % | 37,0 % | 87,2 % | 68,6 % | 97,3 % | 43,0 % | 5,3 % | 9,7 |
+| Mage | 49,5 % | 17,0 % | 46,6 % | 26,1 % | 63,6 % | 55,4 % | 32,1 % | 37,4 % | 90,7 % | 50,3 % | 2,3 % | 10,4 |
+| Voleur | 56,0 % | 22,0 % | 46,9 % | 47,2 % | 28,9 % | 63,6 % | 35,9 % | 51,5 % | 91,6 % | 30,0 % | 2,3 % | 8,1 |
+| Archer | 45,5 % | 14,0 % | 49,2 % | 43,5 % | 43,8 % | 62,7 % | 24,5 % | 51,3 % | 90,7 % | 53,3 % | 5,0 % | 10,6 |
+| Prêtre | 33,0 % | 13,5 % | 53,6 % | 51,5 % | 77,6 % | 44,0 % | 83,4 % | 80,0 % | 96,9 % | 41,0 % | 3,7 % | 9,3 |
+| Alchimiste | 40,5 % | 10,5 % | 55,4 % | 56,5 % | 35,3 % | 63,8 % | 40,9 % | 65,3 % | 96,3 % | 34,7 % | 3,7 % | 9,1 |
+| Invocateur | 53,0 % | 19,0 % | 52,7 % | 47,2 % | 54,3 % | 66,0 % | 47,6 % | 53,1 % | 92,6 % | 50,0 % | 4,3 % | 10,3 |
+| Barde | 47,5 % | 12,5 % | 57,6 % | 48,7 % | 38,1 % | 57,2 % | 59,1 % | 72,6 % | 93,6 % | 54,3 % | 5,0 % | 11,0 |
+| Diplomate | 43,0 % | 9,0 % | 53,2 % | 35,2 % | 63,9 % | 95,9 % | 49,5 % | 87,1 % | 98,0 % | 37,7 % | 1,7 % | 8,9 |
+| Pugiliste | 22,5 % | 5,5 % | 41,6 % | 55,8 % | 46,3 % | 69,0 % | 85,1 % | 44,7 % | 97,0 % | 40,3 % | 3,0 % | 9,1 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 71)
+- k_classe Guerrier : 0,838 → 0,853 (46,4 % de victoires)
+- k_classe Mage : 0,881 → 0,880 (46,6 % de victoires)
+- k_classe Voleur : 0,853 → 0,845 (46,9 % de victoires)
+- k_classe Archer : 0,905 → 0,895 (49,2 % de victoires)
+- k_classe Alchimiste : 1,032 → 1,026 (55,4 % de victoires)
+- k_classe Invocateur : 0,954 → 0,944 (52,7 % de victoires)
+- k_classe Barde : 1,061 → 1,060 (57,6 % de victoires)
+- k_classe Diplomate : 1,199 → 1,200 (53,2 % de victoires)
+- k_classe Pugiliste : 0,993 → 1,008 (41,6 % de victoires)
+- Tour : force des monstres au départ 0,495 → 0,476, en plus par étage 0,034 → 0,032 (étage 10 atteint dans 43,5 % des montées, étage 20 dans 3,6 %)
+- Tour, Guerrier : pente des monstres 0,836 → 0,818 (étage 20 dans 5,3 % des montées)
+- Tour, Mage : pente des monstres 1,284 → 1,218 (étage 20 dans 2,3 % des montées)
+- Tour, Mage : facteur des monstres 0,659 → 0,677 (étage 10 dans 50,3 % des montées)
+- Tour, Voleur : pente des monstres 0,537 → 0,509 (étage 20 dans 2,3 % des montées)
+- Tour, Voleur : facteur des monstres 1,019 → 0,964 (étage 10 dans 30,0 % des montées)
+- Tour, Archer : pente des monstres 1,630 → 1,590 (étage 20 dans 5,0 % des montées)
+- Tour, Archer : facteur des monstres 0,573 → 0,596 (étage 10 dans 53,3 % des montées)
+- Tour, Prêtre : pente des monstres 1,026 → 0,987 (étage 20 dans 3,7 % des montées)
+- Tour, Prêtre : facteur des monstres 1,074 → 1,053 (étage 10 dans 41,0 % des montées)
+- Tour, Alchimiste : pente des monstres 1,182 → 1,137 (étage 20 dans 3,7 % des montées)
+- Tour, Alchimiste : facteur des monstres 1,005 → 0,970 (étage 10 dans 34,7 % des montées)
+- Tour, Invocateur : pente des monstres 1,328 → 1,286 (étage 20 dans 4,3 % des montées)
+- Tour, Invocateur : facteur des monstres 0,965 → 1,016 (étage 10 dans 50,0 % des montées)
+- Tour, Barde : pente des monstres 1,795 → 1,750 (étage 20 dans 5,0 % des montées)
+- Tour, Barde : facteur des monstres 0,781 → 0,849 (étage 10 dans 54,3 % des montées)
+- Tour, Diplomate : pente des monstres 1,099 → 1,034 (étage 20 dans 1,7 % des montées)
+- Tour, Diplomate : facteur des monstres 1,425 → 1,392 (étage 10 dans 37,7 % des montées)
+- Tour, Pugiliste : pente des monstres 1,118 → 1,068 (étage 20 dans 3,0 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,961 → 0,949 (étage 10 dans 40,3 % des montées)
+
+## Passe 73 (graines à partir de 7300220)
+
+**2 critères tenus sur 6.** 50000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : archer 45,5 %, pretre 54,3 %, alchimiste 55,8 %, invocateur 54,6 %, barde 57,1 %, diplomate 54,6 %, pugiliste 44,4 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre archer 64,8 %, guerrier contre alchimiste 36,4 %, guerrier contre pugiliste 66,4 %, archer contre guerrier 34,6 %, archer contre pretre 34,0 %, pretre contre guerrier 64,2 %, pretre contre archer 68,0 %, pretre contre alchimiste 38,2 %, alchimiste contre guerrier 62,0 %, alchimiste contre pretre 60,4 %, alchimiste contre diplomate 60,4 %, invocateur contre guerrier 62,6 %, invocateur contre archer 60,2 %, invocateur contre pugiliste 61,6 %, barde contre guerrier 61,0 %, barde contre archer 64,2 %, barde contre pugiliste 65,0 %, diplomate contre guerrier 62,8 %, diplomate contre voleur 61,6 %, pugiliste contre guerrier 35,0 %, pugiliste contre barde 38,2 %
+- ❌ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)** : alchimiste Réactive 55,8 %, barde Réactive 57,1 %
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : guerrier étage 10 64,3 %, voleur étage 20 4,7 %, archer étage 20 3,0 %, pretre étage 20 4,7 %, barde étage 20 2,7 %, diplomate étage 20 4,0 %, écart entre classes : étage 10 de 41,3 % à 64,3 %, étage 20 de 2,7 % à 9,3 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 53 | 59 | 53 | 65 | 43 | 36 | 43 | 42 | 40 | 66 | **50,1 %** |
+| Mage | 42 | 50 | 45 | 55 | 46 | 50 | 44 | 44 | 51 | 56 | **48,3 %** |
+| Voleur | 48 | 54 | 51 | 48 | 47 | 50 | 46 | 44 | 44 | 53 | **48,6 %** |
+| Archer | 35 | 47 | 50 | 52 | 34 | 49 | 45 | 41 | 50 | 54 | **45,5 %** |
+| Prêtre | 64 | 56 | 50 | 68 | 50 | 38 | 54 | 46 | 60 | 58 | **54,3 %** |
+| Alchimiste | 62 | 53 | 52 | 55 | 60 | 52 | 53 | 55 | 60 | 56 | **55,8 %** |
+| Invocateur | 63 | 59 | 58 | 60 | 51 | 49 | 49 | 50 | 47 | 62 | **54,6 %** |
+| Barde | 61 | 55 | 56 | 64 | 57 | 45 | 55 | 54 | 58 | 65 | **57,1 %** |
+| Diplomate | 63 | 56 | 62 | 60 | 51 | 46 | 57 | 42 | 53 | 57 | **54,6 %** |
+| Pugiliste | 35 | 44 | 52 | 45 | 44 | 44 | 44 | 38 | 45 | 52 | **44,4 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 47,0 % | 9,0 % | 50,1 % | 49,6 % | 65,3 % | 39,2 % | 87,4 % | 70,0 % | 97,2 % | 64,3 % | 7,3 % | 12,1 |
+| Mage | 56,0 % | 15,5 % | 48,3 % | 30,1 % | 62,3 % | 53,5 % | 31,5 % | 41,2 % | 90,1 % | 53,3 % | 5,0 % | 10,7 |
+| Voleur | 63,5 % | 26,5 % | 48,6 % | 51,1 % | 28,3 % | 63,9 % | 40,1 % | 45,4 % | 91,7 % | 49,0 % | 4,7 % | 10,1 |
+| Archer | 46,0 % | 15,0 % | 45,5 % | 43,0 % | 41,2 % | 66,2 % | 28,3 % | 40,9 % | 89,8 % | 57,0 % | 3,0 % | 10,7 |
+| Prêtre | 36,5 % | 9,0 % | 54,3 % | 53,9 % | 76,7 % | 40,2 % | 82,8 % | 79,2 % | 96,9 % | 49,3 % | 4,7 % | 10,2 |
+| Alchimiste | 46,0 % | 11,5 % | 55,8 % | 54,9 % | 37,7 % | 61,8 % | 42,2 % | 67,7 % | 96,1 % | 41,3 % | 6,3 % | 9,8 |
+| Invocateur | 50,5 % | 18,0 % | 54,6 % | 46,7 % | 56,2 % | 65,2 % | 47,8 % | 54,8 % | 92,7 % | 57,0 % | 9,3 % | 11,1 |
+| Barde | 45,5 % | 16,0 % | 57,1 % | 47,7 % | 41,0 % | 53,7 % | 59,3 % | 75,0 % | 93,3 % | 50,0 % | 2,7 % | 10,3 |
+| Diplomate | 42,5 % | 5,5 % | 54,6 % | 34,2 % | 61,0 % | 95,8 % | 51,0 % | 87,6 % | 97,8 % | 57,0 % | 4,0 % | 10,9 |
+| Pugiliste | 16,0 % | 3,5 % | 44,4 % | 52,0 % | 54,8 % | 70,3 % | 85,2 % | 44,6 % | 97,0 % | 53,7 % | 5,0 % | 10,5 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 71)
+- k_classe Guerrier : 0,853 → 0,864 (50,1 % de victoires)
+- k_classe Mage : 0,880 → 0,881 (48,3 % de victoires)
+- k_classe Voleur : 0,845 → 0,829 (48,6 % de victoires)
+- k_classe Archer : 0,895 → 0,904 (45,5 % de victoires)
+- k_classe Prêtre : 0,882 → 0,874 (54,3 % de victoires)
+- k_classe Alchimiste : 1,026 → 1,022 (55,8 % de victoires)
+- k_classe Invocateur : 0,944 → 0,927 (54,6 % de victoires)
+- k_classe Barde : 1,060 → 1,056 (57,1 % de victoires)
+- k_classe Pugiliste : 1,008 → 1,028 (44,4 % de victoires)
+- Tour : force des monstres au départ 0,476 → 0,480, en plus par étage 0,032 → 0,031 (étage 10 atteint dans 53,2 % des montées, étage 20 dans 5,2 %)
+- Tour, Guerrier : facteur des monstres 1,573 → 1,643 (étage 10 dans 64,3 % des montées)
+- Tour, Mage : pente des monstres 1,218 → 1,188 (étage 20 dans 5,0 % des montées)
+- Tour, Voleur : pente des monstres 0,509 → 0,495 (étage 20 dans 4,7 % des montées)
+- Tour, Voleur : facteur des monstres 0,964 → 0,948 (étage 10 dans 49,0 % des montées)
+- Tour, Archer : pente des monstres 1,590 → 1,518 (étage 20 dans 3,0 % des montées)
+- Tour, Archer : facteur des monstres 0,596 → 0,605 (étage 10 dans 57,0 % des montées)
+- Tour, Prêtre : pente des monstres 0,987 → 0,959 (étage 20 dans 4,7 % des montées)
+- Tour, Prêtre : facteur des monstres 1,053 → 1,021 (étage 10 dans 49,3 % des montées)
+- Tour, Alchimiste : facteur des monstres 0,970 → 0,924 (étage 10 dans 41,3 % des montées)
+- Tour, Invocateur : facteur des monstres 1,016 → 1,046 (étage 10 dans 57,0 % des montées)
+- Tour, Barde : pente des monstres 1,750 → 1,665 (étage 20 dans 2,7 % des montées)
+- Tour, Barde : facteur des monstres 0,849 → 0,838 (étage 10 dans 50,0 % des montées)
+- Tour, Diplomate : pente des monstres 1,034 → 0,998 (étage 20 dans 4,0 % des montées)
+- Tour, Diplomate : facteur des monstres 1,392 → 1,403 (étage 10 dans 57,0 % des montées)
+- Tour, Pugiliste : pente des monstres 1,068 → 1,041 (étage 20 dans 5,0 % des montées)
+
+## Passe 74 (graines à partir de 7400223)
+
+**2 critères tenus sur 6.** 50000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : alchimiste 54,5 %, barde 55,1 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre archer 61,0 %, guerrier contre pretre 39,0 %, guerrier contre alchimiste 36,2 %, guerrier contre invocateur 36,8 %, guerrier contre barde 39,4 %, guerrier contre pugiliste 62,8 %, mage contre pretre 38,2 %, archer contre pugiliste 60,2 %, pretre contre guerrier 60,2 %, pretre contre alchimiste 33,4 %, pretre contre barde 39,0 %, alchimiste contre guerrier 62,4 %, alchimiste contre pretre 63,0 %, invocateur contre guerrier 63,6 %, barde contre guerrier 62,2 %, barde contre pugiliste 62,4 %, diplomate contre barde 38,2 %
+- ❌ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)** : barde Réactive 55,1 %
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : mage étage 20 4,7 %, voleur étage 20 4,7 %, invocateur étage 20 4,7 %, barde étage 20 4,0 %, écart entre classes : étage 10 de 43,0 % à 58,7 %, étage 20 de 4,0 % à 7,7 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 51 | 54 | 52 | 61 | 39 | 36 | 37 | 39 | 42 | 63 | **47,5 %** |
+| Mage | 47 | 53 | 48 | 52 | 38 | 51 | 43 | 43 | 45 | 59 | **47,9 %** |
+| Voleur | 52 | 54 | 54 | 48 | 50 | 56 | 48 | 47 | 47 | 52 | **51,0 %** |
+| Archer | 45 | 53 | 57 | 53 | 40 | 54 | 47 | 44 | 51 | 60 | **50,4 %** |
+| Prêtre | 60 | 55 | 49 | 60 | 48 | 33 | 52 | 39 | 59 | 56 | **51,1 %** |
+| Alchimiste | 62 | 50 | 52 | 49 | 63 | 48 | 50 | 57 | 56 | 57 | **54,5 %** |
+| Invocateur | 64 | 58 | 56 | 54 | 47 | 49 | 51 | 46 | 44 | 55 | **52,4 %** |
+| Barde | 62 | 55 | 57 | 55 | 55 | 46 | 53 | 48 | 57 | 62 | **55,1 %** |
+| Diplomate | 58 | 50 | 56 | 50 | 45 | 46 | 55 | 38 | 47 | 49 | **49,5 %** |
+| Pugiliste | 41 | 48 | 53 | 49 | 46 | 48 | 46 | 40 | 48 | 53 | **47,2 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 38,0 % | 9,0 % | 47,5 % | 49,0 % | 75,9 % | 45,3 % | 83,9 % | 67,7 % | 97,8 % | 52,0 % | 5,7 % | 10,7 |
+| Mage | 47,5 % | 11,0 % | 47,9 % | 29,9 % | 62,5 % | 52,8 % | 35,3 % | 40,1 % | 91,3 % | 58,7 % | 4,7 % | 11,3 |
+| Voleur | 50,0 % | 19,0 % | 51,0 % | 46,7 % | 28,5 % | 64,1 % | 36,0 % | 53,1 % | 92,1 % | 55,3 % | 4,7 % | 10,7 |
+| Archer | 42,0 % | 11,5 % | 50,4 % | 44,4 % | 45,8 % | 61,0 % | 27,1 % | 49,2 % | 90,8 % | 58,3 % | 6,3 % | 11,2 |
+| Prêtre | 29,5 % | 10,0 % | 51,1 % | 53,6 % | 75,0 % | 47,4 % | 82,3 % | 81,1 % | 96,7 % | 50,7 % | 7,3 % | 10,7 |
+| Alchimiste | 44,0 % | 15,5 % | 54,5 % | 54,5 % | 36,8 % | 62,7 % | 41,9 % | 67,1 % | 96,3 % | 43,7 % | 5,0 % | 9,8 |
+| Invocateur | 57,5 % | 16,0 % | 52,4 % | 45,8 % | 52,4 % | 68,7 % | 43,8 % | 51,8 % | 92,1 % | 43,0 % | 4,7 % | 9,7 |
+| Barde | 44,5 % | 12,5 % | 55,1 % | 51,1 % | 39,4 % | 55,5 % | 60,2 % | 70,7 % | 93,7 % | 49,0 % | 4,0 % | 10,2 |
+| Diplomate | 40,5 % | 5,5 % | 49,5 % | 34,5 % | 64,9 % | 96,1 % | 47,8 % | 86,9 % | 98,0 % | 49,3 % | 5,7 % | 10,3 |
+| Pugiliste | 9,0 % | 2,5 % | 47,2 % | 54,5 % | 51,4 % | 65,5 % | 85,4 % | 43,2 % | 97,3 % | 51,3 % | 7,7 % | 10,5 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 71)
+- k_classe Guerrier : 0,864 → 0,870 (47,5 % de victoires)
+- k_classe Voleur : 0,829 → 0,813 (51,0 % de victoires)
+- k_classe Archer : 0,904 → 0,907 (50,4 % de victoires)
+- k_classe Prêtre : 0,874 → 0,877 (51,1 % de victoires)
+- k_classe Alchimiste : 1,022 → 1,010 (54,5 % de victoires)
+- k_classe Invocateur : 0,927 → 0,910 (52,4 % de victoires)
+- k_classe Barde : 1,056 → 1,044 (55,1 % de victoires)
+- k_classe Pugiliste : 1,028 → 1,041 (47,2 % de victoires)
+- Tour : force des monstres au départ 0,480 → 0,480, en plus par étage 0,031 → 0,030 (étage 10 atteint dans 51,1 % des montées, étage 20 dans 5,6 %)
+- Tour, Mage : pente des monstres 1,188 → 1,154 (étage 20 dans 4,7 % des montées)
+- Tour, Mage : facteur des monstres 0,677 → 0,698 (étage 10 dans 58,7 % des montées)
+- Tour, Voleur : pente des monstres 0,495 → 0,481 (étage 20 dans 4,7 % des montées)
+- Tour, Voleur : facteur des monstres 0,948 → 0,956 (étage 10 dans 55,3 % des montées)
+- Tour, Archer : facteur des monstres 0,605 → 0,622 (étage 10 dans 58,3 % des montées)
+- Tour, Alchimiste : pente des monstres 1,137 → 1,109 (étage 20 dans 5,0 % des montées)
+- Tour, Alchimiste : facteur des monstres 0,924 → 0,896 (étage 10 dans 43,7 % des montées)
+- Tour, Invocateur : pente des monstres 1,286 → 1,249 (étage 20 dans 4,7 % des montées)
+- Tour, Invocateur : facteur des monstres 1,046 → 1,012 (étage 10 dans 43,0 % des montées)
+- Tour, Barde : pente des monstres 1,665 → 1,607 (étage 20 dans 4,0 % des montées)
+- Tour, Barde : facteur des monstres 0,838 → 0,831 (étage 10 dans 49,0 % des montées)
+
+## Passe 75 (graines à partir de 7500226)
+
+**2 critères tenus sur 6.** 50000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : barde 55,3 %, pugiliste 46,5 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre archer 62,0 %, archer contre guerrier 37,8 %, archer contre pretre 39,0 %, barde contre guerrier 61,0 %, barde contre diplomate 61,2 %, pugiliste contre guerrier 39,8 %
+- ❌ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)** : barde Réactive 55,3 %
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : guerrier étage 10 63,0 %, guerrier étage 20 11,3 %, archer étage 10 60,3 %, pretre étage 10 63,3 %, diplomate étage 20 3,7 %, écart entre classes : étage 10 de 47,7 % à 63,3 %, étage 20 de 3,7 % à 11,3 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 49 | 55 | 58 | 62 | 46 | 48 | 44 | 49 | 46 | 60 | **51,6 %** |
+| Mage | 42 | 52 | 49 | 50 | 49 | 59 | 46 | 51 | 49 | 52 | **49,7 %** |
+| Voleur | 45 | 51 | 51 | 48 | 46 | 53 | 44 | 47 | 49 | 47 | **48,1 %** |
+| Archer | 38 | 48 | 55 | 51 | 39 | 57 | 46 | 43 | 54 | 50 | **48,0 %** |
+| Prêtre | 58 | 56 | 52 | 59 | 50 | 45 | 54 | 46 | 56 | 50 | **52,7 %** |
+| Alchimiste | 54 | 49 | 47 | 47 | 60 | 49 | 52 | 56 | 56 | 49 | **51,8 %** |
+| Invocateur | 58 | 57 | 56 | 55 | 47 | 50 | 53 | 48 | 46 | 52 | **52,1 %** |
+| Barde | 61 | 51 | 56 | 52 | 58 | 47 | 53 | 54 | 61 | 59 | **55,3 %** |
+| Diplomate | 53 | 46 | 57 | 47 | 45 | 47 | 53 | 44 | 50 | 48 | **49,0 %** |
+| Pugiliste | 40 | 45 | 49 | 46 | 48 | 49 | 48 | 44 | 50 | 45 | **46,5 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 48,0 % | 10,0 % | 51,6 % | 48,0 % | 67,0 % | 51,9 % | 85,0 % | 70,1 % | 97,5 % | 63,0 % | 11,3 % | 12,3 |
+| Mage | 48,0 % | 10,0 % | 49,7 % | 31,2 % | 64,0 % | 55,7 % | 30,4 % | 40,0 % | 90,6 % | 56,0 % | 7,0 % | 11,0 |
+| Voleur | 50,0 % | 21,0 % | 48,1 % | 47,2 % | 30,4 % | 66,6 % | 36,2 % | 47,0 % | 91,0 % | 57,7 % | 9,0 % | 11,3 |
+| Archer | 48,5 % | 13,0 % | 48,0 % | 47,3 % | 37,3 % | 67,0 % | 26,4 % | 50,0 % | 90,0 % | 60,3 % | 7,0 % | 11,4 |
+| Prêtre | 21,5 % | 8,0 % | 52,7 % | 55,4 % | 78,1 % | 32,7 % | 82,6 % | 77,1 % | 96,5 % | 63,3 % | 9,7 % | 11,7 |
+| Alchimiste | 33,0 % | 12,0 % | 51,8 % | 54,1 % | 39,4 % | 63,4 % | 41,8 % | 68,5 % | 96,3 % | 50,3 % | 9,0 % | 10,9 |
+| Invocateur | 52,5 % | 16,5 % | 52,1 % | 42,5 % | 51,8 % | 71,1 % | 46,1 % | 51,0 % | 92,1 % | 47,7 % | 6,3 % | 10,2 |
+| Barde | 49,5 % | 11,0 % | 55,3 % | 47,2 % | 42,6 % | 58,0 % | 59,1 % | 70,2 % | 92,9 % | 55,0 % | 6,3 % | 11,3 |
+| Diplomate | 36,0 % | 6,5 % | 49,0 % | 35,7 % | 63,5 % | 96,3 % | 49,2 % | 87,3 % | 97,5 % | 52,7 % | 3,7 % | 10,5 |
+| Pugiliste | 22,5 % | 3,5 % | 46,5 % | 50,7 % | 57,3 % | 69,0 % | 84,7 % | 43,4 % | 96,9 % | 53,0 % | 7,3 % | 10,8 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 75)
+- k_classe Guerrier : 0,870 → 0,873 (51,6 % de victoires)
+- k_classe Mage : 0,881 → 0,887 (49,7 % de victoires)
+- k_classe Archer : 0,907 → 0,913 (48,0 % de victoires)
+- k_classe Prêtre : 0,877 → 0,869 (52,7 % de victoires)
+- k_classe Alchimiste : 1,010 → 1,009 (51,8 % de victoires)
+- k_classe Invocateur : 0,910 → 0,894 (52,1 % de victoires)
+- k_classe Barde : 1,044 → 1,028 (55,3 % de victoires)
+- k_classe Pugiliste : 1,041 → 1,056 (46,5 % de victoires)
+- Tour : force des monstres au départ 0,480 → 0,489, en plus par étage 0,030 → 0,030 (étage 10 atteint dans 55,9 % des montées, étage 20 dans 7,7 %)
+- Tour, Guerrier : pente des monstres 0,818 → 0,834 (étage 20 dans 11,3 % des montées)
+- Tour, Guerrier : facteur des monstres 1,643 → 1,689 (étage 10 dans 63,0 % des montées)
+- Tour, Archer : facteur des monstres 0,622 → 0,633 (étage 10 dans 60,3 % des montées)
+- Tour, Prêtre : pente des monstres 0,959 → 0,970 (étage 20 dans 9,7 % des montées)
+- Tour, Prêtre : facteur des monstres 1,021 → 1,051 (étage 10 dans 63,3 % des montées)
+- Tour, Alchimiste : facteur des monstres 0,896 → 0,876 (étage 10 dans 50,3 % des montées)
+- Tour, Invocateur : facteur des monstres 1,012 → 0,979 (étage 10 dans 47,7 % des montées)
+- Tour, Diplomate : pente des monstres 0,998 → 0,960 (étage 20 dans 3,7 % des montées)
+- Tour, Diplomate : facteur des monstres 1,403 → 1,399 (étage 10 dans 52,7 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,949 → 0,938 (étage 10 dans 53,0 % des montées)
+
+## Passe 76 (graines à partir de 7600229)
+
+**3 critères tenus sur 6.** 50000 combats de duel (médiane 19 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : guerrier 46,4 %, invocateur 53,6 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre invocateur 39,2 %, pretre contre guerrier 61,4 %, alchimiste contre guerrier 61,2 %, invocateur contre guerrier 63,4 %, barde contre guerrier 61,4 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : guerrier étage 20 3,0 %, archer étage 10 60,7 %, alchimiste étage 20 10,7 %, barde étage 20 4,0 %, diplomate étage 20 3,0 %, écart entre classes : étage 10 de 40,7 % à 60,7 %, étage 20 de 3,0 % à 10,7 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 49 | 50 | 49 | 60 | 41 | 40 | 39 | 43 | 40 | 54 | **46,4 %** |
+| Mage | 46 | 51 | 48 | 49 | 49 | 56 | 44 | 49 | 56 | 51 | **49,9 %** |
+| Voleur | 52 | 53 | 56 | 47 | 50 | 54 | 47 | 48 | 48 | 53 | **50,8 %** |
+| Archer | 45 | 51 | 53 | 52 | 44 | 60 | 48 | 52 | 58 | 53 | **51,6 %** |
+| Prêtre | 61 | 53 | 51 | 58 | 56 | 41 | 52 | 45 | 53 | 55 | **52,5 %** |
+| Alchimiste | 61 | 46 | 46 | 41 | 60 | 50 | 52 | 57 | 52 | 48 | **51,4 %** |
+| Invocateur | 63 | 57 | 59 | 51 | 45 | 53 | 50 | 53 | 47 | 57 | **53,6 %** |
+| Barde | 61 | 48 | 53 | 50 | 52 | 47 | 52 | 53 | 59 | 55 | **53,0 %** |
+| Diplomate | 55 | 42 | 52 | 45 | 49 | 46 | 53 | 44 | 52 | 48 | **48,6 %** |
+| Pugiliste | 46 | 50 | 46 | 48 | 48 | 49 | 44 | 43 | 53 | 50 | **47,8 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 43,5 % | 8,5 % | 46,4 % | 47,8 % | 70,3 % | 44,4 % | 86,6 % | 66,9 % | 97,2 % | 46,0 % | 3,0 % | 9,7 |
+| Mage | 57,0 % | 21,5 % | 49,9 % | 28,9 % | 62,7 % | 55,2 % | 33,1 % | 38,8 % | 91,2 % | 58,7 % | 6,3 % | 11,1 |
+| Voleur | 59,0 % | 25,0 % | 50,8 % | 47,0 % | 32,0 % | 65,3 % | 34,7 % | 44,4 % | 90,3 % | 56,3 % | 7,7 % | 10,9 |
+| Archer | 52,5 % | 22,0 % | 51,6 % | 47,2 % | 39,4 % | 64,2 % | 29,5 % | 50,1 % | 89,9 % | 60,7 % | 7,7 % | 11,5 |
+| Prêtre | 33,0 % | 7,0 % | 52,5 % | 56,2 % | 74,2 % | 42,6 % | 81,5 % | 79,2 % | 96,3 % | 56,7 % | 6,7 % | 11,0 |
+| Alchimiste | 39,0 % | 12,5 % | 51,4 % | 55,3 % | 35,5 % | 63,2 % | 39,6 % | 68,6 % | 95,6 % | 51,0 % | 10,7 % | 11,1 |
+| Invocateur | 52,5 % | 20,0 % | 53,6 % | 47,4 % | 51,3 % | 68,8 % | 45,1 % | 51,0 % | 91,0 % | 53,0 % | 8,0 % | 10,9 |
+| Barde | 38,5 % | 14,0 % | 53,0 % | 46,5 % | 46,6 % | 56,2 % | 56,4 % | 68,3 % | 92,9 % | 56,7 % | 4,0 % | 10,9 |
+| Diplomate | 29,0 % | 7,5 % | 48,6 % | 35,2 % | 61,7 % | 95,7 % | 47,0 % | 87,0 % | 97,5 % | 40,7 % | 3,0 % | 9,3 |
+| Pugiliste | 23,5 % | 7,0 % | 47,8 % | 51,5 % | 58,8 % | 66,0 % | 84,2 % | 44,1 % | 96,5 % | 56,7 % | 7,3 % | 11,4 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 75)
+- k_classe Guerrier : 0,873 → 0,880 (46,4 % de victoires)
+- k_classe Mage : 0,887 → 0,877 (49,9 % de victoires)
+- k_classe Voleur : 0,813 → 0,808 (50,8 % de victoires)
+- k_classe Archer : 0,913 → 0,901 (51,6 % de victoires)
+- k_classe Prêtre : 0,869 → 0,878 (52,5 % de victoires)
+- k_classe Alchimiste : 1,009 → 1,006 (51,4 % de victoires)
+- k_classe Invocateur : 0,894 → 0,879 (53,6 % de victoires)
+- k_classe Barde : 1,028 → 1,042 (53,0 % de victoires)
+- k_classe Pugiliste : 1,056 → 1,061 (47,8 % de victoires)
+- Tour : force des monstres au départ 0,489 → 0,494, en plus par étage 0,030 → 0,030 (étage 10 atteint dans 53,6 % des montées, étage 20 dans 6,4 %)
+- Tour, Guerrier : pente des monstres 0,834 → 0,824 (étage 20 dans 3,0 % des montées)
+- Tour, Guerrier : facteur des monstres 1,689 → 1,663 (étage 10 dans 46,0 % des montées)
+- Tour, Mage : facteur des monstres 0,698 → 0,712 (étage 10 dans 58,7 % des montées)
+- Tour, Voleur : facteur des monstres 0,956 → 0,961 (étage 10 dans 56,3 % des montées)
+- Tour, Archer : facteur des monstres 0,633 → 0,651 (étage 10 dans 60,7 % des montées)
+- Tour, Prêtre : facteur des monstres 1,051 → 1,064 (étage 10 dans 56,7 % des montées)
+- Tour, Alchimiste : pente des monstres 1,109 → 1,126 (étage 20 dans 10,7 % des montées)
+- Tour, Alchimiste : facteur des monstres 0,876 → 0,867 (étage 10 dans 51,0 % des montées)
+- Tour, Barde : pente des monstres 1,607 → 1,551 (étage 20 dans 4,0 % des montées)
+- Tour, Barde : facteur des monstres 0,831 → 0,836 (étage 10 dans 56,7 % des montées)
+- Tour, Diplomate : pente des monstres 0,960 → 0,917 (étage 20 dans 3,0 % des montées)
+- Tour, Diplomate : facteur des monstres 1,399 → 1,380 (étage 10 dans 40,7 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,938 → 0,943 (étage 10 dans 56,7 % des montées)
+
+## Passe 77 (graines à partir de 7700232)
+
+**3 critères tenus sur 6.** 50000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : barde 53,6 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : mage contre alchimiste 63,0 %, archer contre alchimiste 62,2 %, pretre contre guerrier 61,8 %, alchimiste contre guerrier 61,6 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : archer étage 20 3,3 %, diplomate étage 20 4,3 %, écart entre classes : étage 10 de 40,3 % à 55,0 %, étage 20 de 3,3 % à 9,7 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 53 | 55 | 51 | 58 | 41 | 45 | 43 | 46 | 50 | 56 | **49,8 %** |
+| Mage | 44 | 53 | 41 | 52 | 49 | 63 | 45 | 46 | 59 | 55 | **50,7 %** |
+| Voleur | 56 | 54 | 49 | 49 | 46 | 56 | 47 | 44 | 49 | 49 | **50,0 %** |
+| Archer | 44 | 53 | 53 | 51 | 43 | 62 | 51 | 52 | 58 | 55 | **52,2 %** |
+| Prêtre | 62 | 50 | 51 | 59 | 47 | 41 | 50 | 43 | 58 | 50 | **51,0 %** |
+| Alchimiste | 62 | 41 | 42 | 43 | 58 | 54 | 51 | 53 | 55 | 46 | **50,4 %** |
+| Invocateur | 58 | 53 | 54 | 51 | 49 | 56 | 53 | 48 | 46 | 53 | **52,2 %** |
+| Barde | 59 | 51 | 51 | 52 | 56 | 48 | 52 | 49 | 59 | 59 | **53,6 %** |
+| Diplomate | 53 | 41 | 51 | 45 | 45 | 49 | 57 | 42 | 49 | 48 | **47,9 %** |
+| Pugiliste | 43 | 45 | 53 | 47 | 49 | 51 | 52 | 45 | 52 | 52 | **48,9 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 40,5 % | 8,0 % | 49,8 % | 51,2 % | 70,1 % | 49,4 % | 83,3 % | 68,6 % | 97,1 % | 51,3 % | 6,7 % | 10,5 |
+| Mage | 40,5 % | 15,0 % | 50,7 % | 27,9 % | 63,3 % | 55,1 % | 30,3 % | 38,6 % | 89,6 % | 53,3 % | 5,0 % | 10,7 |
+| Voleur | 54,0 % | 25,5 % | 50,0 % | 48,6 % | 28,1 % | 66,3 % | 35,2 % | 46,4 % | 90,4 % | 49,7 % | 8,0 % | 10,5 |
+| Archer | 44,0 % | 17,0 % | 52,2 % | 42,6 % | 39,4 % | 62,7 % | 29,6 % | 48,6 % | 89,1 % | 55,0 % | 3,3 % | 10,5 |
+| Prêtre | 29,5 % | 6,5 % | 51,0 % | 55,3 % | 74,6 % | 44,0 % | 82,0 % | 78,1 % | 96,7 % | 54,3 % | 7,0 % | 10,7 |
+| Alchimiste | 27,5 % | 9,0 % | 50,4 % | 56,7 % | 38,1 % | 62,1 % | 42,2 % | 66,9 % | 95,5 % | 50,3 % | 9,0 % | 10,6 |
+| Invocateur | 48,5 % | 17,0 % | 52,2 % | 44,3 % | 50,8 % | 69,1 % | 43,7 % | 48,7 % | 91,2 % | 50,3 % | 6,3 % | 10,6 |
+| Barde | 41,5 % | 15,0 % | 53,6 % | 48,9 % | 43,5 % | 55,8 % | 58,5 % | 68,4 % | 92,8 % | 55,0 % | 6,7 % | 11,1 |
+| Diplomate | 22,5 % | 6,0 % | 47,9 % | 34,2 % | 61,7 % | 96,3 % | 49,6 % | 87,3 % | 97,2 % | 40,3 % | 4,3 % | 9,2 |
+| Pugiliste | 18,5 % | 6,0 % | 48,9 % | 46,9 % | 58,1 % | 66,7 % | 87,5 % | 43,3 % | 96,7 % | 54,0 % | 9,7 % | 11,2 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 75)
+- k_classe Guerrier : 0,880 → 0,882 (49,8 % de victoires)
+- k_classe Mage : 0,877 → 0,863 (50,7 % de victoires)
+- k_classe Voleur : 0,808 → 0,810 (50,0 % de victoires)
+- k_classe Archer : 0,901 → 0,897 (52,2 % de victoires)
+- k_classe Prêtre : 0,878 → 0,891 (51,0 % de victoires)
+- k_classe Invocateur : 0,879 → 0,874 (52,2 % de victoires)
+- k_classe Pugiliste : 1,061 → 1,063 (48,9 % de victoires)
+- Tour, Mage : pente des monstres 1,154 → 1,125 (étage 20 dans 5,0 % des montées)
+- Tour, Archer : pente des monstres 1,518 → 1,455 (étage 20 dans 3,3 % des montées)
+- Tour, Archer : facteur des monstres 0,651 → 0,661 (étage 10 dans 55,0 % des montées)
+- Tour, Prêtre : facteur des monstres 1,064 → 1,076 (étage 10 dans 54,3 % des montées)
+- Tour, Barde : facteur des monstres 0,836 → 0,842 (étage 10 dans 55,0 % des montées)
+- Tour, Diplomate : pente des monstres 0,917 → 0,888 (étage 20 dans 4,3 % des montées)
+- Tour, Diplomate : facteur des monstres 1,380 → 1,365 (étage 10 dans 40,3 % des montées)
+- Tour, Pugiliste : pente des monstres 1,041 → 1,052 (étage 20 dans 9,7 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,943 → 0,948 (étage 10 dans 54,0 % des montées)
+
+## Passe 78 (graines à partir de 7800235)
+
+**3 critères tenus sur 6.** 50000 combats de duel (médiane 19 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : guerrier 53,3 %, diplomate 45,1 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre mage 62,0 %, guerrier contre archer 68,0 %, guerrier contre pugiliste 61,4 %, mage contre guerrier 38,0 %, mage contre diplomate 60,8 %, archer contre guerrier 36,0 %, diplomate contre archer 39,2 %, pugiliste contre guerrier 37,8 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : mage étage 20 4,3 %, barde étage 20 4,0 %, écart entre classes : étage 10 de 45,0 % à 57,0 %, étage 20 de 4,0 % à 8,7 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 49 | 62 | 56 | 68 | 45 | 48 | 46 | 48 | 49 | 61 | **53,3 %** |
+| Mage | 38 | 49 | 44 | 53 | 46 | 54 | 47 | 49 | 61 | 52 | **49,3 %** |
+| Voleur | 46 | 56 | 48 | 51 | 52 | 57 | 49 | 48 | 48 | 47 | **50,2 %** |
+| Archer | 36 | 46 | 48 | 51 | 42 | 57 | 48 | 45 | 56 | 48 | **47,7 %** |
+| Prêtre | 46 | 49 | 45 | 58 | 52 | 40 | 45 | 45 | 58 | 51 | **48,9 %** |
+| Alchimiste | 53 | 43 | 43 | 43 | 60 | 49 | 50 | 54 | 56 | 49 | **50,0 %** |
+| Invocateur | 54 | 54 | 50 | 51 | 49 | 50 | 49 | 47 | 46 | 48 | **49,8 %** |
+| Barde | 54 | 48 | 50 | 56 | 54 | 45 | 53 | 50 | 57 | 51 | **51,9 %** |
+| Diplomate | 46 | 42 | 48 | 39 | 42 | 43 | 52 | 44 | 51 | 44 | **45,1 %** |
+| Pugiliste | 38 | 53 | 52 | 53 | 51 | 57 | 50 | 48 | 56 | 51 | **50,8 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 53,5 % | 8,5 % | 53,3 % | 50,8 % | 65,4 % | 44,0 % | 88,1 % | 65,1 % | 97,5 % | 57,0 % | 5,7 % | 11,1 |
+| Mage | 46,0 % | 17,0 % | 49,3 % | 31,2 % | 66,0 % | 52,8 % | 28,4 % | 35,5 % | 90,4 % | 50,0 % | 4,3 % | 10,3 |
+| Voleur | 59,5 % | 29,0 % | 50,2 % | 44,8 % | 26,8 % | 65,2 % | 32,2 % | 52,2 % | 90,9 % | 45,0 % | 6,0 % | 9,8 |
+| Archer | 41,5 % | 19,5 % | 47,7 % | 49,6 % | 38,1 % | 64,4 % | 26,9 % | 37,2 % | 89,3 % | 50,7 % | 5,0 % | 10,4 |
+| Prêtre | 24,5 % | 8,0 % | 48,9 % | 53,5 % | 80,6 % | 32,7 % | 83,1 % | 74,8 % | 96,7 % | 54,7 % | 5,3 % | 10,6 |
+| Alchimiste | 40,0 % | 9,5 % | 50,0 % | 52,9 % | 35,3 % | 65,0 % | 40,6 % | 68,6 % | 96,2 % | 50,7 % | 7,7 % | 10,7 |
+| Invocateur | 53,0 % | 22,0 % | 49,8 % | 42,6 % | 50,3 % | 71,0 % | 41,5 % | 48,3 % | 91,7 % | 47,3 % | 8,7 % | 10,4 |
+| Barde | 45,0 % | 17,0 % | 51,9 % | 46,6 % | 41,0 % | 56,6 % | 58,7 % | 67,7 % | 92,8 % | 45,0 % | 4,0 % | 10,0 |
+| Diplomate | 19,0 % | 7,0 % | 45,1 % | 34,3 % | 58,6 % | 94,9 % | 47,3 % | 86,5 % | 97,6 % | 46,0 % | 7,0 % | 9,7 |
+| Pugiliste | 23,0 % | 9,0 % | 50,8 % | 44,4 % | 55,7 % | 66,8 % | 88,2 % | 41,3 % | 96,8 % | 50,3 % | 6,0 % | 10,5 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 75)
+- k_classe Guerrier : 0,882 → 0,873 (53,3 % de victoires)
+- k_classe Mage : 0,863 → 0,881 (49,3 % de victoires)
+- k_classe Voleur : 0,810 → 0,804 (50,2 % de victoires)
+- k_classe Archer : 0,897 → 0,910 (47,7 % de victoires)
+- k_classe Prêtre : 0,891 → 0,879 (48,9 % de victoires)
+- k_classe Alchimiste : 1,006 → 1,006 (50,0 % de victoires)
+- k_classe Invocateur : 0,874 → 0,870 (49,8 % de victoires)
+- k_classe Barde : 1,042 → 1,024 (51,9 % de victoires)
+- k_classe Pugiliste : 1,063 → 1,069 (50,8 % de victoires)
+- Tour : force des monstres au départ 0,494 → 0,494, en plus par étage 0,030 → 0,029 (étage 10 atteint dans 49,7 % des montées, étage 20 dans 6,0 %)
+- Tour, Guerrier : facteur des monstres 1,663 → 1,675 (étage 10 dans 57,0 % des montées)
+- Tour, Mage : pente des monstres 1,125 → 1,089 (étage 20 dans 4,3 % des montées)
+- Tour, Voleur : facteur des monstres 0,961 → 0,957 (étage 10 dans 45,0 % des montées)
+- Tour, Archer : pente des monstres 1,455 → 1,418 (étage 20 dans 5,0 % des montées)
+- Tour, Prêtre : pente des monstres 0,970 → 0,964 (étage 20 dans 5,3 % des montées)
+- Tour, Prêtre : facteur des monstres 1,076 → 1,098 (étage 10 dans 54,7 % des montées)
+- Tour, Invocateur : facteur des monstres 0,979 → 0,970 (étage 10 dans 47,3 % des montées)
+- Tour, Barde : pente des monstres 1,551 → 1,497 (étage 20 dans 4,0 % des montées)
+- Tour, Barde : facteur des monstres 0,842 → 0,838 (étage 10 dans 45,0 % des montées)
+- Tour, Diplomate : facteur des monstres 1,365 → 1,360 (étage 10 dans 46,0 % des montées)
+
+## Passe 79 (graines à partir de 7900238)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 19 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : pretre 53,2 %, diplomate 45,7 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : archer contre alchimiste 61,7 %, pretre contre guerrier 61,8 %, alchimiste contre archer 39,1 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : alchimiste étage 20 11,4 %, écart entre classes : étage 10 de 43,6 % à 58,1 %, étage 20 de 5,3 % à 11,4 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 50 | 54 | 45 | 56 | 42 | 44 | 42 | 44 | 45 | 55 | **47,5 %** |
+| Mage | 46 | 49 | 43 | 44 | 50 | 60 | 41 | 54 | 59 | 51 | **49,7 %** |
+| Voleur | 52 | 53 | 47 | 45 | 48 | 56 | 46 | 49 | 51 | 48 | **49,5 %** |
+| Archer | 44 | 52 | 53 | 50 | 43 | 62 | 50 | 51 | 58 | 52 | **51,3 %** |
+| Prêtre | 62 | 56 | 50 | 54 | 51 | 45 | 53 | 47 | 58 | 55 | **53,2 %** |
+| Alchimiste | 59 | 41 | 46 | 39 | 55 | 49 | 45 | 56 | 56 | 46 | **49,2 %** |
+| Invocateur | 58 | 55 | 52 | 48 | 49 | 56 | 46 | 50 | 45 | 52 | **51,0 %** |
+| Barde | 57 | 49 | 48 | 47 | 56 | 48 | 50 | 51 | 58 | 54 | **51,7 %** |
+| Diplomate | 52 | 43 | 50 | 42 | 43 | 44 | 49 | 42 | 50 | 43 | **45,7 %** |
+| Pugiliste | 46 | 49 | 51 | 48 | 50 | 56 | 49 | 46 | 55 | 52 | **50,0 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 35,5 % | 9,3 % | 47,5 % | 46,6 % | 72,0 % | 46,0 % | 86,3 % | 66,7 % | 97,2 % | 50,2 % | 6,4 % | 10,5 |
+| Mage | 50,0 % | 13,0 % | 49,7 % | 28,7 % | 63,1 % | 55,3 % | 31,8 % | 39,1 % | 90,0 % | 56,3 % | 6,3 % | 11,1 |
+| Voleur | 52,5 % | 19,5 % | 49,5 % | 44,5 % | 28,9 % | 66,2 % | 37,4 % | 46,5 % | 91,1 % | 58,1 % | 8,5 % | 11,3 |
+| Archer | 45,5 % | 16,0 % | 51,3 % | 44,6 % | 42,9 % | 62,6 % | 28,9 % | 50,3 % | 89,6 % | 56,8 % | 7,9 % | 11,1 |
+| Prêtre | 25,5 % | 8,0 % | 53,2 % | 54,9 % | 74,8 % | 42,0 % | 82,4 % | 80,0 % | 96,2 % | 55,9 % | 8,6 % | 11,1 |
+| Alchimiste | 37,8 % | 9,3 % | 49,2 % | 53,6 % | 36,5 % | 63,6 % | 40,8 % | 68,0 % | 95,9 % | 51,0 % | 11,4 % | 11,1 |
+| Invocateur | 40,8 % | 12,8 % | 51,0 % | 40,8 % | 51,1 % | 71,7 % | 42,2 % | 51,0 % | 91,6 % | 55,0 % | 7,9 % | 10,9 |
+| Barde | 30,0 % | 8,0 % | 51,7 % | 47,2 % | 43,0 % | 57,1 % | 57,7 % | 67,5 % | 93,3 % | 55,4 % | 6,4 % | 11,2 |
+| Diplomate | 20,0 % | 4,8 % | 45,7 % | 34,4 % | 60,5 % | 95,3 % | 47,4 % | 87,1 % | 97,4 % | 43,6 % | 5,3 % | 9,5 |
+| Pugiliste | 14,5 % | 3,5 % | 50,0 % | 47,6 % | 57,1 % | 66,0 % | 89,1 % | 42,1 % | 97,1 % | 56,1 % | 8,4 % | 11,2 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 79)
+- k_classe Guerrier : 0,873 → 0,877 (47,5 % de victoires)
+- k_classe Mage : 0,881 → 0,877 (49,7 % de victoires)
+- k_classe Voleur : 0,804 → 0,806 (49,5 % de victoires)
+- k_classe Archer : 0,910 → 0,896 (51,3 % de victoires)
+- k_classe Prêtre : 0,879 → 0,873 (53,2 % de victoires)
+- k_classe Alchimiste : 1,006 → 1,010 (49,2 % de victoires)
+- k_classe Invocateur : 0,870 → 0,876 (51,0 % de victoires)
+- k_classe Barde : 1,024 → 1,034 (51,7 % de victoires)
+- k_classe Pugiliste : 1,069 → 1,062 (50,0 % de victoires)
+- Tour : force des monstres au départ 0,494 → 0,500, en plus par étage 0,029 → 0,029 (étage 10 atteint dans 53,8 % des montées, étage 20 dans 7,7 %)
+- Tour, Guerrier : facteur des monstres 1,675 → 1,673 (étage 10 dans 50,2 % des montées)
+- Tour, Mage : facteur des monstres 0,712 → 0,719 (étage 10 dans 56,2 % des montées)
+- Tour, Voleur : facteur des monstres 0,957 → 0,959 (étage 10 dans 58,1 % des montées)
+- Tour, Archer : facteur des monstres 0,661 → 0,668 (étage 10 dans 56,8 % des montées)
+- Tour, Prêtre : facteur des monstres 1,098 → 1,107 (étage 10 dans 55,9 % des montées)
+- Tour, Alchimiste : pente des monstres 1,126 → 1,148 (étage 20 dans 11,4 % des montées)
+- Tour, Alchimiste : facteur des monstres 0,867 → 0,857 (étage 10 dans 51,0 % des montées)
+- Tour, Diplomate : pente des monstres 0,888 → 0,868 (étage 20 dans 5,2 % des montées)
+- Tour, Diplomate : facteur des monstres 1,360 → 1,346 (étage 10 dans 43,6 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,948 → 0,953 (étage 10 dans 56,1 % des montées)
+
+## Passe 80 (graines à partir de 8000241)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 19 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : archer 46,5 %, diplomate 46,5 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre archer 63,5 %, guerrier contre pugiliste 60,1 %, archer contre guerrier 37,9 %, archer contre pretre 38,8 %, pretre contre archer 61,4 %, pretre contre alchimiste 38,7 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : archer étage 20 3,0 %, alchimiste étage 20 10,1 %, écart entre classes : étage 10 de 43,0 % à 58,1 %, étage 20 de 3,0 % à 10,1 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 50 | 56 | 51 | 64 | 44 | 44 | 43 | 43 | 51 | 60 | **50,4 %** |
+| Mage | 46 | 48 | 45 | 56 | 47 | 57 | 44 | 51 | 59 | 52 | **50,7 %** |
+| Voleur | 50 | 55 | 47 | 52 | 52 | 55 | 45 | 47 | 48 | 49 | **50,0 %** |
+| Archer | 38 | 45 | 46 | 53 | 39 | 53 | 46 | 45 | 55 | 45 | **46,5 %** |
+| Prêtre | 55 | 48 | 46 | 61 | 49 | 39 | 51 | 40 | 56 | 49 | **49,4 %** |
+| Alchimiste | 54 | 41 | 41 | 43 | 57 | 48 | 44 | 52 | 52 | 46 | **47,8 %** |
+| Invocateur | 57 | 56 | 52 | 55 | 52 | 52 | 51 | 49 | 46 | 51 | **52,1 %** |
+| Barde | 55 | 48 | 50 | 53 | 54 | 44 | 51 | 47 | 57 | 53 | **51,3 %** |
+| Diplomate | 50 | 41 | 52 | 46 | 42 | 43 | 53 | 44 | 50 | 44 | **46,5 %** |
+| Pugiliste | 43 | 50 | 51 | 54 | 52 | 54 | 45 | 45 | 56 | 53 | **50,3 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 40,3 % | 11,3 % | 50,4 % | 49,7 % | 66,8 % | 45,9 % | 87,3 % | 66,0 % | 97,5 % | 50,0 % | 5,5 % | 10,3 |
+| Mage | 48,8 % | 16,3 % | 50,7 % | 29,0 % | 62,6 % | 56,2 % | 30,0 % | 41,5 % | 89,6 % | 58,1 % | 6,1 % | 11,1 |
+| Voleur | 51,0 % | 22,0 % | 50,0 % | 45,9 % | 27,8 % | 65,9 % | 37,5 % | 49,4 % | 91,0 % | 48,8 % | 5,5 % | 10,2 |
+| Archer | 47,8 % | 14,5 % | 46,5 % | 40,7 % | 41,1 % | 69,0 % | 25,7 % | 42,1 % | 88,8 % | 48,1 % | 3,0 % | 10,3 |
+| Prêtre | 26,8 % | 12,5 % | 49,4 % | 52,7 % | 75,4 % | 43,8 % | 83,4 % | 78,4 % | 96,7 % | 43,0 % | 5,5 % | 9,8 |
+| Alchimiste | 36,5 % | 12,0 % | 47,8 % | 57,9 % | 34,6 % | 62,9 % | 39,2 % | 63,8 % | 95,7 % | 47,6 % | 10,1 % | 10,7 |
+| Invocateur | 47,5 % | 16,0 % | 52,1 % | 42,0 % | 50,8 % | 70,4 % | 43,7 % | 50,7 % | 91,2 % | 51,4 % | 7,8 % | 10,6 |
+| Barde | 44,3 % | 14,0 % | 51,3 % | 46,6 % | 44,3 % | 56,0 % | 56,5 % | 69,1 % | 92,8 % | 49,1 % | 6,0 % | 10,6 |
+| Diplomate | 23,3 % | 5,8 % | 46,5 % | 33,9 % | 61,0 % | 95,4 % | 47,4 % | 86,3 % | 97,3 % | 43,5 % | 5,6 % | 9,6 |
+| Pugiliste | 14,8 % | 6,0 % | 50,3 % | 41,1 % | 53,7 % | 62,8 % | 91,7 % | 40,6 % | 97,3 % | 48,9 % | 7,2 % | 10,5 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 79)
+- k_classe Guerrier : 0,877 → 0,876 (50,4 % de victoires)
+- k_classe Mage : 0,877 → 0,884 (50,7 % de victoires)
+- k_classe Voleur : 0,806 → 0,797 (50,0 % de victoires)
+- k_classe Archer : 0,896 → 0,911 (46,5 % de victoires)
+- k_classe Prêtre : 0,873 → 0,870 (49,4 % de victoires)
+- k_classe Alchimiste : 1,010 → 1,015 (47,8 % de victoires)
+- k_classe Invocateur : 0,876 → 0,861 (52,1 % de victoires)
+- k_classe Barde : 1,034 → 1,019 (51,3 % de victoires)
+- k_classe Pugiliste : 1,062 → 1,069 (50,3 % de victoires)
+- Tour, Mage : facteur des monstres 0,719 → 0,745 (étage 10 dans 58,1 % des montées)
+- Tour, Archer : pente des monstres 1,418 → 1,355 (étage 20 dans 3,0 % des montées)
+- Tour, Prêtre : facteur des monstres 1,107 → 1,094 (étage 10 dans 43,0 % des montées)
+- Tour, Alchimiste : pente des monstres 1,148 → 1,163 (étage 20 dans 10,1 % des montées)
+- Tour, Invocateur : facteur des monstres 0,970 → 0,975 (étage 10 dans 51,4 % des montées)
+- Tour, Diplomate : facteur des monstres 1,346 → 1,339 (étage 10 dans 43,5 % des montées)
+
+## Passe 81 (graines à partir de 8100244)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 19 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : diplomate 45,6 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : mage contre diplomate 60,2 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : mage étage 20 3,9 %, diplomate étage 20 4,4 %, écart entre classes : étage 10 de 41,0 % à 55,4 %, étage 20 de 3,9 % à 8,3 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 50 | 51 | 47 | 57 | 42 | 43 | 42 | 44 | 43 | 60 | **47,9 %** |
+| Mage | 48 | 51 | 45 | 50 | 47 | 58 | 45 | 53 | 60 | 52 | **50,8 %** |
+| Voleur | 50 | 54 | 52 | 47 | 52 | 58 | 46 | 50 | 50 | 52 | **51,0 %** |
+| Archer | 42 | 48 | 52 | 51 | 43 | 60 | 47 | 50 | 57 | 52 | **50,1 %** |
+| Prêtre | 58 | 52 | 50 | 58 | 50 | 45 | 52 | 47 | 58 | 53 | **52,3 %** |
+| Alchimiste | 56 | 43 | 42 | 41 | 58 | 50 | 45 | 57 | 55 | 46 | **49,3 %** |
+| Invocateur | 56 | 57 | 51 | 54 | 50 | 53 | 47 | 50 | 50 | 57 | **52,3 %** |
+| Barde | 55 | 45 | 52 | 50 | 54 | 43 | 49 | 48 | 57 | 56 | **50,9 %** |
+| Diplomate | 52 | 41 | 49 | 42 | 43 | 43 | 52 | 41 | 50 | 43 | **45,6 %** |
+| Pugiliste | 42 | 48 | 46 | 49 | 44 | 54 | 45 | 43 | 55 | 50 | **47,5 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 42,3 % | 7,8 % | 47,9 % | 45,4 % | 70,7 % | 47,4 % | 86,9 % | 65,6 % | 97,3 % | 53,4 % | 6,1 % | 10,6 |
+| Mage | 46,8 % | 13,8 % | 50,8 % | 31,0 % | 62,3 % | 55,6 % | 30,2 % | 39,3 % | 90,3 % | 47,4 % | 3,9 % | 10,3 |
+| Voleur | 53,8 % | 23,5 % | 51,0 % | 43,5 % | 28,5 % | 66,0 % | 33,3 % | 50,9 % | 91,2 % | 50,6 % | 5,0 % | 10,1 |
+| Archer | 47,0 % | 14,2 % | 50,1 % | 50,5 % | 45,6 % | 59,9 % | 28,0 % | 39,2 % | 89,3 % | 55,4 % | 5,4 % | 10,9 |
+| Prêtre | 27,5 % | 9,3 % | 52,3 % | 54,9 % | 76,8 % | 39,8 % | 82,5 % | 77,4 % | 96,7 % | 49,3 % | 5,0 % | 10,1 |
+| Alchimiste | 36,3 % | 8,3 % | 49,3 % | 52,9 % | 33,8 % | 65,2 % | 39,4 % | 69,0 % | 96,6 % | 46,5 % | 8,3 % | 10,5 |
+| Invocateur | 45,8 % | 15,3 % | 52,3 % | 43,5 % | 48,7 % | 71,1 % | 43,4 % | 50,7 % | 91,6 % | 51,5 % | 6,9 % | 10,6 |
+| Barde | 40,3 % | 10,8 % | 50,9 % | 49,4 % | 42,9 % | 58,1 % | 56,8 % | 67,0 % | 93,4 % | 49,5 % | 5,0 % | 10,4 |
+| Diplomate | 25,0 % | 6,5 % | 45,6 % | 34,2 % | 61,1 % | 95,7 % | 48,1 % | 86,8 % | 97,6 % | 41,0 % | 4,4 % | 9,2 |
+| Pugiliste | 14,0 % | 4,8 % | 47,5 % | 57,2 % | 56,4 % | 65,6 % | 82,5 % | 41,9 % | 97,2 % | 52,0 % | 6,5 % | 10,7 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 79)
+- k_classe Guerrier : 0,876 → 0,880 (47,9 % de victoires)
+- k_classe Mage : 0,884 → 0,880 (50,8 % de victoires)
+- k_classe Voleur : 0,797 → 0,788 (51,0 % de victoires)
+- k_classe Archer : 0,911 → 0,907 (50,1 % de victoires)
+- k_classe Prêtre : 0,870 → 0,869 (52,3 % de victoires)
+- k_classe Alchimiste : 1,015 → 1,022 (49,3 % de victoires)
+- k_classe Invocateur : 0,861 → 0,845 (52,3 % de victoires)
+- k_classe Barde : 1,019 → 1,024 (50,9 % de victoires)
+- k_classe Pugiliste : 1,069 → 1,075 (47,5 % de victoires)
+- Tour : force des monstres au départ 0,500 → 0,500, en plus par étage 0,029 → 0,029 (étage 10 atteint dans 49,6 % des montées, étage 20 dans 5,6 %)
+- Tour, Guerrier : facteur des monstres 1,673 → 1,676 (étage 10 dans 53,4 % des montées)
+- Tour, Mage : pente des monstres 1,089 → 1,050 (étage 20 dans 3,9 % des montées)
+- Tour, Mage : facteur des monstres 0,745 → 0,742 (étage 10 dans 47,4 % des montées)
+- Tour, Voleur : pente des monstres 0,481 → 0,469 (étage 20 dans 5,0 % des montées)
+- Tour, Archer : pente des monstres 1,355 → 1,326 (étage 20 dans 5,4 % des montées)
+- Tour, Archer : facteur des monstres 0,668 → 0,684 (étage 10 dans 55,4 % des montées)
+- Tour, Prêtre : pente des monstres 0,964 → 0,958 (étage 20 dans 5,0 % des montées)
+- Tour, Alchimiste : facteur des monstres 0,857 → 0,847 (étage 10 dans 46,5 % des montées)
+- Tour, Barde : pente des monstres 1,497 → 1,459 (étage 20 dans 5,0 % des montées)
+- Tour, Diplomate : pente des monstres 0,868 → 0,841 (étage 20 dans 4,4 % des montées)
+- Tour, Diplomate : facteur des monstres 1,339 → 1,327 (étage 10 dans 41,0 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,953 → 0,957 (étage 10 dans 52,0 % des montées)
+
+## Passe 82 (graines à partir de 8200247)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 19 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : diplomate 43,2 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : mage contre diplomate 60,9 %, archer contre alchimiste 60,1 %, archer contre diplomate 60,9 %, alchimiste contre mage 38,8 %, diplomate contre mage 36,0 %, diplomate contre archer 36,9 %, diplomate contre barde 38,8 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : archer étage 20 4,9 %, alchimiste étage 20 10,6 %, invocateur étage 20 4,8 %, diplomate étage 10 36,8 %, diplomate étage 20 4,0 %, écart entre classes : étage 10 de 36,8 % à 55,8 %, étage 20 de 4,0 % à 10,6 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 48 | 53 | 47 | 56 | 40 | 42 | 41 | 43 | 48 | 54 | **47,3 %** |
+| Mage | 48 | 48 | 44 | 48 | 49 | 57 | 45 | 55 | 61 | 49 | **50,5 %** |
+| Voleur | 50 | 53 | 49 | 47 | 49 | 56 | 48 | 49 | 47 | 51 | **49,8 %** |
+| Archer | 42 | 50 | 53 | 47 | 45 | 60 | 51 | 53 | 61 | 51 | **51,3 %** |
+| Prêtre | 58 | 50 | 49 | 54 | 49 | 40 | 51 | 45 | 57 | 50 | **50,2 %** |
+| Alchimiste | 59 | 39 | 43 | 40 | 59 | 51 | 46 | 55 | 55 | 46 | **49,3 %** |
+| Invocateur | 55 | 54 | 51 | 49 | 49 | 52 | 48 | 50 | 48 | 51 | **50,6 %** |
+| Barde | 56 | 44 | 51 | 47 | 54 | 44 | 51 | 50 | 57 | 53 | **50,5 %** |
+| Diplomate | 52 | 36 | 48 | 37 | 41 | 42 | 51 | 39 | 46 | 41 | **43,2 %** |
+| Pugiliste | 42 | 46 | 49 | 45 | 49 | 56 | 47 | 45 | 56 | 48 | **48,2 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 41,8 % | 9,0 % | 47,3 % | 50,8 % | 70,0 % | 46,2 % | 84,9 % | 65,8 % | 97,1 % | 50,6 % | 6,4 % | 10,5 |
+| Mage | 53,8 % | 19,5 % | 50,5 % | 28,8 % | 63,4 % | 56,5 % | 29,6 % | 38,8 % | 89,7 % | 46,8 % | 5,3 % | 10,5 |
+| Voleur | 49,8 % | 23,3 % | 49,8 % | 45,8 % | 27,5 % | 68,7 % | 39,2 % | 44,3 % | 90,9 % | 51,9 % | 8,8 % | 10,6 |
+| Archer | 52,8 % | 19,8 % | 51,3 % | 44,5 % | 42,6 % | 64,0 % | 26,9 % | 45,5 % | 89,3 % | 54,4 % | 4,9 % | 10,9 |
+| Prêtre | 27,5 % | 7,5 % | 50,2 % | 54,9 % | 75,8 % | 41,2 % | 83,0 % | 78,8 % | 96,4 % | 51,4 % | 7,0 % | 10,6 |
+| Alchimiste | 34,0 % | 10,0 % | 49,3 % | 55,1 % | 36,4 % | 61,7 % | 39,2 % | 67,2 % | 96,3 % | 50,7 % | 10,6 % | 11,0 |
+| Invocateur | 44,8 % | 17,8 % | 50,6 % | 37,2 % | 47,7 % | 73,3 % | 43,1 % | 51,2 % | 90,9 % | 47,8 % | 4,8 % | 10,2 |
+| Barde | 43,3 % | 15,8 % | 50,5 % | 48,1 % | 44,2 % | 58,0 % | 57,5 % | 66,6 % | 93,2 % | 55,8 % | 6,0 % | 11,0 |
+| Diplomate | 21,0 % | 3,3 % | 43,2 % | 33,9 % | 59,8 % | 95,5 % | 47,9 % | 86,6 % | 97,4 % | 36,8 % | 4,0 % | 9,0 |
+| Pugiliste | 19,3 % | 6,3 % | 48,2 % | 50,2 % | 54,3 % | 65,6 % | 85,5 % | 42,6 % | 97,0 % | 52,6 % | 8,3 % | 10,7 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 79)
+- k_classe Guerrier : 0,880 → 0,878 (47,3 % de victoires)
+- k_classe Mage : 0,880 → 0,871 (50,5 % de victoires)
+- k_classe Voleur : 0,788 → 0,783 (49,8 % de victoires)
+- k_classe Archer : 0,907 → 0,899 (51,3 % de victoires)
+- k_classe Prêtre : 0,869 → 0,881 (50,2 % de victoires)
+- k_classe Invocateur : 0,845 → 0,848 (50,6 % de victoires)
+- k_classe Barde : 1,024 → 1,030 (50,5 % de victoires)
+- k_classe Pugiliste : 1,075 → 1,072 (48,2 % de victoires)
+- Tour, Mage : pente des monstres 1,050 → 1,026 (étage 20 dans 5,2 % des montées)
+- Tour, Mage : facteur des monstres 0,742 → 0,737 (étage 10 dans 46,8 % des montées)
+- Tour, Voleur : facteur des monstres 0,959 → 0,961 (étage 10 dans 51,9 % des montées)
+- Tour, Archer : pente des monstres 1,326 → 1,291 (étage 20 dans 4,9 % des montées)
+- Tour, Archer : facteur des monstres 0,684 → 0,696 (étage 10 dans 54,4 % des montées)
+- Tour, Alchimiste : pente des monstres 1,163 → 1,181 (étage 20 dans 10,6 % des montées)
+- Tour, Invocateur : pente des monstres 1,249 → 1,215 (étage 20 dans 4,8 % des montées)
+- Tour, Invocateur : facteur des monstres 0,975 → 0,973 (étage 10 dans 47,8 % des montées)
+- Tour, Barde : facteur des monstres 0,838 → 0,841 (étage 10 dans 55,8 % des montées)
+- Tour, Diplomate : pente des monstres 0,841 → 0,811 (étage 20 dans 4,0 % des montées)
+- Tour, Diplomate : facteur des monstres 1,327 → 1,310 (étage 10 dans 36,8 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,957 → 0,962 (étage 10 dans 52,6 % des montées)
+
+## Passe 83 (graines à partir de 8300250)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : diplomate 44,3 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : mage contre diplomate 60,3 %, archer contre guerrier 38,5 %, pretre contre alchimiste 39,7 %, alchimiste contre pretre 61,2 %, diplomate contre mage 38,7 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : archer étage 20 4,9 %, alchimiste étage 20 11,1 %, écart entre classes : étage 10 de 40,3 % à 57,3 %, étage 20 de 4,9 % à 11,1 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 51 | 56 | 55 | 60 | 44 | 48 | 44 | 47 | 49 | 59 | **51,3 %** |
+| Mage | 41 | 48 | 47 | 51 | 45 | 55 | 44 | 52 | 60 | 54 | **49,6 %** |
+| Voleur | 45 | 54 | 49 | 47 | 51 | 55 | 46 | 48 | 50 | 51 | **49,5 %** |
+| Archer | 39 | 47 | 52 | 47 | 41 | 55 | 48 | 48 | 56 | 50 | **48,3 %** |
+| Prêtre | 56 | 51 | 50 | 57 | 49 | 40 | 49 | 45 | 56 | 50 | **50,3 %** |
+| Alchimiste | 56 | 47 | 45 | 46 | 61 | 49 | 47 | 56 | 59 | 47 | **51,1 %** |
+| Invocateur | 50 | 55 | 52 | 50 | 50 | 54 | 51 | 50 | 51 | 52 | **51,5 %** |
+| Barde | 51 | 49 | 54 | 48 | 56 | 45 | 50 | 49 | 59 | 55 | **51,5 %** |
+| Diplomate | 49 | 39 | 49 | 43 | 42 | 42 | 50 | 41 | 47 | 42 | **44,3 %** |
+| Pugiliste | 40 | 47 | 48 | 48 | 51 | 52 | 46 | 47 | 57 | 52 | **48,6 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 39,0 % | 8,5 % | 51,3 % | 49,8 % | 67,5 % | 45,6 % | 87,0 % | 68,2 % | 97,5 % | 57,3 % | 8,6 % | 11,1 |
+| Mage | 54,0 % | 18,0 % | 49,6 % | 28,8 % | 65,9 % | 55,6 % | 29,6 % | 37,9 % | 90,4 % | 53,4 % | 5,3 % | 10,8 |
+| Voleur | 51,5 % | 22,0 % | 49,5 % | 46,7 % | 27,4 % | 69,0 % | 40,5 % | 43,0 % | 91,1 % | 51,6 % | 7,1 % | 10,6 |
+| Archer | 52,5 % | 19,8 % | 48,3 % | 44,7 % | 39,9 % | 66,5 % | 26,1 % | 48,4 % | 89,5 % | 47,9 % | 4,9 % | 10,3 |
+| Prêtre | 25,3 % | 8,0 % | 50,3 % | 53,5 % | 76,6 % | 40,6 % | 82,6 % | 78,8 % | 96,7 % | 51,2 % | 9,1 % | 10,5 |
+| Alchimiste | 33,8 % | 9,8 % | 51,1 % | 54,9 % | 37,7 % | 61,1 % | 39,2 % | 68,2 % | 96,5 % | 51,4 % | 11,1 % | 11,1 |
+| Invocateur | 44,3 % | 15,0 % | 51,5 % | 35,5 % | 48,8 % | 73,9 % | 44,5 % | 55,1 % | 91,7 % | 50,2 % | 8,3 % | 10,7 |
+| Barde | 37,3 % | 9,0 % | 51,5 % | 48,0 % | 41,8 % | 57,1 % | 56,7 % | 69,9 % | 93,8 % | 56,4 % | 7,0 % | 11,2 |
+| Diplomate | 27,5 % | 5,0 % | 44,3 % | 33,8 % | 60,9 % | 95,8 % | 49,0 % | 86,3 % | 97,1 % | 40,3 % | 6,4 % | 9,3 |
+| Pugiliste | 15,3 % | 4,8 % | 48,6 % | 59,8 % | 56,5 % | 64,4 % | 82,0 % | 41,7 % | 97,8 % | 51,7 % | 8,1 % | 10,8 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 83)
+- k_classe Guerrier : 0,878 → 0,872 (51,3 % de victoires)
+- k_classe Mage : 0,871 → 0,874 (49,6 % de victoires)
+- k_classe Voleur : 0,783 → 0,779 (49,5 % de victoires)
+- k_classe Archer : 0,899 → 0,910 (48,3 % de victoires)
+- k_classe Prêtre : 0,881 → 0,882 (50,3 % de victoires)
+- k_classe Alchimiste : 1,022 → 1,020 (51,1 % de victoires)
+- k_classe Invocateur : 0,848 → 0,845 (51,5 % de victoires)
+- k_classe Barde : 1,030 → 1,020 (51,5 % de victoires)
+- k_classe Pugiliste : 1,072 → 1,077 (48,6 % de victoires)
+- Tour, Guerrier : facteur des monstres 1,676 → 1,686 (étage 10 dans 57,2 % des montées)
+- Tour, Mage : pente des monstres 1,026 → 1,003 (étage 20 dans 5,2 % des montées)
+- Tour, Mage : facteur des monstres 0,737 → 0,739 (étage 10 dans 53,4 % des montées)
+- Tour, Archer : pente des monstres 1,291 → 1,257 (étage 20 dans 4,9 % des montées)
+- Tour, Archer : facteur des monstres 0,696 → 0,691 (étage 10 dans 47,9 % des montées)
+- Tour, Alchimiste : pente des monstres 1,181 → 1,203 (étage 20 dans 11,1 % des montées)
+- Tour, Barde : facteur des monstres 0,841 → 0,845 (étage 10 dans 56,4 % des montées)
+- Tour, Diplomate : facteur des monstres 1,310 → 1,296 (étage 10 dans 40,2 % des montées)
+
+## Passe 84 (graines à partir de 8400253)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 19 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : diplomate 44,6 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : archer contre diplomate 62,5 %, alchimiste contre archer 39,4 %, diplomate contre barde 37,8 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : écart entre classes : étage 10 de 42,3 % à 56,8 %, étage 20 de 5,5 % à 8,9 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 51 | 57 | 52 | 59 | 43 | 45 | 47 | 47 | 49 | 55 | **50,5 %** |
+| Mage | 40 | 48 | 45 | 48 | 49 | 56 | 44 | 53 | 59 | 49 | **49,2 %** |
+| Voleur | 49 | 54 | 49 | 47 | 51 | 57 | 48 | 49 | 51 | 52 | **50,6 %** |
+| Archer | 40 | 54 | 54 | 54 | 45 | 59 | 51 | 53 | 63 | 53 | **52,5 %** |
+| Prêtre | 55 | 51 | 47 | 55 | 48 | 42 | 49 | 44 | 57 | 48 | **49,7 %** |
+| Alchimiste | 54 | 41 | 43 | 39 | 56 | 51 | 48 | 53 | 57 | 45 | **48,8 %** |
+| Invocateur | 55 | 58 | 53 | 49 | 51 | 51 | 48 | 51 | 51 | 53 | **52,0 %** |
+| Barde | 53 | 44 | 51 | 46 | 55 | 43 | 50 | 50 | 57 | 54 | **50,3 %** |
+| Diplomate | 49 | 40 | 50 | 41 | 43 | 43 | 47 | 38 | 50 | 45 | **44,6 %** |
+| Pugiliste | 45 | 48 | 50 | 49 | 50 | 53 | 47 | 47 | 57 | 50 | **49,5 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 45,5 % | 10,8 % | 50,5 % | 51,4 % | 66,7 % | 49,9 % | 85,9 % | 66,3 % | 97,5 % | 55,6 % | 5,9 % | 10,8 |
+| Mage | 58,0 % | 16,3 % | 49,2 % | 28,8 % | 63,4 % | 55,6 % | 29,7 % | 37,4 % | 90,1 % | 55,4 % | 6,0 % | 11,0 |
+| Voleur | 57,0 % | 24,0 % | 50,6 % | 44,8 % | 28,6 % | 65,2 % | 32,9 % | 50,3 % | 91,2 % | 53,3 % | 8,1 % | 10,7 |
+| Archer | 54,3 % | 18,3 % | 52,5 % | 42,0 % | 45,5 % | 61,0 % | 29,6 % | 47,2 % | 89,5 % | 55,8 % | 6,6 % | 11,0 |
+| Prêtre | 24,0 % | 8,8 % | 49,7 % | 52,7 % | 77,8 % | 42,8 % | 82,5 % | 78,4 % | 96,9 % | 48,0 % | 5,5 % | 10,0 |
+| Alchimiste | 37,0 % | 8,5 % | 48,8 % | 56,0 % | 36,3 % | 60,5 % | 39,5 % | 68,4 % | 96,0 % | 52,0 % | 8,8 % | 11,0 |
+| Invocateur | 49,0 % | 17,8 % | 52,0 % | 39,1 % | 49,2 % | 72,4 % | 44,2 % | 50,4 % | 91,4 % | 54,3 % | 8,9 % | 10,9 |
+| Barde | 44,5 % | 13,8 % | 50,3 % | 48,4 % | 44,4 % | 56,7 % | 55,7 % | 67,2 % | 94,0 % | 52,6 % | 6,8 % | 11,0 |
+| Diplomate | 29,0 % | 6,5 % | 44,6 % | 35,0 % | 60,1 % | 95,5 % | 45,8 % | 86,8 % | 97,4 % | 42,3 % | 5,5 % | 9,4 |
+| Pugiliste | 17,8 % | 6,5 % | 49,5 % | 51,0 % | 58,7 % | 64,5 % | 86,3 % | 40,9 % | 97,5 % | 56,8 % | 8,3 % | 11,5 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 83)
+- k_classe Guerrier : 0,872 → 0,869 (50,5 % de victoires)
+- k_classe Voleur : 0,779 → 0,777 (50,6 % de victoires)
+- k_classe Archer : 0,910 → 0,910 (52,5 % de victoires)
+- k_classe Prêtre : 0,882 → 0,880 (49,7 % de victoires)
+- k_classe Alchimiste : 1,020 → 1,028 (48,8 % de victoires)
+- k_classe Invocateur : 0,845 → 0,831 (52,0 % de victoires)
+- k_classe Barde : 1,020 → 1,023 (50,3 % de victoires)
+- k_classe Pugiliste : 1,077 → 1,075 (49,5 % de victoires)
+- Tour, Guerrier : facteur des monstres 1,686 → 1,691 (étage 10 dans 55,6 % des montées)
+- Tour, Mage : facteur des monstres 0,739 → 0,741 (étage 10 dans 55,4 % des montées)
+- Tour, Archer : facteur des monstres 0,691 → 0,694 (étage 10 dans 55,8 % des montées)
+- Tour, Prêtre : facteur des monstres 1,094 → 1,084 (étage 10 dans 48,0 % des montées)
+- Tour, Diplomate : facteur des monstres 1,296 → 1,282 (étage 10 dans 42,2 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,962 → 0,970 (étage 10 dans 56,8 % des montées)
+
+## Passe 85 (graines à partir de 8500256)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : barde 53,5 %, diplomate 44,8 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre archer 61,9 %, archer contre guerrier 39,4 %, archer contre diplomate 61,2 %, alchimiste contre diplomate 60,1 %, barde contre diplomate 60,9 %, diplomate contre barde 39,3 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : écart entre classes : étage 10 de 45,6 % à 58,5 %, étage 20 de 5,6 % à 9,4 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 50 | 58 | 51 | 62 | 45 | 42 | 43 | 43 | 55 | 57 | **50,5 %** |
+| Mage | 43 | 48 | 46 | 48 | 47 | 54 | 48 | 50 | 58 | 47 | **49,0 %** |
+| Voleur | 50 | 56 | 50 | 49 | 49 | 55 | 47 | 51 | 52 | 50 | **50,7 %** |
+| Archer | 39 | 49 | 49 | 49 | 42 | 56 | 48 | 48 | 61 | 49 | **49,0 %** |
+| Prêtre | 57 | 54 | 48 | 58 | 51 | 41 | 51 | 44 | 60 | 49 | **51,2 %** |
+| Alchimiste | 56 | 48 | 45 | 46 | 59 | 50 | 49 | 53 | 60 | 48 | **51,5 %** |
+| Invocateur | 54 | 56 | 54 | 52 | 45 | 52 | 52 | 48 | 49 | 50 | **51,2 %** |
+| Barde | 56 | 51 | 51 | 54 | 58 | 47 | 51 | 51 | 61 | 54 | **53,5 %** |
+| Diplomate | 48 | 42 | 46 | 41 | 42 | 41 | 52 | 39 | 54 | 43 | **44,8 %** |
+| Pugiliste | 43 | 49 | 51 | 50 | 51 | 50 | 48 | 47 | 57 | 50 | **49,5 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 48,3 % | 10,0 % | 50,5 % | 46,7 % | 65,2 % | 50,9 % | 85,7 % | 68,5 % | 97,5 % | 57,4 % | 8,5 % | 11,2 |
+| Mage | 48,8 % | 19,0 % | 49,0 % | 28,3 % | 64,3 % | 57,5 % | 28,0 % | 39,2 % | 90,5 % | 56,8 % | 7,6 % | 11,1 |
+| Voleur | 45,0 % | 20,5 % | 50,7 % | 44,9 % | 30,7 % | 68,8 % | 36,6 % | 43,7 % | 91,3 % | 52,0 % | 7,8 % | 10,6 |
+| Archer | 44,3 % | 15,0 % | 49,0 % | 51,7 % | 42,9 % | 63,0 % | 28,2 % | 38,8 % | 89,5 % | 57,3 % | 7,6 % | 11,0 |
+| Prêtre | 36,8 % | 11,5 % | 51,2 % | 53,3 % | 77,2 % | 40,5 % | 82,4 % | 78,7 % | 96,8 % | 51,9 % | 7,9 % | 10,7 |
+| Alchimiste | 30,8 % | 8,8 % | 51,5 % | 54,9 % | 37,3 % | 60,9 % | 39,3 % | 69,3 % | 96,7 % | 53,8 % | 9,4 % | 11,3 |
+| Invocateur | 39,3 % | 12,0 % | 51,2 % | 37,6 % | 49,3 % | 73,0 % | 42,7 % | 50,9 % | 91,8 % | 49,6 % | 7,5 % | 10,6 |
+| Barde | 44,3 % | 13,8 % | 53,5 % | 47,6 % | 45,0 % | 57,6 % | 58,1 % | 67,7 % | 93,5 % | 58,5 % | 7,6 % | 11,5 |
+| Diplomate | 34,0 % | 7,0 % | 44,8 % | 34,1 % | 59,8 % | 95,1 % | 48,9 % | 86,9 % | 97,5 % | 45,6 % | 7,6 % | 10,1 |
+| Pugiliste | 20,8 % | 5,8 % | 49,5 % | 50,7 % | 57,2 % | 66,2 % | 84,8 % | 44,7 % | 97,4 % | 54,5 % | 5,6 % | 10,8 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 83)
+- k_classe Guerrier : 0,869 → 0,870 (50,5 % de victoires)
+- k_classe Mage : 0,874 → 0,882 (49,0 % de victoires)
+- k_classe Voleur : 0,777 → 0,774 (50,7 % de victoires)
+- k_classe Archer : 0,910 → 0,912 (49,0 % de victoires)
+- k_classe Prêtre : 0,880 → 0,870 (51,2 % de victoires)
+- k_classe Alchimiste : 1,028 → 1,025 (51,5 % de victoires)
+- k_classe Invocateur : 0,831 → 0,834 (51,2 % de victoires)
+- k_classe Barde : 1,023 → 1,015 (53,5 % de victoires)
+- k_classe Pugiliste : 1,075 → 1,076 (49,5 % de victoires)
+- Tour : force des monstres au départ 0,500 → 0,505, en plus par étage 0,029 → 0,029 (étage 10 atteint dans 53,7 % des montées, étage 20 dans 7,7 %)
+- Tour, Guerrier : facteur des monstres 1,691 → 1,697 (étage 10 dans 57,4 % des montées)
+- Tour, Mage : facteur des monstres 0,741 → 0,743 (étage 10 dans 56,8 % des montées)
+- Tour, Archer : facteur des monstres 0,694 → 0,696 (étage 10 dans 57,2 % des montées)
+- Tour, Invocateur : facteur des monstres 0,973 → 0,969 (étage 10 dans 49,6 % des montées)
+- Tour, Barde : facteur des monstres 0,845 → 0,849 (étage 10 dans 58,5 % des montées)
+- Tour, Diplomate : facteur des monstres 1,282 → 1,272 (étage 10 dans 45,6 % des montées)
+
+## Passe 86 (graines à partir de 8600259)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : diplomate 44,7 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : mage contre diplomate 60,5 %, archer contre pretre 38,6 %, archer contre diplomate 62,7 %, diplomate contre archer 39,5 %, diplomate contre pretre 39,7 %, diplomate contre barde 39,7 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : pretre étage 20 4,8 %, écart entre classes : étage 10 de 41,0 % à 51,1 %, étage 20 de 4,8 % à 8,6 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 51 | 55 | 51 | 59 | 41 | 43 | 43 | 44 | 49 | 54 | **48,9 %** |
+| Mage | 45 | 52 | 48 | 49 | 45 | 55 | 47 | 53 | 61 | 51 | **50,5 %** |
+| Voleur | 50 | 53 | 51 | 47 | 52 | 53 | 47 | 47 | 50 | 50 | **50,0 %** |
+| Archer | 42 | 52 | 50 | 51 | 39 | 56 | 47 | 50 | 63 | 49 | **50,0 %** |
+| Prêtre | 57 | 54 | 49 | 58 | 49 | 41 | 54 | 42 | 57 | 49 | **50,9 %** |
+| Alchimiste | 56 | 43 | 46 | 41 | 58 | 48 | 51 | 53 | 55 | 48 | **50,0 %** |
+| Invocateur | 57 | 53 | 51 | 51 | 48 | 50 | 49 | 48 | 53 | 53 | **51,3 %** |
+| Barde | 56 | 46 | 51 | 50 | 55 | 42 | 52 | 53 | 59 | 53 | **51,6 %** |
+| Diplomate | 50 | 42 | 48 | 40 | 40 | 43 | 51 | 40 | 52 | 43 | **44,7 %** |
+| Pugiliste | 44 | 49 | 50 | 51 | 49 | 51 | 49 | 44 | 56 | 50 | **49,2 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 42,5 % | 7,0 % | 48,9 % | 46,1 % | 66,2 % | 49,4 % | 86,2 % | 66,0 % | 97,2 % | 51,1 % | 6,6 % | 10,5 |
+| Mage | 51,7 % | 18,5 % | 50,5 % | 30,1 % | 62,8 % | 54,4 % | 31,4 % | 40,7 % | 90,0 % | 44,8 % | 5,0 % | 10,2 |
+| Voleur | 46,3 % | 22,8 % | 50,0 % | 46,1 % | 31,2 % | 66,6 % | 43,5 % | 42,8 % | 90,9 % | 47,6 % | 5,3 % | 10,0 |
+| Archer | 48,5 % | 16,3 % | 50,0 % | 49,8 % | 44,6 % | 62,0 % | 29,1 % | 40,8 % | 89,4 % | 42,9 % | 7,6 % | 10,1 |
+| Prêtre | 32,5 % | 13,3 % | 50,9 % | 53,5 % | 76,2 % | 42,1 % | 81,8 % | 79,0 % | 96,5 % | 50,1 % | 4,8 % | 10,1 |
+| Alchimiste | 32,3 % | 8,8 % | 50,0 % | 56,9 % | 35,8 % | 61,0 % | 40,3 % | 66,3 % | 96,2 % | 48,1 % | 8,6 % | 10,7 |
+| Invocateur | 46,0 % | 13,3 % | 51,3 % | 39,5 % | 50,8 % | 73,6 % | 41,8 % | 52,7 % | 91,6 % | 50,4 % | 7,2 % | 10,6 |
+| Barde | 40,0 % | 10,5 % | 51,6 % | 49,0 % | 42,6 % | 57,5 % | 57,3 % | 68,0 % | 93,2 % | 50,2 % | 5,3 % | 10,6 |
+| Diplomate | 25,3 % | 4,8 % | 44,7 % | 34,4 % | 60,3 % | 95,3 % | 48,0 % | 86,7 % | 97,5 % | 41,0 % | 8,1 % | 9,6 |
+| Pugiliste | 15,5 % | 6,8 % | 49,2 % | 50,5 % | 58,0 % | 65,3 % | 86,4 % | 43,0 % | 97,1 % | 50,1 % | 6,0 % | 10,4 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 83)
+- k_classe Guerrier : 0,870 → 0,873 (48,9 % de victoires)
+- k_classe Voleur : 0,774 → 0,775 (50,0 % de victoires)
+- k_classe Archer : 0,912 → 0,909 (50,0 % de victoires)
+- k_classe Prêtre : 0,870 → 0,865 (50,9 % de victoires)
+- k_classe Alchimiste : 1,025 → 1,018 (50,0 % de victoires)
+- k_classe Invocateur : 0,834 → 0,843 (51,3 % de victoires)
+- k_classe Barde : 1,015 → 1,017 (51,6 % de victoires)
+- k_classe Pugiliste : 1,076 → 1,072 (49,2 % de victoires)
+- Tour, Guerrier : facteur des monstres 1,697 → 1,703 (étage 10 dans 51,1 % des montées)
+- Tour, Mage : pente des monstres 1,003 → 0,978 (étage 20 dans 5,0 % des montées)
+- Tour, Mage : facteur des monstres 0,743 → 0,742 (étage 10 dans 44,8 % des montées)
+- Tour, Voleur : pente des monstres 0,469 → 0,458 (étage 20 dans 5,2 % des montées)
+- Tour, Archer : facteur des monstres 0,696 → 0,694 (étage 10 dans 42,9 % des montées)
+- Tour, Prêtre : pente des monstres 0,958 → 0,952 (étage 20 dans 4,8 % des montées)
+- Tour, Prêtre : facteur des monstres 1,084 → 1,087 (étage 10 dans 50,1 % des montées)
+- Tour, Invocateur : facteur des monstres 0,969 → 0,970 (étage 10 dans 50,4 % des montées)
+- Tour, Barde : pente des monstres 1,459 → 1,426 (étage 20 dans 5,2 % des montées)
+- Tour, Barde : facteur des monstres 0,849 → 0,851 (étage 10 dans 50,2 % des montées)
+- Tour, Diplomate : facteur des monstres 1,272 → 1,264 (étage 10 dans 41,0 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,970 → 0,975 (étage 10 dans 50,1 % des montées)
+
+## Passe 87 (graines à partir de 8700262)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 19 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : diplomate 45,7 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : mage contre diplomate 63,0 %, archer contre diplomate 60,9 %, pretre contre diplomate 62,0 %, alchimiste contre archer 38,7 %, diplomate contre mage 37,6 %, diplomate contre archer 39,5 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : alchimiste étage 20 11,3 %, diplomate étage 20 10,1 %, écart entre classes : étage 10 de 46,9 % à 55,8 %, étage 20 de 6,0 % à 11,3 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 51 | 56 | 54 | 60 | 42 | 48 | 44 | 45 | 48 | 56 | **50,3 %** |
+| Mage | 46 | 51 | 47 | 48 | 50 | 58 | 47 | 55 | 63 | 55 | **51,9 %** |
+| Voleur | 53 | 50 | 50 | 46 | 51 | 55 | 47 | 48 | 51 | 52 | **50,2 %** |
+| Archer | 41 | 54 | 53 | 49 | 47 | 58 | 49 | 50 | 61 | 54 | **51,6 %** |
+| Prêtre | 58 | 50 | 52 | 56 | 51 | 44 | 53 | 47 | 62 | 50 | **52,3 %** |
+| Alchimiste | 55 | 41 | 47 | 39 | 57 | 49 | 48 | 56 | 55 | 48 | **49,5 %** |
+| Invocateur | 56 | 52 | 52 | 48 | 45 | 52 | 52 | 50 | 49 | 53 | **50,9 %** |
+| Barde | 56 | 48 | 54 | 49 | 54 | 44 | 50 | 49 | 58 | 55 | **51,6 %** |
+| Diplomate | 51 | 38 | 53 | 40 | 42 | 45 | 51 | 41 | 53 | 45 | **45,7 %** |
+| Pugiliste | 46 | 49 | 53 | 48 | 49 | 52 | 49 | 43 | 57 | 52 | **49,7 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 42,0 % | 8,3 % | 50,3 % | 49,0 % | 68,3 % | 47,7 % | 86,1 % | 68,9 % | 97,3 % | 53,6 % | 6,0 % | 10,5 |
+| Mage | 54,5 % | 20,5 % | 51,9 % | 28,6 % | 62,8 % | 56,1 % | 31,3 % | 39,1 % | 90,3 % | 55,8 % | 8,1 % | 11,0 |
+| Voleur | 53,0 % | 22,0 % | 50,2 % | 45,4 % | 32,7 % | 68,9 % | 40,1 % | 40,3 % | 91,0 % | 53,5 % | 7,4 % | 10,7 |
+| Archer | 48,5 % | 18,8 % | 51,6 % | 43,5 % | 41,5 % | 63,8 % | 29,0 % | 48,5 % | 89,6 % | 46,9 % | 6,0 % | 10,3 |
+| Prêtre | 28,2 % | 9,8 % | 52,3 % | 50,9 % | 76,1 % | 42,4 % | 83,3 % | 81,4 % | 96,6 % | 52,5 % | 6,3 % | 10,6 |
+| Alchimiste | 37,3 % | 12,5 % | 49,5 % | 57,5 % | 35,8 % | 62,7 % | 40,1 % | 65,8 % | 96,0 % | 53,5 % | 11,3 % | 11,3 |
+| Invocateur | 49,8 % | 17,3 % | 50,9 % | 41,6 % | 49,1 % | 72,4 % | 42,2 % | 49,2 % | 91,0 % | 51,1 % | 7,2 % | 10,6 |
+| Barde | 50,2 % | 13,3 % | 51,6 % | 48,1 % | 44,6 % | 57,8 % | 56,5 % | 65,3 % | 93,3 % | 55,6 % | 6,8 % | 11,1 |
+| Diplomate | 27,3 % | 4,0 % | 45,7 % | 34,2 % | 60,6 % | 95,6 % | 47,9 % | 86,7 % | 97,4 % | 48,6 % | 10,1 % | 10,4 |
+| Pugiliste | 23,0 % | 5,0 % | 49,7 % | 51,1 % | 56,7 % | 64,3 % | 86,0 % | 41,9 % | 97,5 % | 52,3 % | 7,2 % | 10,6 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 87)
+- k_classe Guerrier : 0,873 → 0,860 (50,3 % de victoires)
+- k_classe Mage : 0,882 → 0,863 (51,9 % de victoires)
+- k_classe Voleur : 0,775 → 0,764 (50,2 % de victoires)
+- k_classe Archer : 0,909 → 0,892 (51,6 % de victoires)
+- k_classe Prêtre : 0,865 → 0,853 (52,3 % de victoires)
+- k_classe Alchimiste : 1,018 → 1,008 (49,5 % de victoires)
+- k_classe Invocateur : 0,843 → 0,829 (50,9 % de victoires)
+- k_classe Barde : 1,017 → 1,001 (51,6 % de victoires)
+- k_classe Pugiliste : 1,072 → 1,058 (49,7 % de victoires)
+- Tour, Mage : facteur des monstres 0,742 → 0,762 (étage 10 dans 55,8 % des montées)
+- Tour, Archer : facteur des monstres 0,694 → 0,664 (étage 10 dans 46,9 % des montées)
+- Tour, Alchimiste : pente des monstres 1,203 → 1,293 (étage 20 dans 11,2 % des montées)
+- Tour, Barde : facteur des monstres 0,851 → 0,874 (étage 10 dans 55,6 % des montées)
+- Tour, Diplomate : pente des monstres 0,811 → 0,854 (étage 20 dans 10,1 % des montées)
+- Tour, Diplomate : facteur des monstres 1,264 → 1,226 (étage 10 dans 48,6 % des montées)
+
+## Passe 88 (graines à partir de 8800265)
+
+**4 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ✅ **1. Chaque classe entre 47 % et 53 % de victoires**
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre pretre 39,7 %, mage contre alchimiste 60,2 %, mage contre diplomate 61,7 %, archer contre alchimiste 62,7 %, alchimiste contre pretre 60,4 %, diplomate contre mage 39,8 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : guerrier étage 20 4,8 %, pretre étage 20 4,8 %, barde étage 20 4,8 %, écart entre classes : étage 10 de 47,4 % à 57,4 %, étage 20 de 4,8 % à 9,6 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 51 | 50 | 48 | 57 | 40 | 41 | 43 | 43 | 47 | 54 | **47,3 %** |
+| Mage | 50 | 51 | 48 | 51 | 55 | 60 | 45 | 54 | 62 | 51 | **52,8 %** |
+| Voleur | 52 | 51 | 50 | 48 | 50 | 57 | 47 | 49 | 48 | 46 | **49,8 %** |
+| Archer | 43 | 49 | 50 | 49 | 46 | 63 | 47 | 50 | 59 | 48 | **50,3 %** |
+| Prêtre | 59 | 48 | 48 | 54 | 52 | 41 | 49 | 46 | 56 | 49 | **50,0 %** |
+| Alchimiste | 59 | 41 | 45 | 42 | 60 | 51 | 48 | 54 | 55 | 45 | **50,1 %** |
+| Invocateur | 59 | 53 | 51 | 53 | 51 | 52 | 48 | 48 | 48 | 49 | **51,3 %** |
+| Barde | 54 | 42 | 51 | 49 | 56 | 44 | 50 | 49 | 56 | 51 | **50,1 %** |
+| Diplomate | 56 | 40 | 52 | 43 | 48 | 44 | 51 | 44 | 52 | 44 | **47,4 %** |
+| Pugiliste | 40 | 48 | 51 | 51 | 53 | 55 | 48 | 47 | 57 | 50 | **50,0 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 40,3 % | 9,5 % | 47,3 % | 50,1 % | 69,2 % | 44,1 % | 85,6 % | 66,4 % | 97,1 % | 50,7 % | 4,8 % | 10,2 |
+| Mage | 49,3 % | 17,3 % | 52,8 % | 28,4 % | 64,7 % | 55,7 % | 28,9 % | 34,8 % | 90,5 % | 47,9 % | 6,1 % | 10,3 |
+| Voleur | 53,3 % | 22,3 % | 49,8 % | 46,3 % | 28,4 % | 66,5 % | 37,6 % | 47,0 % | 91,1 % | 50,6 % | 8,4 % | 10,5 |
+| Archer | 49,3 % | 18,3 % | 50,3 % | 49,3 % | 38,3 % | 67,4 % | 25,3 % | 35,2 % | 89,4 % | 57,4 % | 8,1 % | 11,1 |
+| Prêtre | 19,8 % | 3,3 % | 50,0 % | 51,8 % | 75,8 % | 40,7 % | 83,4 % | 80,6 % | 96,7 % | 49,3 % | 4,8 % | 10,1 |
+| Alchimiste | 33,3 % | 7,2 % | 50,1 % | 55,3 % | 35,2 % | 63,6 % | 39,8 % | 67,9 % | 96,0 % | 51,1 % | 9,6 % | 11,0 |
+| Invocateur | 45,3 % | 18,0 % | 51,3 % | 38,0 % | 50,0 % | 73,3 % | 44,3 % | 51,2 % | 91,8 % | 50,5 % | 7,4 % | 10,6 |
+| Barde | 39,0 % | 10,0 % | 50,1 % | 47,3 % | 48,7 % | 59,1 % | 56,5 % | 64,1 % | 93,2 % | 48,1 % | 4,8 % | 10,3 |
+| Diplomate | 30,8 % | 6,5 % | 47,4 % | 35,7 % | 61,0 % | 95,8 % | 50,1 % | 86,8 % | 97,4 % | 47,4 % | 8,6 % | 10,3 |
+| Pugiliste | 19,3 % | 6,5 % | 50,0 % | 48,6 % | 55,5 % | 65,5 % | 88,8 % | 43,0 % | 97,2 % | 48,0 % | 6,8 % | 10,2 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 87)
+- k_classe Guerrier : 0,860 → 0,859 (47,3 % de victoires)
+- k_classe Mage : 0,863 → 0,855 (52,8 % de victoires)
+- k_classe Voleur : 0,764 → 0,752 (49,8 % de victoires)
+- k_classe Archer : 0,892 → 0,889 (50,3 % de victoires)
+- k_classe Prêtre : 0,853 → 0,859 (50,0 % de victoires)
+- k_classe Alchimiste : 1,008 → 1,009 (50,1 % de victoires)
+- k_classe Invocateur : 0,829 → 0,836 (51,3 % de victoires)
+- k_classe Barde : 1,001 → 0,996 (50,1 % de victoires)
+- k_classe Pugiliste : 1,058 → 1,056 (50,0 % de victoires)
+- Tour, Guerrier : pente des monstres 0,824 → 0,779 (étage 20 dans 4,8 % des montées)
+- Tour, Mage : facteur des monstres 0,762 → 0,755 (étage 10 dans 47,9 % des montées)
+- Tour, Archer : facteur des monstres 0,664 → 0,683 (étage 10 dans 57,4 % des montées)
+- Tour, Prêtre : pente des monstres 0,952 → 0,899 (étage 20 dans 4,8 % des montées)
+- Tour, Alchimiste : pente des monstres 1,293 → 1,348 (étage 20 dans 9,6 % des montées)
+- Tour, Barde : pente des monstres 1,426 → 1,348 (étage 20 dans 4,8 % des montées)
+- Tour, Diplomate : facteur des monstres 1,226 → 1,199 (étage 10 dans 47,4 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,975 → 0,959 (étage 10 dans 48,0 % des montées)
+
+## Passe 89 (graines à partir de 8900268)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : alchimiste 53,9 %, diplomate 46,7 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre alchimiste 37,2 %, mage contre diplomate 62,1 %, pretre contre alchimiste 35,5 %, alchimiste contre guerrier 61,2 %, alchimiste contre pretre 65,5 %, alchimiste contre barde 62,7 %, barde contre alchimiste 36,2 %, diplomate contre mage 37,0 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : alchimiste étage 20 10,9 %, barde étage 20 4,6 %, diplomate étage 20 13,0 %, écart entre classes : étage 10 de 45,4 % à 56,6 %, étage 20 de 4,6 % à 13,0 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 48 | 54 | 48 | 59 | 46 | 37 | 41 | 48 | 45 | 55 | **48,2 %** |
+| Mage | 47 | 50 | 49 | 52 | 53 | 52 | 46 | 59 | 62 | 49 | **51,8 %** |
+| Voleur | 51 | 52 | 48 | 49 | 54 | 53 | 48 | 53 | 45 | 47 | **49,8 %** |
+| Archer | 40 | 49 | 53 | 50 | 44 | 53 | 48 | 54 | 57 | 49 | **49,6 %** |
+| Prêtre | 57 | 52 | 45 | 57 | 53 | 36 | 51 | 49 | 55 | 50 | **50,3 %** |
+| Alchimiste | 61 | 47 | 51 | 44 | 66 | 51 | 51 | 63 | 56 | 49 | **53,9 %** |
+| Invocateur | 58 | 55 | 56 | 50 | 52 | 48 | 50 | 55 | 45 | 52 | **52,1 %** |
+| Barde | 55 | 42 | 47 | 46 | 55 | 36 | 46 | 49 | 54 | 50 | **47,8 %** |
+| Diplomate | 53 | 37 | 53 | 43 | 45 | 44 | 52 | 48 | 50 | 43 | **46,7 %** |
+| Pugiliste | 44 | 50 | 53 | 51 | 53 | 51 | 48 | 50 | 55 | 51 | **50,4 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 43,3 % | 10,8 % | 48,2 % | 53,1 % | 72,8 % | 45,9 % | 80,2 % | 69,4 % | 96,6 % | 56,6 % | 7,4 % | 11,2 |
+| Mage | 55,3 % | 20,8 % | 51,8 % | 30,1 % | 69,8 % | 50,1 % | 23,1 % | 35,7 % | 89,4 % | 45,4 % | 5,0 % | 10,2 |
+| Voleur | 50,5 % | 21,3 % | 49,8 % | 46,6 % | 27,7 % | 68,0 % | 34,9 % | 50,4 % | 90,2 % | 50,7 % | 6,4 % | 10,5 |
+| Archer | 54,8 % | 20,3 % | 49,6 % | 39,9 % | 38,4 % | 69,3 % | 27,2 % | 45,4 % | 88,4 % | 56,1 % | 6,9 % | 11,0 |
+| Prêtre | 32,3 % | 13,3 % | 50,3 % | 52,9 % | 75,8 % | 41,3 % | 83,3 % | 81,7 % | 96,4 % | 53,5 % | 5,3 % | 10,5 |
+| Alchimiste | 38,0 % | 10,8 % | 53,9 % | 52,9 % | 39,1 % | 65,3 % | 40,1 % | 70,1 % | 97,5 % | 54,8 % | 10,9 % | 11,4 |
+| Invocateur | 46,0 % | 15,8 % | 52,1 % | 39,8 % | 49,9 % | 74,4 % | 42,7 % | 52,3 % | 90,9 % | 53,5 % | 7,6 % | 10,8 |
+| Barde | 47,3 % | 13,8 % | 47,8 % | 50,3 % | 63,1 % | 60,5 % | 54,0 % | 51,3 % | 92,4 % | 45,6 % | 4,6 % | 10,1 |
+| Diplomate | 31,5 % | 6,0 % | 46,7 % | 36,4 % | 61,9 % | 95,4 % | 49,5 % | 86,2 % | 96,8 % | 52,9 % | 13,0 % | 11,2 |
+| Pugiliste | 21,8 % | 5,3 % | 50,4 % | 55,1 % | 59,4 % | 64,5 % | 87,2 % | 43,9 % | 96,8 % | 50,5 % | 7,6 % | 10,6 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 87)
+- k_classe Guerrier : 0,859 → 0,846 (48,2 % de victoires)
+- k_classe Mage : 0,855 → 0,837 (51,8 % de victoires)
+- k_classe Voleur : 0,752 → 0,750 (49,8 % de victoires)
+- k_classe Archer : 0,889 → 0,881 (49,6 % de victoires)
+- k_classe Prêtre : 0,859 → 0,858 (50,3 % de victoires)
+- k_classe Alchimiste : 1,009 → 0,985 (53,9 % de victoires)
+- k_classe Invocateur : 0,836 → 0,820 (52,1 % de victoires)
+- k_classe Barde : 0,996 → 0,990 (47,8 % de victoires)
+- k_classe Pugiliste : 1,056 → 1,039 (50,4 % de victoires)
+- Tour, Guerrier : facteur des monstres 1,703 → 1,766 (étage 10 dans 56,6 % des montées)
+- Tour, Mage : pente des monstres 0,978 → 0,929 (étage 20 dans 5,0 % des montées)
+- Tour, Mage : facteur des monstres 0,755 → 0,736 (étage 10 dans 45,4 % des montées)
+- Tour, Archer : facteur des monstres 0,683 → 0,695 (étage 10 dans 56,1 % des montées)
+- Tour, Prêtre : pente des monstres 0,899 → 0,859 (étage 20 dans 5,2 % des montées)
+- Tour, Alchimiste : pente des monstres 1,348 → 1,439 (étage 20 dans 10,9 % des montées)
+- Tour, Alchimiste : facteur des monstres 0,847 → 0,866 (étage 10 dans 54,8 % des montées)
+- Tour, Barde : pente des monstres 1,348 → 1,270 (étage 20 dans 4,6 % des montées)
+- Tour, Barde : facteur des monstres 0,874 → 0,851 (étage 10 dans 45,6 % des montées)
+- Tour, Diplomate : pente des monstres 0,854 → 0,948 (étage 20 dans 13,0 % des montées)
+
+## Passe 90 (graines à partir de 9000271)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : alchimiste 53,8 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre archer 64,4 %, archer contre guerrier 33,5 %, pretre contre alchimiste 37,0 %, alchimiste contre guerrier 60,1 %, alchimiste contre pretre 63,4 %, alchimiste contre barde 60,5 %, barde contre alchimiste 37,8 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : diplomate étage 10 35,5 %, écart entre classes : étage 10 de 35,5 % à 53,5 %, étage 20 de 5,1 % à 9,4 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 49 | 58 | 51 | 64 | 43 | 41 | 44 | 50 | 47 | 56 | **50,2 %** |
+| Mage | 41 | 49 | 49 | 54 | 49 | 52 | 46 | 58 | 59 | 50 | **50,7 %** |
+| Voleur | 50 | 54 | 52 | 50 | 51 | 52 | 47 | 51 | 47 | 46 | **50,0 %** |
+| Archer | 34 | 46 | 51 | 51 | 40 | 53 | 47 | 50 | 54 | 48 | **47,2 %** |
+| Prêtre | 55 | 53 | 49 | 60 | 49 | 37 | 49 | 48 | 54 | 50 | **50,3 %** |
+| Alchimiste | 60 | 52 | 47 | 50 | 63 | 52 | 50 | 61 | 55 | 48 | **53,8 %** |
+| Invocateur | 58 | 57 | 53 | 52 | 50 | 47 | 52 | 52 | 47 | 49 | **51,7 %** |
+| Barde | 50 | 46 | 48 | 48 | 52 | 38 | 48 | 50 | 53 | 52 | **48,5 %** |
+| Diplomate | 54 | 40 | 55 | 45 | 46 | 46 | 53 | 48 | 48 | 47 | **48,1 %** |
+| Pugiliste | 48 | 52 | 52 | 54 | 50 | 49 | 49 | 48 | 53 | 49 | **50,3 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 45,3 % | 10,8 % | 50,2 % | 51,9 % | 69,5 % | 43,7 % | 83,7 % | 69,9 % | 96,8 % | 49,6 % | 7,9 % | 10,5 |
+| Mage | 43,8 % | 16,8 % | 50,7 % | 28,1 % | 71,9 % | 51,1 % | 22,6 % | 36,0 % | 90,8 % | 51,7 % | 7,2 % | 10,8 |
+| Voleur | 56,8 % | 25,0 % | 50,0 % | 47,5 % | 29,1 % | 67,3 % | 39,0 % | 45,8 % | 90,8 % | 50,9 % | 9,1 % | 10,6 |
+| Archer | 49,0 % | 17,8 % | 47,2 % | 41,9 % | 35,4 % | 71,8 % | 27,5 % | 42,6 % | 89,0 % | 45,8 % | 6,6 % | 10,3 |
+| Prêtre | 27,5 % | 10,0 % | 50,3 % | 53,1 % | 77,3 % | 35,1 % | 83,9 % | 79,0 % | 96,4 % | 51,6 % | 8,6 % | 10,7 |
+| Alchimiste | 39,0 % | 9,8 % | 53,8 % | 53,3 % | 38,0 % | 61,4 % | 43,3 % | 72,9 % | 97,4 % | 43,5 % | 7,8 % | 10,2 |
+| Invocateur | 51,0 % | 18,5 % | 51,7 % | 43,2 % | 44,4 % | 74,0 % | 41,1 % | 53,7 % | 91,6 % | 49,6 % | 8,6 % | 10,5 |
+| Barde | 49,5 % | 16,3 % | 48,5 % | 48,2 % | 63,6 % | 61,6 % | 52,7 % | 52,0 % | 92,5 % | 52,0 % | 9,4 % | 11,2 |
+| Diplomate | 25,0 % | 5,8 % | 48,1 % | 35,4 % | 59,1 % | 95,3 % | 49,0 % | 86,1 % | 97,1 % | 35,5 % | 5,1 % | 9,0 |
+| Pugiliste | 21,3 % | 8,8 % | 50,3 % | 52,8 % | 56,7 % | 67,7 % | 84,4 % | 45,7 % | 96,1 % | 53,5 % | 7,8 % | 10,8 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 87)
+- k_classe Guerrier : 0,846 → 0,839 (50,2 % de victoires)
+- k_classe Mage : 0,837 → 0,829 (50,7 % de victoires)
+- k_classe Archer : 0,881 → 0,883 (47,2 % de victoires)
+- k_classe Prêtre : 0,858 → 0,852 (50,3 % de victoires)
+- k_classe Alchimiste : 0,985 → 0,965 (53,8 % de victoires)
+- k_classe Invocateur : 0,820 → 0,807 (51,7 % de victoires)
+- k_classe Barde : 0,990 → 0,980 (48,5 % de victoires)
+- k_classe Pugiliste : 1,039 → 1,029 (50,3 % de victoires)
+- Tour, Mage : facteur des monstres 0,736 → 0,741 (étage 10 dans 51,7 % des montées)
+- Tour, Voleur : facteur des monstres 0,961 → 0,980 (étage 10 dans 50,9 % des montées)
+- Tour, Archer : facteur des monstres 0,695 → 0,691 (étage 10 dans 45,8 % des montées)
+- Tour, Prêtre : facteur des monstres 1,087 → 1,115 (étage 10 dans 51,6 % des montées)
+- Tour, Alchimiste : facteur des monstres 0,866 → 0,849 (étage 10 dans 43,5 % des montées)
+- Tour, Barde : facteur des monstres 0,851 → 0,858 (étage 10 dans 52,0 % des montées)
+- Tour, Diplomate : pente des monstres 0,948 → 0,925 (étage 20 dans 5,1 % des montées)
+- Tour, Diplomate : facteur des monstres 1,199 → 1,076 (étage 10 dans 35,5 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,959 → 0,979 (étage 10 dans 53,5 % des montées)
+
+## Passe 91 (graines à partir de 9100274)
+
+**4 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ✅ **1. Chaque classe entre 47 % et 53 % de victoires**
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre archer 64,2 %, mage contre guerrier 36,7 %, archer contre guerrier 34,6 %, pretre contre alchimiste 37,0 %, alchimiste contre pretre 64,7 %, alchimiste contre barde 61,7 %, barde contre alchimiste 39,4 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : invocateur étage 20 4,5 %, diplomate étage 20 10,8 %, écart entre classes : étage 10 de 46,9 % à 59,1 %, étage 20 de 4,5 % à 10,8 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 50 | 58 | 53 | 64 | 43 | 42 | 47 | 52 | 45 | 58 | **51,1 %** |
+| Mage | 37 | 51 | 49 | 53 | 52 | 53 | 45 | 57 | 55 | 47 | **49,8 %** |
+| Voleur | 47 | 56 | 49 | 49 | 59 | 52 | 47 | 53 | 46 | 49 | **50,8 %** |
+| Archer | 35 | 47 | 50 | 47 | 47 | 56 | 47 | 54 | 53 | 51 | **48,7 %** |
+| Prêtre | 55 | 49 | 45 | 53 | 52 | 37 | 45 | 44 | 52 | 48 | **47,9 %** |
+| Alchimiste | 53 | 46 | 47 | 45 | 65 | 51 | 52 | 62 | 55 | 50 | **52,7 %** |
+| Invocateur | 53 | 57 | 51 | 50 | 52 | 48 | 52 | 51 | 45 | 52 | **51,0 %** |
+| Barde | 49 | 45 | 50 | 46 | 55 | 39 | 52 | 53 | 50 | 52 | **49,0 %** |
+| Diplomate | 55 | 45 | 54 | 43 | 50 | 47 | 54 | 48 | 49 | 46 | **49,2 %** |
+| Pugiliste | 41 | 50 | 50 | 49 | 52 | 47 | 46 | 48 | 54 | 48 | **48,7 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 44,3 % | 8,8 % | 51,1 % | 47,3 % | 68,5 % | 40,8 % | 86,5 % | 71,1 % | 96,5 % | 51,4 % | 7,4 % | 10,7 |
+| Mage | 51,2 % | 18,5 % | 49,8 % | 24,9 % | 75,6 % | 43,2 % | 22,8 % | 35,9 % | 91,0 % | 55,9 % | 7,6 % | 11,0 |
+| Voleur | 52,0 % | 25,8 % | 50,8 % | 45,9 % | 28,4 % | 69,5 % | 38,9 % | 46,9 % | 91,4 % | 50,5 % | 6,5 % | 10,3 |
+| Archer | 53,3 % | 21,0 % | 48,7 % | 47,9 % | 36,0 % | 71,8 % | 26,8 % | 37,5 % | 89,5 % | 59,1 % | 6,8 % | 11,1 |
+| Prêtre | 23,8 % | 5,5 % | 47,9 % | 50,7 % | 78,4 % | 41,2 % | 83,9 % | 80,1 % | 97,1 % | 50,1 % | 5,9 % | 10,5 |
+| Alchimiste | 34,8 % | 9,0 % | 52,7 % | 53,9 % | 39,1 % | 64,0 % | 44,7 % | 70,1 % | 97,5 % | 51,7 % | 7,9 % | 11,0 |
+| Invocateur | 47,3 % | 17,5 % | 51,0 % | 41,1 % | 42,4 % | 77,3 % | 41,8 % | 51,1 % | 91,4 % | 48,6 % | 4,5 % | 10,2 |
+| Barde | 45,8 % | 15,0 % | 49,0 % | 50,5 % | 65,4 % | 62,4 % | 51,9 % | 49,5 % | 92,8 % | 55,5 % | 8,6 % | 11,3 |
+| Diplomate | 27,3 % | 8,5 % | 49,2 % | 36,3 % | 58,5 % | 95,7 % | 48,1 % | 86,9 % | 97,6 % | 46,9 % | 10,8 % | 10,3 |
+| Pugiliste | 21,0 % | 5,5 % | 48,7 % | 54,0 % | 53,7 % | 68,6 % | 85,0 % | 45,1 % | 96,7 % | 49,9 % | 6,9 % | 10,3 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 91)
+- k_classe Guerrier : 0,839 → 0,833 (51,1 % de victoires)
+- k_classe Mage : 0,829 → 0,837 (49,8 % de victoires)
+- k_classe Archer : 0,883 → 0,891 (48,7 % de victoires)
+- k_classe Prêtre : 0,852 → 0,849 (47,9 % de victoires)
+- k_classe Alchimiste : 0,965 → 0,951 (52,7 % de victoires)
+- k_classe Invocateur : 0,807 → 0,802 (51,0 % de victoires)
+- k_classe Barde : 0,980 → 0,973 (49,0 % de victoires)
+- k_classe Pugiliste : 1,029 → 1,027 (48,7 % de victoires)
+- Tour, Mage : facteur des monstres 0,741 → 0,746 (étage 10 dans 55,9 % des montées)
+- Tour, Archer : facteur des monstres 0,691 → 0,696 (étage 10 dans 59,1 % des montées)
+- Tour, Invocateur : pente des monstres 1,215 → 1,142 (étage 20 dans 4,5 % des montées)
+- Tour, Invocateur : facteur des monstres 0,970 → 0,944 (étage 10 dans 48,6 % des montées)
+- Tour, Barde : facteur des monstres 0,858 → 0,864 (étage 10 dans 55,5 % des montées)
+- Tour, Diplomate : pente des monstres 0,925 → 0,940 (étage 20 dans 10,8 % des montées)
+- Tour, Diplomate : facteur des monstres 1,076 → 1,032 (étage 10 dans 46,9 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,979 → 0,974 (étage 10 dans 49,9 % des montées)
+
+## Passe 92 (graines à partir de 9200277)
+
+**3 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : pretre 53,5 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre archer 60,7 %, pretre contre guerrier 61,2 %, alchimiste contre pretre 64,3 %, alchimiste contre barde 60,1 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : voleur étage 20 4,0 %, diplomate étage 20 10,6 %, écart entre classes : étage 10 de 44,3 % à 52,1 %, étage 20 de 4,0 % à 10,6 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 49 | 56 | 51 | 61 | 43 | 46 | 48 | 46 | 44 | 55 | **49,8 %** |
+| Mage | 45 | 51 | 47 | 51 | 47 | 52 | 48 | 54 | 60 | 50 | **50,4 %** |
+| Voleur | 47 | 55 | 50 | 47 | 49 | 52 | 47 | 48 | 47 | 48 | **48,9 %** |
+| Archer | 41 | 52 | 52 | 47 | 41 | 59 | 53 | 50 | 56 | 46 | **49,7 %** |
+| Prêtre | 61 | 54 | 50 | 59 | 52 | 43 | 54 | 52 | 57 | 53 | **53,5 %** |
+| Alchimiste | 60 | 48 | 49 | 45 | 64 | 49 | 53 | 60 | 55 | 45 | **52,8 %** |
+| Invocateur | 55 | 55 | 53 | 53 | 49 | 52 | 49 | 49 | 45 | 49 | **50,9 %** |
+| Barde | 53 | 45 | 52 | 50 | 52 | 41 | 53 | 53 | 52 | 49 | **50,0 %** |
+| Diplomate | 54 | 42 | 53 | 44 | 49 | 46 | 58 | 49 | 49 | 48 | **49,0 %** |
+| Pugiliste | 41 | 47 | 49 | 47 | 45 | 51 | 46 | 46 | 52 | 47 | **47,2 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 44,0 % | 12,5 % | 49,8 % | 51,8 % | 68,2 % | 42,4 % | 83,0 % | 69,2 % | 96,2 % | 49,1 % | 7,8 % | 10,3 |
+| Mage | 50,2 % | 18,5 % | 50,4 % | 29,9 % | 70,9 % | 48,8 % | 22,9 % | 35,3 % | 89,5 % | 50,6 % | 6,1 % | 10,7 |
+| Voleur | 48,0 % | 20,8 % | 48,9 % | 46,3 % | 28,5 % | 66,9 % | 37,2 % | 48,3 % | 90,5 % | 44,3 % | 4,0 % | 9,6 |
+| Archer | 54,8 % | 21,8 % | 49,7 % | 48,4 % | 39,2 % | 68,3 % | 26,7 % | 35,1 % | 88,2 % | 45,5 % | 6,8 % | 10,5 |
+| Prêtre | 31,8 % | 9,0 % | 53,5 % | 50,9 % | 78,7 % | 32,0 % | 84,3 % | 77,3 % | 96,0 % | 51,6 % | 7,1 % | 10,5 |
+| Alchimiste | 35,8 % | 10,3 % | 52,8 % | 56,3 % | 37,0 % | 63,7 % | 42,9 % | 67,5 % | 97,3 % | 48,8 % | 8,5 % | 10,8 |
+| Invocateur | 42,3 % | 16,8 % | 50,9 % | 38,2 % | 40,7 % | 75,3 % | 42,6 % | 49,7 % | 91,0 % | 46,6 % | 8,5 % | 10,5 |
+| Barde | 45,0 % | 13,8 % | 50,0 % | 49,2 % | 66,0 % | 60,5 % | 50,7 % | 48,8 % | 92,2 % | 52,1 % | 9,1 % | 10,9 |
+| Diplomate | 22,5 % | 1,8 % | 49,0 % | 34,3 % | 60,9 % | 95,0 % | 49,3 % | 86,7 % | 97,3 % | 48,0 % | 10,6 % | 10,5 |
+| Pugiliste | 23,8 % | 6,8 % | 47,2 % | 52,7 % | 50,8 % | 68,8 % | 83,4 % | 44,0 % | 96,4 % | 46,0 % | 5,4 % | 10,1 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 91)
+- k_classe Guerrier : 0,833 → 0,829 (49,8 % de victoires)
+- k_classe Mage : 0,837 → 0,825 (50,4 % de victoires)
+- k_classe Archer : 0,891 → 0,883 (49,7 % de victoires)
+- k_classe Prêtre : 0,849 → 0,839 (53,5 % de victoires)
+- k_classe Alchimiste : 0,951 → 0,935 (52,8 % de victoires)
+- k_classe Invocateur : 0,802 → 0,787 (50,9 % de victoires)
+- k_classe Barde : 0,973 → 0,968 (50,0 % de victoires)
+- k_classe Pugiliste : 1,027 → 1,025 (47,2 % de victoires)
+- Tour, Mage : facteur des monstres 0,746 → 0,750 (étage 10 dans 50,6 % des montées)
+- Tour, Voleur : pente des monstres 0,458 → 0,426 (étage 20 dans 4,0 % des montées)
+- Tour, Voleur : facteur des monstres 0,980 → 0,964 (étage 10 dans 44,2 % des montées)
+- Tour, Archer : facteur des monstres 0,696 → 0,695 (étage 10 dans 45,5 % des montées)
+- Tour, Prêtre : facteur des monstres 1,115 → 1,145 (étage 10 dans 51,6 % des montées)
+- Tour, Barde : facteur des monstres 0,864 → 0,870 (étage 10 dans 52,1 % des montées)
+- Tour, Diplomate : pente des monstres 0,940 → 0,955 (étage 20 dans 10,6 % des montées)
+- Tour, Pugiliste : pente des monstres 1,052 → 1,008 (étage 20 dans 5,4 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,974 → 0,970 (étage 10 dans 46,0 % des montées)
+
+## Passe 93 (graines à partir de 9300280)
+
+**4 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ✅ **1. Chaque classe entre 47 % et 53 % de victoires**
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre archer 60,1 %, archer contre guerrier 37,6 %, pretre contre alchimiste 38,0 %, alchimiste contre pretre 61,4 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : diplomate étage 20 11,4 %, écart entre classes : étage 10 de 40,1 % à 55,0 %, étage 20 de 5,0 % à 11,4 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 50 | 57 | 46 | 60 | 44 | 45 | 46 | 48 | 46 | 57 | **49,9 %** |
+| Mage | 42 | 53 | 46 | 53 | 52 | 53 | 47 | 57 | 57 | 49 | **50,9 %** |
+| Voleur | 50 | 59 | 50 | 50 | 56 | 54 | 52 | 54 | 48 | 46 | **51,8 %** |
+| Archer | 38 | 51 | 51 | 51 | 46 | 55 | 53 | 54 | 55 | 48 | **50,1 %** |
+| Prêtre | 54 | 51 | 43 | 55 | 50 | 38 | 49 | 48 | 51 | 47 | **48,4 %** |
+| Alchimiste | 55 | 49 | 45 | 46 | 61 | 51 | 51 | 59 | 53 | 49 | **52,0 %** |
+| Invocateur | 52 | 56 | 50 | 48 | 53 | 50 | 51 | 49 | 41 | 50 | **50,0 %** |
+| Barde | 51 | 45 | 48 | 50 | 53 | 42 | 50 | 51 | 50 | 51 | **49,1 %** |
+| Diplomate | 52 | 44 | 53 | 46 | 48 | 47 | 55 | 49 | 49 | 46 | **48,9 %** |
+| Pugiliste | 43 | 53 | 49 | 51 | 54 | 54 | 52 | 50 | 53 | 50 | **50,7 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 42,5 % | 10,8 % | 49,9 % | 47,8 % | 67,3 % | 49,3 % | 85,0 % | 67,9 % | 97,0 % | 51,0 % | 6,0 % | 10,4 |
+| Mage | 51,7 % | 19,5 % | 50,9 % | 28,2 % | 71,7 % | 51,7 % | 24,7 % | 36,5 % | 90,6 % | 55,0 % | 6,9 % | 11,0 |
+| Voleur | 57,3 % | 25,8 % | 51,8 % | 45,3 % | 29,0 % | 69,6 % | 38,3 % | 47,2 % | 91,1 % | 52,4 % | 6,9 % | 10,6 |
+| Archer | 53,8 % | 21,3 % | 50,1 % | 39,1 % | 41,5 % | 69,8 % | 29,8 % | 44,6 % | 89,4 % | 50,5 % | 6,0 % | 10,6 |
+| Prêtre | 27,8 % | 9,3 % | 48,4 % | 49,7 % | 77,7 % | 41,1 % | 84,0 % | 80,2 % | 96,9 % | 40,1 % | 5,0 % | 9,4 |
+| Alchimiste | 38,3 % | 12,8 % | 52,0 % | 53,0 % | 35,6 % | 66,3 % | 42,9 % | 69,7 % | 97,5 % | 48,0 % | 6,5 % | 10,6 |
+| Invocateur | 51,0 % | 20,5 % | 50,0 % | 40,9 % | 40,8 % | 79,8 % | 37,6 % | 48,1 % | 91,5 % | 45,9 % | 8,1 % | 10,0 |
+| Barde | 48,0 % | 16,3 % | 49,1 % | 52,6 % | 66,8 % | 62,9 % | 50,1 % | 45,0 % | 92,9 % | 52,5 % | 8,1 % | 10,8 |
+| Diplomate | 25,3 % | 8,0 % | 48,9 % | 35,6 % | 58,7 % | 95,4 % | 48,9 % | 85,5 % | 97,3 % | 49,6 % | 11,4 % | 10,6 |
+| Pugiliste | 15,3 % | 6,3 % | 50,7 % | 54,2 % | 51,8 % | 67,1 % | 84,7 % | 46,2 % | 96,4 % | 50,7 % | 8,3 % | 10,5 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 91)
+- k_classe Guerrier : 0,829 → 0,833 (49,9 % de victoires)
+- k_classe Mage : 0,825 → 0,829 (50,9 % de victoires)
+- k_classe Archer : 0,883 → 0,892 (50,1 % de victoires)
+- k_classe Prêtre : 0,839 → 0,855 (48,4 % de victoires)
+- k_classe Alchimiste : 0,935 → 0,937 (52,0 % de victoires)
+- k_classe Invocateur : 0,787 → 0,792 (50,0 % de victoires)
+- k_classe Barde : 0,968 → 0,972 (49,1 % de victoires)
+- k_classe Pugiliste : 1,025 → 1,031 (50,7 % de victoires)
+- PV du Voleur : ×0,94 → ×0,91 (k déjà à sa borne, 51,8 % de victoires)
+- Tour, Mage : facteur des monstres 0,750 → 0,758 (étage 10 dans 55,0 % des montées)
+- Tour, Voleur : facteur des monstres 0,964 → 0,970 (étage 10 dans 52,4 % des montées)
+- Tour, Prêtre : pente des monstres 0,859 → 0,816 (étage 20 dans 5,0 % des montées)
+- Tour, Prêtre : facteur des monstres 1,145 → 1,101 (étage 10 dans 40,1 % des montées)
+- Tour, Invocateur : facteur des monstres 0,944 → 0,916 (étage 10 dans 45,9 % des montées)
+- Tour, Barde : facteur des monstres 0,870 → 0,875 (étage 10 dans 52,5 % des montées)
+- Tour, Diplomate : pente des monstres 0,955 → 0,974 (étage 20 dans 11,4 % des montées)
+
+## Passe 94 (graines à partir de 9400283)
+
+**4 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ✅ **1. Chaque classe entre 47 % et 53 % de victoires**
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : pretre contre guerrier 60,8 %, pretre contre alchimiste 39,8 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : mage étage 20 4,5 %, invocateur étage 20 11,4 %, diplomate étage 20 11,0 %, écart entre classes : étage 10 de 44,3 % à 55,6 %, étage 20 de 4,5 % à 11,4 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 48 | 55 | 51 | 60 | 40 | 47 | 47 | 49 | 46 | 54 | **49,6 %** |
+| Mage | 45 | 48 | 44 | 49 | 48 | 56 | 43 | 57 | 59 | 46 | **49,4 %** |
+| Voleur | 51 | 55 | 53 | 45 | 53 | 54 | 45 | 50 | 48 | 45 | **49,7 %** |
+| Archer | 41 | 49 | 52 | 50 | 44 | 60 | 52 | 53 | 59 | 46 | **50,4 %** |
+| Prêtre | 61 | 51 | 47 | 53 | 49 | 40 | 45 | 47 | 52 | 48 | **49,3 %** |
+| Alchimiste | 55 | 44 | 45 | 41 | 60 | 49 | 47 | 57 | 50 | 42 | **48,9 %** |
+| Invocateur | 54 | 55 | 53 | 50 | 52 | 52 | 51 | 49 | 46 | 49 | **51,0 %** |
+| Barde | 55 | 44 | 51 | 46 | 52 | 44 | 49 | 52 | 54 | 51 | **49,8 %** |
+| Diplomate | 55 | 42 | 54 | 41 | 48 | 50 | 55 | 51 | 49 | 46 | **49,1 %** |
+| Pugiliste | 46 | 53 | 54 | 53 | 52 | 58 | 51 | 49 | 56 | 49 | **52,1 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 44,0 % | 12,5 % | 49,6 % | 51,3 % | 69,6 % | 45,1 % | 83,3 % | 67,9 % | 96,8 % | 53,3 % | 6,1 % | 10,5 |
+| Mage | 45,0 % | 17,8 % | 49,4 % | 25,3 % | 74,4 % | 43,6 % | 24,5 % | 34,6 % | 90,5 % | 44,3 % | 4,5 % | 10,0 |
+| Voleur | 45,3 % | 22,8 % | 49,7 % | 46,2 % | 29,1 % | 65,4 % | 38,4 % | 48,2 % | 89,6 % | 47,0 % | 6,0 % | 9,9 |
+| Archer | 53,8 % | 23,0 % | 50,4 % | 49,3 % | 39,8 % | 69,8 % | 25,3 % | 33,8 % | 88,4 % | 48,3 % | 7,2 % | 10,5 |
+| Prêtre | 26,3 % | 9,0 % | 49,3 % | 52,3 % | 81,3 % | 32,8 % | 83,7 % | 77,2 % | 97,2 % | 50,7 % | 8,4 % | 10,4 |
+| Alchimiste | 39,0 % | 13,3 % | 48,9 % | 54,6 % | 35,8 % | 65,6 % | 43,8 % | 69,4 % | 97,6 % | 46,8 % | 5,8 % | 10,3 |
+| Invocateur | 40,0 % | 16,0 % | 51,0 % | 39,6 % | 43,1 % | 76,8 % | 42,7 % | 49,1 % | 91,5 % | 55,6 % | 11,4 % | 11,4 |
+| Barde | 42,5 % | 15,3 % | 49,8 % | 51,0 % | 65,8 % | 62,2 % | 50,8 % | 48,3 % | 92,6 % | 49,9 % | 6,4 % | 10,6 |
+| Diplomate | 30,3 % | 8,8 % | 49,1 % | 34,9 % | 59,1 % | 95,3 % | 49,3 % | 86,2 % | 97,4 % | 48,0 % | 11,0 % | 10,3 |
+| Pugiliste | 21,5 % | 8,5 % | 52,1 % | 44,3 % | 56,7 % | 68,3 % | 89,7 % | 44,5 % | 96,7 % | 54,1 % | 9,0 % | 11,0 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 91)
+- k_classe Guerrier : 0,833 → 0,838 (49,6 % de victoires)
+- k_classe Mage : 0,829 → 0,820 (49,4 % de victoires)
+- k_classe Archer : 0,892 → 0,887 (50,4 % de victoires)
+- k_classe Prêtre : 0,855 → 0,876 (49,3 % de victoires)
+- k_classe Alchimiste : 0,937 → 0,947 (48,9 % de victoires)
+- k_classe Invocateur : 0,792 → 0,791 (51,0 % de victoires)
+- k_classe Barde : 0,972 → 0,976 (49,8 % de victoires)
+- Tour, Guerrier : facteur des monstres 1,766 → 1,815 (étage 10 dans 53,2 % des montées)
+- Tour, Mage : pente des monstres 0,929 → 0,874 (étage 20 dans 4,5 % des montées)
+- Tour, Mage : facteur des monstres 0,758 → 0,754 (étage 10 dans 44,2 % des montées)
+- Tour, Voleur : facteur des monstres 0,970 → 0,967 (étage 10 dans 47,0 % des montées)
+- Tour, Alchimiste : facteur des monstres 0,849 → 0,838 (étage 10 dans 46,8 % des montées)
+- Tour, Invocateur : pente des monstres 1,142 → 1,186 (étage 20 dans 11,4 % des montées)
+- Tour, Invocateur : facteur des monstres 0,916 → 0,938 (étage 10 dans 55,6 % des montées)
+- Tour, Diplomate : pente des monstres 0,974 → 0,991 (étage 20 dans 11,0 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,970 → 0,974 (étage 10 dans 54,1 % des montées)
+
+## Passe 95 (graines à partir de 9500286)
+
+**4 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ✅ **1. Chaque classe entre 47 % et 53 % de victoires**
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre mage 62,4 %, guerrier contre archer 63,1 %, mage contre guerrier 36,4 %, archer contre guerrier 36,7 %, archer contre alchimiste 61,3 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : pretre étage 20 10,3 %, écart entre classes : étage 10 de 45,1 % à 54,5 %, étage 20 de 5,3 % à 10,3 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 49 | 62 | 56 | 63 | 42 | 49 | 51 | 51 | 47 | 59 | **52,9 %** |
+| Mage | 36 | 47 | 48 | 50 | 49 | 56 | 45 | 57 | 58 | 48 | **49,3 %** |
+| Voleur | 46 | 53 | 51 | 44 | 55 | 56 | 47 | 49 | 45 | 44 | **49,0 %** |
+| Archer | 37 | 50 | 53 | 50 | 46 | 61 | 50 | 53 | 59 | 51 | **51,1 %** |
+| Prêtre | 57 | 55 | 47 | 55 | 50 | 44 | 48 | 47 | 56 | 49 | **50,8 %** |
+| Alchimiste | 51 | 44 | 48 | 40 | 60 | 48 | 52 | 57 | 54 | 44 | **49,8 %** |
+| Invocateur | 48 | 54 | 55 | 50 | 54 | 53 | 52 | 49 | 43 | 49 | **50,8 %** |
+| Barde | 49 | 43 | 51 | 46 | 55 | 42 | 50 | 49 | 50 | 53 | **48,7 %** |
+| Diplomate | 54 | 42 | 55 | 41 | 47 | 45 | 56 | 45 | 49 | 48 | **48,0 %** |
+| Pugiliste | 40 | 51 | 54 | 49 | 52 | 55 | 51 | 47 | 56 | 50 | **50,6 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 47,3 % | 14,5 % | 52,9 % | 47,4 % | 67,0 % | 41,8 % | 84,7 % | 69,5 % | 96,4 % | 53,3 % | 6,5 % | 10,6 |
+| Mage | 47,8 % | 18,8 % | 49,3 % | 27,3 % | 73,1 % | 42,7 % | 23,9 % | 33,3 % | 90,0 % | 54,0 % | 8,1 % | 11,0 |
+| Voleur | 42,8 % | 18,5 % | 49,0 % | 44,9 % | 29,7 % | 67,5 % | 37,3 % | 44,8 % | 89,5 % | 45,1 % | 5,5 % | 9,8 |
+| Archer | 48,5 % | 19,3 % | 51,1 % | 40,3 % | 38,2 % | 69,9 % | 26,4 % | 46,0 % | 88,6 % | 53,9 % | 7,1 % | 10,8 |
+| Prêtre | 26,8 % | 7,2 % | 50,8 % | 53,9 % | 83,6 % | 31,6 % | 82,7 % | 72,8 % | 97,5 % | 52,9 % | 10,3 % | 10,7 |
+| Alchimiste | 36,3 % | 7,8 % | 49,8 % | 54,0 % | 36,2 % | 64,9 % | 42,3 % | 69,5 % | 97,5 % | 54,5 % | 7,5 % | 11,0 |
+| Invocateur | 40,5 % | 15,8 % | 50,8 % | 40,6 % | 39,7 % | 77,5 % | 39,6 % | 48,3 % | 90,5 % | 46,3 % | 5,3 % | 10,1 |
+| Barde | 43,8 % | 13,3 % | 48,7 % | 50,5 % | 66,0 % | 60,1 % | 48,8 % | 48,8 % | 92,3 % | 49,1 % | 5,3 % | 10,4 |
+| Diplomate | 25,8 % | 5,8 % | 48,0 % | 35,6 % | 60,4 % | 94,9 % | 48,9 % | 85,0 % | 97,1 % | 45,5 % | 9,3 % | 10,1 |
+| Pugiliste | 16,5 % | 6,3 % | 50,6 % | 43,8 % | 55,6 % | 68,6 % | 87,5 % | 45,0 % | 96,5 % | 54,4 % | 9,3 % | 10,9 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 95)
+- k_classe Guerrier : 0,838 → 0,831 (52,9 % de victoires)
+- k_classe Mage : 0,820 → 0,829 (49,3 % de victoires)
+- k_classe Voleur : 0,750 → 0,764 (49,0 % de victoires)
+- k_classe Archer : 0,887 → 0,885 (51,1 % de victoires)
+- k_classe Prêtre : 0,876 → 0,859 (50,8 % de victoires)
+- k_classe Alchimiste : 0,947 → 0,959 (49,8 % de victoires)
+- k_classe Invocateur : 0,791 → 0,792 (50,8 % de victoires)
+- k_classe Barde : 0,976 → 0,974 (48,7 % de victoires)
+- k_classe Diplomate : 1,200 → 1,195 (48,0 % de victoires)
+- k_classe Pugiliste : 1,031 → 1,023 (50,6 % de victoires)
+- Tour, Guerrier : facteur des monstres 1,815 → 1,850 (étage 10 dans 53,2 % des montées)
+- Tour, Mage : facteur des monstres 0,754 → 0,755 (étage 10 dans 54,0 % des montées)
+- Tour, Voleur : facteur des monstres 0,967 → 0,961 (étage 10 dans 45,1 % des montées)
+- Tour, Archer : facteur des monstres 0,695 → 0,696 (étage 10 dans 53,9 % des montées)
+- Tour, Prêtre : pente des monstres 0,816 → 0,838 (étage 20 dans 10,2 % des montées)
+- Tour, Alchimiste : facteur des monstres 0,838 → 0,844 (étage 10 dans 54,5 % des montées)
+- Tour, Invocateur : pente des monstres 1,186 → 1,173 (étage 20 dans 5,2 % des montées)
+- Tour, Invocateur : facteur des monstres 0,938 → 0,929 (étage 10 dans 46,2 % des montées)
+- Tour, Barde : pente des monstres 1,270 → 1,213 (étage 20 dans 5,2 % des montées)
+- Tour, Diplomate : facteur des monstres 1,032 → 0,988 (étage 10 dans 45,5 % des montées)
+- Tour, Pugiliste : facteur des monstres 0,974 → 0,978 (étage 10 dans 54,4 % des montées)
+
+## Passe 96 (graines à partir de 9600289)
+
+**4 critères tenus sur 6.** 100000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ✅ **1. Chaque classe entre 47 % et 53 % de victoires**
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre archer 61,6 %, archer contre guerrier 37,6 %, alchimiste contre pretre 61,0 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : guerrier étage 20 2,6 %, archer étage 20 4,9 %, diplomate étage 20 12,9 %, écart entre classes : étage 10 de 45,0 % à 53,5 %, étage 20 de 2,6 % à 12,9 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 51 | 57 | 49 | 62 | 44 | 49 | 50 | 51 | 47 | 59 | **52,0 %** |
+| Mage | 44 | 50 | 46 | 51 | 49 | 59 | 45 | 56 | 54 | 50 | **50,4 %** |
+| Voleur | 53 | 53 | 48 | 47 | 54 | 53 | 48 | 49 | 47 | 46 | **49,6 %** |
+| Archer | 38 | 49 | 53 | 49 | 45 | 59 | 50 | 52 | 56 | 53 | **50,5 %** |
+| Prêtre | 59 | 52 | 48 | 58 | 48 | 44 | 51 | 48 | 49 | 50 | **50,7 %** |
+| Alchimiste | 52 | 44 | 43 | 41 | 61 | 53 | 49 | 55 | 51 | 43 | **49,3 %** |
+| Invocateur | 56 | 52 | 53 | 48 | 51 | 53 | 50 | 49 | 45 | 50 | **50,7 %** |
+| Barde | 50 | 42 | 48 | 45 | 54 | 46 | 54 | 49 | 53 | 53 | **49,3 %** |
+| Diplomate | 56 | 47 | 56 | 44 | 52 | 54 | 59 | 51 | 50 | 47 | **51,5 %** |
+| Pugiliste | 44 | 52 | 54 | 50 | 52 | 58 | 51 | 48 | 54 | 52 | **51,4 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 49,3 % | 12,3 % | 52,0 % | 45,5 % | 74,2 % | 47,9 % | 83,6 % | 69,6 % | 97,1 % | 45,0 % | 2,6 % | 9,5 |
+| Mage | 55,5 % | 19,0 % | 50,4 % | 24,9 % | 73,7 % | 44,2 % | 25,2 % | 35,0 % | 91,3 % | 48,5 % | 6,0 % | 10,5 |
+| Voleur | 50,7 % | 25,3 % | 49,6 % | 45,8 % | 29,3 % | 65,0 % | 38,8 % | 48,5 % | 90,3 % | 52,3 % | 7,4 % | 10,6 |
+| Archer | 55,3 % | 18,5 % | 50,5 % | 41,9 % | 38,9 % | 70,9 % | 26,6 % | 43,6 % | 89,7 % | 48,6 % | 4,9 % | 10,5 |
+| Prêtre | 29,5 % | 12,5 % | 50,7 % | 50,5 % | 78,8 % | 41,5 % | 83,8 % | 80,7 % | 97,4 % | 52,4 % | 7,2 % | 10,5 |
+| Alchimiste | 34,5 % | 10,5 % | 49,3 % | 54,7 % | 36,5 % | 66,3 % | 44,9 % | 66,7 % | 96,3 % | 49,3 % | 6,1 % | 10,7 |
+| Invocateur | 49,5 % | 17,8 % | 50,7 % | 40,5 % | 43,0 % | 78,0 % | 42,8 % | 49,0 % | 92,3 % | 49,3 % | 8,9 % | 10,6 |
+| Barde | 44,5 % | 12,0 % | 49,3 % | 52,0 % | 65,2 % | 61,4 % | 50,8 % | 47,9 % | 93,3 % | 51,1 % | 7,1 % | 10,6 |
+| Diplomate | 30,5 % | 7,8 % | 51,5 % | 34,1 % | 50,5 % | 95,5 % | 47,9 % | 88,0 % | 97,9 % | 53,5 % | 12,9 % | 11,3 |
+| Pugiliste | 16,5 % | 5,3 % | 51,4 % | 51,9 % | 52,6 % | 67,7 % | 87,4 % | 45,6 % | 97,2 % | 51,6 % | 6,9 % | 10,6 |
+
+### Boutons touchés, et pourquoi
+
+- pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 % comptent aussi (effets mesurés à graines égales avant la passe 95)
+- k_classe Guerrier : 0,831 → 0,826 (52,0 % de victoires)
+- k_classe Mage : 0,829 → 0,833 (50,4 % de victoires)
+- k_classe Voleur : 0,764 → 0,773 (49,6 % de victoires)
+- k_classe Archer : 0,885 → 0,887 (50,5 % de victoires)
+- k_classe Prêtre : 0,859 → 0,852 (50,7 % de victoires)
+- k_classe Alchimiste : 0,959 → 0,970 (49,3 % de victoires)
+- k_classe Invocateur : 0,792 → 0,794 (50,7 % de victoires)
+- k_classe Barde : 0,974 → 0,970 (49,3 % de victoires)
+- k_classe Diplomate : 1,195 → 1,184 (51,5 % de victoires)
+- k_classe Pugiliste : 1,023 → 1,019 (51,4 % de victoires)
+- Tour, Guerrier : pente des monstres 0,779 → 0,703 (étage 20 dans 2,6 % des montées)
+- Tour, Guerrier : facteur des monstres 1,850 → 1,812 (étage 10 dans 45,0 % des montées)
+- Tour, Voleur : facteur des monstres 0,961 → 0,962 (étage 10 dans 52,2 % des montées)
+- Tour, Archer : pente des monstres 1,257 → 1,191 (étage 20 dans 4,9 % des montées)
+- Tour, Prêtre : facteur des monstres 1,101 → 1,106 (étage 10 dans 52,4 % des montées)
+- Tour, Diplomate : pente des monstres 0,991 → 1,017 (étage 20 dans 12,9 % des montées)
+- Tour, Diplomate : facteur des monstres 0,988 → 1,001 (étage 10 dans 53,5 % des montées)
+
+## Vérification finale à 20 tours (données de la passe 94), sur des graines jamais vues (3 000 combats par case, 4 000 montées par classe)
+
+**5 critères tenus sur 6.** 300000 combats de duel (médiane 20 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ✅ **1. Chaque classe entre 47 % et 53 % de victoires**
+- ✅ **2. Aucune case de la matrice hors de 40 % – 60 %**
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : invocateur étage 20 10,1 %, diplomate étage 20 10,8 %, écart entre classes : étage 10 de 45,4 % à 54,4 %, étage 20 de 5,9 % à 10,8 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 50 | 56 | 50 | 59 | 41 | 46 | 44 | 45 | 44 | 54 | **49,1 %** |
+| Mage | 46 | 50 | 45 | 53 | 49 | 54 | 44 | 54 | 59 | 45 | **49,8 %** |
+| Voleur | 50 | 54 | 49 | 46 | 53 | 55 | 46 | 49 | 46 | 44 | **49,3 %** |
+| Archer | 41 | 49 | 53 | 52 | 45 | 60 | 50 | 53 | 57 | 46 | **50,5 %** |
+| Prêtre | 60 | 51 | 45 | 53 | 50 | 41 | 46 | 45 | 52 | 47 | **49,0 %** |
+| Alchimiste | 53 | 44 | 43 | 40 | 58 | 52 | 47 | 55 | 50 | 42 | **48,4 %** |
+| Invocateur | 54 | 55 | 52 | 50 | 51 | 52 | 49 | 49 | 43 | 49 | **50,4 %** |
+| Barde | 53 | 44 | 50 | 48 | 54 | 43 | 50 | 50 | 50 | 51 | **49,2 %** |
+| Diplomate | 55 | 43 | 55 | 44 | 48 | 49 | 56 | 47 | 50 | 46 | **49,3 %** |
+| Pugiliste | 43 | 53 | 54 | 53 | 53 | 57 | 49 | 48 | 55 | 50 | **51,5 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 44,7 % | 10,9 % | 49,1 % | 51,8 % | 69,5 % | 41,4 % | 83,9 % | 67,0 % | 96,8 % | 49,3 % | 7,2 % | 10,4 |
+| Mage | 50,2 % | 19,1 % | 49,8 % | 26,2 % | 74,3 % | 43,9 % | 23,8 % | 35,2 % | 90,5 % | 46,2 % | 5,9 % | 10,3 |
+| Voleur | 51,6 % | 24,9 % | 49,3 % | 45,8 % | 27,9 % | 66,9 % | 38,5 % | 48,6 % | 90,3 % | 46,4 % | 7,0 % | 10,0 |
+| Archer | 53,2 % | 20,8 % | 50,5 % | 48,0 % | 39,7 % | 69,5 % | 25,8 % | 35,4 % | 88,4 % | 50,2 % | 6,7 % | 10,6 |
+| Prêtre | 27,3 % | 8,3 % | 49,0 % | 51,8 % | 82,0 % | 32,8 % | 82,8 % | 76,1 % | 97,0 % | 51,1 % | 8,0 % | 10,5 |
+| Alchimiste | 35,3 % | 10,0 % | 48,4 % | 53,8 % | 34,1 % | 66,5 % | 43,9 % | 68,6 % | 97,5 % | 45,4 % | 6,3 % | 10,3 |
+| Invocateur | 47,3 % | 18,4 % | 50,4 % | 38,1 % | 41,7 % | 77,9 % | 42,1 % | 49,1 % | 91,3 % | 54,4 % | 10,1 % | 11,2 |
+| Barde | 45,5 % | 14,2 % | 49,2 % | 50,7 % | 65,1 % | 61,5 % | 50,7 % | 48,5 % | 92,6 % | 49,6 % | 7,6 % | 10,6 |
+| Diplomate | 27,7 % | 6,9 % | 49,3 % | 35,2 % | 59,1 % | 95,4 % | 49,0 % | 86,4 % | 97,2 % | 50,1 % | 10,8 % | 10,6 |
+| Pugiliste | 19,5 % | 7,3 % | 51,5 % | 45,2 % | 55,3 % | 68,0 % | 88,2 % | 45,0 % | 96,6 % | 52,8 % | 9,3 % | 10,9 |
+
+### Boutons touchés, et pourquoi
+
+Aucun (mesure seule).
+
+## La Tour retouchée après la vérification finale, puis remesurée sur des graines jamais vues (4 000 montées par classe)
+
+La vérification finale à 20 tours tenait les critères 1 à 5 ; le critère 6 était manqué de peu (étage 10 de 45,4 % à 54,4 % selon la classe, étage 20 au-delà de 10 % pour l'Invocateur et le Diplomate). Le facteur des monstres de chaque classe a été corrigé deux fois d'après la mesure (une première correction, mesurée sur d'autres graines, allait trop loin pour le Mage et le Voleur), la pente de l'Invocateur et du Diplomate une fois. La Tour ne change rien aux duels : les critères 1 à 5 de la vérification finale restent valables.
+
+**Critère 6 tenu** : étage 10 de 49,0 % à 53,6 %, étage 20 de 6,3 % à 9,8 %. Avec la vérification finale, **les six critères sont tenus**.
+
+| Classe | Facteur des monstres | Pente | Étage 10 (vérification finale → maintenant) | Étage 20 | Étage moyen |
+| --- | --- | --- | --- | --- | --- |
+| Guerrier | 1,766 → 1,769 | 0,779 | 49,3 % → 50,7 % | 7,2 % → 6,3 % | 10,4 |
+| Mage | 0,758 → 0,743 | 0,929 | 46,2 % → 52,2 % | 5,9 % → 7,8 % | 11,0 |
+| Voleur | 0,970 → 0,951 | 0,426 | 46,4 % → 49,5 % | 7,0 % → 8,6 % | 10,6 |
+| Archer | 0,695 → 0,698 | 1,257 | 50,2 % → 49,5 % | 6,7 % → 6,7 % | 10,7 |
+| Prêtre | 1,101 → 1,118 | 0,816 | 51,1 % → 51,9 % | 8,0 % → 7,4 % | 10,5 |
+| Alchimiste | 0,849 → 0,815 | 1,439 | 45,4 % → 50,8 % | 6,3 % → 8,7 % | 10,9 |
+| Invocateur | 0,916 → 0,937 | 1,142 → 1,202 | 54,4 % → 49,0 % | 10,1 % → 8,0 % | 10,4 |
+| Barde | 0,875 → 0,878 | 1,270 | 49,6 % → 49,4 % | 7,6 % → 7,2 % | 10,6 |
+| Diplomate | 1,032 → 1,025 | 0,974 → 1,038 | 50,1 % → 50,3 % | 10,8 % → 9,8 % | 10,6 |
+| Pugiliste | 0,970 → 0,986 | 1,008 | 52,8 % → 53,6 % | 9,3 % → 9,0 % | 11,0 |

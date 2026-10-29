@@ -3,8 +3,8 @@
   "nom": "Pugiliste",
   "genre": "m",
   "role": "front",
-  "pv": 474,
-  "k": 0.9736,
+  "pv": 960,
+  "k": 1.0308,
   "acolyte": "barde",
   "moyeu": {
     "nom": "Direct",

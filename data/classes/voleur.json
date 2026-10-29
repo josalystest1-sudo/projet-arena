@@ -3,8 +3,8 @@
   "nom": "Voleur",
   "genre": "m",
   "role": "degats",
-  "pv": 372,
-  "k": 0.8585,
+  "pv": 730,
+  "k": 0.75,
   "acolyte": "pugiliste",
   "moyeu": {
     "nom": "Dague",

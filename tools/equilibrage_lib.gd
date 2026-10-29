@@ -13,6 +13,11 @@ const NIVEAU := 30
 const DECALAGE_B := 500000
 ## Au-delà, un combat est compté « non fini » (le test 50 exige qu'il n'y en ait aucun).
 const TOURS_MAX := 100
+## La longueur visée (décision de Gautier du 29 octobre : « on peut viser 20 tours ») : la médiane dans cette
+## fourchette, et 95 % des combats finis avant LONGUEUR_LIMITE.
+const MEDIANE_MIN := 18
+const MEDIANE_MAX := 22
+const LONGUEUR_LIMITE := 30
 ## La Tour : les montées s'arrêtent à l'étage 21 (on sait alors que l'étage 20 est atteint).
 const ETAGE_MAX := 21
 const ROUTES := ["ruee", "eventail", "reactive"]
@@ -293,16 +298,16 @@ static func resumer(d: Donnees, m: Dictionary) -> Dictionary:
 		total += int(m["longueurs"][t])
 	longueurs.sort_custom(func(x, y): return x[0] < y[0])
 	var mediane := 0
-	var avant_20 := 0
+	var avant_limite := 0
 	var cumul := 0
 	for l in longueurs:
 		cumul += int(l[1])
 		if mediane == 0 and cumul * 2 >= total:
 			mediane = int(l[0])
-		if int(l[0]) < 20:
-			avant_20 += int(l[1])
-	return {"classes": par_classe, "cases": cases, "mediane": mediane, "avant_20": float(avant_20) / float(maxi(1, total)),
-		"combats": total, "non_finis": int(m["non_finis"])}
+		if int(l[0]) < LONGUEUR_LIMITE:
+			avant_limite += int(l[1])
+	return {"classes": par_classe, "cases": cases, "mediane": mediane, "avant_limite": float(avant_limite) / float(maxi(1, total)),
+		"longueurs": longueurs, "combats": total, "non_finis": int(m["non_finis"])}
 
 
 ## Les six critères (section 11.2) : { titre, ok, ecarts : [ce qui sort, en clair] }.
@@ -337,13 +342,13 @@ static func criteres(r: Dictionary) -> Array:
 			c4.append("%s : Clé jouée dans %s des combats" % [c, _pc(classes[c]["cle"])])
 	out.append({"titre": "4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %", "ok": c4.is_empty(), "ecarts": c4})
 	var c5: Array = []
-	if r["mediane"] < 6 or r["mediane"] > 10:
+	if r["mediane"] < MEDIANE_MIN or r["mediane"] > MEDIANE_MAX:
 		c5.append("médiane %d tours" % r["mediane"])
-	if r["avant_20"] < 0.95:
-		c5.append("%s des combats finis avant le tour 20" % _pc(r["avant_20"]))
+	if r["avant_limite"] < 0.95:
+		c5.append("%s des combats finis avant le tour %d" % [_pc(r["avant_limite"]), LONGUEUR_LIMITE])
 	if int(r["non_finis"]) > 0:
 		c5.append("%d combats non finis" % r["non_finis"])
-	out.append({"titre": "5. Longueur : médiane de 6 à 10 tours, 95 % finis avant le tour 20", "ok": c5.is_empty(), "ecarts": c5})
+	out.append({"titre": "5. Longueur : médiane de %d à %d tours, 95 %% finis avant le tour %d" % [MEDIANE_MIN, MEDIANE_MAX, LONGUEUR_LIMITE], "ok": c5.is_empty(), "ecarts": c5})
 	var c6: Array = []
 	var e10: Array = []
 	var e20: Array = []

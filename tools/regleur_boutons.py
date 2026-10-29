@@ -1,7 +1,8 @@
 """Les passes de réglage du combat V2 : mesurer, puis toucher les boutons (docs/SPEC-COMBAT-V2.md, section 11.3), dans
 l'ordre, avec les décisions de Gautier du 28 octobre (docs/JOURNAL-COMBAT-V2.md) :
-  - la durée : on vise une médiane de 10 tours ; les PV de toutes les classes peuvent baisser jusqu'à -40 % (au lieu
-    de -10 %) ; chaque classe garde ensuite son propre bouton de PV à ±10 % ;
+  - la durée : on vise une médiane de 20 tours (décision du 29 octobre, qui remplace « 10 tours » du 28) ; les PV de
+    toutes les classes montent ou baissent ensemble, la mort subite reste au tour fixé dans data/rules.json ; chaque
+    classe garde ensuite son propre bouton de PV à ±10 % ;
   - la route Éventail doit seulement ne pas dépasser 55 % ;
   - la Tour a sa propre difficulté : la force totale des monstres monte avec les étages (data/tour.json : départ,
     pente, et un facteur par classe), réglée pour que chaque classe atteigne l'étage 10 une fois sur deux et
@@ -23,12 +24,12 @@ PV_SPEC = {"guerrier": 1400, "pugiliste": 1200, "voleur": 1000, "diplomate": 100
 BUDGETS = {1: 70, 2: 100, 3: 140, 4: 230}
 COUTS_ETATS = {"etourdi": 120, "gele": 80, "aveugle": 70, "desarme": 60, "egare": 60, "silencie": 45, "provoque": 40, "enracine": 35}
 K_MIN, K_MAX = 0.75, 1.20
-## Les PV de toutes les classes : d'abord jusqu'à -40 %, puis la mort subite (bouton 5), puis jusqu'à -75 % si la
-## médiane reste au-dessus de 10 tours (consigne de Gautier : « on vise 10 »).
-PV_GLOBAL_MIN = 0.60
-PV_GLOBAL_PLANCHER = 0.25
-MORT_SUBITE_TOUR_MIN = 10
-MORT_SUBITE_PAS_MAX = 0.20
+## Les PV de toutes les classes (en part des PV de la spécification), pour une médiane de 20 tours (consigne de
+## Gautier du 29 octobre : « on peut viser 20 tours ») : entre ces bornes, la fourchette de la médiane étant celle de
+## tools/equilibrage_lib.gd (18 à 22 tours).
+PV_GLOBAL_MIN = 0.30
+PV_GLOBAL_MAX = 1.50
+MEDIANE_CIBLE = 20
 PV_CLASSE = 0.10
 BUDGET_ECART = 0.10
 VALEURS = {"degats": "valeur", "soin": "valeur", "barriere": "valeur", "dot": "par_tour", "gardien": "par_tour",
@@ -207,7 +208,7 @@ def mesurer_jacobien(etat, graine):
         print("jacobien %-10s %s" % (c, " ".join("%+5.2f" % x for x in etat["jacobien"]["J"][i])))
 
 
-def pas_jacobien(jac, resume, ordre):
+def pas_jacobien(jac, resume, ordre, ks=None):
     """Les pas relatifs de k qui ramènent toutes les classes à 50 % ensemble (moindres carrés, un peu de ridge pour la
     direction sans effet où tous les k montent ensemble), amortis et bornés. Un duel au-delà de 58 % (ses deux cases
     moyennées) compte aussi, ramené vers 57 % : aucune voie n'a d'effet propre sur un duel (essais des passes 55 et
@@ -216,7 +217,11 @@ def pas_jacobien(jac, resume, ordre):
     stats = resume["classes"]
     lignes = [list(x) for x in jac["J"]]
     r = [0.5 - stats[c]["taux"] for c in ordre]
-    for cle, ligne in jac.get("P", {}).items():
+    # Les duels ne comptent qu'une fois toutes les classes entre 47 et 53 % : leurs effets, mesurés sur 300 combats par
+    # case, sont bruités, et ils retenaient le pas d'une classe très en dessous (passe 86 : le Diplomate, à 44,7 %,
+    # n'aurait gagné qu'un point et demi).
+    duels = jac.get("P", {}) if max(abs(stats[c]["taux"] - 0.5) for c in ordre) <= 0.03 else {}
+    for cle, ligne in duels.items():
         a, b = cle.split("|")
         t = _duel(resume, a, b)
         if abs(t - 0.5) > DUEL_SEUIL - 0.02:
@@ -228,6 +233,14 @@ def pas_jacobien(jac, resume, ordre):
     # Monter tous les k ensemble ne change aucun taux (seulement la durée et la Tour) : la moyenne des pas reste nulle.
     dx = dx - dx.mean()
     dx = np.clip(dx, -JACOBIEN_PAS_MAX, JACOBIEN_PAS_MAX)
+    # Une classe à sa borne de k ne peut pas suivre son pas : comme monter tous les k ensemble ne change aucun taux, ce
+    # qu'elle ne peut pas faire, toutes les classes le font dans l'autre sens (passes 71 à 86 : le Diplomate, à 1,20,
+    # restait à 45 %, les autres ne baissant que de sa part de la moyenne).
+    if ks:
+        lk = np.array([math.log(ks[c]) for c in ordre])
+        haut = max(0.0, float(np.max(lk + dx - math.log(K_MAX))))
+        bas = max(0.0, float(np.max(math.log(K_MIN) - (lk + dx))))
+        dx = dx - haut + bas
     return {c: float(math.exp(dx[i]) - 1) for i, c in enumerate(ordre)}
 
 
@@ -339,39 +352,24 @@ def appliquer(resume, etat):
     stats = resume["classes"]
     classes = {c: lire_classe(c) for c in ordre}
 
-    # La durée (décision de Gautier : on vise 10 tours) : les PV de toutes les classes ensemble.
+    # La durée (décision de Gautier du 29 octobre : on vise 20 tours) : les PV de toutes les classes ensemble.
     med = resume["mediane"]
-    # On vise une médiane de 10 tours : en dessous, les PV remontent (les Clés ont le temps d'arriver).
-    if med > 10 or resume["avant_20"] < 0.95:
-        facteur = max(0.92, min(0.97, 10.0 / max(med, 1)))
-    elif med < 10:
-        facteur = 1.04
+    if med > MEDIANE_CIBLE + 1 or resume["avant_limite"] < 0.95:
+        facteur = max(0.92, min(0.97, MEDIANE_CIBLE / max(med, 1)))
+    elif med < MEDIANE_CIBLE - 1:
+        facteur = max(1.03, min(1.08, MEDIANE_CIBLE / max(med, 1)))
     else:
         facteur = 1.0
-    # Le plancher de -40 % ne vaut qu'en descendant depuis au-dessus ; en dessous (ou en remontant), c'est -75 %.
-    plancher = PV_GLOBAL_MIN if etat["pv_global"] > PV_GLOBAL_MIN + 0.0001 else PV_GLOBAL_PLANCHER
-    if facteur < 1.0 and etat["pv_global"] <= PV_GLOBAL_MIN + 0.0001:
-        # Bouton 5 : les quatre premiers ne suffisent plus pour la durée ; la mort subite plus tôt et plus forte.
-        ancien = (regles["mort_subite_tour"], regles["mort_subite_pas"])
-        regles["mort_subite_tour"] = max(MORT_SUBITE_TOUR_MIN, regles["mort_subite_tour"] - 1)
-        regles["mort_subite_pas"] = round(min(MORT_SUBITE_PAS_MAX, regles["mort_subite_pas"] + 0.025), 3)
-        if (regles["mort_subite_tour"], regles["mort_subite_pas"]) != ancien:
-            ecrire_json("rules.json", regles, compact=True)
-            boutons.append("Règles globales (bouton 5, les PV de toutes les classes étant déjà à -40 %%) : mort subite au tour %d → %d, pas %s → %s (médiane %d tours)"
-                           % (ancien[0], regles["mort_subite_tour"], str(ancien[1]).replace(".", ","), str(regles["mort_subite_pas"]).replace(".", ","), med))
-            facteur = 1.0
-        else:
-            plancher = PV_GLOBAL_PLANCHER
     if facteur != 1.0:
         ancien = etat["pv_global"]
-        etat["pv_global"] = round(min(1.0, max(plancher, ancien * facteur)), 4)
+        etat["pv_global"] = round(min(PV_GLOBAL_MAX, max(PV_GLOBAL_MIN, ancien * facteur)), 4)
         if etat["pv_global"] != ancien:
-            boutons.append("PV de toutes les classes : ×%s → ×%s des PV de la spécification (médiane %d tours, %s finis avant le tour 20 ; on vise 10 tours)"
-                           % (("%.3f" % ancien).replace(".", ","), ("%.3f" % etat["pv_global"]).replace(".", ","), med, pc(resume["avant_20"])))
+            boutons.append("PV de toutes les classes : ×%s → ×%s des PV de la spécification (médiane %d tours, %s finis avant le tour 30 ; on vise 20 tours)"
+                           % (("%.3f" % ancien).replace(".", ","), ("%.3f" % etat["pv_global"]).replace(".", ","), med, pc(resume["avant_limite"])))
 
     # Bouton 1 : k_classe, selon le taux de victoire de la classe ; avec le Jacobien, tous les pas ensemble.
     jac = etat.get("jacobien")
-    pas_k = pas_jacobien(jac, resume, ordre) if jac and jac["ordre"] == ordre else None
+    pas_k = pas_jacobien(jac, resume, ordre, {c: classes[c]["k"] for c in ordre}) if jac and jac["ordre"] == ordre else None
     if pas_k is not None:
         boutons.append("pas des k calculés ensemble : le k d'une classe change aussi le duo dont elle est l'acolyte ; les duels au-delà de 58 %% comptent aussi (effets mesurés à graines égales avant la passe %d)" % (jac["passe"] + 1))
     for c in ordre:
@@ -473,7 +471,7 @@ def score(resume):
         ecart += max(0.0, c["etage10"] - 0.6) + max(0.0, 0.4 - c["etage10"]) + max(0.0, c["etage20"] - 0.1) + max(0.0, 0.05 - c["etage20"])
     for x in resume["cases"]:
         ecart += max(0.0, abs(x["taux"] - 0.5) - 0.10)
-    ecart += max(0, resume["mediane"] - 10) * 0.5
+    ecart += max(0, abs(resume["mediane"] - MEDIANE_CIBLE) - 2) * 0.5
     return sum(1 for c in resume["criteres"] if not c["ok"]) + ecart
 
 

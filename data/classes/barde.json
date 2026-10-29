@@ -3,8 +3,8 @@
   "nom": "Barde",
   "genre": "m",
   "role": "soutien",
-  "pv": 376,
-  "k": 1.0756,
+  "pv": 760,
+  "k": 0.9718,
   "acolyte": "archer",
   "moyeu": {
     "nom": "Note",
