@@ -22,6 +22,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	var e: EtatCombat = options["etat"]
 	var noms: Dictionary = options.get("noms", {})
 	var tour: Tour = options.get("tour", null)
+	var donjon: Donjon = options.get("donjon", null)
 	var column := UiKit.scroll_column(self, 12)
 	var gagne := e.vainqueur == "a"
 	# Les objectifs du jour : les Clés jouées et les Synergies de ce combat.
@@ -39,7 +40,9 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 		trio.add_child(p)
 	var cartes := HBoxContainer.new()
 	cartes.add_theme_constant_override("separation", 8)
-	if tour == null:
+	if donjon != null:
+		_donjon(column, cartes, donjon, e)
+	elif tour == null:
 		var classe := bool(options.get("classe", false))
 		var resultat := app.fin_duel(gagne, classe)
 		column.add_child(UiKit.label("Victoire !" if gagne else "Défaite", 40, OR if gagne else ROUGE))
@@ -112,7 +115,21 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	suite_boutons = VBoxContainer.new()
 	suite_boutons.add_theme_constant_override("separation", 12)
 	column.add_child(suite_boutons)
-	if tour == null:
+	if donjon != null:
+		if donjon.phase == "combat":
+			suite_boutons.add_child(UiKit.main_button("Au bout de la route", func(): app.show_screen("combat", {"etat": donjon.combat(), "donjon": donjon, "noms": noms})))
+			suite_boutons.add_child(UiKit.button("Abandonner (la carte est gardée)", func():
+				app.abandonner_donjon()
+				app.show_screen("donjon"), 56))
+		elif donjon.phase == "portes":
+			suite_boutons.add_child(UiKit.main_button("Les portes", func(): app.show_screen("donjon")))
+			suite_boutons.add_child(UiKit.button("Abandonner (la carte est gardée)", func():
+				app.abandonner_donjon()
+				app.show_screen("donjon"), 56))
+		else:
+			suite_boutons.add_child(UiKit.main_button("Les donjons", func(): app.show_screen("donjon")))
+			suite_boutons.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 56))
+	elif tour == null:
 		var classe_fin := bool(options.get("classe", false))
 		suite_boutons.add_child(UiKit.main_button("Rejouer", func(): app.show_screen("versus", {"classe": classe_fin})))
 		suite_boutons.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 56))
@@ -142,6 +159,38 @@ func _carte_faveur(column: VBoxContainer, tour: Tour, propositions: Array) -> vo
 		bouton.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		bouton.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		carte.add_child(bouton)
+
+
+## La fin d'un combat de donjon : une vague franchie (la suite aux portes), l'élite ou le boss vaincu (la récompense,
+## le fragment, la nouvelle chasse), ou le trio tombé (la carte est gardée).
+func _donjon(column: VBoxContainer, cartes: HBoxContainer, dj: Donjon, e: EtatCombat) -> void:
+	var r := app.fin_combat_donjon(dj, e)
+	var nom := str(dj.def["nom"])
+	match str(r["resultat"]):
+		"tombe":
+			column.add_child(UiKit.label("Tombés dans %s" % nom, 32, ROUGE))
+			app.sfx.play("defaite")
+			column.add_child(cartes)
+			_carte(cartes, "Carte", "gardée", "%d chemin(s)" % app.carte_donjon(dj.id)["explorees"].size())
+			_carte(cartes, "Entrée", "perdue", "pas de récompense")
+		"elite", "boss":
+			var boss := str(r["resultat"]) == "boss"
+			column.add_child(UiKit.label("Le boss de %s est tombé !" % nom if boss else "L'élite de %s est vaincu" % nom, 30, OR))
+			app.sfx.play("victoire")
+			column.add_child(cartes)
+			_carte(cartes, "Éclats", "+%d" % int(r["eclats"]), "total %d" % app.profile.eclats)
+			if boss:
+				_carte(cartes, "Chasse", "nouvelle", "nouvelles routes, carte à zéro")
+			elif str(r["revelee"]) != "":
+				_carte(cartes, "Fragment", "+1", "une porte du boss révélée")
+			if not (r["butin"] as Dictionary).is_empty():
+				_carte_butin(column, r["butin"], not bool(r["butin"]["lie"]))
+		_:
+			column.add_child(UiKit.label("Vague franchie !", 32, OR))
+			app.sfx.play("victoire")
+			column.add_child(cartes)
+			_carte(cartes, "PV rendus", "+%d %%" % roundi(float(app.data.donjons["pv_entre_vagues"]) * 100.0), "à chacun")
+			_carte(cartes, "Profondeur", "%d / %d" % [dj.profondeur(), int(app.data.donjons["profondeur"])], "au bout : l'élite, ou le boss" if dj.finale else "encore des portes")
 
 
 ## La carte « Butin » : l'objet trouvé, ses lignes, et où il est (dans le sac, à voir à la Forge).

@@ -3,7 +3,7 @@
 ## (user://capture_profil.cfg, effacé au départ) : le vrai profil n'est jamais touché.
 ##   godot --path . --script res://tools/capture.gd -- <dossier> '<étapes JSON>'
 ## Étapes : {"creer":"guerrier"} (nouveau perso, graine fixe 7), {"niveau":12} (niveau du perso), {"allumer":"v1.n2"},
-## {"ecran":"destin"}, {"duel":1} (un duel amical contre un trio IA), {"classe":1} (un combat classé de l'Arène), {"montee":1} (une montée de la Tour), {"fin":1} (un duel amical joué par l'IA, puis l'écran de fin ; {"fin":"classe"} : un combat classé), {"ouvrir":["versus",{"classe":true}]} (un écran avec ses options), {"gardien":5} (l'étage 5 d'une montée joué par l'IA, puis l'écran de fin : la Faveur du Gardien), {"sac":3} (trois objets dans le sac et 100 Éclats, pour la Forge), {"compter":["duels",2]} (un compteur des objectifs du jour), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
+## {"ecran":"destin"}, {"duel":1} (un duel amical contre un trio IA), {"classe":1} (un combat classé de l'Arène), {"donjon":"terrier"} (une descente, aux portes ; ["terrier","vague"] : la première vague jouée, puis la fin), {"montee":1} (une montée de la Tour), {"fin":1} (un duel amical joué par l'IA, puis l'écran de fin ; {"fin":"classe"} : un combat classé), {"ouvrir":["versus",{"classe":true}]} (un écran avec ses options), {"gardien":5} (l'étage 5 d'une montée joué par l'IA, puis l'écran de fin : la Faveur du Gardien), {"sac":3} (trois objets dans le sac et 100 Éclats, pour la Forge), {"compter":["duels",2]} (un compteur des objectifs du jour), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
 ## (Sans --headless : il faut une fenêtre pour dessiner.)
 extends SceneTree
 
@@ -37,6 +37,22 @@ func _initialize() -> void:
 			app.show_screen("combat", app.duel_contre_ia())
 		elif etape.has("classe"):
 			app.show_screen("combat", app.duel_classe())
+		elif etape.has("donjon"):
+			# Une descente dans ce donjon (100 Éclats offerts), aux portes ; {"donjon": ["terrier", "vague"]} : la première
+			# vague jouée par l'IA, puis l'écran de fin.
+			var quoi: Variant = etape["donjon"]
+			var id: String = str(quoi[0]) if quoi is Array else str(quoi)
+			app.profile.eclats += 100
+			app.commencer_donjon(id)
+			if quoi is Array and quoi.size() > 1:
+				var dj: Donjon = app.donjon_en_cours
+				dj.choisir(0)
+				var e: EtatCombat = dj.combat()
+				while not e.fini:
+					e = Regles.resoudre_tour(e, IA.declarer(e))
+				app.show_screen("fin", {"etat": e, "donjon": dj, "noms": app.noms_trio(), "trace": {}, "synergies": [], "parts": {}})
+			else:
+				app.show_screen("donjon")
 		elif etape.has("montee"):
 			app.show_screen("combat", app.commencer_tour())
 		elif etape.has("ouvrir"):

@@ -21,7 +21,7 @@ func test_ville_dans_les_donnees() -> void:
 		assert_true(ids.has(id), id + " : un bâtiment du GDD")
 	# Tout est à deux touchers : la Tour, l'Arène, la Forge, la Maison et le Tableau sont disponibles.
 	for b in batiments:
-		if str(b["id"]) in ["tour", "arene", "forge", "maison", "tableau"]:
+		if str(b["id"]) in ["tour", "arene", "forge", "maison", "tableau", "donjon"]:
 			assert_true(bool(b["dispo"]), b["id"] + " : disponible")
 	# La barre du bas : Ville, Chat (grisé jusqu'au serveur), Profil.
 	assert_eq(App.NAV.size(), 3, "trois onglets")
