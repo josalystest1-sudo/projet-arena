@@ -19,16 +19,25 @@ Ce plan et le GDD V2 ont été écrits le 29 octobre à midi dans une conversati
   - PR 1.5 : les boutons de réglage de la section 11.3 de la spécification et `tools/regleur_boutons.py`, sur le PC de Gautier (les workflows « Réglage » de GitHub datent de l'ancien combat et ont été retirés).
 - **« Ce qui existe » (§ 1 ci-dessous) et « Reprendre le travail » du suivi** parlaient de la PR d'équilibrage des 10 classes : elle est faite depuis le 28 octobre (PR #23), et tout le combat a été refait depuis. On passe directement à la phase 1.
 
+## Décision de Gautier (29 octobre au soir) : construire tout le jeu, puis équilibrer, puis les graphismes
+
+« On fait comme j'ai dit : tu fais tout le jeu en suivant le document de référence, on modifie, on équilibre, et à la fin on apportera tout ce qui est graphisme amélioré. Si tu as des questions parce que des éléments ne sont pas mentionnés, tu me demandes mon avis pour avancer et tu me proposes une idée qui pour toi serait pertinente. »
+
+- **Pendant la construction (phases 1 à 8), aucun équilibrage** : pas de passes de réglage au simulateur, pas de critère de taux de victoire pour finir une PR. Les chiffres nouveaux (équipement, Faveurs, courbe de la Tour, bonus de guilde…) sont choisis à la main, raisonnables, et notés. Les tests restent obligatoires (règles, aucun combat sans fin). Le jeu publié peut être déséquilibré entre deux étapes : le dire à Gautier quand c'est le cas.
+- **Phase 9 : l'équilibrage global**, de tout ensemble, avec le simulateur et les régleurs qui existent déjà (classes, trio, Tour, équipement, Faveurs, guildes).
+- **Phase 10 : les graphismes** (art PixelLab, animations, écrans soignés), puis la boutique de cosmétiques, la bêta et le lancement.
+- **Quand le GDD V2 ne dit rien** : demander l'avis de Gautier, avec une proposition argumentée. Si la question ne bloque pas le travail, avancer avec la proposition en attendant sa réponse (elle est notée « Proposé » dans le GDD V2).
+
 ## 0. Règles de travail (à relire à chaque session)
 
 1. **Lire dans l'ordre** : `CLAUDE.md` (état du prototype, choix faits), `docs/SUIVI.md` (avancement, retours de Gautier), `docs/GDD_V2.md` (les règles, étiquetées Décidé / Proposé / Ouvert), `docs/MECANIQUES.md` (l'inventaire des mécaniques), puis ce plan. Le V2 l'emporte sur `docs/GDD.md` ; le V1 reste la référence pour les tableaux de compétences, l'univers et l'écran de création.
 2. **Gautier ne lit pas de code et n'utilise pas de terminal.** Chaque fin de session : ce qui a été fait en langage courant, et quelque chose à tester sur son téléphone (https://josalystest1-sudo.github.io/projet-arena/, mis à jour à chaque fusion sur `main`). Jamais de commande à lui faire taper.
 3. **Une PR par étape**, petite et lisible, titre et description en français, fusionnée en « squash » quand les tests passent. Mettre à jour `docs/SUIVI.md` (tableau des PR, retours, prochaines tâches) et `CLAUDE.md` (« Choix faits par Claude Code ») à chaque PR.
-4. **Le moteur reste pur** (`engine/`, aucune scène, aucun hasard : `tests/test_architecture.gd` le vérifie), **les données en JSON** (`data/`), **tout se mesure au simulateur** avant d'être déclaré équilibré. Les simulations longues tournent **sur GitHub Actions** (gratuit : boutons « Réglage de l'équilibrage » et « Réglage de la Tour », branches `reglage-<n>` et `reglage-tour-<n>`), jamais en boucle d'attente : lancer, revenir plus tard.
+4. **Le moteur reste pur** (`engine/`, aucune scène, aucun hasard hors du générateur : `tests/test_architecture.gd` le vérifie), **les données en JSON** (`data/`). **Pas d'équilibrage avant la phase 9** (décision ci-dessus) ; le simulateur (`tools/equilibrage.gd`, sur le PC de Gautier) sert à vérifier qu'aucun combat ne s'éternise et à mesurer quand c'est utile, pas à régler.
 5. **Un seul Claude à la fois** : pas d'agents en parallèle, pas de session cloud.
 6. **Vérifier les écrans comme Gautier les verra** : export web, puis `tools/navigateur.js` (format téléphone, portrait, souris ou doigt, captures). Un écran n'est fini que s'il tient en portrait sur un téléphone peu haut.
-7. **Quand le GDD V2 ne dit rien**, choisir, le noter dans `CLAUDE.md`, et ajouter la question au § 13 du V2 si elle mérite l'avis de Gautier.
-8. Tests : `~/godot/godot --headless --path . --script res://tests/run_tests.gd` (168 au 28 octobre). Après une refonte du moteur, prouver que rien n'a changé par une simulation à graine fixe comparée au bit près (`tools/equilibrage.gd -- 3000 1 a.csv` puis `md5sum`).
+7. **Quand le GDD V2 ne dit rien**, demander l'avis de Gautier avec une proposition (décision ci-dessus) ; noter le choix dans `CLAUDE.md` ou `docs/JOURNAL-COMBAT-V2.md`, et la question au § 13 du V2.
+8. Tests : `godot --headless --path . --script res://tests/run_tests.gd` (75 au 29 octobre). Après une refonte du moteur, prouver que rien n'a changé par une simulation à graine fixe comparée au bit près (`tools/equilibrage.gd -- simuler matrice 0 1 4 777 a.json` avant et après, puis `md5sum`).
 
 ## 1. Ce qui existe (28 octobre 2026)
 
@@ -58,7 +67,7 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 - `data/skills.json` : replis (Résurrection → bénédiction, Purification → immunité, Catalyseur → Vif), au plus une compétence qui frappe par Soutien (revoir Châtiment, Acide, Trait d'ombre, Hymne : lesquelles restent offensives), basiques d'une même classe sur un même élément (le geste), `data/classes.json` : le geste de chaque classe.
 - `engine/combat_ai.gd` : le rôle Soutien ne « frappe sinon » plus : renforcer le Dégâts, affaiblir l'ennemi. Le Front suit la même logique.
 - Tests : chaque compétence de Soutien a un effet quand personne n'est blessé ; chaque classe a un geste ; l'IA Soutien ne frappe jamais quand un renfort ou un affaiblissement est jouable.
-- **Critère** : un test générique le vérifie pour toutes les compétences de Soutien ; simulation : les quatre Soutiens à 48–52 % (classes) et des trios qui vont aussi loin quel que soit leur Soutien (± 0,5 étage).
+- **Critère** : un test générique le vérifie pour toutes les compétences de Soutien. (L'égalité des quatre Soutiens se règle à la phase 9.)
 
 **PR 1.4 — Écrans : le trio en combat, l'adversaire opaque, la composition**
 - `scenes/combat/combat_screen.gd` : trois personnages côté joueur (format compact existant), deux cartes d'annonce enchaînées (ou une carte qui résume les deux : « Nima tire sur Bise · Saule te protège »), Synergies possibles avec chacun ; **adversaire opaque** : retirer les pastilles M/F des ennemis, le kit au toucher (garder le nom, la classe, la barre), ajouter **les icônes d'état** (pictogramme + tours, sur tous) et **la lueur « forte prête »** sur un ennemi.
@@ -70,10 +79,7 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 - **3 contre X partout** (rappel de Gautier, 29 octobre au soir) : le duel, la Tour et le premier combat guidé passent tous au trio ; l'arène place 3 alliés en bas et, en haut, 3 adversaires en PvP ou de 1 à N monstres en PvE (prévoir la place pour plus de 4).
 - **Gautier teste** : un duel et un étage en trio ; est-ce qu'il sait toujours quoi faire. (L'adversaire est déjà caché depuis la PR #50.)
 
-**PR 1.5 — Rééquilibrage en trio**
-- `.github/workflows/reglage.yml` : simulation de trios (adapter `tools/equilibrage.gd` et `tools/regleur.py` : kits mesurés côté joueur et côté Écho, par rôle), 6 passes de 400 000 combats ; puis `reglage_tour.yml` avec des trios (budgets de menace et multiplicateurs à remonter : plus de monstres par étage, au-delà de 4 si le réglage le demande ; l'écran de la PR 1.4 doit les placer). Dans le moteur V2 : `tools/regleur.py` et `tools/regleur_boutons.py` sur le PC de Gautier (voir le raccord en tête du plan).
-- Notes dans `CLAUDE.md` (chiffres avant / après), `docs/SUIVI.md`.
-- **Critère** : classes 48–52 % des deux côtés, Soutiens à égalité, Tour : taux de chute par étage conforme à la courbe.
+**PR 1.5 — Rééquilibrage en trio** : **reportée à la phase 9** (décision du 29 octobre au soir). Les écrans de la PR 1.4 placent quand même plus de 4 monstres, pour que la Tour puisse en avoir plus.
 
 ### Phase 2 — La Tour infinie
 
@@ -85,10 +91,10 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 - Tests : reprise au palier, usure entre paliers, soins qui s'affaiblissent, étage 200 généré sans erreur, aucune limite de tours.
 - **Gautier teste** : monter, tomber, revenir le lendemain au même endroit ; un combat long qui ne s'arrête pas tout seul.
 
-**PR 2.2 — Faveurs, revenu passif, réglage « niveau → étage »**
+**PR 2.2 — Faveurs, revenu passif** (le réglage « niveau → étage » passe à la phase 9)
 - `data/faveurs.json` (modificateurs PvE seulement, trois au choix par Gardien), `engine/combat_unit.gd` : les Faveurs s'ajoutent aux `mods` seulement en mode Tour. Revenu passif quotidien (Éclats, un peu d'XP, plafonné) calculé à l'ouverture du jeu selon l'étage.
-- Simulateur : `tools/simulate_tour.gd` fait monter des trios **de niveau donné** (Destin avec autant de points, Faveurs acquises) ; `tools/regleur_tour.py` règle la courbe pour que l'étage moyen atteint suive la cible par niveau (étage 3 au niveau 1, Gardien 5 vers 8–10, étage 10 vers 25–30, puis la courbe continue). Lancer sur GitHub.
-- **Critère** : courbe « niveau → étage » mesurée et notée ; personne n'atteint un plafond (l'étage 1 000 se génère).
+- La courbe de la Tour : des chiffres de départ à la main (étage 3 au niveau 1, Gardien 5 vers les niveaux 8–10, étage 10 vers 25–30), réglés à la phase 9.
+- **Critère** : l'étage 1 000 se génère sans erreur.
 
 ### Phase 3 — L'équipement
 
@@ -104,9 +110,7 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 - Butin : à la fin d'un étage (objet du niveau de l'étage ; épique aux Gardiens ; échangeable seulement au premier passage), coffre de fin de montée.
 - **Gautier teste** : trouver un objet, comparer, équiper, reforger ; sentir l'écart de puissance à la Tour.
 
-**PR 3.3 — Passe de simulateur sur les lignes**
-- `tools/regleur.py` : leviers = fourchettes des lignes ; règle « en moyenne sur tous les Destins aucune ligne ne gagne plus ; pour un Destin donné elles diffèrent » (mesurer la moyenne et l'écart-type par ligne) ; plafonds ajustés. Sur GitHub.
-- **Critère** : aucune ligne hors 48–52 % en moyenne ; écart-type par Destin noté (c'est lui qui prouve « un meilleur objet pour moi »).
+**PR 3.3 — Passe de simulateur sur les lignes** : **reportée à la phase 9**.
 
 ### Phase 4 — La ville et la navigation en portrait
 
@@ -129,11 +133,19 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 
 **PR 7.1** Territoires : types et bonus, revenus, donjons sur territoire (part d'entrée, une route éliminée par jour), carte qui grandit avec la population, territoires neutres après 7 jours sans guerre. **PR 7.2** La guerre : fenêtre du soir par serveur, déclarations (1 + taille ÷ 20, voisins seulement), 3 combats par membre, défense automatique par Échos, rotation des défenseurs (3 fois au plus), scores, capture (neutre : meilleur score ; tenu : score × 1,2 ou 1,5), protection de deux jours, foyer imprenable, guildes de moins de 10 actifs limitées. **PR 7.3** Classement et ligues de guilde, remise à zéro de saison.
 
-### Phase 8 — Le reste
+### Phase 8 — Le reste du contenu
 
-Évolutions de rang 1 (30 classes) et de rang 2 (90), classes de grimoire (rares, épiques, légendaires : réserves de compétences et Synergies, réglées au simulateur, ligue Ascendants) ; PvP synchrone à 6 humains (file par rôle, repli à 2 humains + 4 Échos) ; art PixelLab ; boutique de cosmétiques ; bêta fermée Android puis TestFlight ; lancement.
+Évolutions de rang 1 (30 classes) et de rang 2 (90) — une évolution peut changer le rôle de sa classe (GDD V2, § 3) —, classes de grimoire (rares, épiques, légendaires : leurs propres voies, ligue Ascendants) ; PvP synchrone à 6 humains (file par rôle, repli à 2 humains + 4 Échos).
 
-## 3. Ce qu'il faut mesurer à chaque phase (le simulateur dit si c'est fini)
+### Phase 9 — L'équilibrage global
+
+Tout ensemble, avec le simulateur et les régleurs existants : les classes et les rôles en trio (PR 1.5 d'origine), les Soutiens à égalité, la courbe « niveau → étage » de la Tour (PR 2.2 d'origine), les lignes d'équipement (PR 3.3 d'origine), les Faveurs, les bonus de guilde et de territoire, les évolutions et les grimoires. Ce qu'il faut mesurer : la liste ci-dessous.
+
+### Phase 10 — Les graphismes, puis le lancement
+
+Art PixelLab (personnages, monstres, ville, carte du monde), animations, écrans soignés ; boutique de cosmétiques ; bêta fermée Android puis TestFlight ; lancement.
+
+## 3. Ce qu'il faudra mesurer à la phase 9
 
 - Phase 1 : classes et kits dans 48–52 % des deux côtés ; Soutiens à égalité en étages atteints ; erreurs de l'IA rares ; Synergies par combat (viser au moins 1,5 par trio).
 - Phase 2 : courbe niveau → étage ; part d'étages gagnés après 50 tours (viser < 2 %) ; aucun combat au plafond technique.
@@ -147,4 +159,4 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 - Phase 3 : l'écart de puissance voulu entre équipé et non équipé ; les noms des objets (univers).
 - Phase 5 : la durée de saison (3 mois), les plafonds d'or et d'Éclats.
 - Phase 6 : qui reçoit le grimoire ; les premiers boss et leurs conditions ; le nombre d'embranchements par donjon.
-- Toujours : l'univers et le nom du jeu, dès que l'art (phase 8) approche.
+- Toujours : l'univers et le nom du jeu, dès que l'art (phase 10) approche.
