@@ -14,6 +14,7 @@ Chaque règle porte une étiquette : **[Décidé]** (validé par Gautier), **[Pr
 - **Un seul personnage par compte**, avec un **Destin** unique (arbre de 45 nœuds, 30 points, un point par niveau). Le joueur ne joue jamais que lui. **[Décidé]**
 - **10 classes de base**, chacune avec **3 évolutions**, chacune avec **3 évolutions de second rang** (10 + 30 + 90), plus des **classes de grimoire** (rares, épiques, légendaires) obtenues sur les boss de donjon. **[Décidé]**
 - **On joue toujours en trio** Front + Dégâts + Soutien : le joueur occupe la case de son rôle principal, les deux autres sont des **Échos**, des personnages de vrais joueurs pilotés par l'IA. Le joueur ne leur donne jamais d'ordre. **[Décidé]** (Remplace le duo joueur + acolyte du V1.)
+- **Tous les combats sont en 3 contre X**, PvE compris : toujours 3 personnages de son côté ; en face, 3 en PvP, et en PvE autant de monstres que le combat le demande, moins ou plus de 3 (la Tour, les donjons, les boss). **[Décidé ; rappelé par Gautier le 29 octobre au soir]**
 - **La Tour** est **infinie**, fixe, sans remise à zéro : le concours est à qui monte le plus haut. **[Décidé]**
 - **Le PvP** : trio contre trio, asynchrone (5 classés par jour) et synchrone à 6 humains. **[Décidé]**
 - **Les donjons** : 3 joueurs humains, routes secrètes impossibles à écrire, boss unique au serveur. **[Décidé]**
@@ -90,6 +91,8 @@ Modifiées le 29 octobre :
 - Mêmes règles de composition en Tour, en PvP et en donjon (au donjon, les trois sont humains).
 
 ## 6. La Tour (solo, en trio)
+
+- Chaque étage oppose le trio à **un nombre de monstres qui varie** : un seul gros, ou une meute de plus de trois. **[Décidé]** (Le prototype en tire de 1 à 4 ; au-delà, l'écran et la génération des étages devront suivre.)
 
 - **Infinie, fixe, sans remise à zéro.** Tu atteins l'étage 40, demain tu reprends à l'étage 40. Le concours est à qui est le plus haut. **[Décidé]**
 - **Assez d'étages pour que personne n'atteigne jamais le plafond**, en tenant compte des sauts de puissance (Évolutions, grimoires, équipement) : les étages sont **générés** (famille, budget de menace, PV et puissance qui montent par une courbe réglée au simulateur), Gardien tous les 5 étages avec des variantes qui montent en gamme. **[Décidé ; génération : Proposé]**

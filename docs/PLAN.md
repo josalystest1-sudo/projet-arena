@@ -67,10 +67,11 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 - Écran de fin : résumé de l'adversaire (Proposé), part de chacun des trois.
 - `tools/navigateur.js` : captures du combat en trio, portrait, hauteur 664 et 844.
 - **Critère** : un duel et un étage de Tour se jouent en trio de bout en bout dans le navigateur, sans erreur, sans débordement.
-- **Gautier teste** : un duel et un étage en trio ; est-ce qu'il sait toujours quoi faire ; est-ce que l'adversaire opaque lui manque.
+- **3 contre X partout** (rappel de Gautier, 29 octobre au soir) : le duel, la Tour et le premier combat guidé passent tous au trio ; l'arène place 3 alliés en bas et, en haut, 3 adversaires en PvP ou de 1 à N monstres en PvE (prévoir la place pour plus de 4).
+- **Gautier teste** : un duel et un étage en trio ; est-ce qu'il sait toujours quoi faire. (L'adversaire est déjà caché depuis la PR #50.)
 
 **PR 1.5 — Rééquilibrage en trio**
-- `.github/workflows/reglage.yml` : simulation de trios (adapter `tools/equilibrage.gd` et `tools/regleur.py` : kits mesurés côté joueur et côté Écho, par rôle), 6 passes de 400 000 combats ; puis `reglage_tour.yml` avec des trios (budgets de menace et multiplicateurs à remonter : plus de monstres par étage).
+- `.github/workflows/reglage.yml` : simulation de trios (adapter `tools/equilibrage.gd` et `tools/regleur.py` : kits mesurés côté joueur et côté Écho, par rôle), 6 passes de 400 000 combats ; puis `reglage_tour.yml` avec des trios (budgets de menace et multiplicateurs à remonter : plus de monstres par étage, au-delà de 4 si le réglage le demande ; l'écran de la PR 1.4 doit les placer). Dans le moteur V2 : `tools/regleur.py` et `tools/regleur_boutons.py` sur le PC de Gautier (voir le raccord en tête du plan).
 - Notes dans `CLAUDE.md` (chiffres avant / après), `docs/SUIVI.md`.
 - **Critère** : classes 48–52 % des deux côtés, Soutiens à égalité, Tour : taux de chute par étage conforme à la courbe.
 
