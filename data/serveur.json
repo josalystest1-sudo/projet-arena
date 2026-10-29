@@ -1,0 +1,7 @@
+{
+  "url": "",
+  "cle_publique": "",
+  "table": "personnages",
+  "pseudos": ["Aube", "Brume", "Cendre", "Givre", "Ronce", "Écume", "Bise", "Sabre", "Louve", "Fauve", "Orage", "Silex", "Ambre", "Jade", "Onyx", "Lierre", "Braise", "Saule", "Nacre", "Zéphyr"],
+  "simule": {"joueurs": 24, "graine": 4242, "niveau_max": 45}
+}

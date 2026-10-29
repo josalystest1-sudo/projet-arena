@@ -89,6 +89,10 @@ const CLES_ETAL := ["raretes", "prix"]
 ## Le boss à paliers (data/boss.json, GDD V2 § 8.5) : la limite de tours, les solutions connues (identifiant -> texte), et
 ## par boss ses paliers (fraction de PV, solution, texte du verrou, ce qui a manqué).
 const CLES_BOSS := ["tours_max", "solutions", "boss"]
+## Le serveur (data/serveur.json, phase 5) : l'adresse et la clé publique du projet (vides : serveur simulé), la table
+## des fiches, les mots des pseudos par défaut, le monde simulé (nombre de joueurs, graine, niveau le plus haut).
+const CLES_SERVEUR := ["url", "cle_publique", "table", "pseudos", "simule"]
+const CLES_SIMULE := ["joueurs", "graine", "niveau_max"]
 const CLES_PALIER := ["pv", "solution", "texte", "manque"]
 const CLES_OBJECTIF := ["id", "texte", "compteur", "cible", "xp", "eclats"]
 const CLES_BATIMENT := ["id", "nom", "texte", "ecran", "options", "x", "y", "dispo", "forme"]
@@ -105,6 +109,8 @@ const CLES_REFORGE := ["cout", "pente"]
 
 var regles: Dictionary = {}
 var etats: Dictionary = {}
+## Le serveur (data/serveur.json) : adresse, clé publique, table, pseudos, monde simulé.
+var serveur: Dictionary = {}
 var textes: Dictionary = {}
 ## Les classes par identifiant (les dix classes de base et leurs évolutions), et l'ordre des classes de base
 ## (data/classes.json : celui de la section 9, et des écrans).
@@ -173,6 +179,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.donjons = _lire(dossier + "donjons.json", donnees.erreurs)
 	donnees.comptoir = _lire(dossier + "comptoir.json", donnees.erreurs)
 	donnees.boss = _lire(dossier + "boss.json", donnees.erreurs)
+	donnees.serveur = _lire(dossier + "serveur.json", donnees.erreurs)
 	donnees.valider()
 	return donnees
 
@@ -269,6 +276,12 @@ func valider() -> void:
 	_valider_donjons()
 	_valider_comptoir()
 	_valider_boss()
+	_cles(serveur, CLES_SERVEUR, CLES_SERVEUR, "serveur.json")
+	_cles(serveur.get("simule", {}), CLES_SIMULE, CLES_SIMULE, "serveur.json simule")
+	if serveur.get("pseudos", []).is_empty():
+		erreurs.append("serveur.json : aucun mot de pseudo")
+	if int(serveur.get("simule", {}).get("joueurs", 0)) < 3:
+		erreurs.append("serveur.json : au moins trois joueurs simulés")
 
 
 ## Le boss à paliers (data/boss.json) : clés connues, une limite de tours, chaque boss un Gardien du bestiaire, des

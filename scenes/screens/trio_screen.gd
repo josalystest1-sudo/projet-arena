@@ -30,7 +30,7 @@ func _construire() -> void:
 		_carte(column, app.echos[i], str(app.echos_choisis[roles[i]]["nom"]), UiKit.ACOLYTE_BLUE, roles[i])
 	var plus := UiKit.card(column, 2)
 	plus.add_child(UiKit.label("Amis et guilde", 18, UiKit.SOFT, false))
-	plus.add_child(UiKit.label("Avec les comptes (étape serveur) : tes amis et ta guilde pourront compléter ton trio, à leur vrai niveau, trois aides par jour.", 14, UiKit.SOFT, false))
+	plus.add_child(UiKit.label("Ton compte existe (voir ton profil) : à la prochaine étape, les personnages des autres joueurs pourront compléter ton trio, à leur vrai niveau, trois aides par jour.", 14, UiKit.SOFT, false))
 	column.add_child(UiKit.spacer(4))
 	if mode in ["", "duel", "classe"]:
 		var classe := mode == "classe"

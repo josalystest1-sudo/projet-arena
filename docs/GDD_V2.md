@@ -241,6 +241,6 @@ Trois volontés de Gautier, compatibles : celui qui a eu la chance d'un grand ob
 
 1. **L'univers et le nom** : à décider ensemble, plus tard (nécessaires pour l'histoire des bannières, des Échos et des boss, et pour les noms des 120 classes).
 2. **La guerre de guilde (§ 9.3), les types de territoire (§ 9.2), les ligues par puissance (§ 7)** : décidés par Claude Code à la demande de Gautier, validés dans le principe le 29 octobre au soir (« on adaptera en conséquence »).
-   **L'hébergement du serveur** (phase 5) : « gratuit d'abord » (un service à palier gratuit, sans carte bancaire), décidé le 30 octobre au matin.
+   **L'hébergement du serveur** (phase 5) : « gratuit d'abord » (un service à palier gratuit, sans carte bancaire), décidé le 30 octobre au matin ; **Supabase**, accepté le 30 octobre au soir (le GDD V1 prévoyait Nakama + PostgreSQL : le moteur de règles ne tourne pas côté serveur pour l'instant, le serveur garde des fiches et des résultats).
 3. **Le niveau de la seconde Évolution** (60 ?) et ce qu'il advient du niveau au-delà de 90.
 4. **Qui reçoit le grimoire** dans le trio vainqueur : tirage visible, ou une règle (celui qui a exploré le plus, celui qui n'en a pas) ?
