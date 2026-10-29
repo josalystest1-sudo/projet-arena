@@ -2,6 +2,8 @@
 
 Le 29 octobre 2026. Ce rapport clôt le plan de `docs/SPEC-COMBAT-V2.md` (section 15) : la matrice des classes, les trois routes, l'usage des voies, la longueur des combats, la Tour, puis la liste des choix du journal (`docs/JOURNAL-COMBAT-V2.md`). Le détail de chaque passe de réglage est dans `docs/EQUILIBRAGE-V2.md`.
 
+**Depuis le 29 octobre après-midi (PR #47), les combats visent 20 tours** (demande de Gautier) : les chiffres de l'équilibrage ci-dessous sont ceux des combats de 10 tours ; ceux des combats de 20 tours (six critères tenus) sont en bas de `docs/EQUILIBRAGE-V2.md`.
+
 ## Ce qui existe
 
 1. Les données des 10 classes et l'outil de budget (PR #34).
