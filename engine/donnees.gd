@@ -64,6 +64,10 @@ const CLES_OBJETS := ["emplacements", "lignes", "raretes", "niveau", "bases", "b
 ## La ville (data/ville.json, GDD V2 § 11) : ses bâtiments (nom, sous-titre, écran ouvert et ses options, position sur
 ## la carte en fractions, disponible ou non, forme du dessin provisoire).
 const CLES_VILLE := ["batiments"]
+## Les objectifs du jour (data/objectifs.json, GDD V2 § 10.3) : combien par jour, et la réserve (texte, compteur du jeu,
+## cible, récompense en XP et en Éclats). Les compteurs connus sont ceux d'engine/objectifs.gd.
+const CLES_OBJECTIFS := ["par_jour", "reserve"]
+const CLES_OBJECTIF := ["id", "texte", "compteur", "cible", "xp", "eclats"]
 const CLES_BATIMENT := ["id", "nom", "texte", "ecran", "options", "x", "y", "dispo", "forme"]
 const CLES_BATIMENT_OBLIGATOIRES := ["id", "nom", "texte", "ecran", "x", "y", "dispo"]
 const CLES_ECLATS := ["duel_gagne", "duel_perdu", "etage_base", "etage_pente", "rejoue"]
@@ -92,6 +96,8 @@ var faveurs: Dictionary = {}
 var objets: Dictionary = {}
 ## La ville (data/ville.json, GDD V2 § 11) : la liste de ses bâtiments.
 var ville: Dictionary = {}
+## Les objectifs du jour (data/objectifs.json, GDD V2 § 10.3).
+var objectifs: Dictionary = {}
 ## Ce qui ne va pas dans les données : une ligne par problème (vide si tout est connu et cohérent).
 var erreurs: Array[String] = []
 ## Une mémoire de calculs qui ne dépendent que des données (les formes de chaque nœud, pour le générateur).
@@ -121,6 +127,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.faveurs = _lire(dossier + "faveurs.json", donnees.erreurs)
 	donnees.objets = _lire(dossier + "items.json", donnees.erreurs)
 	donnees.ville = _lire(dossier + "ville.json", donnees.erreurs)
+	donnees.objectifs = _lire(dossier + "objectifs.json", donnees.erreurs)
 	donnees.valider()
 	return donnees
 
@@ -182,6 +189,7 @@ func valider() -> void:
 			erreurs.append(ou + " : le texte doit contenir « {v} »")
 	_valider_objets()
 	_valider_ville()
+	_valider_objectifs()
 	_cles(bestiaire, CLES_BESTIAIRE, CLES_BESTIAIRE, "bestiaire.json")
 	for id in bestiaire.get("monstres", {}):
 		var m: Dictionary = bestiaire["monstres"][id]
@@ -305,6 +313,29 @@ func _valider_ville() -> void:
 			erreurs.append(ou + " : disponible mais sans écran")
 		if b.has("options") and not b["options"] is Dictionary:
 			erreurs.append(ou + " : options attendues en objet")
+
+
+## Les objectifs du jour (data/objectifs.json) : clés connues, identifiants uniques, compteurs connus, cibles et
+## récompenses positives, une réserve assez grande pour un jour.
+func _valider_objectifs() -> void:
+	_cles(objectifs, CLES_OBJECTIFS, CLES_OBJECTIFS, "objectifs.json")
+	if not objectifs is Dictionary or not objectifs.get("reserve") is Array:
+		return
+	var ids: Array = []
+	for o in objectifs["reserve"]:
+		var ou := "objectifs.json objectif %s" % (o.get("id", "?") if o is Dictionary else "?")
+		_cles(o, CLES_OBJECTIF, CLES_OBJECTIF, ou)
+		if not o is Dictionary:
+			continue
+		if ids.has(o.get("id", "")):
+			erreurs.append(ou + " : identifiant en double")
+		ids.append(o.get("id", ""))
+		if not str(o.get("compteur", "")) in Objectifs.COMPTEURS:
+			erreurs.append(ou + " : compteur inconnu « %s »" % o.get("compteur", ""))
+		if int(o.get("cible", 0)) <= 0 or int(o.get("xp", -1)) < 0 or int(o.get("eclats", -1)) < 0:
+			erreurs.append(ou + " : cible positive, XP et Éclats non négatifs attendus")
+	if int(objectifs.get("par_jour", 0)) <= 0 or int(objectifs.get("par_jour", 0)) > ids.size():
+		erreurs.append("objectifs.json : par_jour entre 1 et la taille de la réserve")
 
 
 ## Les erreurs d'un fichier de classe (vide s'il est conforme à la section 13.1).

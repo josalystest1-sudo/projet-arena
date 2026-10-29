@@ -1,5 +1,6 @@
-## Le Tableau (docs/GDD_V2.md, § 11) : les nouvelles du jour. Avant le serveur, en local : le revenu de la Tour du jour,
-## les points de Destin à placer, les objets du sac, tes records. Les objectifs du jour viennent avec la PR 4.2.
+## Le Tableau (docs/GDD_V2.md, § 11) : les nouvelles du jour. Les trois objectifs du jour (engine/objectifs.gd) avec leur
+## avancement et leur récompense à réclamer ; avant le serveur, en local : le revenu de la Tour du jour, les points de
+## Destin à placer, les objets du sac, tes records.
 extends Control
 
 var app: ArenaApp
@@ -17,6 +18,19 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		revenu.add_child(UiKit.label("Revenu de la Tour", 20, UiKit.GOLD, false))
 		revenu.add_child(UiKit.label("+%d Éclats et +%d XP pour ton record (étage %d). Chaque jour, selon ta hauteur." % [int(r["eclats"]), int(r["xp"]), int(r["record"])], 16, Color.WHITE, false))
 		app.revenu_du_jour = {}
+	# Les objectifs du jour.
+	var objectifs := UiKit.card(column, 6)
+	objectifs.add_child(UiKit.label("Objectifs du jour", 20, UiKit.GOLD, false))
+	objectifs.add_child(UiKit.label("Trois par jour, les mêmes pour tout le monde. Chacun rapporte de l'XP et des Éclats.", 14, UiKit.SOFT, false))
+	for o in app.objectifs_du_jour():
+		var ligne := "%s · %d / %d" % [o["texte"], o["avancement"], o["cible"]]
+		if bool(o["reclame"]):
+			objectifs.add_child(UiKit.label(ligne + " · réclamé", 16, Color(0.6, 0.62, 0.7), false))
+		elif bool(o["fini"]):
+			objectifs.add_child(UiKit.label(ligne, 16, UiKit.GREEN, false))
+			objectifs.add_child(UiKit.button("Réclamer : +%d XP, +%d Éclats" % [o["xp"], o["eclats"]], _reclamer.bind(str(o["id"])), 48, 16))
+		else:
+			objectifs.add_child(UiKit.label(ligne + " (+%d XP, +%d Éclats)" % [o["xp"], o["eclats"]], 16, Color.WHITE, false))
 	# À faire aujourd'hui.
 	var a_faire := UiKit.card(column, 6)
 	a_faire.add_child(UiKit.label("À faire", 20, UiKit.GOLD, false))
@@ -29,7 +43,6 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		a_faire.add_child(UiKit.button("%d objet%s dans ton sac, à voir à la Forge" % [app.profile.sac.size(), "s" if app.profile.sac.size() > 1 else ""], func(): app.show_screen("forge"), 48, 16))
 	if rien:
 		a_faire.add_child(UiKit.label("Rien d'urgent : la Tour t'attend.", 16, UiKit.SOFT, false))
-	a_faire.add_child(UiKit.label("Les objectifs du jour arrivent bientôt.", 14, Color(0.6, 0.62, 0.7), false))
 	# Tes records.
 	var profile := app.profile
 	var records := UiKit.card(column, 4)
@@ -46,3 +59,9 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	if not un:
 		records.add_child(UiKit.label("Aucun encore : monte la Tour, gagne un duel.", 16, UiKit.SOFT, false))
 	column.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 56))
+
+
+func _reclamer(id: String) -> void:
+	if not app.reclamer_objectif(id).is_empty():
+		app.sfx.play("victoire")
+	app.show_screen("tableau")

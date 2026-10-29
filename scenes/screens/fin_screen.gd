@@ -24,6 +24,8 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	var tour: Tour = options.get("tour", null)
 	var column := UiKit.scroll_column(self, 12)
 	var gagne := e.vainqueur == "a"
+	# Les objectifs du jour : les Clés jouées et les Synergies de ce combat.
+	app.compter_combat(options)
 	# Le trio, en grand.
 	var trio := HBoxContainer.new()
 	trio.alignment = BoxContainer.ALIGNMENT_CENTER
