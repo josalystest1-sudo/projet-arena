@@ -69,10 +69,9 @@ static func _generer(classe_id: String, graine: int, niveau: int, allumage: Arra
 		var voie: Dictionary = destin.voies[v]
 		for r in range(4):
 			var noeud: Dictionary = voie["noeuds"][r]
-			var possibles := formes_possibles(d.regles, noeud, classe_id, str(voie["id"]))
+			var formes := _formes_du_noeud(d, noeud, classe_id, str(voie["id"]))
 			rng.seed = graine + v * 4 + r
-			var forme: String = possibles[rng.randi_range(0, possibles.size() - 1)]
-			var forme_noeud := appliquer_forme(d.regles, noeud, forme, classe_id, str(voie["id"]))
+			var forme_noeud: Dictionary = formes[rng.randi_range(0, formes.size() - 1)].duplicate(true)
 			forme_noeud["allume"] = r == 0
 			voie["noeuds"][r] = forme_noeud
 	var liste := allumage
@@ -156,6 +155,18 @@ static func _lire_cle(destin: Destin, cle: String) -> Dictionary:
 
 
 # --- Formes ----------------------------------------------------------------------
+
+## Le nœud sous chacune des formes qu'il peut prendre, dans l'ordre de FORMES (gardé en mémoire : il ne dépend que
+## des données).
+static func _formes_du_noeud(d: Donnees, noeud: Dictionary, classe_id: String, voie_id: String) -> Array:
+	var cle := "formes|%s|%s|%d" % [classe_id, voie_id, int(noeud["rang"])]
+	if not d.memoire.has(cle):
+		var formes: Array = []
+		for forme in formes_possibles(d.regles, noeud, classe_id, voie_id):
+			formes.append(appliquer_forme(d.regles, noeud, forme, classe_id, voie_id))
+		d.memoire[cle] = formes
+	return d.memoire[cle]
+
 
 ## Les formes qu'un nœud peut prendre (Base toujours) : Diffuse s'il a un effet mono-cible, Concentrée s'il a un effet
 ## multi-cible, Persistante s'il a des dégâts ou un soin directs, Vive s'il a un DoT ou un Gardien ; et seulement si

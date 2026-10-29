@@ -1,5 +1,6 @@
 ## La Tour (docs/SPEC-COMBAT-V2.md, sections 5.6 et 10.4) : le duo grimpe des étages, chacun de 1 à 4 monstres du
-## bestiaire au niveau du joueur, dont la somme des multiplicateurs de PV tombe entre 1,6 et 2,4. Même moteur, mêmes
+## bestiaire au niveau du joueur. La force totale des monstres (la somme de leurs multiplicateurs de PV) monte avec les
+## étages (décision de Gautier du 28 octobre : la Tour a sa propre difficulté, réglée par le simulateur). Même moteur, mêmes
 ## phases, pas de mort subite. Entre deux étages : +20 % des PV max à chaque membre vivant du duo, un acolyte KO revient
 ## avec 20 %, et tout le reste repart à zéro (jalons, extinctions, états). La montée s'arrête quand le duo tombe ;
 ## l'étage atteint est le record.
@@ -38,9 +39,23 @@ func graine_etage(n: int) -> int:
 	return graine ^ (n * 0x9E3779B1)
 
 
+## La force totale des monstres d'un étage : la somme de leurs multiplicateurs de PV tombe entre `bas` et
+## `bas + largeur`, où bas = (départ + pente × facteur de pente de la classe × (étage − 1)) × facteur de la classe
+## (data/tour.json : réglés par le simulateur pour que chaque classe atteigne l'étage 10 une fois sur deux et l'étage 20
+## dans 5 à 10 % des montées).
+func fourchette(n: int) -> Vector2:
+	var regles := donnees.tour
+	var classe := joueur.classe_id if joueur != null else ""
+	var facteur := float(regles["classes"].get(classe, 1.0))
+	var pente := float(regles["somme_pente"]) * float(regles["classes_pente"].get(classe, 1.0))
+	var bas := maxf(0.0, (float(regles["somme_depart"]) + pente * float(n - 1)) * facteur)
+	return Vector2(bas, bas + float(regles["somme_largeur"]))
+
+
 ## Les monstres d'un étage (identifiants du bestiaire), tirés avec la graine de l'étage : une famille, puis des monstres
-## de cette famille jusqu'à ce que la somme de leurs multiplicateurs de PV tombe entre 1,6 et 2,4 (4 au plus) ; un
-## Gardien d'abord tous les 5 étages. Après 60 essais sans y arriver, toutes les familles sont permises.
+## de cette famille jusqu'à ce que la somme de leurs multiplicateurs de PV tombe dans la fourchette de l'étage (4 au
+## plus) ; un Gardien d'abord tous les 5 étages, s'il y tient. Après 60 essais, toutes les familles sont permises ;
+## après 120, le groupe le plus proche de la fourchette.
 func tirer_etage(n: int) -> Array[String]:
 	var regles := donnees.tour
 	var monstres: Dictionary = donnees.bestiaire["monstres"]
@@ -57,8 +72,13 @@ func tirer_etage(n: int) -> Array[String]:
 				gardiens.append(id)
 		gardien = gardiens[rng.randi_range(0, gardiens.size() - 1)]
 		famille = str(monstres[gardien]["famille"])
-	var mini := float(regles["pv_mult_min"])
-	var maxi_ := float(regles["pv_mult_max"])
+	var f := fourchette(n)
+	var mini := f.x
+	var maxi_ := f.y
+	if gardien != "" and float(monstres[gardien]["pv_mult"]) > maxi_ + 0.0001:
+		gardien = ""
+	var plus_proche: Array[String] = []
+	var ecart_proche := INF
 	for essai in range(int(regles["tirages"]) * 2):
 		var toutes_familles := essai >= int(regles["tirages"])
 		var permis: Array = []
@@ -70,13 +90,17 @@ func tirer_etage(n: int) -> Array[String]:
 		if gardien != "":
 			liste.append(gardien)
 			somme = float(monstres[gardien]["pv_mult"])
-		while somme < mini and liste.size() < int(regles["monstres_max"]):
+		while (somme < mini or liste.is_empty()) and liste.size() < int(regles["monstres_max"]):
 			var id: String = permis[rng.randi_range(0, permis.size() - 1)]
 			liste.append(id)
 			somme += float(monstres[id]["pv_mult"])
 		if somme >= mini - 0.0001 and somme <= maxi_ + 0.0001:
 			return liste
-	return [] as Array[String]
+		var ecart := maxf(mini - somme, somme - maxi_)
+		if ecart < ecart_proche:
+			ecart_proche = ecart
+			plus_proche = liste
+	return plus_proche
 
 
 ## Les monstres de l'étage en cours, avec leurs roues (niveau du joueur, formes tirées avec la graine de l'étage).

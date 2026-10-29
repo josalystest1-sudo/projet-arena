@@ -3,8 +3,8 @@
   "nom": "Diplomate",
   "genre": "m",
   "role": "soutien",
-  "pv": 1000,
-  "k": 1.0,
+  "pv": 435,
+  "k": 1.1777,
   "acolyte": "invocateur",
   "moyeu": {
     "nom": "Réplique",
@@ -25,8 +25,9 @@
           "genre": "f",
           "effets": [
             {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 37.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 77.0
         },
         {
           "rang": 2,
@@ -34,9 +35,10 @@
           "genre": "m",
           "effets": [
             {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
-            {"type": "affaiblissement", "pourcent": 25, "tours": 2, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 5, "cible": "un_ennemi"}
-          ]
+            {"type": "affaiblissement", "pourcent": 29.55, "tours": 2, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 5.9, "cible": "un_ennemi"}
+          ],
+          "budget_override": 110.0
         },
         {
           "rang": 3,
@@ -44,8 +46,9 @@
           "genre": "f",
           "effets": [
             {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 94.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 154.0
         },
         {
           "rang": 4,
@@ -54,8 +57,9 @@
           "effets": [
             {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
             {"type": "egare", "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 73.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -69,8 +73,9 @@
           "nom": "Trêve",
           "genre": "f",
           "effets": [
-            {"type": "barriere", "valeur": 100, "cible": "un_allie"}
-          ]
+            {"type": "barriere", "valeur": 97.0, "cible": "un_allie"}
+          ],
+          "budget_override": 67.9
         },
         {
           "rang": 2,
@@ -110,8 +115,9 @@
           "genre": "f",
           "effets": [
             {"type": "egare", "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 10, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 7.9, "cible": "un_ennemi"}
+          ],
+          "budget_override": 67.9
         },
         {
           "rang": 2,
@@ -153,9 +159,10 @@
           "nom": "Encouragement",
           "genre": "m",
           "effets": [
-            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "un_allie"},
-            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
-          ]
+            {"type": "renfort", "pourcent": 24.25, "tours": 2, "cible": "un_allie"},
+            {"type": "degats", "valeur": 19.4, "cible": "un_ennemi"}
+          ],
+          "budget_override": 67.9
         },
         {
           "rang": 2,
@@ -195,8 +202,9 @@
           "nom": "Estocade",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 67.9, "cible": "un_ennemi"}
+          ],
+          "budget_override": 67.9
         },
         {
           "rang": 2,
