@@ -1,6 +1,6 @@
 # Projet Arena — avancement
 
-Mis à jour le **29 octobre 2026** (PR #61). `main` = la PR #61 fusionnée et publiée (la Forge, le butin, les Éclats, le revenu passif). À lire avec `CLAUDE.md`. Le plan complet, PR par PR, est dans `docs/PLAN.md` (phases 1 à 10) ; l'historique de toutes les PR et des retours de Gautier dans `docs/SUIVI.md`.
+Mis à jour le **30 octobre 2026** (PR #62). `main` = la PR #62 fusionnée et publiée (la ville). À lire avec `CLAUDE.md`. Le plan complet, PR par PR, est dans `docs/PLAN.md` (phases 1 à 10) ; l'historique de toutes les PR et des retours de Gautier dans `docs/SUIVI.md`.
 
 Jeu publié (mis à jour à chaque fusion sur `main`) : https://josalystest1-sudo.github.io/projet-arena/ — ajouter `?graine=7` pour des tirages reproductibles.
 
@@ -8,7 +8,7 @@ Jeu publié (mis à jour à chaque fusion sur `main`) : https://josalystest1-sud
 
 ## 1. Terminé et qui fonctionne
 
-Vérifié après la PR #61 : **94 tests passent**, le budget des **210 nœuds** est tenu (`tools/budget.gd`), la CI est verte, le jeu publié se charge (y compris un profil d'avant le trio, qui reçoit ses Échos) et se joue au format téléphone (vérifié dans le navigateur intégré en 375 × 812).
+Vérifié après la PR #62 : **95 tests passent**, le budget des **210 nœuds** est tenu (`tools/budget.gd`), la CI est verte, le jeu publié se charge (y compris un profil d'avant le trio, qui reçoit ses Échos) et se joue au format téléphone (vérifié dans le navigateur intégré en 375 × 812).
 
 ### Le combat V2 (PR #34 à #47, 28 et 29 octobre)
 
@@ -35,29 +35,30 @@ Vérifié après la PR #61 : **94 tests passent**, le budget des **210 nœuds** 
 | #59 (PR 2.2) | **Les Faveurs de la Tour** : six Faveurs cumulables (`data/faveurs.json` : Vigueur +4 % de PV max, Puissance +4 % de force, Répit +5 points de PV rendus entre deux étages, Égide une barrière de 8 % au début de chaque étage, Effroi les monstres affaiblis de 10 % pendant 2 tours (50 % au plus), Savoir +10 % d'XP) ; chaque Gardien vaincu pour la première fois avec la classe en propose trois (tirées avec la graine de l'étage), une au choix dans l'écran de fin ; gardées par classe dans le profil, valables seulement dans la Tour, listées dans l'écran de la Tour. Le record et le palier sont enregistrés dès l'étage franchi. Étape `{"gardien": n}` de l'outil de capture. |
 | #60 (PR 3.1) | **L'équipement, données et moteur** (décisions de Gautier : +50 % de puissance pour un joueur équipé, noms de fantasy classique, huit lignes par effet) : `data/items.json` (5 emplacements, 14 bases avec leur réserve de 4 lignes, 8 lignes avec fourchette et plafond, 4 raretés, échelle du niveau, butin par source, reforge) ; `engine/equipement.gd` (tirage à graine, qualité en %, jeu complet, butin lié ou échangeable, bonus plafonnés, équiper = lier, reforge d'une ligne à coût croissant, textes et fiche) ; `Destin.mods` lu une fois à la création d'un combat (PV max, Force) et dans chaque valeur selon le type de l'effet et le rang (Clés, Ouvertures) ; sans équipement, le combat est le même au bit près (simulation à graine fixe vérifiée, duo et trio). Le simulateur équipe les camps (dernier argument : une rareté). |
 | #61 (PR 3.2) | **La Forge, le butin, les Éclats, le revenu passif** : onglet **Forge** (ce que tu portes par emplacement, tes bonus, ton sac ; la fiche d'un objet : lignes avec fourchette entre crochets, qualité, lié ou échangeable, reforge de chaque ligne contre des Éclats, comparaison « Si tu l'équipes » avant → après ligne par ligne et « Sur ta roue » avec jusqu'à trois exemples « Taillade : 48 → 54 », Équiper (l'objet devient lié), Retirer, Recycler avec confirmation) ; **le butin** à chaque étage franchi de la Tour (`Tour.butin` : du niveau de l'étage, épique au Gardien, échangeable au premier passage, lié sinon, une fois sur deux si rejoué), montré dans l'écran de fin et rangé dans le sac ; **les Éclats** (duel gagné 15, perdu 5 ; étage 10 + 2 × n, moitié si rejoué ; recyclage 5 / 15 / 40 / 100 par rareté) dans le profil, l'accueil et l'écran de fin ; **le revenu passif** à l'ouverture du jeu, une fois par jour de calendrier (3 Éclats et 2 XP par étage du meilleur record, plafonnés à 150 et 120), montré une fois sur l'accueil ; les bonus portés entrent dans la roue du joueur (`Destin.mods`) en duel comme à la Tour ; les fiches des nœuds (Destin, combat) comptent les lignes typées de l'équipement. Profil : section `[forge]` (portés, sac, Éclats, jour du revenu). Étape `{"sac": n}` de l'outil de capture. |
+| #62 (PR 4.1) | **La ville** : l'écran d'accueil est une carte en portrait à neuf bâtiments (`data/ville.json` : nom, sous-titre, écran ouvert et ses options, position, disponible, forme), dessinés en pixels provisoires avec des routes ; la Tour, l'Arène (duel), la Maison (le Destin), la Forge et le Tableau sont ouverts, le Donjon, la Guilde, le Comptoir et la Boutique grisés jusqu'au serveur ; pastilles (points de Destin, objets du sac, revenu du jour). **Barre du bas réduite** : Ville, Chat (grisé), Profil ; tout le reste s'ouvre depuis la ville, à deux touchers. **Le Tableau** (`tableau_screen.gd`) : revenu du jour, « À faire » (points de Destin, sac), records. L'ancien écran d'accueil est retiré. |
 
-Phase 1 du plan terminée (la PR 1.5, le réglage du trio, est reportée à la phase 9). **Phase 2 terminée** (PR 2.1 et 2.2 ; le revenu passif de la 2.2 est reporté à la PR 3.2 ; le réglage « niveau → étage » à la phase 9). **Phase 3 terminée** (PR 3.1 et 3.2 ; la PR 3.3, le réglage des lignes, va à la phase 9).
+Phase 1 du plan terminée (la PR 1.5, le réglage du trio, est reportée à la phase 9). **Phase 2 terminée** (PR 2.1 et 2.2 ; le revenu passif de la 2.2 est reporté à la PR 3.2 ; le réglage « niveau → étage » à la phase 9). **Phase 3 terminée** (PR 3.1 et 3.2 ; la PR 3.3, le réglage des lignes, va à la phase 9). **Phase 4 en cours** : PR 4.1 faite (#62), PR 4.2 (les objectifs du jour) à faire.
 
 ---
 
-## 2. En cours : phase 4, la ville et la navigation en portrait (PR 4.1)
+## 2. En cours : phase 4, les objectifs du jour (PR 4.2)
 
-**État exact : rien de codé, aucune branche créée.** La phase 3 est finie (PR #60 et #61). La suite du plan (`docs/PLAN.md`, phase 4 ; GDD V2, § 11) : **la ville**, l'écran d'accueil à bâtiments. À faire :
+**État exact : rien de codé, aucune branche créée.** La ville est faite (PR #62). Reste de la phase 4 (plan, PR 4.1, « Tableau : trois objectifs du jour » ; GDD V2, § 10.3, proposé) :
 
-- `data/ville.json` : les bâtiments (identifiant, nom, position sur la carte en portrait, écran ouvert, disponible ou « bientôt ») : la Tour, l'Arène (le duel), le Donjon (bientôt), la Guilde (bientôt), le Comptoir (bientôt), la Forge, la Maison (le personnage et le Destin), la Boutique (bientôt), le Tableau (objectifs du jour, bientôt). Validé par `Donnees` (clés connues).
-- `scenes/screens/ville_screen.gd` : la carte en portrait, un bâtiment = une zone touchable avec son nom (sprites provisoires en pixels, comme les persos), qui ouvre l'écran voulu ; le trio en bas ou en haut ; les points de Destin à placer et le revenu du jour signalés.
-- **La barre du bas réduite** : Ville, Chat (grisé jusqu'au serveur), Profil. Les onglets Trio, Destin, Forge, La Tour deviennent des bâtiments (le Trio s'ouvre avant chaque combat comme aujourd'hui). Garder `ArenaApp.NAV` et `SCREENS` comme table unique.
-- **Les objectifs du jour** (GDD V2, § 10.3, proposé) : trois objectifs simples (un duel, un étage, un objet équipé…), un bonus d'XP et d'Éclats chacun, remis à zéro chaque jour de calendrier (comme le revenu passif). À demander à Gautier s'il les veut maintenant ou à la phase 5.
-- **Gautier teste** : se repérer dans la ville sur son téléphone, ouvrir chaque bâtiment, revenir.
+- `data/objectifs.json` : une réserve d'objectifs simples, chacun avec un compteur du jeu à atteindre et une récompense : « gagne un duel » (1), « joue 3 duels », « franchis 2 étages », « bats un Gardien », « équipe un objet », « reforge une ligne », « joue 5 Clés »… ; récompense en XP et en Éclats.
+- `engine/objectifs.gd` (module pur) : les trois objectifs du jour tirés avec le jour (la date en graine, les mêmes pour tout le monde), l'avancement par compteur, la récompense.
+- Le profil : `[objectifs]` (jour, compteurs du jour, objectifs réclamés) ; `ArenaApp` : les compteurs montent dans `fin_duel`, `etage_franchi`, `equiper`, `reforger`, et un compteur de Clés jouées (depuis l'écran de combat : `actions_jouees` du joueur). Remise à zéro quand le jour change (comme le revenu).
+- Le Tableau : les trois objectifs avec leur avancement, « Réclamer » ; la pastille du Tableau dans la ville quand un objectif est fini.
+- Test : tirage du jour stable, avancement, récompense une seule fois.
 
-Chiffres et textes à la main, sans réglage (phase 9) ; graphismes provisoires (phase 10).
+Chiffres à la main (phase 9).
 
 ---
 
 ## 3. Ce qui reste à faire (dans l'ordre de `docs/PLAN.md`)
 
 1. ~~**Phase 3, l'équipement**~~ : ~~PR 3.1 données et moteur~~ (PR #60) ; ~~PR 3.2 la Forge, le butin, les Éclats, le revenu passif~~ (PR #61). La PR 3.3 (réglage des lignes) va à la phase 9.
-2. **Phase 4, la ville** (en cours, ci-dessus) : `data/ville.json` (bâtiments, positions, écran ouvert), écran ville en portrait, barre du bas réduite (Ville, Chat grisé, Profil), objectifs du jour.
+2. **Phase 4** : ~~PR 4.1 la ville~~ (PR #62) ; PR 4.2 les objectifs du jour (en cours, ci-dessus).
 3. **Phase 5, le serveur** (Nakama + PostgreSQL, prévu depuis le début) : comptes, vrais Échos (amis, guilde, proposés ; 3 aides par jour ; récompenses de sélection), PvP asynchrone classé (5 par jour, saisons de 3 mois), chat, Marché et Comptoir, classements. **À demander à Gautier avant de commencer** : l'hébergement du serveur (un service payant ou gratuit, un compte à créer), la durée de saison, les plafonds d'or et d'Éclats.
 4. **Phase 6** : guildes (rôles, chat, bannière, Influence), carte du monde, donjons à routes secrètes et portes sans nom, boss unique au serveur, grimoires de classe.
 5. **Phase 7** : territoires, guerres du soir, classements et ligues de guilde.
@@ -88,6 +89,7 @@ Questions déjà prévues pour Gautier, au bon moment (`docs/PLAN.md`, § 4) : p
 ### Interface
 
 - La rangée de pastilles sous un perso peut dépasser du bord de l'écran quand il en a 5 ou plus (Écho de droite avec menace + 3 états + « +n »).
+- **La ville** (PR #62) : bâtiments dessinés en rectangles de pixels (provisoire, phase 10) ; les routes relient chaque bâtiment au plus proche en dessous (pas de vraie carte) ; le Chat de la barre du bas est grisé jusqu'au serveur ; les écrans Destin, Forge et Profil n'ont pas de bouton « Retour » (l'onglet Ville en tient lieu).
 - Écran « Ton trio » : la ligne « Avec toi » liste presque toujours les quatre Synergies dès le milieu de partie (peu informatif).
 - Le signal « CLÉ PRÊTE » n'apparaît pas à bas niveau : les adversaires n'ont pas de Clé allumée avant le niveau 7 (acolyte) ou 11 (perso).
 - L'outil « Gagner un niveau » (Paramètres) ouvre l'écran du Destin à chaque niveau.

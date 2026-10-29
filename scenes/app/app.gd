@@ -3,8 +3,10 @@
 ## l'identique) et la liste des nœuds qu'il a allumés. Il joue toujours en trio (docs/GDD_V2.md) : avec deux Échos,
 ## un de chacun des deux autres rôles, proposés par le jeu à son niveau (une graine et un nom chacun, gardés jusqu'à ce
 ## que le joueur en demande un autre ; amis et guilde viendront avec le serveur).
-## Écrans : création, Vitrine (accueil), Trio (composer son trio), Destin (la roue), la Forge (l'équipement), La Tour et
-## son bestiaire, Profil, Paramètres, face-à-face, combat, fin de combat.
+## Écrans : création, la ville (l'accueil : une carte à bâtiments, data/ville.json), Trio (composer son trio), Destin
+## (la roue), la Forge (l'équipement), La Tour et son bestiaire, le Tableau (les nouvelles du jour), Profil, Paramètres,
+## face-à-face, combat, fin de combat. La barre du bas : Ville, Chat (grisé jusqu'au serveur), Profil ; tout le reste
+## s'ouvre depuis la ville, à deux touchers (GDD V2, § 11).
 ## L'équipement (GDD V2, § 10 ; PR 3.2) : les objets portés et le sac vivent dans le profil ; les bonus des objets portés
 ## entrent dans la roue du joueur (`Destin.mods`) à chaque régénération ; le butin tombe à la fin des étages de la Tour ;
 ## les Éclats (monnaie liée) viennent des duels, des étages et du revenu passif, et paient la reforge.
@@ -15,11 +17,14 @@ extends Control
 ## Les noms des Échos proposés par le jeu (en attendant ceux des vrais joueurs).
 const ECHO_NAMES := ["Lys", "Orme", "Saule", "Iris", "Cèdre", "Aube", "Sorel", "Nima", "Bram", "Elio", "Mira", "Tess"]
 const NAV_HEIGHT := 74.0
-## Les onglets de la barre du bas : identifiant d'écran, texte.
-const NAV := [["home", "Accueil"], ["trio", "Trio"], ["destin", "Destin"], ["forge", "Forge"], ["tower", "La Tour"], ["profile", "Profil"]]
+## Les onglets de la barre du bas : identifiant d'écran, texte ; un identifiant sans écran est grisé (le Chat, phase 5).
+const NAV := [["ville", "Ville"], ["chat", "Chat"], ["profile", "Profil"]]
+## Les écrans sans barre du bas (plein écran) ; tous les autres la montrent, l'onglet Ville allumé quand ils en viennent.
+const SANS_NAV := ["creation", "versus", "combat", "fin"]
 const SCREENS := {
 	"creation": preload("res://scenes/screens/creation_screen.gd"),
-	"home": preload("res://scenes/screens/home_screen.gd"),
+	"ville": preload("res://scenes/screens/ville_screen.gd"),
+	"tableau": preload("res://scenes/screens/tableau_screen.gd"),
 	"trio": preload("res://scenes/screens/trio_screen.gd"),
 	"profile": preload("res://scenes/screens/profile_screen.gd"),
 	"settings": preload("res://scenes/screens/settings_screen.gd"),
@@ -78,7 +83,7 @@ func _ready() -> void:
 	_build_layout()
 	if charger_perso():
 		reclamer_revenu()
-		show_screen("home")
+		show_screen("ville")
 	else:
 		show_screen("creation")
 
@@ -121,6 +126,9 @@ func _build_layout() -> void:
 		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		button.add_theme_font_size_override("font_size", 15)
 		button.pressed.connect(_on_nav.bind(entry[0]))
+		if not SCREENS.has(entry[0]):
+			button.disabled = true
+			button.text += " (bientôt)"
 		nav_bar.add_child(button)
 		nav_buttons[entry[0]] = button
 
@@ -151,9 +159,9 @@ func show_screen(screen: String, options: Dictionary = {}) -> void:
 		current.queue_free()
 	var node: Control = SCREENS[screen].new()
 	node.set_anchors_preset(Control.PRESET_FULL_RECT)
-	# Le bestiaire s'ouvre depuis La Tour : la barre du bas reste là, sur l'onglet La Tour.
-	var nav_key := "tower" if screen == "bestiaire" else screen
-	var with_nav := nav_buttons.has(nav_key)
+	# Tout ce qui s'ouvre depuis la ville garde la barre du bas, l'onglet Ville allumé.
+	var nav_key := screen if nav_buttons.has(screen) else "ville"
+	var with_nav := not screen in SANS_NAV
 	(nav_bar.get_parent() as Control).visible = with_nav
 	content.offset_bottom = -NAV_HEIGHT if with_nav else 0.0
 	content.add_child(node)

@@ -22,7 +22,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	proto.add_child(UiKit.button("Nouveau personnage (autre classe)", func(): app.show_screen("creation"), 52))
 	erase_button = UiKit.button("Effacer toutes mes données", _erase, 52)
 	proto.add_child(erase_button)
-	column.add_child(UiKit.button("Retour à l'accueil", func(): app.show_screen("home"), 56))
+	column.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 56))
 
 
 func _toggle_sound() -> void:

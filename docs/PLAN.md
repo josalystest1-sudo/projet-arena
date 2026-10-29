@@ -114,7 +114,7 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 
 ### Phase 4 — La ville et la navigation en portrait
 
-**PR 4.1 — La ville**
+**PR 4.1 — La ville** (**faite** pour la carte, PR #62 ; les objectifs du jour du Tableau : PR 4.2)
 - `data/ville.json` (bâtiments : nom, position, image provisoire, écran ouvert, condition d'ouverture), `scenes/screens/ville_screen.gd` : la carte à bâtiments en portrait (Tour, Arène, Donjon (grisé jusqu'au serveur), Guilde (grisé), Comptoir / Marché (grisé), Forge, Maison, Boutique (grisée), Tableau). Barre du bas réduite à : Ville, Chat (grisé), Profil. Tout accessible en deux touchers.
 - Tableau : trois objectifs du jour (`data/objectifs.json`), événements (en local : records battus).
 - **Gautier teste** : tout le jeu en portrait depuis la ville ; ajouter un bâtiment ne demande qu'une ligne de données (il le vérifie en demandant un bâtiment « Test »).

@@ -949,7 +949,7 @@ func _on_quitter() -> void:
 		app.show_screen("tower")
 	else:
 		app.fin_duel(false)
-		app.show_screen("home")
+		app.show_screen("ville")
 
 
 func _fin() -> void:

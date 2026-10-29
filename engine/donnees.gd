@@ -61,6 +61,11 @@ const FAVEURS := ["vigueur", "puissance", "repit", "egide", "effroi", "savoir"]
 ## appliquer, les raretés, l'échelle du niveau, les bases, le butin par source, la reforge.
 const CLES_OBJETS := ["emplacements", "lignes", "raretes", "niveau", "bases", "butin", "reforge", "recyclage", "eclats"]
 ## Les Éclats (la monnaie liée, GDD V2 § 10.2) gagnés en duel et par étage de la Tour (data/items.json).
+## La ville (data/ville.json, GDD V2 § 11) : ses bâtiments (nom, sous-titre, écran ouvert et ses options, position sur
+## la carte en fractions, disponible ou non, forme du dessin provisoire).
+const CLES_VILLE := ["batiments"]
+const CLES_BATIMENT := ["id", "nom", "texte", "ecran", "options", "x", "y", "dispo", "forme"]
+const CLES_BATIMENT_OBLIGATOIRES := ["id", "nom", "texte", "ecran", "x", "y", "dispo"]
 const CLES_ECLATS := ["duel_gagne", "duel_perdu", "etage_base", "etage_pente", "rejoue"]
 const CLES_EMPLACEMENT := ["nom"]
 const LIGNES := ["pv", "force", "degats", "soins", "barrieres", "dot", "cle", "ouverture"]
@@ -85,6 +90,8 @@ var tour: Dictionary = {}
 var faveurs: Dictionary = {}
 ## L'équipement (data/items.json, GDD V2 § 10.1) : emplacements, lignes, raretés, niveau, bases, butin, reforge.
 var objets: Dictionary = {}
+## La ville (data/ville.json, GDD V2 § 11) : la liste de ses bâtiments.
+var ville: Dictionary = {}
 ## Ce qui ne va pas dans les données : une ligne par problème (vide si tout est connu et cohérent).
 var erreurs: Array[String] = []
 ## Une mémoire de calculs qui ne dépendent que des données (les formes de chaque nœud, pour le générateur).
@@ -113,6 +120,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.tour = _lire(dossier + "tour.json", donnees.erreurs)
 	donnees.faveurs = _lire(dossier + "faveurs.json", donnees.erreurs)
 	donnees.objets = _lire(dossier + "items.json", donnees.erreurs)
+	donnees.ville = _lire(dossier + "ville.json", donnees.erreurs)
 	donnees.valider()
 	return donnees
 
@@ -173,6 +181,7 @@ func valider() -> void:
 		if not "{v}" in str(faveurs[id].get("texte", "")):
 			erreurs.append(ou + " : le texte doit contenir « {v} »")
 	_valider_objets()
+	_valider_ville()
 	_cles(bestiaire, CLES_BESTIAIRE, CLES_BESTIAIRE, "bestiaire.json")
 	for id in bestiaire.get("monstres", {}):
 		var m: Dictionary = bestiaire["monstres"][id]
@@ -272,6 +281,30 @@ func _valider_objets() -> void:
 			if int(objets["recyclage"][r]) < 0:
 				erreurs.append("items.json recyclage %s : valeur négative" % r)
 	_cles(objets.get("eclats", {}), CLES_ECLATS, CLES_ECLATS, "items.json eclats")
+
+
+## La ville (data/ville.json) : des bâtiments aux clés connues, aux identifiants uniques, placés sur la carte (0 à 1) ;
+## un bâtiment disponible ouvre un écran.
+func _valider_ville() -> void:
+	_cles(ville, CLES_VILLE, CLES_VILLE, "ville.json")
+	if not ville is Dictionary or not ville.get("batiments") is Array:
+		return
+	var ids: Array = []
+	for b in ville["batiments"]:
+		var ou := "ville.json bâtiment %s" % (b.get("id", "?") if b is Dictionary else "?")
+		_cles(b, CLES_BATIMENT, CLES_BATIMENT_OBLIGATOIRES, ou)
+		if not b is Dictionary:
+			continue
+		if ids.has(b.get("id", "")):
+			erreurs.append(ou + " : identifiant en double")
+		ids.append(b.get("id", ""))
+		for axe in ["x", "y"]:
+			if float(b.get(axe, -1.0)) < 0.0 or float(b.get(axe, -1.0)) > 1.0:
+				erreurs.append(ou + " : %s hors de la carte (0 à 1)" % axe)
+		if bool(b.get("dispo", false)) and str(b.get("ecran", "")) == "":
+			erreurs.append(ou + " : disponible mais sans écran")
+		if b.has("options") and not b["options"] is Dictionary:
+			erreurs.append(ou + " : options attendues en objet")
 
 
 ## Les erreurs d'un fichier de classe (vide s'il est conforme à la section 13.1).
