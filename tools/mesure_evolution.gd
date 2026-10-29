@@ -1,5 +1,5 @@
 ## Mesure du garde-fou des évolutions (décision de Gautier du 30 octobre : « un évolué à roue vide est plus fort qu'un
-## niveau 29 ») : chaque évolution à roue vide (niveau 30, zéro point) contre sa classe de base au niveau 29 (29 points),
+## niveau 29 ») : chacune des trente évolutions à roue vide (niveau 30, zéro point) contre sa classe de base au niveau 29 (29 points),
 ## en 1 contre 1 et en trio (les Échos des deux camps sont des classes de base), dans les deux ordres, par classe, pour
 ## un saut de puissance donné (sans toucher à data/rules.json). Pour la phase 9.
 ##   godot --headless --path . --script res://tools/mesure_evolution.gd -- <puissance_pv> <puissance_valeurs> <graines>
@@ -16,8 +16,8 @@ func _initialize() -> void:
 	var tot_solo := [0, 0]
 	var tot_trio := [0, 0]
 	var tot_tours := 0
-	for classe in d.ordre_classes:
-		var evo := Evolution.evolutions_de(classe, d)[0]
+	for evo in d.ordre_evolutions:
+		var classe := Evolution.base(evo, d)
 		var solo := [0, 0]
 		var trio := [0, 0]
 		for graine in range(1, nb + 1):

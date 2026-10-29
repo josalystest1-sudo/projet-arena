@@ -4,18 +4,20 @@
 extends "res://tests/test_case.gd"
 
 
-# Dix évolutions, une par classe de base, chacune une roue entière, dans le budget, et les trois rôles représentés.
+# Trente évolutions, trois par classe de base (une de chaque rôle), chacune une roue entière, dans le budget.
 func test_donnees_des_evolutions() -> void:
 	assert_eq(donnees.erreurs, [] as Array[String], "aucune erreur de données")
-	assert_eq(donnees.ordre_evolutions.size(), 10, "dix évolutions")
+	assert_eq(donnees.ordre_evolutions.size(), 30, "trente évolutions")
 	var bases := {}
 	var roles := {}
+	var roles_par_base := {}
 	for id in donnees.ordre_evolutions:
 		var ev := donnees.classe(id)
 		assert_eq(str(ev["id"]), id, id + " : identifiant")
 		assert_true(donnees.ordre_classes.has(str(ev["base"])), id + " : une classe de base connue")
 		bases[str(ev["base"])] = true
 		roles[str(ev["role"])] = true
+		roles_par_base[str(ev["base"]) + "|" + str(ev["role"])] = true
 		assert_eq(int(ev["rang"]), 1, id + " : rang 1")
 		assert_eq(ev["voies"].size(), 5, id + " : 5 voies")
 		for voie in ev["voies"]:
@@ -23,11 +25,12 @@ func test_donnees_des_evolutions() -> void:
 		assert_true(str(ev["description"]) != "", id + " : une description")
 		assert_eq(Evolution.rang(id, donnees), 1, id + " : rang lu")
 		assert_eq(Evolution.base(id, donnees), str(ev["base"]), id + " : base lue")
-	assert_eq(bases.size(), 10, "chaque classe de base a son évolution")
+	assert_eq(bases.size(), 10, "chaque classe de base a ses évolutions")
 	assert_eq(roles.size(), 3, "les trois rôles parmi les évolutions")
+	assert_eq(roles_par_base.size(), 30, "chaque classe a une évolution de chaque rôle")
 	assert_eq(Budget.fautes(donnees), [] as Array[Dictionary], "tous les nœuds des évolutions dans leur budget")
 	for classe in donnees.ordre_classes:
-		assert_eq(Evolution.evolutions_de(classe, donnees).size(), 1, classe + " : une évolution")
+		assert_eq(Evolution.evolutions_de(classe, donnees).size(), 3, classe + " : trois évolutions")
 		assert_eq(Evolution.rang(classe, donnees), 0, classe + " : rang 0")
 		assert_eq(Evolution.base(classe, donnees), classe, classe + " : sa propre lignée")
 	# Les classes de base ne changent pas : leurs identifiants ne sont pas ceux des évolutions.
@@ -54,7 +57,11 @@ func test_points_et_niveaux() -> void:
 	assert_true(Evolution.peut_evoluer("guerrier", 30, donnees), "au niveau 30")
 	assert_false(Evolution.peut_evoluer("champion", 60, donnees), "le rang 2 n'existe pas encore")
 	assert_eq(Evolution.classe_au_niveau("guerrier", 30, 5, donnees), "guerrier", "jusqu'à 30 : la classe de base")
-	assert_eq(Evolution.classe_au_niveau("guerrier", 31, 5, donnees), "champion", "au-delà : son évolution")
+	assert_true(Evolution.classe_au_niveau("guerrier", 31, 5, donnees) in Evolution.evolutions_de("guerrier", donnees), "au-delà : une de ses évolutions")
+	var tirees := {}
+	for graine in range(1, 31):
+		tirees[Evolution.tirer("guerrier", graine, donnees)] = true
+	assert_eq(tirees.size(), 3, "les trois évolutions sont tirées selon la graine")
 	assert_eq(Evolution.classe_au_niveau("champion", 12, 5, donnees), "champion", "une évolution reste une évolution")
 	assert_eq(Evolution.tirer("champion", 5, donnees), "champion", "sans évolution : elle-même")
 
@@ -124,7 +131,7 @@ func test_echos_et_adversaires_evolues() -> void:
 	# Le Paladin (Front, venu du Prêtre) reçoit un Dégâts et un Soutien.
 	var roles_paladin := Trio.roles_des_echos("paladin", donnees)
 	assert_eq(roles_paladin, ["degats", "soutien"] as Array[String], "le Paladin est servi comme un Front")
-	assert_eq(Trio.classes_du_role("front", donnees, 1).size(), 3, "trois évolutions Front")
+	assert_eq(Trio.classes_du_role("front", donnees, 1).size(), 10, "dix évolutions Front (une par classe)")
 	assert_eq(Trio.classes_du_role("front", donnees), ["guerrier", "pugiliste"] as Array[String], "les Fronts de base ne changent pas")
 	# L'Arène : un adversaire au-delà du niveau 30 est une évolution ; en dessous, une classe de base.
 	var evolues := 0
@@ -150,14 +157,14 @@ func test_echos_et_adversaires_evolues() -> void:
 
 
 # Le garde-fou de Gautier : un évolué à roue vide (niveau 30, zéro point) bat un non-évolué de niveau 29 (29 points),
-# pour chaque classe, sur plusieurs graines et dans les deux sens : presque toujours en 1 contre 1, le plus souvent en
-# trio (ses Échos sont alors des classes de base, comme ceux d'en face). Le réglage fin est pour la phase 9.
+# pour chacune des trente évolutions, sur deux graines et dans les deux sens : presque toujours en 1 contre 1, le plus
+# souvent en trio (ses Échos sont alors des classes de base, comme ceux d'en face). Le réglage fin est pour la phase 9.
 func test_evolue_vide_bat_niveau_29() -> void:
 	var solo := [0, 0]
 	var trio := [0, 0]
-	for classe in donnees.ordre_classes:
-		var evo := Evolution.evolutions_de(classe, donnees)[0]
-		for graine in [11, 12, 13]:
+	for evo in donnees.ordre_evolutions:
+		var classe := Evolution.base(evo, donnees)
+		for graine in [11, 12]:
 			for evo_en_premier in [true, false]:
 				var a := Generateur.generer(evo, graine, 30, Generateur.PAR_DEFAUT, donnees)
 				var b := Generateur.generer(classe, graine + 1000, 29, Generateur.PAR_DEFAUT, donnees)

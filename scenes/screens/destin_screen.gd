@@ -23,8 +23,9 @@ var canvas: Control
 var header: Label
 var info: VBoxContainer
 var evolution_box: VBoxContainer
-var evolution_button: Button
-var _evolution_armee := false
+## Les boutons « Évoluer », par évolution ; celle dont le bouton est armé (attend le second appui).
+var evolution_buttons: Dictionary = {}
+var _evolution_armee := ""
 var light_button: Button
 var popup: PanelContainer
 ## Où est chaque nœud sur la roue : « moyeu », « v1.n2 », « v3.e1 »… -> position.
@@ -269,38 +270,54 @@ func _remplir_fiche(box: VBoxContainer, cle: String) -> void:
 	box.add_child(UiKit.label(str(textes["eclat_accroche"]).format({"noeud": Texte.nom(voie["noeuds"][Destin.ECLAT_NOEUD[n - 1] - 1])}), 14, UiKit.SOFT, false))
 
 
-## La carte de l'évolution (GDD V2, § 3) : avant le niveau 30, ce que la classe deviendra ; au niveau 30, le bouton
-## « Évoluer » (deux appuis : le second confirme) ; après, rien.
+## Les cartes des évolutions (GDD V2, § 3 : le choix parmi trois) : avant le niveau 30, ce que la classe pourra
+## devenir ; au niveau 30, une carte par évolution (rôle, description, voies) avec son bouton « Évoluer » (deux appuis :
+## le second confirme) ; après, rien.
 func _remplir_evolution() -> void:
 	for child in evolution_box.get_children():
 		child.queue_free()
+	evolution_buttons.clear()
 	var possibles := app.evolutions_possibles()
 	if possibles.is_empty():
 		return
-	var ev := app.data.classe(possibles[0])
-	var role := str(UiKit.ROLE_LABELS[ev["role"]])
 	var plafond := app.niveau_max()
 	if not app.peut_evoluer():
-		evolution_box.add_child(UiKit.label("Au niveau %d, %s pourra devenir %s (%s)." % [plafond, app.destin.nom, ev["nom"], role], 14, UiKit.SOFT, false))
+		var noms: Array = []
+		for id in possibles:
+			var ev := app.data.classe(id)
+			noms.append("%s (%s)" % [ev["nom"], UiKit.ROLE_LABELS[ev["role"]]])
+		var liste := ", ".join(noms.slice(0, noms.size() - 1)) + (" ou " if noms.size() > 1 else "") + str(noms[noms.size() - 1])
+		evolution_box.add_child(UiKit.label("Au niveau %d, %s pourra devenir %s." % [plafond, app.destin.nom, liste], 14, UiKit.SOFT, false))
 		return
-	evolution_box.add_child(UiKit.label("Ton évolution : %s" % ev["nom"], 22, UiKit.GOLD, false))
-	evolution_box.add_child(UiKit.label(str(ev["description"]), 15, Color.WHITE, false))
-	var voies: Array = []
-	for v in ev["voies"]:
-		voies.append(str(v["nom"]).trim_prefix("Voie ").trim_prefix("de la ").trim_prefix("de l'").trim_prefix("du ").trim_prefix("des ").trim_prefix("de "))
-	evolution_box.add_child(UiKit.label("Rôle : %s. Voies : %s." % [role, ", ".join(voies)], 14, UiKit.SOFT, false))
+	evolution_box.add_child(UiKit.label("Ton évolution : choisis-en une", 22, UiKit.GOLD, false))
 	evolution_box.add_child(UiKit.label("Nouvelle roue, même graine : tes points repartent à zéro, puis un par niveau jusqu'au niveau %d. Sans retour." % Evolution.niveau_max(1, app.data), 14, UiKit.SOFT, false))
-	evolution_button = UiKit.button("Évoluer en %s" % ev["nom"], _evoluer.bind(str(ev["id"])), 56)
-	evolution_box.add_child(evolution_button)
+	for id in possibles:
+		var ev := app.data.classe(id)
+		var role := str(UiKit.ROLE_LABELS[ev["role"]])
+		var carte := UiKit.card(evolution_box, 3)
+		carte.add_child(UiKit.label("%s · %s" % [ev["nom"], role], 19, UiKit.GOLD, false))
+		carte.add_child(UiKit.label(str(ev["description"]), 14, Color.WHITE, false))
+		var voies: Array = []
+		for v in ev["voies"]:
+			voies.append(str(v["nom"]).trim_prefix("Voie ").trim_prefix("de la ").trim_prefix("de l'").trim_prefix("du ").trim_prefix("des ").trim_prefix("de "))
+		carte.add_child(UiKit.label("Voies : %s." % ", ".join(voies), 13, UiKit.SOFT, false))
+		var bouton := UiKit.button("Évoluer en %s" % ev["nom"], _evoluer.bind(str(ev["id"])), 50, 18)
+		carte.add_child(bouton)
+		evolution_buttons[str(ev["id"])] = bouton
 	evolution_box.add_child(UiKit.spacer(6))
 
 
-## Évoluer demande une confirmation : un second appui.
+## Évoluer demande une confirmation : un second appui sur le même bouton (toucher un autre bouton change de choix).
 func _evoluer(evolution_id: String) -> void:
-	if not _evolution_armee:
-		_evolution_armee = true
-		evolution_button.text = "Sûr ? Touche encore pour évoluer"
-		evolution_button.modulate = Color(1.0, 0.85, 0.3)
+	if _evolution_armee != evolution_id:
+		if _evolution_armee != "" and evolution_buttons.has(_evolution_armee):
+			var ancien: Button = evolution_buttons[_evolution_armee]
+			ancien.text = "Évoluer en %s" % app.data.classe(_evolution_armee)["nom"]
+			ancien.modulate = Color.WHITE
+		_evolution_armee = evolution_id
+		var bouton: Button = evolution_buttons[evolution_id]
+		bouton.text = "Sûr ? Touche encore pour évoluer"
+		bouton.modulate = Color(1.0, 0.85, 0.3)
 		return
 	if not app.evoluer(evolution_id):
 		return

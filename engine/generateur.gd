@@ -18,7 +18,12 @@ const DOT_PERSISTANTE := {"guerrier": "saignement", "voleur": "saignement", "pug
 	"diplomate": "saignement", "mage": "brulure", "archer": "brulure", "alchimiste": "poison", "invocateur": "familier",
 	"pretre": "saignement", "barde": "saignement",
 	"champion": "saignement", "berserker": "saignement", "archimage": "brulure", "assassin": "saignement", "rodeur": "brulure",
-	"maitre_des_betes": "familier", "paladin": "saignement", "apothicaire": "poison", "virtuose": "saignement", "ambassadeur": "saignement"}
+	"maitre_des_betes": "familier", "paladin": "saignement", "apothicaire": "poison", "virtuose": "saignement", "ambassadeur": "saignement",
+	"maitre_d_armes": "saignement", "seigneur_de_guerre": "saignement", "moine": "saignement", "maitre_du_souffle": "saignement",
+	"mage_de_bataille": "brulure", "enchanteur": "brulure", "spadassin": "saignement", "maitre_espion": "poison", "sentinelle": "brulure",
+	"eclaireur": "saignement", "necromant": "familier", "chaman": "familier", "inquisiteur": "brulure", "grand_pretre": "saignement",
+	"artificier": "brulure", "golemiste": "familier", "skalde": "saignement", "heraut": "saignement", "duelliste": "saignement",
+	"protecteur": "saignement"}
 const MONO := ["un_ennemi", "un_allie", "soi"]
 const MULTI := ["tous_les_ennemis", "duo"]
 

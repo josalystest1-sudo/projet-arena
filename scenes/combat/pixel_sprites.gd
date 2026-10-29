@@ -4,6 +4,9 @@ class_name PixelSprites
 extends RefCounted
 
 const GRID := 16
+## La marque d'un évolué (phase 8, en attendant ses sprites) : une étoile dorée de cinq pixels en haut à droite.
+const ETOILE := [Vector2i(14, 0), Vector2i(13, 1), Vector2i(14, 1), Vector2i(15, 1), Vector2i(14, 2)]
+const OR_EVOLUE := Color("ffd166")
 
 ## « T » et « D » prennent la couleur de l'équipe (claire et foncée).
 const PALETTE := {
@@ -475,8 +478,9 @@ const SPRITES := {
 
 ## Dessine le sprite d'une classe sur un CanvasItem, en haut à gauche de « origin ».
 static func draw(canvas: CanvasItem, class_id: String, origin: Vector2, pixel: float, team_color: Color, flip: bool = false, grey: bool = false) -> void:
-	# Une évolution n'a pas encore de sprite (phase 10) : celui de sa classe de base.
-	var rows: Array = SPRITES.get(class_id, SPRITES.get(str(Donnees.defaut().classe(class_id).get("base", "")), SPRITES["guerrier"]))
+	# Une évolution n'a pas encore de sprite (phase 10) : celui de sa classe de base, avec une petite étoile dorée en haut.
+	var base := str(Donnees.defaut().classe(class_id).get("base", ""))
+	var rows: Array = SPRITES.get(class_id, SPRITES.get(base, SPRITES["guerrier"]))
 	var dark := team_color.darkened(0.35)
 	for y in range(rows.size()):
 		var row: String = rows[y]
@@ -496,3 +500,7 @@ static func draw(canvas: CanvasItem, class_id: String, origin: Vector2, pixel: f
 				color = Color(v, v, v, 0.8)
 			var px := (GRID - 1 - x) if flip else x
 			canvas.draw_rect(Rect2(origin + Vector2(px, y) * pixel, Vector2(pixel, pixel)), color)
+	if base != "" and not grey:
+		for p in ETOILE:
+			var px: int = (GRID - 1 - int(p.x)) if flip else int(p.x)
+			canvas.draw_rect(Rect2(origin + Vector2(px, p.y) * pixel, Vector2(pixel, pixel)), OR_EVOLUE)

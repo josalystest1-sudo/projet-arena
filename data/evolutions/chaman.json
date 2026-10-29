@@ -1,0 +1,223 @@
+{
+  "id": "chaman",
+  "nom": "Chaman",
+  "genre": "m",
+  "role": "soutien",
+  "base": "invocateur",
+  "rang": 1,
+  "pv": 760,
+  "k": 0.9,
+  "description": "L'Invocateur qui parle aux esprits : gardiens, totems, pluies de vie et maléfices. Il change de rôle : Soutien.",
+  "moyeu": {
+    "nom": "Esprit",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "esprits",
+      "nom": "Voie des Esprits",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Esprit protecteur",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 26.92, "tours": 4, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Esprit de la tribu",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 29.59, "tours": 4, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Esprit de pierre",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grand esprit",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 39.36, "tours": 5, "cible": "duo"},
+            {"type": "barriere", "valeur": 70, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "totems",
+      "nom": "Voie des Totems",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Totem de force",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Totem de guerre",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 29.91, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Totem de terre",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Totem ancestral",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "barriere", "valeur": 138.46, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pluie",
+      "nom": "Voie de la Pluie",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Pluie douce",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Source",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 111.11, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Averse de vie",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 119.66, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Déluge de vie",
+          "genre": "m",
+          "effets": [
+            {"type": "purge", "cible": "duo"},
+            {"type": "soin", "valeur": 111.11, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "malefice",
+      "nom": "Voie du Maléfice",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Maléfice",
+          "genre": "m",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 35, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Mauvais œil",
+          "genre": "m",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 38.46, "tours": 2, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Rituel",
+          "genre": "m",
+          "effets": [
+            {"type": "dissipe", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 45, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grand maléfice",
+          "genre": "m",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 35.96, "tours": 2, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "foudre",
+      "nom": "Voie de la Foudre",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Éclair",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Fulgurance",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Colère des esprits",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Jugement des ancêtres",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}
