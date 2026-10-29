@@ -17,7 +17,8 @@ var mode := "pvp"
 ## Les règles chiffrées (data/rules.json) et les états (data/etats.json), partagés, en lecture seule.
 var regles: Dictionary = {}
 var defs_etats: Dictionary = {}
-## L'ordre d'application (section 5.4) : joueur A, acolyte A, joueur B (ou ennemi 1), acolyte B (ou ennemis 2 à 4).
+## L'ordre d'application (section 5.4) : joueur A, acolyte A (ou ses deux Échos), joueur B (ou ennemi 1), acolyte B (ou
+## ses deux Échos, ou ennemis 2 à 4).
 var ordre: Array[String] = []
 var statique: Dictionary = {}
 var persos: Dictionary = {}

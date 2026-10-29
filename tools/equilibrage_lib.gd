@@ -4,8 +4,10 @@
 ## - les trois routes : le joueur d'une classe joue Ruée, Éventail ou Réactive (l'IA standard) contre l'IA standard
 ##   de chaque classe ;
 ## - l'usage (voies jouées, Clés, longueur des combats) ; et la Tour, montée par l'IA standard.
-## Puis les six critères de la section 11.2 et le rapport en français. Utilisé par tools/equilibrage.gd (travailleurs
-## et rapport), tools/regleur.py (les passes de réglage) et les tests. Aucune règle ici : tout passe par res://engine.
+## Deux formats : « duo » (le joueur et son acolyte, le jeu publié) et « trio » (le joueur et ses deux Échos générés,
+## docs/GDD_V2.md ; docs/PLAN.md, PR 1.1). Puis les six critères de la section 11.2 et le rapport en français.
+## Utilisé par tools/equilibrage.gd (travailleurs et rapport), tools/regleur.py (les passes de réglage) et les tests.
+## Aucune règle ici : tout passe par res://engine.
 extends RefCounted
 
 const NIVEAU := 30
@@ -22,27 +24,33 @@ const LONGUEUR_LIMITE := 30
 const ETAGE_MAX := 21
 const ROUTES := ["ruee", "eventail", "reactive"]
 const NOMS_ROUTES := {"ruee": "Ruée", "eventail": "Éventail", "reactive": "Réactive"}
+const FORMATS := ["duo", "trio"]
 
 
 # --- Les Destins, gardés en mémoire (un même Destin sert dans plusieurs cases) ---------------
 
-static func destins(d: Donnees, classe: String, graine: int, memoire: Dictionary) -> Array:
-	var cle := "%s|%d" % [classe, graine]
+## Le camp d'un joueur de cette classe : [joueur, acolyte] (duo) ou [joueur, Écho, Écho] (trio).
+static func destins(d: Donnees, classe: String, graine: int, memoire: Dictionary, format: String = "duo") -> Array:
+	var cle := "%s|%s|%d" % [format, classe, graine]
 	if not memoire.has(cle):
-		memoire[cle] = [Generateur.generer(classe, graine, NIVEAU, Generateur.PAR_DEFAUT, d), Generateur.acolyte(classe, graine, NIVEAU, d)]
-		if memoire.size() > 4000:
+		if memoire.size() >= 4000:
 			memoire.clear()
-			memoire[cle] = [Generateur.generer(classe, graine, NIVEAU, Generateur.PAR_DEFAUT, d), Generateur.acolyte(classe, graine, NIVEAU, d)]
+		var joueur := Generateur.generer(classe, graine, NIVEAU, Generateur.PAR_DEFAUT, d)
+		if format == "trio":
+			memoire[cle] = Trio.camp(joueur, NIVEAU, d)
+		else:
+			memoire[cle] = [joueur, Generateur.acolyte(classe, graine, NIVEAU, d)]
 	return memoire[cle]
 
 
 # --- Un duel ----------------------------------------------------------------------------
 
-## Un duel : la classe A (avec son acolyte) contre la classe B, A dans le camp « a » si a_en_premier. route : ce que
-## joue le joueur de A (« reactive » : l'IA standard). Rend le vainqueur, la longueur et l'usage des deux joueurs.
-static func duel(d: Donnees, classe_a: String, classe_b: String, graine: int, a_en_premier: bool, route: String, memoire: Dictionary) -> Dictionary:
-	var da := destins(d, classe_a, graine, memoire)
-	var db := destins(d, classe_b, graine + DECALAGE_B, memoire)
+## Un duel : la classe A (avec son acolyte, ou ses Échos) contre la classe B, A dans le camp « a » si a_en_premier.
+## route : ce que joue le joueur de A (« reactive » : l'IA standard). Rend le vainqueur, la longueur et l'usage des deux
+## joueurs.
+static func duel(d: Donnees, classe_a: String, classe_b: String, graine: int, a_en_premier: bool, route: String, memoire: Dictionary, format: String = "duo") -> Dictionary:
+	var da := destins(d, classe_a, graine, memoire, format)
+	var db := destins(d, classe_b, graine + DECALAGE_B, memoire, format)
 	var e := Regles.nouveau_combat(da if a_en_premier else db, db if a_en_premier else da, NIVEAU, "pvp", d)
 	var joueur_a := "a1" if a_en_premier else "b1"
 	var joueur_b := "b1" if a_en_premier else "a1"
@@ -125,9 +133,8 @@ static func action_route(e: EtatCombat, id: String, route: String, etat_route: D
 # --- Une montée de la Tour ---------------------------------------------------------------
 
 ## L'étage atteint par l'IA standard (s'arrête à ETAGE_MAX).
-static func montee(d: Donnees, classe: String, graine: int, memoire: Dictionary) -> int:
-	var duo := destins(d, classe, graine, memoire)
-	var t := Tour.commencer(duo[0], duo[1], NIVEAU, graine, d)
+static func montee(d: Donnees, classe: String, graine: int, memoire: Dictionary, format: String = "duo") -> int:
+	var t := Tour.commencer_camp(destins(d, classe, graine, memoire, format), NIVEAU, graine, d)
 	while not t.fini and t.etage < ETAGE_MAX:
 		var e := t.combat()
 		while not e.fini and not t.abandonne(e) and e.tour <= TOURS_MAX:
@@ -142,8 +149,8 @@ static func montee(d: Donnees, classe: String, graine: int, memoire: Dictionary)
 # --- Les mesures (une part du travail, pour un processus) ------------------------------------
 
 ## Une part d'une mesure : « matrice », « routes » ou « tour ». n : combats par case (ou montées par classe) ;
-## graine0 : la première graine. Rend des comptes à additionner (fusionner).
-static func simuler(d: Donnees, mesure: String, part: int, parts: int, n: int, graine0: int) -> Dictionary:
+## graine0 : la première graine ; format : « duo » ou « trio ». Rend des comptes à additionner (fusionner).
+static func simuler(d: Donnees, mesure: String, part: int, parts: int, n: int, graine0: int, format: String = "duo") -> Dictionary:
 	var classes := d.ordre_classes
 	var nc := classes.size()
 	var memoire := {}
@@ -157,7 +164,7 @@ static func simuler(d: Donnees, mesure: String, part: int, parts: int, n: int, g
 						index += 1
 						if index % parts != part:
 							continue
-						var r := duel(d, classes[i], classes[j], graine0 + k, k % 2 == 0, "reactive", memoire)
+						var r := duel(d, classes[i], classes[j], graine0 + k, k % 2 == 0, "reactive", memoire, format)
 						_compter_duel(out, i, j, r)
 		"routes":
 			for k in range(n):
@@ -167,7 +174,7 @@ static func simuler(d: Donnees, mesure: String, part: int, parts: int, n: int, g
 							index += 1
 							if index % parts != part:
 								continue
-							var r := duel(d, classes[i], classes[j], graine0 + k, k % 2 == 0, route, memoire)
+							var r := duel(d, classes[i], classes[j], graine0 + k, k % 2 == 0, route, memoire, format)
 							var cle := "%d|%s" % [i, route]
 							out["routes"][cle] = _ajouter(out["routes"].get(cle, [0, 0]), [1 if r["gagne_a"] else 0, 1])
 		"tour":
@@ -176,7 +183,7 @@ static func simuler(d: Donnees, mesure: String, part: int, parts: int, n: int, g
 					index += 1
 					if index % parts != part:
 						continue
-					var etage := montee(d, classes[i], graine0 + k, memoire)
+					var etage := montee(d, classes[i], graine0 + k, memoire, format)
 					var cle := "%d|%d" % [i, etage]
 					out["tour"][cle] = int(out["tour"].get(cle, 0)) + 1
 	return out

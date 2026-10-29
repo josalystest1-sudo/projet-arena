@@ -13,6 +13,8 @@ const BRISURE_DEGATS := 1.25
 const EMBRASEMENT_TOURS := 1
 const BASTION_BARRIERE := 1.3
 const HARMONIE_TOURS := 1
+## Les places qui font des Synergies (pas les ennemis de la Tour).
+const PLACES_SYNERGIE := ["joueur", "acolyte", "echo"]
 ## Désarmé : dégâts directs ×0,5 ; Poison : soins reçus ×0,5 ; Brûlure : barrières reçues ×0,5 (section 6).
 const DESARME := 0.5
 const POISON_SOINS := 0.5
@@ -28,8 +30,9 @@ const ARRONDI := 0.000001
 
 # --- Création ------------------------------------------------------------------
 
-## Un combat : camp A (le joueur puis son acolyte), camp B (le joueur adverse puis son acolyte, ou 1 à 4 ennemis de
-## la Tour), au même niveau. L'état rendu est celui de la fin de la phase 0 du tour 1.
+## Un combat : camp A (le joueur puis son acolyte, ou le joueur puis ses deux Échos : engine/trio.gd), camp B (de même,
+## ou 1 à 4 ennemis de la Tour), au même niveau. La place de chacun : « joueur » (le premier du camp), « acolyte »,
+## « echo » (un Destin marqué Écho) ou « ennemi » (la Tour). L'état rendu est celui de la fin de la phase 0 du tour 1.
 static func nouveau_combat(camp_a: Array, camp_b: Array, niveau: int, mode: String, donnees: Donnees = null) -> EtatCombat:
 	var d := donnees if donnees != null else Donnees.defaut()
 	var e := EtatCombat.new()
@@ -44,7 +47,7 @@ static func nouveau_combat(camp_a: Array, camp_b: Array, niveau: int, mode: Stri
 		for i in range(membres.size()):
 			var destin: Destin = membres[i]
 			var id := "%s%d" % [c[0], i + 1]
-			var place := "joueur" if i == 0 else "acolyte"
+			var place := "joueur" if i == 0 else ("echo" if destin.echo else "acolyte")
 			if mode == "tour" and c[0] == "b":
 				place = "ennemi"
 			e.ordre.append(id)
@@ -282,51 +285,53 @@ static func _empeche(e: EtatCombat, id: String, voie: int, rang: int, t: int) ->
 
 # --- Synergies (section 8) ---------------------------------------------------------
 
-## Les Synergies des déclarations validées : pour chaque camp qui a un joueur et un acolyte qui jouent tous les deux.
+## Les Synergies des déclarations validées : dans chaque camp, entre deux persos qui jouent tous les deux ce tour (le
+## joueur et son acolyte ; dans un trio, chaque paire parmi le joueur et ses Échos). Les ennemis de la Tour n'en font
+## pas. Un même effet renforcé par deux paires ne l'est qu'une fois.
 ## Rend { "liste": [{ nom, camp, acteurs, cible }], "mods": { cle -> multiplicateur ou tours en plus } }, la clé
 ## étant « acteur|index de l'effet|cible ».
 static func synergies(e: EtatCombat, actions: Dictionary) -> Dictionary:
 	var liste: Array = []
 	var mods := {"degats": {}, "dot": {}, "barriere": {}, "renfort": {}}
+	var vues := {}
 	for p_camp in ["a", "b"]:
-		var joueur := ""
-		var acolyte := ""
+		var membres: Array[String] = []
 		for id in e.ordre:
-			if e.camp(id) != p_camp:
-				continue
-			if e.fiche(id)["place"] == "joueur":
-				joueur = id
-			elif e.fiche(id)["place"] == "acolyte":
-				acolyte = id
-		if joueur == "" or acolyte == "" or actions.get(joueur, {}).is_empty() or actions.get(acolyte, {}).is_empty():
-			continue
-		var effets := {joueur: _effets_cibles(e, actions[joueur]), acolyte: _effets_cibles(e, actions[acolyte])}
-		var vues := {}
-		for paire in [[joueur, acolyte], [acolyte, joueur]]:
-			var x: String = paire[0]
-			var y: String = paire[1]
-			for fx in effets[x]:
-				for fy in effets[y]:
-					for t in fx["cibles"]:
-						# Brisure : un contrôle posé par x, des dégâts directs à un ennemi par y, sur la même cible.
-						if fx["type"] == "etat" and fx["nom"] in CONTROLES_BRISURE and fy["type"] == "degats" and fy["cible"] == "un_ennemi" and t in fy["cibles"]:
-							mods["degats"]["%s|%d|%s" % [y, fy["index"], t]] = BRISURE_DEGATS
-							_noter(liste, vues, "Brisure", p_camp, [x, y], t)
-						# Embrasement : les deux posent un DoT sur la même cible.
-						if fx["type"] == "dot" and fy["type"] == "dot" and t in fy["cibles"]:
-							mods["dot"]["%s|%d|%s" % [x, fx["index"], t]] = EMBRASEMENT_TOURS
-							mods["dot"]["%s|%d|%s" % [y, fy["index"], t]] = EMBRASEMENT_TOURS
-							_noter(liste, vues, "Embrasement", p_camp, [x, y], t)
-						# Bastion : une barrière sur un allié, un soin sur le même allié.
-						if fx["type"] == "barriere" and fy["type"] == "soin" and t in fy["cibles"]:
-							mods["barriere"]["%s|%d|%s" % [x, fx["index"], t]] = BASTION_BARRIERE
-							_noter(liste, vues, "Bastion", p_camp, [x, y], t)
-					# Harmonie : un Renfort sur un allié, des dégâts directs par l'autre.
-					if fx["type"] == "renfort" and fy["type"] == "degats" and not fx["cibles"].is_empty():
-						for t in fx["cibles"]:
-							mods["renfort"]["%s|%d|%s" % [x, fx["index"], t]] = HARMONIE_TOURS
-						_noter(liste, vues, "Harmonie", p_camp, [x, y], fx["cibles"][0])
+			if e.camp(id) == p_camp and e.fiche(id)["place"] in PLACES_SYNERGIE and not actions.get(id, {}).is_empty():
+				membres.append(id)
+		for i in range(membres.size()):
+			for j in range(i + 1, membres.size()):
+				_synergies_paire(e, actions, membres[i], membres[j], p_camp, liste, vues, mods)
 	return {"liste": liste, "mods": mods}
+
+
+## Les Synergies d'une paire d'un même camp (les deux sens : chacun peut poser le contrôle, l'autre frapper).
+static func _synergies_paire(e: EtatCombat, actions: Dictionary, p: String, q: String, p_camp: String, liste: Array, vues: Dictionary, mods: Dictionary) -> void:
+	var effets := {p: _effets_cibles(e, actions[p]), q: _effets_cibles(e, actions[q])}
+	for paire in [[p, q], [q, p]]:
+		var x: String = paire[0]
+		var y: String = paire[1]
+		for fx in effets[x]:
+			for fy in effets[y]:
+				for t in fx["cibles"]:
+					# Brisure : un contrôle posé par x, des dégâts directs à un ennemi par y, sur la même cible.
+					if fx["type"] == "etat" and fx["nom"] in CONTROLES_BRISURE and fy["type"] == "degats" and fy["cible"] == "un_ennemi" and t in fy["cibles"]:
+						mods["degats"]["%s|%d|%s" % [y, fy["index"], t]] = BRISURE_DEGATS
+						_noter(liste, vues, "Brisure", p_camp, [x, y], t)
+					# Embrasement : les deux posent un DoT sur la même cible.
+					if fx["type"] == "dot" and fy["type"] == "dot" and t in fy["cibles"]:
+						mods["dot"]["%s|%d|%s" % [x, fx["index"], t]] = EMBRASEMENT_TOURS
+						mods["dot"]["%s|%d|%s" % [y, fy["index"], t]] = EMBRASEMENT_TOURS
+						_noter(liste, vues, "Embrasement", p_camp, [x, y], t)
+					# Bastion : une barrière sur un allié, un soin sur le même allié.
+					if fx["type"] == "barriere" and fy["type"] == "soin" and t in fy["cibles"]:
+						mods["barriere"]["%s|%d|%s" % [x, fx["index"], t]] = BASTION_BARRIERE
+						_noter(liste, vues, "Bastion", p_camp, [x, y], t)
+				# Harmonie : un Renfort sur un allié, des dégâts directs par l'autre.
+				if fx["type"] == "renfort" and fy["type"] == "degats" and not fx["cibles"].is_empty():
+					for t in fx["cibles"]:
+						mods["renfort"]["%s|%d|%s" % [x, fx["index"], t]] = HARMONIE_TOURS
+					_noter(liste, vues, "Harmonie", p_camp, [x, y], fx["cibles"][0])
 
 
 ## Les Synergies qu'un perso peut compléter ce tour-ci avec l'action déjà déclarée de son allié : pour chacune de ses
@@ -367,8 +372,11 @@ static func _effets_cibles(e: EtatCombat, a: Dictionary) -> Array:
 	return out
 
 
+## Une Synergie n'est notée qu'une fois par paire (et par camp), quel que soit le sens.
 static func _noter(liste: Array, vues: Dictionary, nom: String, p_camp: String, acteurs: Array, cible: String) -> void:
-	var cle := nom + "|" + p_camp
+	var paire := [str(acteurs[0]), str(acteurs[1])]
+	paire.sort()
+	var cle := "%s|%s|%s|%s" % [nom, p_camp, paire[0], paire[1]]
 	if vues.has(cle):
 		return
 	vues[cle] = true

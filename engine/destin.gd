@@ -1,5 +1,5 @@
 ## Le Destin d'un personnage (docs/SPEC-COMBAT-V2.md, sections 2 à 4) : sa roue. Le moyeu, puis les voies (5 pour
-## le joueur, 3 pour l'acolyte, de 1 à 5 pour un monstre de la Tour), chacune avec ses 4 nœuds actifs (leur forme,
+## le joueur et pour un Écho, 3 pour l'acolyte, de 1 à 5 pour un monstre de la Tour), chacune avec ses 4 nœuds actifs (leur forme,
 ## allumés ou non) et ses 5 éclats. C'est ce que reçoit le combat ; le générateur (engine/generateur.gd) le fabrique.
 ## Module pur.
 class_name Destin
@@ -21,6 +21,8 @@ var sprite := ""
 var role := ""
 var graine := 0
 var acolyte := false
+## Un Écho d'un trio (docs/GDD_V2.md, § 5) : un personnage entier (5 voies) piloté par l'IA, à côté du joueur.
+var echo := false
 var pv_base := 0
 ## Multiplicateur de PV d'un monstre de la Tour (section 10.4) ; 1 sinon.
 var pv_mult := 1.0
@@ -85,7 +87,7 @@ func bonus_pv() -> float:
 
 
 func vers_dict() -> Dictionary:
-	return {"classe_id": classe_id, "nom": nom, "sprite": sprite, "role": role, "graine": graine, "acolyte": acolyte, "pv_base": pv_base,
+	return {"classe_id": classe_id, "nom": nom, "sprite": sprite, "role": role, "graine": graine, "acolyte": acolyte, "echo": echo, "pv_base": pv_base,
 		"pv_mult": pv_mult, "k": k, "moyeu": moyeu.duplicate(true), "voies": voies.duplicate(true)}
 
 
@@ -97,6 +99,7 @@ static func depuis_dict(dico: Dictionary) -> Destin:
 	d.role = str(dico["role"])
 	d.graine = int(dico["graine"])
 	d.acolyte = bool(dico["acolyte"])
+	d.echo = bool(dico.get("echo", false))
 	d.pv_base = int(dico["pv_base"])
 	d.pv_mult = float(dico["pv_mult"])
 	d.k = float(dico["k"])

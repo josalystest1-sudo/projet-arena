@@ -39,6 +39,15 @@ static func acolyte(classe_joueur: String, graine_joueur: int, niveau: int, donn
 	return _generer(classe, graine_joueur ^ XOR_ACOLYTE, niveau, PAR_DEFAUT, voies, true, d)
 
 
+## Un Écho d'un trio (docs/GDD_V2.md, § 5) : un personnage entier de sa classe (5 voies, formes tirées avec sa
+## graine), allumage par défaut au niveau du joueur (section 3.1 : « Échos sans historique »). La classe et la graine
+## viennent de la composition du trio (engine/trio.gd).
+static func echo(classe_id: String, graine: int, niveau: int, donnees: Donnees = null) -> Destin:
+	var destin := _generer(classe_id, graine, niveau, PAR_DEFAUT, [], false, donnees)
+	destin.echo = true
+	return destin
+
+
 ## Un monstre de la Tour (section 10.4) : sa classe, ses seules voies (dans l'ordre du bestiaire), son multiplicateur
 ## de PV ; formes tirées avec la graine, allumage par défaut au niveau du joueur.
 static func monstre(monstre_id: String, graine: int, niveau: int, donnees: Donnees = null) -> Destin:

@@ -1,9 +1,10 @@
-## La Tour (docs/SPEC-COMBAT-V2.md, sections 5.6 et 10.4) : le duo grimpe des étages, chacun de 1 à 4 monstres du
+## La Tour (docs/SPEC-COMBAT-V2.md, sections 5.6 et 10.4) : le duo (ou le trio : le joueur et ses deux Échos,
+## docs/GDD_V2.md) grimpe des étages, chacun de 1 à 4 monstres du
 ## bestiaire au niveau du joueur. La force totale des monstres (la somme de leurs multiplicateurs de PV) monte avec les
 ## étages (décision de Gautier du 28 octobre : la Tour a sa propre difficulté, réglée par le simulateur). Même moteur, mêmes
-## phases, pas de mort subite. Entre deux étages : +20 % des PV max à chaque membre vivant du duo, un acolyte KO revient
-## avec 20 %, et tout le reste repart à zéro (jalons, extinctions, états). La montée s'arrête quand le duo tombe ;
-## l'étage atteint est le record.
+## phases, pas de mort subite. Entre deux étages : +20 % des PV max à chaque membre vivant du duo, un acolyte (ou un
+## Écho) KO revient avec 20 %, et tout le reste repart à zéro (jalons, extinctions, états). La montée s'arrête quand
+## le duo tombe ; l'étage atteint est le record.
 ## Règles d'étage gardées de l'ancienne Tour (data/tour.json) : les monstres d'un étage sont d'une même famille, un
 ## Gardien tous les 5 étages (avec une escorte de sa famille), et des ennemis qui n'ont pas abattu le duo au bout du tour limite
 ## (data/tour.json) abandonnent l'étage. Module pur : le hasard vient de la graine de la montée.
@@ -17,18 +18,30 @@ var niveau := 1
 var etage := 1
 var atteint := 1
 var fini := false
+## Le camp qui monte : le joueur d'abord, puis son acolyte (ou ses deux Échos).
+var membres: Array[Destin] = []
 var joueur: Destin
 var acolyte: Destin
-## Les PV du duo, gardés d'un étage à l'autre (« a1 » : le joueur, « a2 » : l'acolyte), et qui est KO.
+## Les PV du camp, gardés d'un étage à l'autre (« a1 » : le joueur, « a2 » : l'acolyte ou le premier Écho, « a3 » : le
+## second Écho), et qui est KO.
 var pv := {}
-var ko := {"a1": false, "a2": false}
+var ko := {}
 
 
 static func commencer(p_joueur: Destin, p_acolyte: Destin, p_niveau: int, p_graine: int, p_donnees: Donnees = null) -> Tour:
+	return commencer_camp([p_joueur, p_acolyte], p_niveau, p_graine, p_donnees)
+
+
+## Une montée avec un camp quelconque : [joueur, acolyte] ou [joueur, Écho, Écho] (engine/trio.gd).
+static func commencer_camp(p_membres: Array, p_niveau: int, p_graine: int, p_donnees: Donnees = null) -> Tour:
 	var t := Tour.new()
 	t.donnees = p_donnees if p_donnees != null else Donnees.defaut()
-	t.joueur = p_joueur
-	t.acolyte = p_acolyte
+	for m in p_membres:
+		t.membres.append(m)
+	t.joueur = t.membres[0]
+	t.acolyte = t.membres[1] if t.membres.size() == 2 else null
+	for i in range(t.membres.size()):
+		t.ko["a%d" % (i + 1)] = false
 	t.niveau = maxi(1, p_niveau)
 	t.graine = p_graine
 	return t
@@ -113,10 +126,10 @@ func monstres(n: int = -1) -> Array[Destin]:
 	return out
 
 
-## Le combat de l'étage en cours : le duo (avec ses PV et ses KO gardés) contre les monstres de l'étage.
+## Le combat de l'étage en cours : le camp (avec ses PV et ses KO gardés) contre les monstres de l'étage.
 func combat() -> EtatCombat:
-	var e := Regles.nouveau_combat([joueur, acolyte], monstres(), niveau, "tour", donnees)
-	for id in ["a1", "a2"]:
+	var e := Regles.nouveau_combat(membres, monstres(), niveau, "tour", donnees)
+	for id in ko:
 		if pv.has(id):
 			e.perso(id)["pv"] = pv[id]
 		if ko[id]:
@@ -138,13 +151,14 @@ func terminer(e: EtatCombat) -> void:
 		atteint = etage
 		return
 	var rendu := float(donnees.tour["pv_entre_etages"])
-	for id in ["a1", "a2"]:
+	for id in ko:
 		var pv_max := int(e.fiche(id)["pv_max"])
 		if e.vivant(id):
 			pv[id] = mini(int(e.perso(id)["pv"]) + Regles.plancher(rendu * float(pv_max)), pv_max)
 			ko[id] = false
-		elif id == "a2":
-			# Un acolyte KO revient au début de l'étage suivant avec 20 % de ses PV ; le joueur KO, lui, reste KO.
+		elif id != "a1":
+			# Un acolyte (ou un Écho) KO revient au début de l'étage suivant avec 20 % de ses PV ; le joueur KO, lui,
+			# reste KO.
 			pv[id] = Regles.plancher(rendu * float(pv_max))
 			ko[id] = false
 		else:
