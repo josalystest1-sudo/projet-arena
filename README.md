@@ -41,4 +41,6 @@ GODOT=chemin/vers/godot PROCESSUS=24 python tools/regleur.py passes 6 --matrice 
 
 Le simulateur fait aussi jouer des **trios** (le joueur et ses deux Échos générés, `docs/GDD_V2.md`, `docs/PLAN.md` PR 1.1) : dernier argument `trio` d'un travailleur, par exemple `godot --headless --path . --script res://tools/equilibrage.gd -- simuler matrice 0 1 100 1 sortie.json trio` (sans lui : le duo, le jeu publié). Le régleur passera au trio avec la PR 1.5.
 
+L'IA de bon sens (PR 1.2) : le rapport compte les erreurs de l'IA pour 100 actions de chaque rôle ; la mesure `bon_sens` fait jouer l'IA de bon sens contre l'IA de la section 10 seule ; un dernier argument `section10` fait jouer tout un travailleur sans le bon sens (`… simuler matrice 0 1 100 1 sortie.json trio section10`).
+
 Voir un écran sans téléphone : `godot --path . --script res://tools/capture.gd -- <dossier> '<étapes JSON>'` (mode d'emploi en tête du fichier : créer un perso, monter de niveau, allumer un nœud, lancer un duel ou une montée, toucher, appui long, captures).

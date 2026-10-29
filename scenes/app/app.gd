@@ -50,6 +50,10 @@ var current_name: String = ""
 
 
 func _ready() -> void:
+	# Le jeu publié est encore en duo, réglé avec l'IA de la section 10 : les règles de bon sens (PR 1.2) n'y jouent qu'à
+	# partir du trio à l'écran (PR 1.4), réglé de nouveau à la PR 1.5. Avec elles, le duo ne tenait plus qu'un critère
+	# d'équilibrage sur six (docs/EQUILIBRAGE-V2.md).
+	IA.bon_sens = false
 	# Pour tester : une adresse terminée par ?graine=7 rejoue toujours les mêmes tirages.
 	var test_seed := _seed_from_url()
 	if test_seed != 0:
