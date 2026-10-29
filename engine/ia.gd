@@ -153,7 +153,9 @@ static func score(e: EtatCombat, a: Dictionary, allie: Dictionary = {}, autres_l
 				for t in touches:
 					offensive += minf(maxf(0.0, float(m - int(e.perso(t)["barriere"]))), float(e.perso(t)["pv"])) / m_niveau
 			"dot":
-				var total := float(Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["par_tour"])) * forces) * int(ef["tours"]))
+				# Les ticks sont multipliés par la mort subite (section 5.5), comme les dégâts directs : sans ça, deux
+				# soutiens dont les seuls dégâts sont des DoT se purgeaient l'un l'autre sans fin.
+				var total := float(Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["par_tour"])) * forces * Regles.mort_subite(e)) * int(ef["tours"]))
 				for t in touches:
 					offensive += minf(total * DOT_POIDS, float(e.perso(t)["pv"])) / m_niveau
 			"etat":
