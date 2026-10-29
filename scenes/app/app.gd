@@ -1,8 +1,8 @@
 ## L'application : garde le profil et le duo du joueur, affiche un écran à la fois et la barre de navigation.
 ## Combat V2 (docs/SPEC-COMBAT-V2.md) : un perso, c'est une classe et une graine (sa roue du Destin en sort à
 ## l'identique) et la liste des nœuds qu'il a allumés ; son acolyte se déduit de sa classe et de sa graine.
-## Écrans : création, rencontre de l'acolyte, Vitrine (accueil), Acolyte, Destin (la roue), Profil, Paramètres ; le
-## combat et la Tour sont en reconstruction (étapes 4 et 6 du plan de la spécification).
+## Écrans : création, rencontre de l'acolyte, Vitrine (accueil), Acolyte, Destin (la roue), La Tour et son bestiaire,
+## Profil, Paramètres, face-à-face, combat.
 ## Affichage et navigation seulement : toute la règle vit dans res://engine.
 class_name ArenaApp
 extends Control
@@ -19,8 +19,10 @@ const SCREENS := {
 	"profile": preload("res://scenes/screens/profile_screen.gd"),
 	"settings": preload("res://scenes/screens/settings_screen.gd"),
 	"destin": preload("res://scenes/screens/destin_screen.gd"),
-	"tower": preload("res://scenes/screens/bientot_screen.gd"),
-	"versus": preload("res://scenes/screens/bientot_screen.gd"),
+	"tower": preload("res://scenes/screens/tower_screen.gd"),
+	"bestiaire": preload("res://scenes/screens/bestiary_screen.gd"),
+	"versus": preload("res://scenes/screens/versus_screen.gd"),
+	"combat": preload("res://scenes/combat/combat_screen.gd"),
 }
 
 var data: Donnees
@@ -226,6 +228,38 @@ func gain_xp(amount: int) -> Dictionary:
 	_regenerer()
 	profile.save()
 	return result
+
+
+## Un duel contre un duo IA de ton niveau : une classe et une graine au hasard (l'étape 5 fera un vrai matchmaking).
+func duel_contre_ia() -> Dictionary:
+	var classe: String = data.ordre_classes[rng.randi_range(0, data.ordre_classes.size() - 1)]
+	var g := _nouvelle_graine()
+	var ennemis := [Generateur.generer(classe, g, profile.level, Generateur.PAR_DEFAUT, data), Generateur.acolyte(classe, g, profile.level, data)]
+	var e := Regles.nouveau_combat([destin, acolyte_destin], ennemis, profile.level, "pvp", data)
+	return {"etat": e, "noms": {"a1": "Toi", "a2": acolyte_name}}
+
+
+## Une montée de la Tour, à ton niveau : le combat de son premier étage.
+func commencer_tour() -> Dictionary:
+	var t := Tour.commencer(destin, acolyte_destin, profile.level, _nouvelle_graine(), data)
+	return {"etat": t.combat(), "tour": t, "noms": {"a1": "Toi", "a2": acolyte_name}}
+
+
+## La fin d'un duel : le résultat, la série, l'XP (+120 gagné, +80 perdu). Renvoie {xp, niveaux}.
+func fin_duel(gagne: bool) -> Dictionary:
+	profile.record_result(gagne)
+	var xp := 120 if gagne else 80
+	var r := gain_xp(xp)
+	return {"xp": xp, "niveaux": int(r["levels"])}
+
+
+## La fin d'une montée : le record de la classe (l'étage atteint). Renvoie {xp} (l'XP des étages est donnée au fil
+## de la montée).
+func fin_tour(t: Tour) -> Dictionary:
+	if t.atteint > int(profile.tower_records.get(player_class, 0)):
+		profile.tower_records[player_class] = t.atteint
+	profile.save()
+	return {"xp": 40 * maxi(0, t.atteint - 1)}
 
 
 func acolyte_class() -> String:

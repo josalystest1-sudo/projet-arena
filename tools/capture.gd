@@ -3,7 +3,7 @@
 ## (user://capture_profil.cfg, effacé au départ) : le vrai profil n'est jamais touché.
 ##   godot --path . --script res://tools/capture.gd -- <dossier> '<étapes JSON>'
 ## Étapes : {"creer":"guerrier"} (nouveau perso, graine fixe 7), {"niveau":12} (niveau du perso), {"allumer":"v1.n2"},
-## {"ecran":"destin"}, {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"attendre":0.5}, {"capture":"nom"}.
+## {"ecran":"destin"}, {"duel":1} (un duel contre un duo IA), {"montee":1} (une montée de la Tour), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
 ## (Sans --headless : il faut une fenêtre pour dessiner.)
 extends SceneTree
 
@@ -33,10 +33,29 @@ func _initialize() -> void:
 			app.allumer(str(etape["allumer"]))
 		elif etape.has("ecran"):
 			app.show_screen(str(etape["ecran"]))
+		elif etape.has("duel"):
+			app.show_screen("combat", app.duel_contre_ia())
+		elif etape.has("montee"):
+			app.show_screen("combat", app.commencer_tour())
 		elif etape.has("clic"):
 			await _clic(Vector2(etape["clic"][0], etape["clic"][1]), 0.05)
 		elif etape.has("appui"):
 			await _clic(Vector2(etape["appui"][0], etape["appui"][1]), float(etape["appui"][2]))
+		elif etape.has("tenir"):
+			# Appuyer, attendre, prendre la capture le doigt encore posé, puis relâcher : [x, y, secondes, nom].
+			var pos := Vector2(etape["tenir"][0], etape["tenir"][1])
+			var bas := InputEventMouseButton.new()
+			bas.button_index = MOUSE_BUTTON_LEFT
+			bas.pressed = true
+			bas.position = pos
+			bas.global_position = pos
+			root.push_input(bas)
+			await _attendre(float(etape["tenir"][2]))
+			root.get_texture().get_image().save_png("%s/%s.png" % [dossier, etape["tenir"][3]])
+			var haut := bas.duplicate()
+			haut.pressed = false
+			root.push_input(haut)
+			await _attendre(0.1)
 		elif etape.has("attendre"):
 			await _attendre(float(etape["attendre"]))
 		elif etape.has("capture"):
