@@ -6,7 +6,7 @@
     {"id": "maison", "nom": "La Maison", "texte": "Ton Destin", "ecran": "destin", "x": 0.5, "y": 0.5, "dispo": true, "forme": "maison"},
     {"id": "forge", "nom": "La Forge", "texte": "Ton équipement", "ecran": "forge", "x": 0.2, "y": 0.62, "dispo": true, "forme": "forge"},
     {"id": "guilde", "nom": "La Guilde", "texte": "Avec le serveur", "ecran": "", "x": 0.8, "y": 0.62, "dispo": false, "forme": "guilde"},
-    {"id": "comptoir", "nom": "Le Comptoir", "texte": "Avec le serveur", "ecran": "", "x": 0.2, "y": 0.9, "dispo": false, "forme": "comptoir"},
+    {"id": "comptoir", "nom": "Le Comptoir", "texte": "Vendre, acheter", "ecran": "comptoir", "x": 0.2, "y": 0.9, "dispo": true, "forme": "comptoir"},
     {"id": "tableau", "nom": "Le Tableau", "texte": "Objectifs et nouvelles", "ecran": "tableau", "x": 0.5, "y": 0.86, "dispo": true, "forme": "tableau"},
     {"id": "boutique", "nom": "La Boutique", "texte": "Plus tard", "ecran": "", "x": 0.8, "y": 0.9, "dispo": false, "forme": "boutique"}
   ]
