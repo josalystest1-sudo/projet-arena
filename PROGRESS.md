@@ -1,6 +1,6 @@
 # Projet Arena — avancement
 
-Mis à jour le **29 octobre 2026 au soir**. `main` = `5dafe1b` (PR #57, fusionnée et publiée). À lire avec `CLAUDE.md`. Le plan complet, PR par PR, est dans `docs/PLAN.md` (phases 1 à 10) ; l'historique de toutes les PR et des retours de Gautier dans `docs/SUIVI.md`.
+Mis à jour le **29 octobre 2026** (PR #59). `main` = la PR #59 fusionnée et publiée (les Faveurs de la Tour). À lire avec `CLAUDE.md`. Le plan complet, PR par PR, est dans `docs/PLAN.md` (phases 1 à 10) ; l'historique de toutes les PR et des retours de Gautier dans `docs/SUIVI.md`.
 
 Jeu publié (mis à jour à chaque fusion sur `main`) : https://josalystest1-sudo.github.io/projet-arena/ — ajouter `?graine=7` pour des tirages reproductibles.
 
@@ -8,7 +8,7 @@ Jeu publié (mis à jour à chaque fusion sur `main`) : https://josalystest1-sud
 
 ## 1. Terminé et qui fonctionne
 
-Vérifié au 29 octobre au soir : **79 tests passent**, le budget des **210 nœuds** est tenu (`tools/budget.gd`), la CI est verte, le jeu publié se charge (y compris un profil d'avant le trio, qui reçoit ses Échos) et se joue au format téléphone (vérifié dans le navigateur intégré en 375 × 812).
+Vérifié après la PR #59 : **81 tests passent**, le budget des **210 nœuds** est tenu (`tools/budget.gd`), la CI est verte, le jeu publié se charge (y compris un profil d'avant le trio, qui reçoit ses Échos) et se joue au format téléphone (vérifié dans le navigateur intégré en 375 × 812).
 
 ### Le combat V2 (PR #34 à #47, 28 et 29 octobre)
 
@@ -33,44 +33,30 @@ Vérifié au 29 octobre au soir : **79 tests passent**, le budget des **210 nœu
 | #56 (PR 1.4) | **Le jeu se joue en trio** : deux Échos proposés par le jeu (graine + nom par rôle, gardés dans le profil, version 3), écran « Ton trio » (onglet Trio ; avant chaque duel et chaque montée ; « Un autre Écho »), arène à 3 contre 3 et 1 à 6 monstres, annonces des deux Échos, part de chacun en fin de combat, création qui enchaîne sur l'étage 1 de la Tour. Acolyte, écran de rencontre et onglet Acolyte retirés. Le jeu joue avec l'IA de bon sens. |
 | #57 (PR 2.1) | **La Tour infinie** : monstres au niveau de l'étage (1 + 2,5 par étage) quel que soit le niveau du trio, jusqu'à 6 monstres, somme des PV plafonnée à 3 ; paliers après chaque Gardien (reprise à l'étage 6, 11, 16… avec tous ses PV, par classe, dans le profil) ; « Reprendre » et « Rejouer depuis un palier plus bas » ; un étage déjà franchi rapporte 20 XP au lieu de 40 ; plus d'abandon des monstres au tour 48 ; soins des monstres × 0,75 à chaque usage. Contrôle (40 montées par niveau) : niveau 1 → étage 5 en médiane, niveau 10 → 11, niveau 20 → 18, niveau 30 → 24, de 8 à 13 tours par étage. |
 
-Phase 1 du plan terminée (la PR 1.5, le réglage du trio, est reportée à la phase 9). Phase 2 : PR 2.1 faite.
+| #59 (PR 2.2) | **Les Faveurs de la Tour** : six Faveurs cumulables (`data/faveurs.json` : Vigueur +4 % de PV max, Puissance +4 % de force, Répit +5 points de PV rendus entre deux étages, Égide une barrière de 8 % au début de chaque étage, Effroi les monstres affaiblis de 10 % pendant 2 tours (50 % au plus), Savoir +10 % d'XP) ; chaque Gardien vaincu pour la première fois avec la classe en propose trois (tirées avec la graine de l'étage), une au choix dans l'écran de fin ; gardées par classe dans le profil, valables seulement dans la Tour, listées dans l'écran de la Tour. Le record et le palier sont enregistrés dès l'étage franchi. Étape `{"gardien": n}` de l'outil de capture. |
+
+Phase 1 du plan terminée (la PR 1.5, le réglage du trio, est reportée à la phase 9). **Phase 2 terminée** (PR 2.1 et 2.2 ; le revenu passif de la 2.2 est reporté à la PR 3.2 ; le réglage « niveau → étage » à la phase 9).
 
 ---
 
-## 2. En cours : PR 2.2, les Faveurs de la Tour
+## 2. En cours : phase 3, l'équipement (PR 3.1)
 
-**État exact : conception arrêtée avec Gautier, rien de codé, aucune branche créée.** Le revenu passif, prévu dans la même PR par le plan, est **reporté à la phase 3** (décision de Gautier : il arrivera avec la Forge, quand les Éclats serviront).
+**État exact : rien de codé, aucune branche créée.** La PR 3.1 (données et moteur de l'équipement) est la prochaine du plan (`docs/PLAN.md`, phase 3). Avant de la commencer, **demander à Gautier** (questions prévues au § 4 du plan) : l'écart de puissance voulu entre un joueur équipé et un joueur sans équipement à son niveau (le plan propose +30 à +50 %), et les noms des objets (fantasy classique). Si la réponse tarde, avancer avec +40 % et des noms génériques, et le noter dans `docs/JOURNAL-COMBAT-V2.md`.
 
-Décision de Gautier (29 octobre au soir) : **des petits bonus cumulables**. Chaque Gardien vaincu **pour la première fois** (avec cette classe) propose **trois Faveurs au choix** ; elles s'accumulent et ne valent **que dans la Tour**.
-
-Conception prévue (à suivre, et à noter dans `docs/JOURNAL-COMBAT-V2.md`) :
-
-- **`data/faveurs.json`** : six Faveurs, chacune `{nom, texte, valeur}` ; les ajouter au chargement et à la validation de `engine/donnees.gd` (nouvelle liste `CLES_FAVEUR`, nouveau champ `faveurs`).
-  - `vigueur` : +4 % de PV max pour le trio, par cumul ;
-  - `puissance` : +4 % de force (dégâts, soins, barrières), par cumul ;
-  - `repit` : +5 points de PV rendus entre deux étages (20 % → 25 %), par cumul ;
-  - `egide` : au début de chaque étage, une barrière de 8 % des PV max sur chaque membre vivant, par cumul ;
-  - `effroi` : au début de chaque étage, les monstres sont Affaiblis de 10 % pendant 2 tours, par cumul (50 % au plus) ;
-  - `savoir` : +10 % d'XP dans la Tour, par cumul.
-- **Moteur** (`engine/tour.gd`) : `var faveurs := {}` (id → nombre), passé à `commencer_camp` (nouveau paramètre ou propriété). Dans `combat()`, après `Regles.nouveau_combat` : pour chaque membre du camp « a », `statique[id]["pv_max"]` × (1 + 0,04 × vigueur) (et ses PV s'il commence plein), `statique[id]["k"]` × (1 + 0,04 × puissance) (le `k` multiplie toutes les valeurs, moyeu compris), barrière `egide` (`barriere` = plancher(pv_max × 0,08 × n), `barrier_until` = tour + 2), et l'état `affaiblissement` posé sur chaque monstre (`{"debut": 1, "fin": 2, "valeur": min(0,5 ; 0,1 × n), "source": ""}`). Dans `terminer()`, `rendu` = `pv_entre_etages` + 0,05 × repit. `statique` est partagé entre les copies d'un état : le modifier juste après la création, jamais pendant le combat.
-- **Application** (`scenes/app/app.gd`, `player_profile.gd`) : `profile.tower_faveurs[classe]` (id → nombre), sauvegardé (`cfg "tour", "faveurs"`) ; `commencer_tour` passe les Faveurs à la Tour ; `xp_etage` × (1 + 0,1 × savoir). « Première fois » = étage du Gardien n tel que n + 1 > `app.palier()` **avant** la mise à jour ; **mettre à jour le palier dès le Gardien franchi** (et non en fin de montée seulement), sinon fermer le jeu en pleine montée permet de regagner la même Faveur.
-- **Écrans** : `fin_screen.gd`, quand un Gardien est franchi pour la première fois, une carte « Faveur du Gardien » avec trois boutons (trois Faveurs tirées par `app.rng`, au niveau affichage) ; le choix est enregistré tout de suite et ajouté à la Tour en cours (`tour.faveurs`). `tower_screen.gd` liste les Faveurs acquises (« Vigueur ×2 : +8 % de PV »).
-- **Tests** à écrire (`tests/test_v2_tour.gd`) : chaque Faveur change ce qu'elle doit (PV max, valeurs, PV rendus, barrière en début d'étage, monstres affaiblis) ; aucune n'agit hors de la Tour ; le palier est mis à jour au Gardien.
-- Puis : PR, fusion, vérification sur le web, mise à jour de `PROGRESS.md`, `docs/SUIVI.md`, `docs/PLAN.md` (PR 2.2 faite), `CLAUDE.md` si l'architecture change.
+À savoir pour l'équipement : les fichiers cités par le plan (`engine/combat_unit.gd`, `apply_mods`) sont ceux de l'ancien moteur. Dans le combat V2, les bonus d'un perso passent par `Destin.bonus_valeurs` / `bonus_pv` (les éclats) et par le multiplicateur de classe `k` ; les Faveurs de la Tour (PR 2.2) montrent la façon la plus simple d'ajouter un bonus : modifier `statique[id]` (`pv_max`, `k`) juste après `Regles.nouveau_combat`, jamais pendant le combat. L'équipement devra s'additionner au Destin de la même façon, en duel comme à la Tour.
 
 ---
 
 ## 3. Ce qui reste à faire (dans l'ordre de `docs/PLAN.md`)
 
-1. **PR 2.2** : les Faveurs (ci-dessus).
-2. **Phase 3, l'équipement** : PR 3.1 données (`data/items.json` : bases, raretés, lignes et fourchettes, plafonds, butin par source) et moteur (`engine/equipment.gd` : tirage d'un objet à graine, `mods`, lié / échangeable, reforge ; l'équipement doit s'additionner au Destin comme les éclats ou le `k`) ; PR 3.2 la Forge (inventaire 5 emplacements, fiche, comparaison, équiper, recycler, reforger), le butin de la Tour (premier passage : échangeable ; rejoué : lié), **les Éclats et le revenu passif** (reporté ici). La PR 3.3 (réglage des lignes) va à la phase 9.
-3. **Phase 4, la ville** : `data/ville.json` (bâtiments, positions, écran ouvert), écran ville en portrait, barre du bas réduite (Ville, Chat grisé, Profil), objectifs du jour.
-4. **Phase 5, le serveur** (Nakama + PostgreSQL, prévu depuis le début) : comptes, vrais Échos (amis, guilde, proposés ; 3 aides par jour ; récompenses de sélection), PvP asynchrone classé (5 par jour, saisons de 3 mois), chat, Marché et Comptoir, classements. **À demander à Gautier avant de commencer** : l'hébergement du serveur (un service payant ou gratuit, un compte à créer), la durée de saison, les plafonds d'or et d'Éclats.
-5. **Phase 6** : guildes (rôles, chat, bannière, Influence), carte du monde, donjons à routes secrètes et portes sans nom, boss unique au serveur, grimoires de classe.
-6. **Phase 7** : territoires, guerres du soir, classements et ligues de guilde.
-7. **Phase 8** : évolutions de rang 1 (30) et 2 (90), classes de grimoire, PvP synchrone à 6.
-8. **Phase 9, l'équilibrage global** : classes et rôles en trio, Soutiens à égalité, courbe « niveau → étage » de la Tour (cible du plan : étage 3 au niveau 1, Gardien 5 vers les niveaux 8–10, étage 10 vers 25–30), lignes d'équipement, Faveurs, bonus de guilde, évolutions. **Adapter d'abord les outils** : `tools/regleur.py` et `tools/regleur_boutons.py` ne savent régler que le duo et l'ancienne Tour (voir les bugs).
-9. **Phase 10** : graphismes (art PixelLab, animations, écrans soignés), boutique de cosmétiques, bêta Android puis TestFlight, lancement. **À demander à Gautier** : l'univers et le nom du jeu (trois pistes dans `docs/GDD.md`).
+1. **Phase 3, l'équipement** (en cours, ci-dessus) : PR 3.1 données (`data/items.json` : bases, raretés, lignes et fourchettes, plafonds, butin par source) et moteur (`engine/equipment.gd` : tirage d'un objet à graine, `mods`, lié / échangeable, reforge ; l'équipement doit s'additionner au Destin comme les éclats ou le `k`) ; PR 3.2 la Forge (inventaire 5 emplacements, fiche, comparaison, équiper, recycler, reforger), le butin de la Tour (premier passage : échangeable ; rejoué : lié), **les Éclats et le revenu passif** (reporté ici). La PR 3.3 (réglage des lignes) va à la phase 9.
+2. **Phase 4, la ville** : `data/ville.json` (bâtiments, positions, écran ouvert), écran ville en portrait, barre du bas réduite (Ville, Chat grisé, Profil), objectifs du jour.
+3. **Phase 5, le serveur** (Nakama + PostgreSQL, prévu depuis le début) : comptes, vrais Échos (amis, guilde, proposés ; 3 aides par jour ; récompenses de sélection), PvP asynchrone classé (5 par jour, saisons de 3 mois), chat, Marché et Comptoir, classements. **À demander à Gautier avant de commencer** : l'hébergement du serveur (un service payant ou gratuit, un compte à créer), la durée de saison, les plafonds d'or et d'Éclats.
+4. **Phase 6** : guildes (rôles, chat, bannière, Influence), carte du monde, donjons à routes secrètes et portes sans nom, boss unique au serveur, grimoires de classe.
+5. **Phase 7** : territoires, guerres du soir, classements et ligues de guilde.
+6. **Phase 8** : évolutions de rang 1 (30) et 2 (90), classes de grimoire, PvP synchrone à 6.
+7. **Phase 9, l'équilibrage global** : classes et rôles en trio, Soutiens à égalité, courbe « niveau → étage » de la Tour (cible du plan : étage 3 au niveau 1, Gardien 5 vers les niveaux 8–10, étage 10 vers 25–30), lignes d'équipement, Faveurs, bonus de guilde, évolutions. **Adapter d'abord les outils** : `tools/regleur.py` et `tools/regleur_boutons.py` ne savent régler que le duo et l'ancienne Tour (voir les bugs).
+8. **Phase 10** : graphismes (art PixelLab, animations, écrans soignés), boutique de cosmétiques, bêta Android puis TestFlight, lancement. **À demander à Gautier** : l'univers et le nom du jeu (trois pistes dans `docs/GDD.md`).
 
 Questions déjà prévues pour Gautier, au bon moment (`docs/PLAN.md`, § 4) : phase 3 (l'écart de puissance voulu entre équipé et non équipé, les noms des objets), phase 5 (saison, plafonds), phase 6 (qui reçoit le grimoire, premiers boss, embranchements des donjons).
 
@@ -97,7 +83,7 @@ Questions déjà prévues pour Gautier, au bon moment (`docs/PLAN.md`, § 4) : p
 - Écran « Ton trio » : la ligne « Avec toi » liste presque toujours les quatre Synergies dès le milieu de partie (peu informatif).
 - Le signal « CLÉ PRÊTE » n'apparaît pas à bas niveau : les adversaires n'ont pas de Clé allumée avant le niveau 7 (acolyte) ou 11 (perso).
 - L'outil « Gagner un niveau » (Paramètres) ouvre l'écran du Destin à chaque niveau.
-- Une montée interrompue (jeu fermé en pleine montée) n'enregistre ni le record ni le palier : ils ne sont sauvés qu'en fin de montée (`app.fin_tour`).
+- Une Faveur du Gardien se choisit dans l'écran de fin ; si le jeu est fermé à cet écran avant le choix, le palier n'a pas avancé : le Gardien se rejoue et la propose encore (voulu). Les Faveurs n'ont pas été mesurées (phase 9).
 - L'étape `{"fin":1}` de `tools/capture.gd` ne passe pas la part de chacun : la carte « La part de chacun » n'apparaît pas sur cette capture (elle apparaît en vrai combat).
 - Les noms des Échos viennent d'une liste fixe de 12 (`ArenaApp.ECHO_NAMES`).
 

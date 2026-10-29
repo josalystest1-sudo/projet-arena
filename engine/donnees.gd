@@ -49,6 +49,12 @@ const CLES_BESTIAIRE := ["familles", "rangs", "monstres"]
 const CLES_MONSTRE := ["nom", "famille", "rang", "classe", "voies", "pv_mult", "description"]
 const CLES_TOUR := ["pv_entre_etages", "monstres_max", "somme_depart", "somme_pente", "somme_largeur", "somme_max",
 	"niveau_par_etage", "tirages", "gardien_tous_les"]
+## Une Faveur de la Tour (data/faveurs.json) : son nom, son texte (« {v} » : la valeur cumulée, en %), sa valeur par
+## cumul (une fraction), et son plafond (facultatif).
+const CLES_FAVEUR := ["nom", "texte", "valeur", "max"]
+const CLES_FAVEUR_OBLIGATOIRES := ["nom", "texte", "valeur"]
+## Les six Faveurs que le moteur sait appliquer (engine/tour.gd et scenes/app/app.gd).
+const FAVEURS := ["vigueur", "puissance", "repit", "egide", "effroi", "savoir"]
 
 var regles: Dictionary = {}
 var etats: Dictionary = {}
@@ -60,6 +66,8 @@ var ordre_classes: Array[String] = []
 var bestiaire: Dictionary = {}
 ## Les règles de la Tour (data/tour.json) : PV rendus entre deux étages, tirage des monstres, Gardiens, abandon.
 var tour: Dictionary = {}
+## Les Faveurs de la Tour (data/faveurs.json, GDD V2 § 6) : identifiant -> {nom, texte, valeur, max}.
+var faveurs: Dictionary = {}
 ## Ce qui ne va pas dans les données : une ligne par problème (vide si tout est connu et cohérent).
 var erreurs: Array[String] = []
 ## Une mémoire de calculs qui ne dépendent que des données (les formes de chaque nœud, pour le générateur).
@@ -86,6 +94,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 		donnees.classes[str(id)] = _lire(dossier + "classes/" + str(id) + ".json", donnees.erreurs)
 	donnees.bestiaire = _lire(dossier + "bestiaire.json", donnees.erreurs)
 	donnees.tour = _lire(dossier + "tour.json", donnees.erreurs)
+	donnees.faveurs = _lire(dossier + "faveurs.json", donnees.erreurs)
 	donnees.valider()
 	return donnees
 
@@ -132,6 +141,18 @@ func valider() -> void:
 	for id in ordre_classes:
 		erreurs.append_array(valider_classe(classes[id], id))
 	_cles(tour, CLES_TOUR, CLES_TOUR, "tour.json")
+	_cles(faveurs, FAVEURS, FAVEURS, "faveurs.json")
+	for id in faveurs:
+		var ou := "faveurs.json " + str(id)
+		_cles(faveurs[id], CLES_FAVEUR, CLES_FAVEUR_OBLIGATOIRES, ou)
+		if not faveurs[id] is Dictionary:
+			continue
+		if float(faveurs[id].get("valeur", 0.0)) <= 0.0:
+			erreurs.append(ou + " : valeur nulle ou négative")
+		if faveurs[id].has("max") and float(faveurs[id]["max"]) < float(faveurs[id].get("valeur", 0.0)):
+			erreurs.append(ou + " : plafond plus bas que la valeur d'un cumul")
+		if not "{v}" in str(faveurs[id].get("texte", "")):
+			erreurs.append(ou + " : le texte doit contenir « {v} »")
 	_cles(bestiaire, CLES_BESTIAIRE, CLES_BESTIAIRE, "bestiaire.json")
 	for id in bestiaire.get("monstres", {}):
 		var m: Dictionary = bestiaire["monstres"][id]

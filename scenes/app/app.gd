@@ -296,9 +296,10 @@ func duel_contre_ia() -> Dictionary:
 	return {"etat": e, "noms": noms_trio()}
 
 
-## Une montée de la Tour avec ton trio, depuis un palier (par défaut le plus haut) : le combat de son premier étage.
+## Une montée de la Tour avec ton trio, depuis un palier (par défaut le plus haut), avec les Faveurs de ta classe :
+## le combat de son premier étage.
 func commencer_tour(depart: int = 0) -> Dictionary:
-	var t := Tour.commencer_camp(trio(), profile.level, _nouvelle_graine(), data, depart if depart >= 1 else palier())
+	var t := Tour.commencer_camp(trio(), profile.level, _nouvelle_graine(), data, depart if depart >= 1 else palier(), faveurs())
 	return {"etat": t.combat(), "tour": t, "noms": noms_trio()}
 
 
@@ -307,9 +308,50 @@ func palier() -> int:
 	return maxi(1, int(profile.tower_paliers.get(player_class, 1)))
 
 
-## L'XP d'un étage franchi : 40 la première fois, 20 pour un étage déjà franchi (une montée rejouée depuis un palier).
+## Les Faveurs de la Tour de ta classe (identifiant -> nombre de cumuls).
+func faveurs() -> Dictionary:
+	var out := {}
+	for id in profile.tower_faveurs.get(player_class, {}):
+		if data.faveurs.has(str(id)) and int(profile.tower_faveurs[player_class][id]) > 0:
+			out[str(id)] = int(profile.tower_faveurs[player_class][id])
+	return out
+
+
+## L'XP d'un étage franchi : 40 la première fois, 20 pour un étage déjà franchi (une montée rejouée depuis un palier) ;
+## +10 % par Faveur de Savoir.
 func xp_etage(n: int) -> int:
-	return 40 if n >= int(profile.tower_records.get(player_class, 0)) else 20
+	var base := 40 if n >= int(profile.tower_records.get(player_class, 0)) else 20
+	return Regles.plancher(float(base) * (1.0 + Tour.valeur_faveur("savoir", int(faveurs().get("savoir", 0)), data)))
+
+
+## Un étage franchi, dès qu'il l'est (pas en fin de montée seulement : fermer le jeu en pleine montée ne doit rien
+## perdre) : le record de la classe et, si c'est un Gardien, le palier. Un Gardien vaincu pour la première fois offre
+## une Faveur : le palier n'est alors avancé qu'au choix de la Faveur (choisir_faveur), pour qu'un jeu fermé avant le
+## choix la propose encore. Renvoie {gardien, faveur, propositions}.
+func etage_franchi(t: Tour) -> Dictionary:
+	var franchi := t.etage - 1
+	var g := int(data.tour["gardien_tous_les"])
+	var gardien := g > 0 and franchi % g == 0
+	var faveur := Tour.gardien_premiere_fois(franchi, palier(), g)
+	if t.atteint > int(profile.tower_records.get(player_class, 0)):
+		profile.tower_records[player_class] = t.atteint
+	if gardien and not faveur:
+		profile.tower_paliers[player_class] = maxi(palier(), Tour.palier_apres(franchi, g))
+	profile.save()
+	return {"gardien": gardien, "faveur": faveur, "propositions": t.proposer_faveurs(franchi) if faveur else []}
+
+
+## Le choix d'une Faveur après le Gardien de l'étage franchi : elle est acquise pour ta classe, ajoutée à la montée en
+## cours, et le palier est avancé.
+func choisir_faveur(id: String, t: Tour) -> void:
+	if not data.faveurs.has(id):
+		return
+	var acquises: Dictionary = profile.tower_faveurs.get(player_class, {})
+	acquises[id] = int(acquises.get(id, 0)) + 1
+	profile.tower_faveurs[player_class] = acquises
+	profile.tower_paliers[player_class] = maxi(palier(), Tour.palier_apres(t.etage - 1, int(data.tour["gardien_tous_les"])))
+	profile.save()
+	t.faveurs = faveurs()
 
 
 ## La fin d'un duel : le résultat, la série, l'XP (+120 gagné, +80 perdu). Renvoie {xp, niveaux}.

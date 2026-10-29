@@ -142,6 +142,99 @@ func test_tour_infinie() -> void:
 	assert_true(reprise.fini and reprise.atteint == 11, "arrêter entre deux étages : l'étage atteint est celui qui allait se jouer")
 
 
+# Les Faveurs de la Tour (GDD V2, § 6 ; décision de Gautier du 29 octobre : des petits bonus cumulables, dans la Tour
+# seulement) : chacune change ce qu'elle doit, et rien d'autre.
+func test_faveurs_de_la_tour() -> void:
+	var membres := Trio.camp(Generateur.generer("guerrier", 5, 12), 12, donnees)
+	var sans := Tour.commencer_camp(membres, 12, 77, donnees)
+	var avec := Tour.commencer_camp(membres, 12, 77, donnees, 1, {"vigueur": 2, "puissance": 1, "repit": 1, "egide": 1, "effroi": 3, "savoir": 2, "inconnue": 1, "nulle": 0})
+	assert_eq(avec.faveurs, {"vigueur": 2, "puissance": 1, "repit": 1, "egide": 1, "effroi": 3, "savoir": 2, "inconnue": 1}, "les Faveurs de la montée (les cumuls à zéro ignorés)")
+	var e0 := sans.combat()
+	var e := avec.combat()
+	for id in ["a1", "a2", "a3"]:
+		var base := int(e0.fiche(id)["pv_max"])
+		assert_eq(int(e.fiche(id)["pv_max"]), Regles.plancher(float(base) * 1.08), id + " : Vigueur ×2, +8 % de PV max")
+		assert_eq(int(e.perso(id)["pv"]), int(e.fiche(id)["pv_max"]), id + " : tous ses PV au départ")
+		assert_almost(float(e.fiche(id)["k"]), float(e0.fiche(id)["k"]) * 1.04, id + " : Puissance, multiplicateur de classe × 1,04")
+		assert_eq(int(e.perso(id)["barriere"]), Regles.plancher(float(e.fiche(id)["pv_max"]) * 0.08), id + " : Égide, une barrière de 8 % des PV max")
+		assert_eq(int(e.perso(id)["barrier_until"]), 3, id + " : la barrière de l'Égide tient 3 tours")
+		assert_eq(int(e0.perso(id)["barriere"]), 0, id + " : sans Faveur, pas de barrière")
+	assert_almost(Regles.valeur(e, "a1", 0, 1, 100.0), Regles.valeur(e0, "a1", 0, 1, 100.0) * 1.04, "Puissance : un coup vaut 4 % de plus")
+	for id in e.vivants("b"):
+		assert_almost(e.valeur_etat(id, "affaiblissement"), 0.3, id + " : Effroi ×3, les monstres affaiblis de 30 %")
+		assert_eq(e.tours_restants(id, "affaiblissement"), 2, id + " : pendant 2 tours")
+		assert_eq(int(e.fiche(id)["pv_max"]), int(e0.fiche(id)["pv_max"]), id + " : les monstres gardent leurs PV")
+		assert_almost(float(e.fiche(id)["k"]), float(e0.fiche(id)["k"]), id + " : et leur force")
+		assert_eq(int(e.perso(id)["barriere"]), 0, id + " : et n'ont pas de barrière")
+		assert_true(e0.perso(id)["etats"].is_empty(), id + " : sans Faveur, pas d'état")
+	# Le Répit : 25 % des PV max rendus au lieu de 20.
+	var max_a1 := int(e.fiche("a1")["pv_max"])
+	e.perso("a1")["pv"] = 100
+	e.fini = true
+	e.vainqueur = "a"
+	avec.terminer(e)
+	assert_eq(int(avec.pv["a1"]), 100 + Regles.plancher(0.25 * float(max_a1)), "Répit : 25 % des PV max rendus entre deux étages")
+	var e2 := avec.combat()
+	assert_eq(int(e2.perso("a1")["pv"]), 100 + Regles.plancher(0.25 * float(max_a1)), "l'étage suivant repart avec ces PV")
+	assert_eq(int(e2.perso("a1")["barriere"]), Regles.plancher(float(max_a1) * 0.08), "et une nouvelle Égide")
+	# L'Effroi s'éteint après 2 tours, et l'étage se joue jusqu'au bout.
+	var tours := 0
+	while not e2.fini and tours < 300:
+		e2 = tour(e2, IA.declarer(e2))
+		tours += 1
+		if e2.tour == 3 and not e2.fini:
+			for id in e2.vivants("b"):
+				assert_false(e2.a_etat(id, "affaiblissement"), id + " : l'Effroi est passé au tour 3")
+	assert_true(e2.fini, "un étage avec Faveurs se termine")
+	# Hors de la Tour, rien : un duel des mêmes membres a les valeurs de base.
+	var pvp := Regles.nouveau_combat(membres, Trio.camp(Generateur.generer("mage", 9, 12), 12, donnees), 12, "pvp", donnees)
+	assert_eq(int(pvp.fiche("a1")["pv_max"]), int(e0.fiche("a1")["pv_max"]), "en duel, les PV de base")
+	assert_eq(int(pvp.perso("a1")["barriere"]), 0, "en duel, pas de barrière")
+	assert_true(pvp.perso("b1")["etats"].is_empty(), "en duel, pas d'Effroi")
+	# Les valeurs cumulées et leur plafond.
+	assert_almost(Tour.valeur_faveur("effroi", 7, donnees), 0.5, "l'Effroi plafonne à 50 %")
+	assert_almost(Tour.valeur_faveur("vigueur", 10, donnees), 0.4, "la Vigueur ne plafonne pas")
+	assert_almost(Tour.valeur_faveur("savoir", 0, donnees), 0.0, "aucun cumul : rien")
+	assert_almost(Tour.valeur_faveur("inconnue", 3, donnees), 0.0, "une Faveur inconnue ne vaut rien")
+	assert_eq(Tour.texte_faveur("vigueur", 2, donnees), "Vigueur ×2 : +8 % de PV max pour tout le trio", "le texte d'une Faveur cumulée")
+	assert_eq(Tour.texte_faveur("savoir", 1, donnees), "Savoir : +10 % d'XP dans la Tour", "le texte d'une Faveur simple")
+	assert_true("50 %" in Tour.texte_faveur("effroi", 9, donnees), "le texte tient compte du plafond")
+
+
+# Les six Faveurs des données, les trois proposées à un Gardien, et « la première fois ».
+func test_faveurs_proposees_au_gardien() -> void:
+	assert_eq(donnees.faveurs.size(), 6, "six Faveurs")
+	for id in Donnees.FAVEURS:
+		assert_true(donnees.faveurs.has(id), id + " : dans les données")
+	for erreur in donnees.erreurs:
+		failures.append(erreur)
+	var t := Tour.commencer_camp(Trio.camp(Generateur.generer("mage", 5, 12), 12, donnees), 12, 77, donnees)
+	var vues := {}
+	for n in [5, 10, 15, 20, 25, 30, 35, 40]:
+		var prop := t.proposer_faveurs(n)
+		assert_eq(prop.size(), 3, "étage %d : trois Faveurs proposées" % n)
+		assert_eq(prop, t.proposer_faveurs(n), "étage %d : les mêmes à chaque fois" % n)
+		var distinctes := {}
+		for id in prop:
+			assert_true(donnees.faveurs.has(id), "étage %d : une Faveur connue (%s)" % [n, id])
+			distinctes[id] = true
+		assert_eq(distinctes.size(), 3, "étage %d : trois différentes" % n)
+		vues[",".join(prop)] = true
+	assert_true(vues.size() >= 2, "les propositions changent d'un Gardien à l'autre")
+	var autre := Tour.commencer_camp(t.membres, 12, 78, donnees)
+	var differentes := false
+	for n in [5, 10, 15, 20, 25]:
+		if autre.proposer_faveurs(n) != t.proposer_faveurs(n):
+			differentes = true
+	assert_true(differentes, "une autre montée propose d'autres Faveurs")
+	assert_true(Tour.gardien_premiere_fois(5, 1, 5), "le Gardien 5, palier 1 : première fois")
+	assert_false(Tour.gardien_premiere_fois(5, 6, 5), "le Gardien 5, palier 6 : déjà battu")
+	assert_false(Tour.gardien_premiere_fois(4, 1, 5), "l'étage 4 : pas un Gardien")
+	assert_true(Tour.gardien_premiere_fois(10, 6, 5), "le Gardien 10, palier 6 : première fois")
+	assert_false(Tour.gardien_premiere_fois(10, 11, 5), "le Gardien 10, palier 11 : déjà battu")
+	assert_false(Tour.gardien_premiere_fois(10, 16, 5), "le Gardien 10, palier 16 : déjà battu")
+
+
 # À la Tour, les soins d'un monstre s'affaiblissent à chaque usage (× 0,75) ; pas ceux du trio, ni en duel.
 func test_soins_des_monstres_qui_s_affaiblissent() -> void:
 	var soigneur := essai([[[soin(400)]]])

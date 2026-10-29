@@ -1,0 +1,8 @@
+{
+  "vigueur": {"nom": "Vigueur", "texte": "+{v} % de PV max pour tout le trio", "valeur": 0.04},
+  "puissance": {"nom": "Puissance", "texte": "+{v} % de force (dégâts, soins, barrières) pour tout le trio", "valeur": 0.04},
+  "repit": {"nom": "Répit", "texte": "{v} % de PV de plus rendus à chacun entre deux étages", "valeur": 0.05},
+  "egide": {"nom": "Égide", "texte": "au début de chaque étage, une barrière de {v} % des PV max sur chacun", "valeur": 0.08},
+  "effroi": {"nom": "Effroi", "texte": "au début de chaque étage, les monstres sont affaiblis de {v} % pendant 2 tours", "valeur": 0.1, "max": 0.5},
+  "savoir": {"nom": "Savoir", "texte": "+{v} % d'XP dans la Tour", "valeur": 0.1}
+}
