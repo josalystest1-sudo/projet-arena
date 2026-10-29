@@ -336,7 +336,7 @@ func _maj_cases() -> void:
 		c.synergie = " · ".join(s.get("exact", []))
 		c.synergie_ailleurs = ""
 		if c.synergie == "" and not s.get("ailleurs", []).is_empty():
-			c.synergie_ailleurs = "%s → %s" % [s["ailleurs"][0], _nom(str(s["cible"]))]
+			c.synergie_ailleurs = "%s : vise %s" % [s["ailleurs"][0], _nom(str(s["cible"]))]
 		if not c.jouable and e.vivant("a1"):
 			c.raison = _raison(voie, rang)
 		if c.aveugle:
@@ -449,15 +449,15 @@ func _maj_bandeau() -> void:
 	if not choisies.is_empty():
 		var s := Texte.synergie(str(choisies[0]))
 		bandeau.maj("prete", "SYNERGIE PRÊTE : %s ! Touche encore pour jouer" % " · ".join(choisies).to_upper(), joue + " + ta case dorée",
-			"%s → %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]])
+			"%s : %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]])
 	elif not exact.is_empty():
 		var s := Texte.synergie(str(exact[0]))
 		bandeau.maj("possible", "SYNERGIE POSSIBLE : %s · joue une case dorée" % " · ".join(exact).to_upper(), joue,
-			"%s → %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]])
+			"%s : %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]])
 	elif not ailleurs.is_empty():
 		var s := Texte.synergie(str(ailleurs[0]))
 		bandeau.maj("ailleurs", "Synergie %s possible : vise %s" % [" · ".join(ailleurs), _nom(cible_ailleurs)], joue,
-			"%s → %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]])
+			"%s : %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]])
 	else:
 		bandeau.maj("aucune", "%s : pas de Synergie avec ce coup" % joue, _rappel_synergies()[0], _rappel_synergies()[1])
 

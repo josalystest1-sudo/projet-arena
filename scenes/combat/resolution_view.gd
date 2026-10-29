@@ -99,7 +99,7 @@ func _construire_sequence() -> void:
 				var qui := "%s et %s" % [_nom(acteur), _nom(id)]
 				var sur := " sur %s" % _nom(str(ev["cible"])) if str(ev["cible"]) != "" else ""
 				cut["synergie_qui"] = "%s%s" % [qui, sur]
-				cut["synergie_ligne"] = "%s → %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]]
+				cut["synergie_ligne"] = "%s : %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]]
 		sequence.append(cut)
 	var ticks := {"acteur": "", "titre": "Les effets qui durent", "sous_titre": "", "pictos": [], "nombres": [], "synergie": "", "tick": true}
 	var kos := {"acteur": "", "titre": "", "sous_titre": "", "pictos": [], "nombres": [], "synergie": "", "tick": true}

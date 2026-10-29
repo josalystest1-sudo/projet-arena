@@ -90,7 +90,7 @@
     "cibles": {"un_ennemi": "silhouette", "tous_les_ennemis": "deux_silhouettes", "soi": "silhouette_cerclee", "un_allie": "silhouette_coeur", "duo": "deux_silhouettes"}
   },
   "synergies": {
-    "Brisure": {"regle": "contrôle (Étourdi, Gelé, Aveuglé…) + dégâts sur le même ennemi", "effet": "dégâts ×{x}"},
+    "Brisure": {"regle": "contrôle (Étourdi, Gelé, Aveuglé...) + dégâts sur le même ennemi", "effet": "dégâts ×{x}"},
     "Embrasement": {"regle": "deux DoT (Saignement, Brûlure, Poison) sur le même ennemi", "effet": "les deux durent +{n} tour"},
     "Bastion": {"regle": "barrière + soin sur le même allié", "effet": "barrière ×{x}"},
     "Harmonie": {"regle": "Renfort sur un allié + dégâts", "effet": "le Renfort dure +{n} tour"}
