@@ -19,7 +19,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	var noms: Dictionary = options.get("noms", {})
 	var tour: Tour = options.get("tour", null)
 	var column := UiKit.scroll_column(self, 12)
-	var gagne := e.vainqueur == "a" or (tour != null and tour.abandonne(e))
+	var gagne := e.vainqueur == "a"
 	# Le trio, en grand.
 	var trio := HBoxContainer.new()
 	trio.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -50,14 +50,17 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 			app.sfx.play("defaite")
 			column.add_child(cartes)
 			_carte(cartes, "Étage atteint", str(tour.atteint), "record %s : %d" % [app.data.classe(app.player_class)["nom"], int(app.profile.tower_records.get(app.player_class, 0))])
-			_carte(cartes, "XP", "+%d" % int(resultat["xp"]), "niveau %d" % app.profile.level)
+			_carte(cartes, "Reprise", "étage %d" % app.palier(), "tous tes PV")
 		else:
-			app.gain_xp(40)
+			var xp := app.xp_etage(tour.etage - 1)
+			app.gain_xp(xp)
 			column.add_child(UiKit.label("Étage %d franchi !" % (tour.etage - 1), 34, OR))
 			app.sfx.play("victoire")
 			column.add_child(cartes)
 			_carte(cartes, "PV rendus", "+20 %", "à chacun")
-			_carte(cartes, "XP", "+40", "niveau %d" % app.profile.level)
+			_carte(cartes, "XP", "+%d" % xp, "niveau %d" % app.profile.level)
+			if (tour.etage - 1) % int(app.data.tour["gardien_tous_les"]) == 0:
+				_carte(cartes, "Palier", "étage %d" % tour.etage, "tu reprendras d'ici")
 			var noms_m: Array[String] = []
 			for id in tour.tirer_etage(tour.etage):
 				noms_m.append(str(app.data.bestiaire["monstres"][id]["nom"]))
@@ -97,8 +100,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	else:
 		column.add_child(UiKit.main_button("Étage suivant", func(): app.show_screen("combat", {"etat": tour.combat(), "tour": tour, "noms": noms})))
 		column.add_child(UiKit.button("Arrêter la montée", func():
-			tour.fini = true
-			tour.atteint = tour.etage
+			tour.arreter()
 			app.fin_tour(tour)
 			app.show_screen("tower"), 56))
 

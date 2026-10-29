@@ -6,11 +6,14 @@ extends Control
 
 var app: ArenaApp
 var mode := ""
+## À la Tour : l'étage de départ choisi (0 : le palier).
+var depart := 0
 
 
 func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	app = p_app
 	mode = str(options.get("mode", ""))
+	depart = int(options.get("depart", 0))
 	_construire()
 
 
@@ -35,8 +38,10 @@ func _construire() -> void:
 	if mode in ["", "tour"]:
 		var monter := func():
 			app.sfx.play("clic")
-			app.show_screen("combat", app.commencer_tour())
-		column.add_child(UiKit.main_button("Monter la Tour", monter) if mode == "tour" else UiKit.button("Monter la Tour", monter, 64))
+			app.show_screen("combat", app.commencer_tour(depart))
+		var etage := depart if depart >= 1 else app.palier()
+		var texte := "Monter la Tour" if etage <= 1 else "Monter la Tour (étage %d)" % etage
+		column.add_child(UiKit.main_button(texte, monter) if mode == "tour" else UiKit.button(texte, monter, 64))
 	if mode != "":
 		column.add_child(UiKit.button("Retour", func(): app.show_screen("home" if mode == "duel" else "tower"), 52))
 

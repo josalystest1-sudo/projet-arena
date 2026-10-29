@@ -22,8 +22,10 @@ const TOURS_MAX := 100
 const MEDIANE_MIN := 18
 const MEDIANE_MAX := 22
 const LONGUEUR_LIMITE := 30
-## La Tour : les montées s'arrêtent à l'étage 21 (on sait alors que l'étage 20 est atteint).
+## La Tour : les montées s'arrêtent à l'étage 21 (on sait alors que l'étage 20 est atteint). Un étage n'a pas de limite
+## de tours ; le simulateur l'arrête au bout de 300 tours (plafond technique, compté comme une chute).
 const ETAGE_MAX := 21
+const TOURS_MAX_TOUR := 300
 const ROUTES := ["ruee", "eventail", "reactive"]
 const NOMS_ROUTES := {"ruee": "Ruée", "eventail": "Éventail", "reactive": "Réactive"}
 const FORMATS := ["duo", "trio"]
@@ -281,9 +283,9 @@ static func montee(d: Donnees, classe: String, graine: int, memoire: Dictionary,
 	var t := Tour.commencer_camp(destins(d, classe, graine, memoire, format), NIVEAU, graine, d)
 	while not t.fini and t.etage < ETAGE_MAX:
 		var e := t.combat()
-		while not e.fini and not t.abandonne(e) and e.tour <= TOURS_MAX:
+		while not e.fini and e.tour <= TOURS_MAX_TOUR:
 			e = Regles.resoudre_tour(e, IA.declarer(e))
-		if not e.fini and not t.abandonne(e):
+		if not e.fini:
 			e.fini = true
 			e.vainqueur = "b"
 		t.terminer(e)

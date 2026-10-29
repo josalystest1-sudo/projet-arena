@@ -296,10 +296,20 @@ func duel_contre_ia() -> Dictionary:
 	return {"etat": e, "noms": noms_trio()}
 
 
-## Une montée de la Tour, à ton niveau, avec ton trio : le combat de son premier étage.
-func commencer_tour() -> Dictionary:
-	var t := Tour.commencer_camp(trio(), profile.level, _nouvelle_graine(), data)
+## Une montée de la Tour avec ton trio, depuis un palier (par défaut le plus haut) : le combat de son premier étage.
+func commencer_tour(depart: int = 0) -> Dictionary:
+	var t := Tour.commencer_camp(trio(), profile.level, _nouvelle_graine(), data, depart if depart >= 1 else palier())
 	return {"etat": t.combat(), "tour": t, "noms": noms_trio()}
+
+
+## L'étage d'où ta classe reprend la Tour (après le dernier Gardien franchi).
+func palier() -> int:
+	return maxi(1, int(profile.tower_paliers.get(player_class, 1)))
+
+
+## L'XP d'un étage franchi : 40 la première fois, 20 pour un étage déjà franchi (une montée rejouée depuis un palier).
+func xp_etage(n: int) -> int:
+	return 40 if n >= int(profile.tower_records.get(player_class, 0)) else 20
 
 
 ## La fin d'un duel : le résultat, la série, l'XP (+120 gagné, +80 perdu). Renvoie {xp, niveaux}.
@@ -310,13 +320,14 @@ func fin_duel(gagne: bool) -> Dictionary:
 	return {"xp": xp, "niveaux": int(r["levels"])}
 
 
-## La fin d'une montée : le record de la classe (l'étage atteint). Renvoie {xp} (l'XP des étages est donnée au fil
-## de la montée).
+## La fin d'une montée : le record de la classe (l'étage atteint) et son palier (l'étage qui suit le dernier Gardien
+## franchi). Renvoie {xp} (l'XP des étages est donnée au fil de la montée).
 func fin_tour(t: Tour) -> Dictionary:
 	if t.atteint > int(profile.tower_records.get(player_class, 0)):
 		profile.tower_records[player_class] = t.atteint
+	profile.tower_paliers[player_class] = maxi(palier(), Tour.palier_apres(t.atteint - 1, int(data.tour["gardien_tous_les"])))
 	profile.save()
-	return {"xp": 40 * maxi(0, t.atteint - 1)}
+	return {"xp": 40 * maxi(0, t.atteint - t.depart)}
 
 
 func class_label(class_id: String) -> String:

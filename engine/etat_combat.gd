@@ -80,7 +80,7 @@ static func depuis_dict(dico: Dictionary) -> EtatCombat:
 		e.persos[id] = {"pv": int(p["pv"]), "ko": bool(p["ko"]), "etats": etats, "barriere": int(p["barriere"]),
 			"barrier_until": int(p["barrier_until"]), "jalons": _entiers(p["jalons"]), "spent_until": eteints,
 			"inactivite": _entiers(p["inactivite"]), "last_voie": int(p["last_voie"]),
-			"cible_ennemie": str(p["cible_ennemie"]), "cible_alliee": str(p["cible_alliee"])}
+			"cible_ennemie": str(p["cible_ennemie"]), "cible_alliee": str(p["cible_alliee"]), "soins": int(p.get("soins", 0))}
 	e.fini = bool(dico["fini"])
 	e.vainqueur = str(dico["vainqueur"])
 	e.journal = dico["journal"].duplicate(true)
