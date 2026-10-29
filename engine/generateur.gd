@@ -23,7 +23,14 @@ const DOT_PERSISTANTE := {"guerrier": "saignement", "voleur": "saignement", "pug
 	"mage_de_bataille": "brulure", "enchanteur": "brulure", "spadassin": "saignement", "maitre_espion": "poison", "sentinelle": "brulure",
 	"eclaireur": "saignement", "necromant": "familier", "chaman": "familier", "inquisiteur": "brulure", "grand_pretre": "saignement",
 	"artificier": "brulure", "golemiste": "familier", "skalde": "saignement", "heraut": "saignement", "duelliste": "saignement",
-	"protecteur": "saignement"}
+	"protecteur": "saignement",
+	"parangon": "saignement", "lame_legendaire": "saignement", "roi_de_guerre": "saignement", "grand_maitre": "saignement",
+	"ravageur": "saignement", "sage_du_souffle": "saignement", "archonte": "brulure", "magister": "brulure", "thaumaturge": "brulure",
+	"maitre_bretteur": "saignement", "ombre": "saignement", "eminence_grise": "poison", "gardienne_des_marches": "brulure",
+	"traqueur": "brulure", "guide": "saignement", "seigneur_des_betes": "familier", "liche": "familier", "oracle": "familier",
+	"croise": "saignement", "grand_inquisiteur": "brulure", "hierophante": "saignement", "colosse": "familier",
+	"grand_artificier": "brulure", "maitre_alchimiste": "poison", "porte_etendard": "saignement", "chantre_de_guerre": "saignement",
+	"maestro": "saignement", "garde_royal": "saignement", "maitre_d_escrime": "saignement", "chancelier": "saignement"}
 const MONO := ["un_ennemi", "un_allie", "soi"]
 const MULTI := ["tous_les_ennemis", "duo"]
 

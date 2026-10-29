@@ -1,5 +1,5 @@
 ## Mesure du garde-fou des évolutions (décision de Gautier du 30 octobre : « un évolué à roue vide est plus fort qu'un
-## niveau 29 ») : chacune des trente évolutions à roue vide (niveau 30, zéro point) contre sa classe de base au niveau 29 (29 points),
+## niveau 29 ») : chacune des soixante évolutions à roue vide (au niveau de son évolution : 30 ou 60, zéro point) contre son parent un niveau en dessous (29 ou 59 points),
 ## en 1 contre 1 et en trio (les Échos des deux camps sont des classes de base), dans les deux ordres, par classe, pour
 ## un saut de puissance donné (sans toucher à data/rules.json). Pour la phase 9.
 ##   godot --headless --path . --script res://tools/mesure_evolution.gd -- <puissance_pv> <puissance_valeurs> <graines>
@@ -17,17 +17,18 @@ func _initialize() -> void:
 	var tot_trio := [0, 0]
 	var tot_tours := 0
 	for evo in d.ordre_evolutions:
-		var classe := Evolution.base(evo, d)
+		var classe := Evolution.parent(evo, d)
+		var nv := Evolution.niveau_max(Evolution.rang(evo, d) - 1, d)
 		var solo := [0, 0]
 		var trio := [0, 0]
 		for graine in range(1, nb + 1):
 			for premier in [true, false]:
-				var a := Generateur.generer(evo, graine, 30, Generateur.PAR_DEFAUT, d)
-				var b := Generateur.generer(classe, graine + 1000, 29, Generateur.PAR_DEFAUT, d)
-				var r := _duel([a], [b], premier, d)
+				var a := Generateur.generer(evo, graine, nv, Generateur.PAR_DEFAUT, d)
+				var b := Generateur.generer(classe, graine + 1000, nv - 1, Generateur.PAR_DEFAUT, d)
+				var r := _duel([a], [b], premier, d, nv)
 				solo[0] += 1 if r["gagne"] else 0
 				solo[1] += 1
-				var r2 := _duel(Trio.camp(a, 30, d), Trio.camp(b, 29, d), premier, d)
+				var r2 := _duel(Trio.camp(a, nv, d), Trio.camp(b, nv - 1, d), premier, d, nv)
 				trio[0] += 1 if r2["gagne"] else 0
 				trio[1] += 1
 				tot_tours += int(r2["tours"])
@@ -40,8 +41,8 @@ func _initialize() -> void:
 	quit(0)
 
 
-func _duel(camp_evo: Array, camp_base: Array, evo_en_premier: bool, d: Donnees) -> Dictionary:
-	var e := Regles.nouveau_combat(camp_evo if evo_en_premier else camp_base, camp_base if evo_en_premier else camp_evo, 30, "pvp", d)
+func _duel(camp_evo: Array, camp_base: Array, evo_en_premier: bool, d: Donnees, niveau: int) -> Dictionary:
+	var e := Regles.nouveau_combat(camp_evo if evo_en_premier else camp_base, camp_base if evo_en_premier else camp_evo, niveau, "pvp", d)
 	while not e.fini and e.tour <= 100:
 		e = Regles.resoudre_tour(e, IA.declarer(e, []))
 	return {"gagne": e.fini and e.vainqueur == ("a" if evo_en_premier else "b"), "tours": e.tour}

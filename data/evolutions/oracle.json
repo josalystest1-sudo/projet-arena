@@ -1,0 +1,223 @@
+{
+  "id": "oracle",
+  "nom": "Oracle",
+  "genre": "m",
+  "role": "soutien",
+  "base": "chaman",
+  "rang": 2,
+  "pv": 760,
+  "k": 0.9,
+  "description": "Le Chaman qui voit avant : esprits, totems et pluies de vie au moment juste.",
+  "moyeu": {
+    "nom": "Esprit de l'oracle",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "grands_esprits",
+      "nom": "Voie des Grands esprits",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Esprit de l'oracle",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 26.92, "tours": 4, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Esprit du clan",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 29.59, "tours": 4, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Esprit de la montagne",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grand esprit de l'oracle",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 39.36, "tours": 5, "cible": "duo"},
+            {"type": "barriere", "valeur": 70, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "totems_oracle",
+      "nom": "Voie des Totems de l'oracle",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Totem de la force",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Totem de la grande guerre",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 29.91, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Totem de la grande terre",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Totem des ancêtres",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "barriere", "valeur": 138.46, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_pluie",
+      "nom": "Voie de la Grande pluie",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Pluie de l'oracle",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grande source",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 111.11, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grande averse de vie",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 119.66, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Déluge de l'oracle",
+          "genre": "m",
+          "effets": [
+            {"type": "purge", "cible": "duo"},
+            {"type": "soin", "valeur": 111.11, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_malefice",
+      "nom": "Voie du Grand maléfice",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Maléfice de l'oracle",
+          "genre": "m",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 35, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grand mauvais œil",
+          "genre": "m",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 38.46, "tours": 2, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grand rituel",
+          "genre": "m",
+          "effets": [
+            {"type": "dissipe", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 45, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Maléfice des ancêtres",
+          "genre": "m",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 35.96, "tours": 2, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "foudre_oracle",
+      "nom": "Voie de la Foudre de l'oracle",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Éclair de l'oracle",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Fulgurance de l'oracle",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Colère des grands esprits",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Jugement de l'oracle",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

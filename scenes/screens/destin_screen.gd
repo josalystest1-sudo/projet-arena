@@ -290,7 +290,7 @@ func _remplir_evolution() -> void:
 		evolution_box.add_child(UiKit.label("Au niveau %d, %s pourra devenir %s." % [plafond, app.destin.nom, liste], 14, UiKit.SOFT, false))
 		return
 	evolution_box.add_child(UiKit.label("Ton évolution : choisis-en une", 22, UiKit.GOLD, false))
-	evolution_box.add_child(UiKit.label("Nouvelle roue, même graine : tes points repartent à zéro, puis un par niveau jusqu'au niveau %d. Sans retour." % Evolution.niveau_max(1, app.data), 14, UiKit.SOFT, false))
+	evolution_box.add_child(UiKit.label("Nouvelle roue, même graine : tes points repartent à zéro, puis un par niveau jusqu'au niveau %d. Sans retour." % Evolution.niveau_max(app.rang_perso() + 1, app.data), 14, UiKit.SOFT, false))
 	for id in possibles:
 		var ev := app.data.classe(id)
 		var role := str(UiKit.ROLE_LABELS[ev["role"]])

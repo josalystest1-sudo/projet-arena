@@ -1,8 +1,9 @@
 ## Les évolutions de classe (docs/GDD_V2.md, § 3 ; décisions de Gautier du 30 octobre, docs/JOURNAL-COMBAT-V2.md) :
-## au niveau 30, un personnage peut évoluer en l'une des évolutions de sa classe (une par classe pour l'instant, trois
-## plus tard). L'évolution est une classe à part entière (data/evolutions/<id>.json : nom, rôle, PV, k, moyeu, 5 voies),
-## avec sa classe de base (`base`) et son rang (`rang` 1). Évoluer : nouvelle roue, zéro point de Destin, puis un point
-## par niveau jusqu'au plafond du rang suivant (31 à 60) ; la graine ne change pas. Le saut de puissance du GDD (×2,5)
+## au niveau 30, un personnage peut évoluer en l'une des trois évolutions de sa classe (rang 1) ; au niveau 60, en l'une
+## des évolutions de son évolution (rang 2 ; une par évolution de rang 1 pour l'instant). Une évolution est une classe à
+## part entière (data/evolutions/<id>.json : nom, rôle, PV, k, moyeu, 5 voies), avec son parent (`base` : la classe de
+## base pour le rang 1, l'évolution de rang 1 pour le rang 2) et son rang. Évoluer : nouvelle roue, zéro point de Destin,
+## puis un point par niveau jusqu'au plafond du rang suivant (31 à 60, puis 61 à 90) ; la graine ne change pas. Le saut de puissance du GDD (×2,5)
 ## est porté par data/rules.json (`evolution.puissance_pv` et `puissance_valeurs` : PV ×2,5 et valeurs ×2,5, pour qu'un
 ## évolué à roue vide batte un niveau 29 à roue pleine, même en trio ; tools/mesure_evolution.gd le mesure), appliqué aux
 ## PV et au multiplicateur de classe de tout Destin évolué (Destin.de_base). Module pur.
@@ -20,9 +21,22 @@ static func rang(classe_id: String, d: Donnees) -> int:
 	return int(d.classe(classe_id).get("rang", 0))
 
 
-## La classe de base d'une classe (elle-même pour une classe de base) : la lignée, qui porte les records de la Tour.
-static func base(classe_id: String, d: Donnees) -> String:
+## Le parent d'une classe : sa classe de base pour un rang 1, son évolution de rang 1 pour un rang 2 ; elle-même pour
+## une classe de base.
+static func parent(classe_id: String, d: Donnees) -> String:
 	return str(d.classe(classe_id).get("base", classe_id))
+
+
+## La classe de base au bout de la lignée (elle-même pour une classe de base) : elle porte les records de la Tour et
+## le sprite.
+static func base(classe_id: String, d: Donnees) -> String:
+	var c := classe_id
+	for _i in range(8):
+		var p := parent(c, d)
+		if p == c:
+			return c
+		c = p
+	return c
 
 
 ## Les évolutions d'une classe, dans l'ordre de data/evolutions.json.
@@ -34,26 +48,30 @@ static func evolutions_de(classe_id: String, d: Donnees) -> Array[String]:
 	return out
 
 
-## Les évolutions d'un rôle (le rôle de l'évolution, pas celui de sa classe de base).
-static func du_role(role: String, d: Donnees) -> Array[String]:
+## Les évolutions d'un rang et d'un rôle (le rôle de l'évolution, pas celui de sa classe de base).
+static func du_role(role: String, d: Donnees, p_rang: int = 1) -> Array[String]:
 	var out: Array[String] = []
 	for id in d.ordre_evolutions:
-		if str(d.classe(id).get("role", "")) == role:
+		if str(d.classe(id).get("role", "")) == role and rang(id, d) == p_rang:
 			out.append(id)
 	return out
 
 
 ## Le rang le plus haut qui existe dans les données (0 tant qu'il n'y a pas d'évolution).
 static func rang_max(d: Donnees) -> int:
-	return 1 if not d.ordre_evolutions.is_empty() else 0
+	var out := 0
+	for id in d.ordre_evolutions:
+		out = maxi(out, rang(id, d))
+	return out
 
 
-## Le niveau le plus haut d'un rang : 30 pour la classe de base, 60 pour le rang 1.
+## Le niveau le plus haut d'un rang : 30 pour la classe de base, 60 pour le rang 1, 90 pour le rang 2.
 static func niveau_max(p_rang: int, d: Donnees) -> int:
 	return niveaux_par_rang(d) * (p_rang + 1)
 
 
-## Le rang attendu d'un personnage de ce niveau : 0 jusqu'au niveau 30, 1 de 31 à 60 (borné par ce qui existe).
+## Le rang attendu d'un personnage de ce niveau : 0 jusqu'au niveau 30, 1 de 31 à 60, 2 de 61 à 90 (borné par ce qui
+## existe).
 static func rang_du_niveau(niveau: int, d: Donnees) -> int:
 	return clampi((niveau - 1) / niveaux_par_rang(d), 0, rang_max(d))
 
@@ -92,8 +110,13 @@ static func tirer(classe_id: String, graine: int, d: Donnees) -> String:
 
 
 ## La classe qu'un personnage généré de ce niveau doit avoir : sa classe de base jusqu'au niveau 30, une de ses
-## évolutions (tirée avec la graine) au-delà.
+## évolutions (tirée avec la graine) de 31 à 60, une évolution de celle-ci au-delà.
 static func classe_au_niveau(classe_id: String, niveau: int, graine: int, d: Donnees) -> String:
-	if rang(classe_id, d) >= rang_du_niveau(niveau, d):
-		return classe_id
-	return tirer(classe_id, graine, d)
+	var c := classe_id
+	var vise := rang_du_niveau(niveau, d)
+	while rang(c, d) < vise:
+		var suivante := tirer(c, graine + rang(c, d), d)
+		if suivante == c:
+			break
+		c = suivante
+	return c

@@ -13,11 +13,11 @@ const ROLES := ["front", "degats", "soutien"]
 const XOR_ECHO := 0x3C6EF372
 
 
-## Les classes d'un rôle, dans l'ordre des données : les classes de base (rang 0) ou les évolutions (rang 1).
+## Les classes d'un rôle, dans l'ordre des données : les classes de base (rang 0) ou les évolutions d'un rang (1 ou 2).
 static func classes_du_role(role: String, donnees: Donnees = null, rang: int = 0) -> Array[String]:
 	var d := donnees if donnees != null else Donnees.defaut()
 	if rang >= 1:
-		return Evolution.du_role(role, d)
+		return Evolution.du_role(role, d, rang)
 	var out: Array[String] = []
 	for c in d.ordre_classes:
 		if str(d.classe(c)["role"]) == role:
