@@ -25,6 +25,7 @@ const SCREENS := {
 	"creation": preload("res://scenes/screens/creation_screen.gd"),
 	"ville": preload("res://scenes/screens/ville_screen.gd"),
 	"tableau": preload("res://scenes/screens/tableau_screen.gd"),
+	"arene": preload("res://scenes/screens/arene_screen.gd"),
 	"trio": preload("res://scenes/screens/trio_screen.gd"),
 	"profile": preload("res://scenes/screens/profile_screen.gd"),
 	"settings": preload("res://scenes/screens/settings_screen.gd"),
@@ -479,8 +480,70 @@ func noms_trio() -> Dictionary:
 	return out
 
 
-## Un duel contre un trio IA de ton niveau : une classe et une graine au hasard, ses deux Échos (l'étape 5 fera un vrai
-## matchmaking).
+# ---------------------------------------------------------------------------
+# L'Arène classée (hors ligne, en attendant le serveur)
+# ---------------------------------------------------------------------------
+
+## L'état de l'Arène, remis d'aplomb : les points repartent de zéro au changement de saison, les combats du jour au
+## changement de jour, les victoires et le coffre au changement de semaine.
+func _arene() -> Dictionary:
+	var aujourd_hui := Time.get_date_string_from_system()
+	var a: Dictionary = profile.arene
+	if a.is_empty():
+		a = {"points": 0, "saison": Arene.saison(aujourd_hui, data), "jour": aujourd_hui, "combats_jour": 0, "semaine": Arene.semaine(aujourd_hui), "victoires_semaine": 0, "coffre_reclame": false}
+	if int(a["saison"]) != Arene.saison(aujourd_hui, data):
+		a["saison"] = Arene.saison(aujourd_hui, data)
+		a["points"] = 0
+	if str(a["jour"]) != aujourd_hui:
+		a["jour"] = aujourd_hui
+		a["combats_jour"] = 0
+	if int(a["semaine"]) != Arene.semaine(aujourd_hui):
+		a["semaine"] = Arene.semaine(aujourd_hui)
+		a["victoires_semaine"] = 0
+		a["coffre_reclame"] = false
+	profile.arene = a
+	return a
+
+
+## L'Arène prête à afficher : points, ligue, saison et sa fin, combats classés restants aujourd'hui, victoires de la
+## semaine, rareté du coffre, coffre réclamé.
+func etat_arene() -> Dictionary:
+	var a := _arene()
+	var aujourd_hui := Time.get_date_string_from_system()
+	return {"points": int(a["points"]), "ligue": Arene.ligue(0), "saison": int(a["saison"]), "fin_saison": Arene.fin_de_saison(aujourd_hui, data),
+		"restants": maxi(0, int(data.objets_arene["combats_par_jour"]) - int(a["combats_jour"])), "victoires_semaine": int(a["victoires_semaine"]),
+		"coffre": Arene.rarete_coffre(int(a["victoires_semaine"]), data), "coffre_reclame": bool(a["coffre_reclame"])}
+
+
+## Un combat classé : un adversaire généré à ton niveau (classe, graine, niveau, nom, équipement), contre ton trio.
+## Vide s'il ne reste plus de combat classé aujourd'hui.
+func duel_classe() -> Dictionary:
+	if int(etat_arene()["restants"]) <= 0:
+		return {}
+	var adv := Arene.adversaire(profile.level, _nouvelle_graine(), data)
+	var ennemis := Arene.trio_adverse(adv, data)
+	var e := Regles.nouveau_combat(trio(), ennemis, profile.level, "pvp", data)
+	var noms := noms_trio()
+	noms["b1"] = str(adv["nom"])
+	return {"etat": e, "noms": noms, "classe": true, "adversaire": adv}
+
+
+## Le coffre de la semaine : un objet lié dans le sac, une fois par semaine. Vide s'il n'y a pas de coffre ou s'il est
+## déjà réclamé.
+func reclamer_coffre() -> Dictionary:
+	var a := _arene()
+	if bool(a["coffre_reclame"]):
+		return {}
+	var objet := Arene.coffre(int(a["victoires_semaine"]), profile.level, _nouvelle_graine(), data)
+	if objet.is_empty():
+		return {}
+	a["coffre_reclame"] = true
+	profile.sac.append(objet)
+	profile.save()
+	return objet
+
+
+## Un duel amical contre un trio IA de ton niveau : une classe et une graine au hasard, ses deux Échos.
 func duel_contre_ia() -> Dictionary:
 	var classe: String = data.ordre_classes[rng.randi_range(0, data.ordre_classes.size() - 1)]
 	var ennemis := Trio.camp(Generateur.generer(classe, _nouvelle_graine(), profile.level, Generateur.PAR_DEFAUT, data), profile.level, data)
@@ -557,17 +620,27 @@ func choisir_faveur(id: String, t: Tour) -> void:
 	t.faveurs = faveurs()
 
 
-## La fin d'un duel : le résultat, la série, l'XP (+120 gagné, +80 perdu), les Éclats. Renvoie {xp, niveaux, eclats}.
-func fin_duel(gagne: bool) -> Dictionary:
+## La fin d'un duel : le résultat et la série ; un combat classé rapporte l'XP (+120 gagné, +80 perdu), les Éclats et
+## des points de classement, et compte dans le jour et la semaine ; un amical ne rapporte rien (GDD V2, § 7, proposé)
+## mais compte pour les objectifs. Renvoie {xp, niveaux, eclats, classe, points, points_avant}.
+func fin_duel(gagne: bool, classe: bool = false) -> Dictionary:
 	profile.record_result(gagne)
-	var xp := 120 if gagne else 80
-	var eclats := Equipement.eclats_duel(gagne, data)
-	profile.eclats += eclats
 	compter("duels")
 	if gagne:
 		compter("duels_gagnes")
+	if not classe:
+		return {"xp": 0, "niveaux": 0, "eclats": 0, "classe": false, "points": 0, "points_avant": 0}
+	var a := _arene()
+	var avant := int(a["points"])
+	a["points"] = Arene.points_apres(avant, gagne, data)
+	a["combats_jour"] = int(a["combats_jour"]) + 1
+	if gagne:
+		a["victoires_semaine"] = int(a["victoires_semaine"]) + 1
+	var xp := 120 if gagne else 80
+	var eclats := Equipement.eclats_duel(gagne, data)
+	profile.eclats += eclats
 	var r := gain_xp(xp)
-	return {"xp": xp, "niveaux": int(r["levels"]), "eclats": eclats}
+	return {"xp": xp, "niveaux": int(r["levels"]), "eclats": eclats, "classe": true, "points": int(a["points"]), "points_avant": avant}
 
 
 ## La fin d'une montée : le record de la classe (l'étage atteint) et son palier (l'étage qui suit le dernier Gardien

@@ -33,6 +33,9 @@ var revenu_jour: String = ""
 var objectifs_jour: String = ""
 var compteurs: Dictionary = {}
 var objectifs_reclames: Array = []
+## L'Arène classée (engine/arene.gd) : {points, saison, jour, combats_jour, semaine, victoires_semaine, coffre_reclame} ;
+## vide tant qu'on n'y est pas allé.
+var arene: Dictionary = {}
 ## Les monstres déjà croisés à la Tour (identifiant -> true), pour le bestiaire.
 var monsters_seen: Dictionary = {}
 ## Les bulles d'aide du combat déjà lues (identifiant -> true) : chacune ne s'affiche qu'une fois.
@@ -63,6 +66,7 @@ static func load_profile() -> PlayerProfile:
 		profile.objectifs_jour = str(cfg.get_value("objectifs", "jour", ""))
 		profile.compteurs = cfg.get_value("objectifs", "compteurs", {})
 		profile.objectifs_reclames = cfg.get_value("objectifs", "reclames", [])
+		profile.arene = cfg.get_value("arene", "etat", {})
 		profile.monsters_seen = cfg.get_value("tour", "monstres", {})
 		profile.tips_seen = cfg.get_value("aide", "vues", {})
 		profile.level = int(cfg.get_value("progression", "niveau", 1))
@@ -88,6 +92,7 @@ func save() -> void:
 	cfg.set_value("objectifs", "jour", objectifs_jour)
 	cfg.set_value("objectifs", "compteurs", compteurs)
 	cfg.set_value("objectifs", "reclames", objectifs_reclames)
+	cfg.set_value("arene", "etat", arene)
 	cfg.set_value("tour", "monstres", monsters_seen)
 	cfg.set_value("aide", "vues", tips_seen)
 	cfg.set_value("progression", "niveau", level)

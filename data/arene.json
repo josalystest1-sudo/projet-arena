@@ -1,0 +1,10 @@
+{
+  "combats_par_jour": 5,
+  "points_gagne": 20,
+  "points_perdu": 10,
+  "saison": {"debut": "2026-10-01", "jours": 90},
+  "coffre": {"commun": 3, "rare": 5, "epique": 7},
+  "adversaire": {"niveau_ecart": 2, "equipement": {"": 20, "commun": 40, "rare": 30, "epique": 10}},
+  "ligues": {"aspirants": "Aspirants", "elus": "Élus", "ascendants": "Ascendants"},
+  "noms": ["Ombre", "Brume", "Cendre", "Givre", "Ronce", "Écume", "Nox", "Bise", "Sabre", "Louve", "Fauve", "Vesper", "Oriel", "Thane", "Maël", "Zéphyr"]
+}

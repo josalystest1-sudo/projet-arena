@@ -43,6 +43,8 @@ var app: ArenaApp
 var e: EtatCombat
 var tour: Tour = null
 var noms := {}
+## Un combat classé de l'Arène (ses points en jeu) ou un amical.
+var classe := false
 var vues := {}
 var declarations := {}
 var choisie := -1
@@ -88,6 +90,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	e = options["etat"]
 	tour = options.get("tour", null)
 	noms = options.get("noms", {})
+	classe = bool(options.get("classe", false))
 	_construire()
 	_debut_tour()
 
@@ -948,14 +951,14 @@ func _on_quitter() -> void:
 		app.fin_tour(tour)
 		app.show_screen("tower")
 	else:
-		app.fin_duel(false)
+		app.fin_duel(false, classe)
 		app.show_screen("ville")
 
 
 func _fin() -> void:
 	phase = "fin"
 	lbl_chrono.text = ""
-	var options := {"etat": e, "noms": noms, "trace": trace, "synergies": synergies, "parts": parts}
+	var options := {"etat": e, "noms": noms, "trace": trace, "synergies": synergies, "parts": parts, "classe": classe}
 	if tour != null:
 		options["tour"] = tour
 	app.show_screen("fin", options)

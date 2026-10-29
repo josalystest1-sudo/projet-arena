@@ -40,11 +40,16 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	var cartes := HBoxContainer.new()
 	cartes.add_theme_constant_override("separation", 8)
 	if tour == null:
-		var resultat := app.fin_duel(gagne)
+		var classe := bool(options.get("classe", false))
+		var resultat := app.fin_duel(gagne, classe)
 		column.add_child(UiKit.label("Victoire !" if gagne else "Défaite", 40, OR if gagne else ROUGE))
 		app.sfx.play("victoire" if gagne else "defaite")
 		column.add_child(cartes)
-		_carte(cartes, "XP", "+%d" % int(resultat["xp"]), "niveau %d%s · +%d Éclats" % [app.profile.level, (" (+%d)" % int(resultat["niveaux"])) if int(resultat["niveaux"]) > 0 else "", int(resultat["eclats"])])
+		if classe:
+			_carte(cartes, "Classement", "%s%d" % ["+" if int(resultat["points"]) >= int(resultat["points_avant"]) else "", int(resultat["points"]) - int(resultat["points_avant"])], "%d points" % int(resultat["points"]))
+			_carte(cartes, "XP", "+%d" % int(resultat["xp"]), "niveau %d%s · +%d Éclats" % [app.profile.level, (" (+%d)" % int(resultat["niveaux"])) if int(resultat["niveaux"]) > 0 else "", int(resultat["eclats"])])
+		else:
+			_carte(cartes, "Amical", "—", "sans XP ni classement")
 		_carte(cartes, "Série", str(app.profile.streak), "record %d" % app.profile.best_streak)
 		var syn: Array = options.get("synergies", [])
 		_carte(cartes, "Synergies", str(syn.size()), ", ".join(_uniques(syn)) if not syn.is_empty() else "aucune")
@@ -108,7 +113,8 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	suite_boutons.add_theme_constant_override("separation", 12)
 	column.add_child(suite_boutons)
 	if tour == null:
-		suite_boutons.add_child(UiKit.main_button("Rejouer", func(): app.show_screen("versus")))
+		var classe_fin := bool(options.get("classe", false))
+		suite_boutons.add_child(UiKit.main_button("Rejouer", func(): app.show_screen("versus", {"classe": classe_fin})))
 		suite_boutons.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 56))
 	elif tour.fini:
 		suite_boutons.add_child(UiKit.main_button("Remonter", func(): app.show_screen("tower")))

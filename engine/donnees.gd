@@ -67,6 +67,12 @@ const CLES_VILLE := ["batiments"]
 ## Les objectifs du jour (data/objectifs.json, GDD V2 § 10.3) : combien par jour, et la réserve (texte, compteur du jeu,
 ## cible, récompense en XP et en Éclats). Les compteurs connus sont ceux d'engine/objectifs.gd.
 const CLES_OBJECTIFS := ["par_jour", "reserve"]
+## L'Arène classée (data/arene.json, GDD V2 § 7) : combats par jour, points, saison, coffre, adversaires, ligues, noms.
+const CLES_ARENE := ["combats_par_jour", "points_gagne", "points_perdu", "saison", "coffre", "adversaire", "ligues", "noms"]
+const CLES_ARENE_SAISON := ["debut", "jours"]
+const CLES_ARENE_COFFRE := ["commun", "rare", "epique"]
+const CLES_ARENE_ADVERSAIRE := ["niveau_ecart", "equipement"]
+const CLES_ARENE_LIGUES := ["aspirants", "elus", "ascendants"]
 const CLES_OBJECTIF := ["id", "texte", "compteur", "cible", "xp", "eclats"]
 const CLES_BATIMENT := ["id", "nom", "texte", "ecran", "options", "x", "y", "dispo", "forme"]
 const CLES_BATIMENT_OBLIGATOIRES := ["id", "nom", "texte", "ecran", "x", "y", "dispo"]
@@ -98,6 +104,8 @@ var objets: Dictionary = {}
 var ville: Dictionary = {}
 ## Les objectifs du jour (data/objectifs.json, GDD V2 § 10.3).
 var objectifs: Dictionary = {}
+## L'Arène classée (data/arene.json, GDD V2 § 7).
+var objets_arene: Dictionary = {}
 ## Ce qui ne va pas dans les données : une ligne par problème (vide si tout est connu et cohérent).
 var erreurs: Array[String] = []
 ## Une mémoire de calculs qui ne dépendent que des données (les formes de chaque nœud, pour le générateur).
@@ -128,6 +136,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.objets = _lire(dossier + "items.json", donnees.erreurs)
 	donnees.ville = _lire(dossier + "ville.json", donnees.erreurs)
 	donnees.objectifs = _lire(dossier + "objectifs.json", donnees.erreurs)
+	donnees.objets_arene = _lire(dossier + "arene.json", donnees.erreurs)
 	donnees.valider()
 	return donnees
 
@@ -190,6 +199,7 @@ func valider() -> void:
 	_valider_objets()
 	_valider_ville()
 	_valider_objectifs()
+	_valider_arene()
 	_cles(bestiaire, CLES_BESTIAIRE, CLES_BESTIAIRE, "bestiaire.json")
 	for id in bestiaire.get("monstres", {}):
 		var m: Dictionary = bestiaire["monstres"][id]
@@ -336,6 +346,28 @@ func _valider_objectifs() -> void:
 			erreurs.append(ou + " : cible positive, XP et Éclats non négatifs attendus")
 	if int(objectifs.get("par_jour", 0)) <= 0 or int(objectifs.get("par_jour", 0)) > ids.size():
 		erreurs.append("objectifs.json : par_jour entre 1 et la taille de la réserve")
+
+
+## L'Arène (data/arene.json) : clés connues, chiffres positifs, une saison datée, des poids d'équipement sur des raretés
+## connues (ou vide : sans équipement), des noms.
+func _valider_arene() -> void:
+	_cles(objets_arene, CLES_ARENE, CLES_ARENE, "arene.json")
+	if not objets_arene is Dictionary or not objets_arene.has("saison"):
+		return
+	if int(objets_arene.get("combats_par_jour", 0)) <= 0 or int(objets_arene.get("points_gagne", 0)) <= 0 or int(objets_arene.get("points_perdu", -1)) < 0:
+		erreurs.append("arene.json : combats par jour et points positifs attendus")
+	_cles(objets_arene["saison"], CLES_ARENE_SAISON, CLES_ARENE_SAISON, "arene.json saison")
+	if objets_arene["saison"] is Dictionary and (str(objets_arene["saison"].get("debut", "")).length() != 10 or int(objets_arene["saison"].get("jours", 0)) <= 0):
+		erreurs.append("arene.json saison : un début « AAAA-MM-JJ » et une durée en jours attendus")
+	_cles(objets_arene.get("coffre", {}), CLES_ARENE_COFFRE, CLES_ARENE_COFFRE, "arene.json coffre")
+	_cles(objets_arene.get("adversaire", {}), CLES_ARENE_ADVERSAIRE, CLES_ARENE_ADVERSAIRE, "arene.json adversaire")
+	if objets_arene.get("adversaire", {}) is Dictionary:
+		for r in objets_arene["adversaire"].get("equipement", {}):
+			if str(r) != "" and not objets.get("raretes", {}).has(str(r)):
+				erreurs.append("arene.json adversaire : rareté inconnue « %s »" % r)
+	_cles(objets_arene.get("ligues", {}), CLES_ARENE_LIGUES, CLES_ARENE_LIGUES, "arene.json ligues")
+	if not objets_arene.get("noms") is Array or objets_arene["noms"].is_empty():
+		erreurs.append("arene.json : des noms d'adversaires attendus")
 
 
 ## Les erreurs d'un fichier de classe (vide s'il est conforme à la section 13.1).
