@@ -930,7 +930,7 @@ func _resoudre() -> void:
 	await vue.termine
 	vue.queue_free()
 	_maj()
-	if e.fini or (tour != null and tour.abandonne(e)):
+	if e.fini:
 		_fin()
 	else:
 		_debut_tour()

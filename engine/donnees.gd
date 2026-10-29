@@ -34,7 +34,7 @@ const CLES_EFFETS := {
 	"dissipe": ["type", "cible"],
 }
 const CLES_REGLES := ["extinction", "refroidissement", "mort_subite_tour", "mort_subite_pas", "chrono_s", "niveau_pente",
-	"multi_cible", "tolerance_budget", "budgets", "couts", "couts_multi"]
+	"multi_cible", "tolerance_budget", "budgets", "couts", "couts_multi", "tour_soins_usure"]
 const CLES_BUDGETS := ["moyeu", "1", "2", "3", "4"]
 const CLES_COUTS := ["degats", "soin", "barriere", "dot", "gardien", "renfort", "affaiblissement", "etourdi", "gele",
 	"aveugle", "desarme", "egare", "silencie", "provoque", "enracine", "purge", "dissipe"]
@@ -47,8 +47,8 @@ const CLES_VOIE := ["id", "nom", "acolyte", "noeuds"]
 const CLES_NOEUD := ["rang", "nom", "genre", "effets", "budget_override"]
 const CLES_BESTIAIRE := ["familles", "rangs", "monstres"]
 const CLES_MONSTRE := ["nom", "famille", "rang", "classe", "voies", "pv_mult", "description"]
-const CLES_TOUR := ["pv_entre_etages", "monstres_max", "somme_depart", "somme_pente", "somme_largeur", "classes",
-	"classes_pente", "tirages", "gardien_tous_les", "abandon_tour"]
+const CLES_TOUR := ["pv_entre_etages", "monstres_max", "somme_depart", "somme_pente", "somme_largeur", "somme_max",
+	"niveau_par_etage", "tirages", "gardien_tous_les"]
 
 var regles: Dictionary = {}
 var etats: Dictionary = {}

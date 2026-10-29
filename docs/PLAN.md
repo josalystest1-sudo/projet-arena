@@ -83,7 +83,7 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 
 ### Phase 2 — La Tour infinie
 
-**PR 2.1 — Étages générés, paliers, reprise, sans limite de tours**
+**PR 2.1 — Étages générés, paliers, reprise, sans limite de tours** (**faite**, PR #57)
 - `engine/tower.gd` et `data/tower.json` : les étages ne sont plus une liste de 10 mais une **courbe** (budget de menace, PV et puissance des monstres par étage ; Gardien tous les 5, variantes qui montent en gamme ; familles qui tournent). `plan_floor(n)` pour tout n. Paliers tous les 5 étages : reprise au dernier palier avec tous ses PV ; entre deux paliers, l'usure (20 %, KO à 20 %, recharges conservées). Rejouer depuis un palier (étages déjà franchis : XP et butin réduits).
 - Retirer « épuisés au tour 12 » et « abandonnent au tour 24 » ; **les soins et régénérations des monstres s'affaiblissent à chaque usage** (`data/rules.json` : facteur 0,75) ; plafond technique de 300 tours dans `tools/simulate_tour.gd` (compté comme abandon).
 - Profil : étage courant, palier, par classe ; record = étage atteint.

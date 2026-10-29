@@ -1,34 +1,11 @@
 {
   "pv_entre_etages": 0.2,
-  "monstres_max": 4,
+  "monstres_max": 6,
   "somme_depart": 0.5055,
   "somme_pente": 0.0285,
   "somme_largeur": 0.8,
-  "classes": {
-    "guerrier": 1.7688,
-    "mage": 0.7425,
-    "voleur": 0.951,
-    "archer": 0.6976,
-    "pretre": 1.1184,
-    "invocateur": 0.9368,
-    "barde": 0.8777,
-    "diplomate": 1.0247,
-    "pugiliste": 0.9862,
-    "alchimiste": 0.8148
-  },
-  "classes_pente": {
-    "guerrier": 0.779,
-    "mage": 0.9293,
-    "voleur": 0.4261,
-    "invocateur": 1.202,
-    "barde": 1.2704,
-    "pugiliste": 1.0075,
-    "pretre": 0.8159,
-    "archer": 1.2571,
-    "alchimiste": 1.4387,
-    "diplomate": 1.0378
-  },
+  "somme_max": 3.0,
+  "niveau_par_etage": 2.5,
   "tirages": 60,
-  "gardien_tous_les": 5,
-  "abandon_tour": 48
+  "gardien_tous_les": 5
 }

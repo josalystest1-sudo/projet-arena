@@ -96,9 +96,9 @@ Modifiées le 29 octobre :
 
 - **Infinie, fixe, sans remise à zéro.** Tu atteins l'étage 40, demain tu reprends à l'étage 40. Le concours est à qui est le plus haut. **[Décidé]**
 - **Assez d'étages pour que personne n'atteigne jamais le plafond**, en tenant compte des sauts de puissance (Évolutions, grimoires, équipement) : les étages sont **générés** (famille, budget de menace, PV et puissance qui montent par une courbe réglée au simulateur), Gardien tous les 5 étages avec des variantes qui montent en gamme. **[Décidé ; génération : Proposé]**
-- **Paliers tous les 5 étages** (optionnels selon Gautier, gardés) : on reprend au dernier palier avec tous ses PV ; entre deux paliers, l'usure joue (20 % des PV rendus entre étages, un KO revient à 20 %, recharges conservées). **[Proposé]**
+- **Paliers tous les 5 étages** (optionnels selon Gautier, gardés) : on reprend au dernier palier avec tous ses PV ; entre deux paliers, l'usure joue (20 % des PV rendus entre étages, un KO revient à 20 %, recharges conservées). **[Proposé]** Fait (PR #57) : le palier est l'étage qui suit le dernier Gardien franchi (6, 11, 16…), par classe.
 - **Rejouer depuis un palier** est toujours possible : les étages déjà franchis redonnent de l'XP et du butin (moins qu'une première fois). C'est la boucle de ferme en solo : bloqué à l'étage 23, on refait 20 à 22 pour l'XP et l'équipement. **[Proposé]**
-- **La Tour est absolue, le joueur est relatif** : un étage a toujours la même force ; le simulateur règle « à quel niveau et avec quel équipement on passe tel étage ». **[Proposé]**
+- **La Tour est absolue, le joueur est relatif** : un étage a toujours la même force ; le simulateur règle « à quel niveau et avec quel équipement on passe tel étage ». **[Proposé]** Fait (PR #57) : les monstres ont le niveau de l'étage (1 + 2,5 par étage), quel que soit le niveau du trio.
 - **Faveurs de la Tour** : chaque Gardien vaincu pour la première fois donne une Faveur permanente, à choisir parmi trois, **valable seulement dans la Tour**. **[Proposé]**
 - **Revenu passif selon la hauteur** : monnaie et un peu d'XP par jour, plafonnés, jamais d'objets de puissance. **[Décidé dans le principe, à mesurer contre l'économie]**
 - **Classement** = étage atteint, par classe. Pas de saison pour la Tour (elle ne se remet pas). **[Décidé]**

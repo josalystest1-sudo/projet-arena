@@ -64,7 +64,7 @@ static func nouveau_combat(camp_a: Array, camp_b: Array, niveau: int, mode: Stri
 				eteints.append([0, 0, 0, 0])
 			e.persos[id] = {"pv": pv_max, "ko": false, "etats": {}, "barriere": 0, "barrier_until": 0,
 				"jalons": _zeros(nv), "spent_until": eteints, "inactivite": _zeros(nv), "last_voie": -1,
-				"cible_ennemie": "", "cible_alliee": ""}
+				"cible_ennemie": "", "cible_alliee": "", "soins": 0}
 	return e
 
 
@@ -432,6 +432,7 @@ static func resoudre_tour(etat: EtatCombat, declarations: Dictionary) -> EtatCom
 				_appliquer(e, a, i, ef, phase, instant, mods)
 	_ticks(e)
 	_durees(e)
+	_compter_soins(e, actions)
 	_jalons(e, actions)
 	_ko_et_fin(e, pv_debut)
 	if not e.fini:
@@ -475,7 +476,7 @@ static func _appliquer(e: EtatCombat, a: Dictionary, index: int, ef: Dictionary,
 				var montant := plancher(base * float(mods["degats"].get("%s|%d|%s" % [id, index, t], 1.0)))
 				_blesser(e, phase, id, nid, t, montant, false, "degats")
 		"soin":
-			var base := valeur(e, id, voie, rang, float(ef["valeur"])) * maxf(0.0, forces)
+			var base := valeur(e, id, voie, rang, float(ef["valeur"])) * maxf(0.0, forces) * usure_soins(e, id)
 			for t in touches:
 				var montant := plancher(base)
 				if instant[t]["poison"]:
@@ -505,7 +506,7 @@ static func _appliquer(e: EtatCombat, a: Dictionary, index: int, ef: Dictionary,
 				_poser(e, t, str(ef["sous_type"]), tours, float(par_tour), id)
 				_ev(e, phase, id, nid, t, "etat", par_tour, 0, "%s:%d" % [ef["sous_type"], tours])
 		"gardien":
-			var par_tour := plancher(valeur(e, id, voie, rang, float(ef["par_tour"])) * maxf(0.0, forces))
+			var par_tour := plancher(valeur(e, id, voie, rang, float(ef["par_tour"])) * maxf(0.0, forces) * usure_soins(e, id))
 			for t in touches:
 				_poser(e, t, "gardien", int(ef["tours"]), float(par_tour), id)
 				_ev(e, phase, id, nid, t, "etat", par_tour, 0, "gardien:%d" % int(ef["tours"]))
@@ -538,6 +539,28 @@ static func pourcent(e: EtatCombat, id: String, voie: int, rang: int, pc: float)
 	var fiche := e.fiche(id)
 	var bonus := 0.0 if rang == 0 else float(fiche["bonus"][voie][rang - 1])
 	return pc / 100.0 * (1.0 + bonus)
+
+
+## À la Tour, les soins d'un monstre s'affaiblissent à chaque usage (docs/GDD_V2.md, § 4.1 : pas de limite de tours en
+## PvE, et tout combat reste gagnable) : × tour_soins_usure (data/rules.json) puissance le nombre de ses actions de soin
+## déjà jouées (Soin direct ou Gardien). 1 partout ailleurs.
+static func usure_soins(e: EtatCombat, id: String) -> float:
+	if e.mode != "tour" or e.camp(id) != "b":
+		return 1.0
+	return pow(float(e.regles["tour_soins_usure"]), float(e.perso(id).get("soins", 0)))
+
+
+## Après un tour à la Tour : chaque monstre qui a joué une action de soin en compte une de plus.
+static func _compter_soins(e: EtatCombat, actions: Dictionary) -> void:
+	if e.mode != "tour":
+		return
+	for id in actions:
+		if e.camp(id) != "b":
+			continue
+		for ef in noeud_de(e, actions[id])["effets"]:
+			if ef["type"] in ["soin", "gardien"]:
+				e.perso(id)["soins"] = int(e.perso(id).get("soins", 0)) + 1
+				break
 
 
 ## Des dégâts sur un perso : la barrière absorbe d'abord (sauf pour le Saignement), le reste va aux PV.

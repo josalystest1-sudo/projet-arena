@@ -7,6 +7,7 @@
   "niveau_pente": 0.05,
   "multi_cible": 1.3,
   "tolerance_budget": 0.06,
+  "tour_soins_usure": 0.75,
   "budgets": {"moyeu": 55, "1": 70, "2": 100, "3": 140, "4": 230},
   "couts": {"degats": 1.0, "soin": 0.9, "barriere": 0.7, "dot": 0.7, "gardien": 0.65, "renfort": 2.0, "affaiblissement": 2.0, "etourdi": 120, "gele": 80, "aveugle": 80, "desarme": 60, "egare": 60, "silencie": 45, "provoque": 40, "enracine": 35, "purge": 50, "dissipe": 50},
   "couts_multi": {"purge": 100}

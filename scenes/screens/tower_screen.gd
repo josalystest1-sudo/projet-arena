@@ -1,5 +1,6 @@
-## La Tour (GDD) : les règles en clair, ton record et ceux de chaque classe, le bestiaire, et le bouton pour monter.
-## Les étages se suivent tant que le trio tient ; les monstres sont plus forts à chaque étage.
+## La Tour infinie (docs/GDD_V2.md, § 6) : les règles en clair, ton record et ton palier, « Reprendre » (au palier),
+## « Rejouer depuis » un palier plus bas, le bestiaire, et les records de chaque classe. Les étages se suivent tant que le
+## trio tient ; chaque étage a toujours la même force, et elle monte d'étage en étage, sans fin.
 extends Control
 
 var app: ArenaApp
@@ -12,13 +13,25 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	var cls_nom := str(app.data.classe(app.player_class)["nom"])
 	var record := int(app.profile.tower_records.get(app.player_class, 0))
 	column.add_child(UiKit.label("Ton record (%s) : %s" % [cls_nom, "étage %d" % record if record > 0 else "pas encore de montée"], 20, Color.WHITE))
+	var palier := app.palier()
 	var regles := UiKit.card(column, 4)
 	regles.add_child(UiKit.label("Les règles", 20, UiKit.GOLD, false))
-	for ligne in ["Ton trio grimpe les étages, contre 1 à 4 monstres à chaque étage. Plus tu montes, plus ils sont forts.",
-			"Entre deux étages, chacun récupère 20 % de ses PV. Un Écho tombé revient avec 20 %.",
-			"Pas de mort subite : la montée s'arrête quand tout ton trio tombe. L'étage atteint est ton record, classé par classe."]:
+	for ligne in ["La Tour n'a pas de fin. Chaque étage a toujours la même force, pour tout le monde, et elle monte d'étage en étage : c'est ton niveau qui te fait monter plus haut.",
+			"Un Gardien tous les 5 étages. Une fois franchi, tu reprends toujours après lui, avec tous tes PV : c'est ton palier.",
+			"Entre deux étages, chacun récupère 20 % de ses PV ; un Écho tombé revient avec 20 %. Pas de limite de tours : les soins des monstres s'affaiblissent à chaque fois.",
+			"La montée s'arrête quand tout ton trio tombe. L'étage atteint est ton record, classé par classe. Un étage déjà franchi rapporte moitié moins d'XP."]:
 		regles.add_child(UiKit.label(ligne, 16, UiKit.SOFT, false))
-	column.add_child(UiKit.main_button("Monter", _monter, 84))
+	column.add_child(UiKit.main_button("Reprendre à l'étage %d" % palier if palier > 1 else "Monter", _monter.bind(palier), 84))
+	var plus_bas := Tour.paliers(palier - 1, int(app.data.tour["gardien_tous_les"])).filter(func(p): return p < palier)
+	if not plus_bas.is_empty():
+		var rejouer := UiKit.card(column, 4)
+		rejouer.add_child(UiKit.label("Rejouer depuis un palier plus bas", 18, UiKit.GOLD, false))
+		var ligne := HFlowContainer.new()
+		ligne.add_theme_constant_override("h_separation", 8)
+		ligne.add_theme_constant_override("v_separation", 8)
+		rejouer.add_child(ligne)
+		for p in plus_bas:
+			ligne.add_child(UiKit.button("Étage %d" % p, _monter.bind(p), 48, 16))
 	column.add_child(UiKit.button("Le bestiaire", func(): app.show_screen("bestiaire"), 52))
 	var records := UiKit.card(column, 2)
 	records.add_child(UiKit.label("Records par classe", 18, UiKit.GOLD, false))
@@ -27,6 +40,6 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		records.add_child(UiKit.label("%s : %s" % [app.data.classe(class_id)["nom"], "étage %d" % value if value > 0 else "—"], 16, Color.WHITE, false))
 
 
-func _monter() -> void:
+func _monter(depart: int) -> void:
 	app.sfx.play("clic")
-	app.show_screen("trio", {"mode": "tour"})
+	app.show_screen("trio", {"mode": "tour", "depart": depart})
