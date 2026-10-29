@@ -21,7 +21,7 @@ func _show_classes() -> void:
 	_reset()
 	column.add_child(UiKit.spacer(10))
 	column.add_child(UiKit.label("Projet Arena", 42, UiKit.GOLD))
-	column.add_child(UiKit.label("Un seul personnage, un Destin unique, un acolyte à tes côtés.", 18, UiKit.SOFT))
+	column.add_child(UiKit.label("Un seul personnage, un Destin unique, et deux Échos à tes côtés.", 18, UiKit.SOFT))
 	column.add_child(UiKit.label("Choisis ta classe :", 22))
 	for class_id in app.data.ordre_classes:
 		var cls := app.data.classe(class_id)
@@ -34,7 +34,7 @@ func _show_classes() -> void:
 		text.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		row.add_child(text)
 		text.add_child(UiKit.label(str(cls["nom"]), 24, UiKit.GOLD, false))
-		text.add_child(UiKit.label("%s · acolyte : %s" % [UiKit.ROLE_LABELS[cls["role"]], app.data.classe(str(cls["acolyte"]))["nom"]], 15, UiKit.SOFT, false))
+		text.add_child(UiKit.label(UiKit.ROLE_LABELS[cls["role"]], 15, UiKit.SOFT, false))
 		var voies: Array[String] = []
 		for voie in cls["voies"]:
 			voies.append(str(voie["nom"]).trim_prefix("Voie ").trim_prefix("du ").trim_prefix("de la ").trim_prefix("de l'").trim_prefix("des "))
@@ -70,7 +70,10 @@ func _reveal_destiny() -> void:
 	var aide := VBoxContainer.new()
 	aide.add_child(UiKit.label("Jouer, c'est avancer d'un nœud sur une voie, jusqu'à sa Clé. Tu allumes un nœud de plus à chaque niveau (entre parenthèses : pas encore allumé).", 15, UiKit.SOFT, false))
 	blocks.append(aide)
-	var next := UiKit.main_button("Rencontrer ton acolyte", func(): app.show_screen("meet"))
+	var noms := app.noms_trio()
+	var echos := UiKit.label("Tes deux Échos t'attendent : %s et %s. Premier combat : l'étage 1 de la Tour." % [noms["a2"], noms["a3"]], 16, UiKit.ACOLYTE_BLUE)
+	blocks.append(echos)
+	var next := UiKit.main_button("Ton premier combat", func(): app.show_screen("combat", app.commencer_tour()))
 	next.modulate.a = 0.0
 	for block in blocks:
 		block.modulate.a = 0.0

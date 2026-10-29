@@ -1,21 +1,23 @@
-## L'application : garde le profil et le duo du joueur, affiche un écran à la fois et la barre de navigation.
+## L'application : garde le profil et le trio du joueur, affiche un écran à la fois et la barre de navigation.
 ## Combat V2 (docs/SPEC-COMBAT-V2.md) : un perso, c'est une classe et une graine (sa roue du Destin en sort à
-## l'identique) et la liste des nœuds qu'il a allumés ; son acolyte se déduit de sa classe et de sa graine.
-## Écrans : création, rencontre de l'acolyte, Vitrine (accueil), Acolyte, Destin (la roue), La Tour et son bestiaire,
-## Profil, Paramètres, face-à-face, combat, fin de combat.
+## l'identique) et la liste des nœuds qu'il a allumés. Il joue toujours en trio (docs/GDD_V2.md) : avec deux Échos,
+## un de chacun des deux autres rôles, proposés par le jeu à son niveau (une graine et un nom chacun, gardés jusqu'à ce
+## que le joueur en demande un autre ; amis et guilde viendront avec le serveur).
+## Écrans : création, Vitrine (accueil), Trio (composer son trio), Destin (la roue), La Tour et son bestiaire, Profil,
+## Paramètres, face-à-face, combat, fin de combat.
 ## Affichage et navigation seulement : toute la règle vit dans res://engine.
 class_name ArenaApp
 extends Control
 
-const ACOLYTE_NAMES := ["Lys", "Orme", "Saule", "Iris", "Cèdre", "Aube", "Sorel", "Nima"]
+## Les noms des Échos proposés par le jeu (en attendant ceux des vrais joueurs).
+const ECHO_NAMES := ["Lys", "Orme", "Saule", "Iris", "Cèdre", "Aube", "Sorel", "Nima", "Bram", "Elio", "Mira", "Tess"]
 const NAV_HEIGHT := 74.0
 ## Les onglets de la barre du bas : identifiant d'écran, texte.
-const NAV := [["home", "Accueil"], ["acolyte", "Acolyte"], ["destin", "Destin"], ["tower", "La Tour"], ["profile", "Profil"]]
+const NAV := [["home", "Accueil"], ["trio", "Trio"], ["destin", "Destin"], ["tower", "La Tour"], ["profile", "Profil"]]
 const SCREENS := {
 	"creation": preload("res://scenes/screens/creation_screen.gd"),
-	"meet": preload("res://scenes/screens/meet_screen.gd"),
 	"home": preload("res://scenes/screens/home_screen.gd"),
-	"acolyte": preload("res://scenes/screens/acolyte_screen.gd"),
+	"trio": preload("res://scenes/screens/trio_screen.gd"),
 	"profile": preload("res://scenes/screens/profile_screen.gd"),
 	"settings": preload("res://scenes/screens/settings_screen.gd"),
 	"destin": preload("res://scenes/screens/destin_screen.gd"),
@@ -31,16 +33,18 @@ var profile: PlayerProfile
 var sfx: Sfx
 var rng := RandomNumberGenerator.new()
 
-# Le duo du joueur : un seul personnage et un seul acolyte par compte (GDD), gardés sur l'appareil.
+# Le perso du joueur (un seul par compte, GDD) et ses deux Échos, gardés sur l'appareil.
 var player_class: String = ""
 ## La graine du Destin, tirée une fois à la création (section 4 : le seul hasard du jeu).
 var graine: int = 0
 ## Les nœuds allumés par le joueur, dans l'ordre (« v2.n2 », « v1.e1 »…), un par niveau ; les N1 le sont d'office.
 var allumage: Array[String] = []
-var acolyte_name: String = ""
+## Les deux Échos : leur rôle, leur graine et leur nom (« front », « degats » ou « soutien » -> { graine, nom }), et
+## leurs roues, dans l'ordre Front, Dégâts, Soutien.
+var echos_choisis: Dictionary = {}
+var echos: Array[Destin] = []
 ## Les deux roues, regénérées depuis la graine, le niveau et les nœuds allumés.
 var destin: Destin
-var acolyte_destin: Destin
 
 var content: Control
 var nav_bar: HBoxContainer
@@ -50,10 +54,6 @@ var current_name: String = ""
 
 
 func _ready() -> void:
-	# Le jeu publié est encore en duo, réglé avec l'IA de la section 10 : les règles de bon sens (PR 1.2) n'y jouent qu'à
-	# partir du trio à l'écran (PR 1.4), réglé de nouveau à la PR 1.5. Avec elles, le duo ne tenait plus qu'un critère
-	# d'équilibrage sur six (docs/EQUILIBRAGE-V2.md).
-	IA.bon_sens = false
 	# Pour tester : une adresse terminée par ?graine=7 rejoue toujours les mêmes tirages.
 	var test_seed := _seed_from_url()
 	if test_seed != 0:
@@ -69,7 +69,7 @@ func _ready() -> void:
 	sfx.muted = profile.muted
 	theme = UiKit.make_theme()
 	_build_layout()
-	show_screen("home" if load_saved_duo() else "creation")
+	show_screen("home" if charger_perso() else "creation")
 
 
 func _seed_from_url() -> int:
@@ -154,50 +154,86 @@ func show_screen(screen: String, options: Dictionary = {}) -> void:
 
 
 # ---------------------------------------------------------------------------
-# Le duo
+# Le perso et son trio
 # ---------------------------------------------------------------------------
 
-func has_duo() -> bool:
+func has_perso() -> bool:
 	return player_class != "" and destin != null
 
 
-## Le duo gardé sur l'appareil. Un duo d'avant le combat V2 (sans « version » 2) n'est pas repris : on recrée un perso.
-func load_saved_duo() -> bool:
+## Le perso gardé sur l'appareil. Un perso d'avant le combat V2 (sans « version » 2 ou plus) n'est pas repris : on en
+## recrée un. Un perso d'avant le trio reçoit ses deux Échos.
+func charger_perso() -> bool:
 	var saved := profile.duo
-	if int(saved.get("version", 0)) != 2 or not data.classes.has(str(saved.get("classe", ""))):
+	if int(saved.get("version", 0)) < 2 or not data.classes.has(str(saved["classe"] if saved.has("classe") else "")):
 		return false
 	player_class = str(saved["classe"])
 	graine = int(saved["graine"])
 	allumage.clear()
 	for cle in saved.get("allumage", []):
 		allumage.append(str(cle))
-	acolyte_name = str(saved.get("acolyte_nom", ACOLYTE_NAMES[0]))
+	echos_choisis = {}
+	for role in saved.get("echos", {}):
+		echos_choisis[str(role)] = {"graine": int(saved["echos"][role]["graine"]), "nom": str(saved["echos"][role]["nom"])}
+	_completer_echos()
 	_regenerer()
+	sauver_perso()
 	return true
 
 
-## Les deux roues, depuis la graine : celle du joueur avec ses nœuds allumés, celle de l'acolyte (allumée seule,
-## selon le niveau).
+## Un Écho proposé par le jeu pour chaque rôle qui n'en a pas (le rôle du joueur exclu).
+func _completer_echos() -> void:
+	var roles := Trio.roles_des_echos(player_class, data)
+	for role in echos_choisis.keys():
+		if not role in roles:
+			echos_choisis.erase(role)
+	for role in roles:
+		if not echos_choisis.has(role):
+			echos_choisis[role] = {"graine": _nouvelle_graine(), "nom": _nom_d_echo()}
+
+
+## Un nom d'Écho que le trio n'a pas déjà.
+func _nom_d_echo() -> String:
+	var pris: Array = []
+	for role in echos_choisis:
+		pris.append(echos_choisis[role]["nom"])
+	var libres: Array = ECHO_NAMES.filter(func(n): return not n in pris)
+	return libres[rng.randi_range(0, libres.size() - 1)]
+
+
+## Les roues, depuis les graines : celle du joueur avec ses nœuds allumés, celles de ses Échos (allumées seules, à son
+## niveau).
 func _regenerer() -> void:
 	destin = Generateur.generer(player_class, graine, profile.level, allumage, data)
-	acolyte_destin = Generateur.acolyte(player_class, graine, profile.level, data)
+	echos.clear()
+	for role in Trio.roles_des_echos(player_class, data):
+		echos.append(Trio.echo(role, int(echos_choisis[role]["graine"]), profile.level, data))
 
 
-func save_duo() -> void:
-	profile.duo = {"version": 2, "classe": player_class, "graine": graine, "allumage": Array(allumage), "acolyte_nom": acolyte_name}
+func sauver_perso() -> void:
+	profile.duo = {"version": 3, "classe": player_class, "graine": graine, "allumage": Array(allumage), "echos": echos_choisis.duplicate(true)}
 	profile.save()
 
 
-## Création du personnage : sa classe et sa graine. Le Destin et l'acolyte (classe fixée par la sienne) en découlent.
+## Création du personnage : sa classe et sa graine, et deux Échos proposés par le jeu.
 func create_character(class_id: String) -> void:
 	player_class = class_id
 	graine = _nouvelle_graine()
 	allumage.clear()
 	profile.level = 1
 	profile.xp = 0
-	acolyte_name = ACOLYTE_NAMES[rng.randi_range(0, ACOLYTE_NAMES.size() - 1)]
+	echos_choisis = {}
+	_completer_echos()
 	_regenerer()
-	save_duo()
+	sauver_perso()
+
+
+## Un autre Écho proposé par le jeu pour ce rôle (une autre classe du rôle, peut-être, et un autre nom).
+func changer_echo(role: String) -> void:
+	echos_choisis.erase(role)
+	_completer_echos()
+	_regenerer()
+	sauver_perso()
 
 
 func _nouvelle_graine() -> int:
@@ -209,7 +245,7 @@ func reroll_player() -> void:
 	graine = _nouvelle_graine()
 	allumage.clear()
 	_regenerer()
-	save_duo()
+	sauver_perso()
 
 
 ## Les points de Destin qui restent à placer : un par niveau.
@@ -223,11 +259,11 @@ func allumer(cle: String) -> bool:
 		return false
 	allumage.append(cle)
 	_regenerer()
-	save_duo()
+	sauver_perso()
 	return true
 
 
-## De l'XP après un combat ; l'acolyte monte en même temps. Renvoie {levels, level}.
+## De l'XP après un combat ; les Échos sont toujours au niveau du joueur. Renvoie {levels, level}.
 func gain_xp(amount: int) -> Dictionary:
 	var result := profile.gain_xp(amount)
 	_regenerer()
@@ -235,19 +271,35 @@ func gain_xp(amount: int) -> Dictionary:
 	return result
 
 
-## Un duel contre un duo IA de ton niveau : une classe et une graine au hasard (l'étape 5 fera un vrai matchmaking).
+## Le trio du joueur : lui, puis ses Échos (Front, Dégâts, Soutien moins son rôle).
+func trio() -> Array[Destin]:
+	var out: Array[Destin] = [destin]
+	out.append_array(echos)
+	return out
+
+
+## Les noms du trio en combat.
+func noms_trio() -> Dictionary:
+	var out := {"a1": "Toi"}
+	var roles := Trio.roles_des_echos(player_class, data)
+	for i in range(roles.size()):
+		out["a%d" % (i + 2)] = str(echos_choisis[roles[i]]["nom"])
+	return out
+
+
+## Un duel contre un trio IA de ton niveau : une classe et une graine au hasard, ses deux Échos (l'étape 5 fera un vrai
+## matchmaking).
 func duel_contre_ia() -> Dictionary:
 	var classe: String = data.ordre_classes[rng.randi_range(0, data.ordre_classes.size() - 1)]
-	var g := _nouvelle_graine()
-	var ennemis := [Generateur.generer(classe, g, profile.level, Generateur.PAR_DEFAUT, data), Generateur.acolyte(classe, g, profile.level, data)]
-	var e := Regles.nouveau_combat([destin, acolyte_destin], ennemis, profile.level, "pvp", data)
-	return {"etat": e, "noms": {"a1": "Toi", "a2": acolyte_name}}
+	var ennemis := Trio.camp(Generateur.generer(classe, _nouvelle_graine(), profile.level, Generateur.PAR_DEFAUT, data), profile.level, data)
+	var e := Regles.nouveau_combat(trio(), ennemis, profile.level, "pvp", data)
+	return {"etat": e, "noms": noms_trio()}
 
 
-## Une montée de la Tour, à ton niveau : le combat de son premier étage.
+## Une montée de la Tour, à ton niveau, avec ton trio : le combat de son premier étage.
 func commencer_tour() -> Dictionary:
-	var t := Tour.commencer(destin, acolyte_destin, profile.level, _nouvelle_graine(), data)
-	return {"etat": t.combat(), "tour": t, "noms": {"a1": "Toi", "a2": acolyte_name}}
+	var t := Tour.commencer_camp(trio(), profile.level, _nouvelle_graine(), data)
+	return {"etat": t.combat(), "tour": t, "noms": noms_trio()}
 
 
 ## La fin d'un duel : le résultat, la série, l'XP (+120 gagné, +80 perdu). Renvoie {xp, niveaux}.
@@ -265,10 +317,6 @@ func fin_tour(t: Tour) -> Dictionary:
 		profile.tower_records[player_class] = t.atteint
 	profile.save()
 	return {"xp": 40 * maxi(0, t.atteint - 1)}
-
-
-func acolyte_class() -> String:
-	return acolyte_destin.classe_id if acolyte_destin != null else ""
 
 
 func class_label(class_id: String) -> String:

@@ -1,9 +1,9 @@
-## L'écran de combat V2 (docs/SPEC-COMBAT-V2.md, section 12.2) : une seule scène d'arène. Le duo ennemi en haut à
-## droite, le duo du joueur en bas à gauche (à la Tour, 1 à 4 monstres en haut, le plus gros au centre). En haut : le
-## tour, le chrono, « Quitter ». En bas : le bandeau des Synergies, la bande de la voie en cours, les six cases fixes
-## (moyeu en bas à gauche, puis les voies ; dorées si elles complètent une Synergie avec ce que l'acolyte a annoncé),
-## une ligne d'aide (ce que fait la case choisie). L'acolyte du joueur annonce son choix en premier (pastille et trait
-## vers la cible). Jouer : toucher une case, puis la toucher encore. Toucher une pastille ou un point d'une voie : sa
+## L'écran de combat V2 (docs/SPEC-COMBAT-V2.md, section 12.2) : une seule scène d'arène, à 3 contre X (docs/GDD_V2.md) :
+## le trio ennemi en haut (à la Tour, de 1 à 6 monstres, le plus gros au centre), le trio du joueur en bas, lui au
+## milieu, ses deux Échos de part et d'autre. En haut : le tour, le chrono, « Quitter ». En bas : le bandeau des
+## Synergies, la bande de la voie en cours, les six cases fixes (moyeu en bas à gauche, puis les voies ; dorées si elles
+## complètent une Synergie avec ce qu'un Écho a annoncé), une ligne d'aide (ce que fait la case choisie). Les deux
+## Échos annoncent leur choix avant le joueur (pastille et trait vers la cible). Jouer : toucher une case, puis la toucher encore. Toucher une pastille ou un point d'une voie : sa
 ## fiche, jusqu'au toucher suivant ; un appui long : la même, tant que le doigt reste posé.
 ## L'adversaire est caché (décision de Gautier du 29 octobre, docs/GDD_V2.md § 4.2) : ni ses voies, ni ses menaces, ni
 ## l'annonce de son acolyte ; seulement son nom, sa classe, ses PV, ses états (avec leurs tours) et une lueur quand sa
@@ -26,8 +26,18 @@ const SURFACE := Color("1c1a28")
 const SURFACE_HAUTE := Color("262337")
 ## L'ordre des cases : la rangée du haut (voies 3, 4, 5), puis celle du bas (moyeu, voies 1, 2).
 const ORDRE_CASES := [3, 4, 5, 0, 1, 2]
-## Les places du duo et des ennemis dans l'arène (fractions de sa largeur et de sa hauteur) et la taille de leur pixel.
-const PLACES := {"a1": [0.47, 0.70, 9.0], "a2": [0.20, 0.52, 6.5], "b1": [0.62, 0.36, 7.5], "b2": [0.84, 0.21, 6.5]}
+## Les places des deux trios dans l'arène (fractions de sa largeur et de sa hauteur) et la taille de leur pixel : le
+## joueur au milieu et devant, ses Échos de part et d'autre ; de même en face (ou un acolyte, dans un ancien duo).
+const PLACES := {"a1": [0.50, 0.75, 7.5], "a2": [0.20, 0.66, 6.0], "a3": [0.80, 0.66, 6.0],
+	"b1": [0.50, 0.26, 6.5], "b2": [0.20, 0.17, 6.0], "b3": [0.80, 0.17, 6.0]}
+## À la Tour, les places des monstres selon leur nombre, le plus gros d'abord (au centre, devant).
+const PLACES_MONSTRES := {
+	1: [[0.50, 0.24]],
+	2: [[0.32, 0.22], [0.68, 0.22]],
+	3: [[0.50, 0.26], [0.18, 0.17], [0.82, 0.17]],
+	4: [[0.35, 0.34], [0.65, 0.34], [0.20, 0.13], [0.80, 0.13]],
+	5: [[0.50, 0.34], [0.20, 0.30], [0.80, 0.30], [0.35, 0.11], [0.65, 0.11]],
+	6: [[0.20, 0.34], [0.50, 0.34], [0.80, 0.34], [0.20, 0.11], [0.50, 0.11], [0.80, 0.11]]}
 
 var app: ArenaApp
 var e: EtatCombat
@@ -59,10 +69,14 @@ var _syn := {}
 ## Les pastilles d'annonce des acolytes (dans l'arène), pour les toucher.
 var _annonces := {}
 var feuille: Control = null
-## Le tracé des deux joueurs sur leur roue (pour la fin du combat) et les Synergies du duo.
+## Le tracé des deux joueurs sur leur roue (pour la fin du combat), les Synergies du trio, et la part de chacun des trois
+## (dégâts infligés, soins, dégâts absorbés par ses barrières).
 var trace := {"a1": [], "b1": []}
 ## Ce qu'on a vu jouer chaque ennemi, dans l'ordre, sans doublon (sa fiche le rappelle).
 var vus := {}
+var parts := {}
+## Qui a posé la barrière de chaque allié (pour la part de chacun).
+var _poseurs := {}
 var synergies: Array = []
 var _quitter_arme := 0.0
 var _dernier_tic := 0
@@ -95,7 +109,10 @@ func _construire() -> void:
 		if PLACES.has(id) and not (tour != null and id.begins_with("b")):
 			pixel = PLACES[id][2]
 		elif tour != null and id.begins_with("b"):
+			# À partir de 4 monstres, l'arène est pleine : ils restent petits.
 			pixel = 4.5 + 2.0 * _pv_mult(str(fiche["sprite"]))
+			if e.vivants("b").size() + _ko_en_face() >= 4:
+				pixel = minf(pixel, 5.0)
 		var v := UnitView.make(id, str(fiche["sprite"]), str(noms.get(id, fiche["nom"])), pixel, allie)
 		v.touche.connect(_on_perso_touche)
 		v.appui_long.connect(_on_perso_appui_long)
@@ -148,6 +165,14 @@ func _construire() -> void:
 	_placer()
 
 
+func _ko_en_face() -> int:
+	var n := 0
+	for id in e.ordre:
+		if e.camp(id) == "b" and not e.vivant(id):
+			n += 1
+	return n
+
+
 func _pv_mult(sprite: String) -> float:
 	var monstres: Dictionary = app.data.bestiaire["monstres"]
 	return float(monstres[sprite]["pv_mult"]) if monstres.has(sprite) else 1.0
@@ -169,12 +194,12 @@ func _placer() -> void:
 			monstres.append(id)
 	# À la Tour : le plus gros monstre au centre, les autres de part et d'autre.
 	monstres.sort_custom(func(x, y): return _pv_mult(str(e.fiche(x)["sprite"])) > _pv_mult(str(e.fiche(y)["sprite"])))
-	var places_tour := [[0.55, 0.26], [0.30, 0.18], [0.80, 0.18], [0.75, 0.40]]
+	var places_tour: Array = PLACES_MONSTRES[clampi(monstres.size(), 1, 6)]
 	for id in e.ordre:
 		var v: UnitView = vues[id]
 		var f := Vector2.ZERO
 		if tour != null and id.begins_with("b"):
-			var k := monstres.find(id)
+			var k := mini(monstres.find(id), places_tour.size() - 1)
 			f = Vector2(places_tour[k][0], places_tour[k][1])
 		else:
 			f = Vector2(PLACES[id][0], PLACES[id][1])
@@ -208,8 +233,9 @@ func _debut_tour() -> void:
 	_dernier_tic = 0
 	_maj()
 	if Regles.actions_legales(e, "a1").is_empty():
-		# KO ou Étourdi : l'acolyte joue seul, le tour part tout seul.
-		aide.text = "Tu ne peux pas jouer ce tour-ci : %s joue seul." % noms.get("a2", "ton acolyte") if e.vivant("a1") else "Tu es KO : %s continue seul." % noms.get("a2", "ton acolyte")
+		# KO ou Étourdi : les Échos jouent seuls, le tour part tout seul.
+		aide.text = "Tu ne peux pas jouer ce tour-ci : tes Échos jouent seuls." if e.vivant("a1") else "Tu es KO : tes Échos continuent seuls."
+
 		var t := create_tween()
 		t.tween_interval(1.4)
 		t.tween_callback(_resoudre)
@@ -376,26 +402,29 @@ func _cible_de(id: String, a: Dictionary) -> String:
 	return ""
 
 
-## L'acolyte du même camp qu'un joueur, ou "".
-func _acolyte_de(id: String) -> String:
+## Ceux qui annoncent avant un joueur dans son camp (ses deux Échos, ou un acolyte) et qui ont annoncé ce tour-ci.
+func _annonceurs(id: String) -> Array[String]:
+	var out: Array[String] = []
 	for autre in e.ordre:
-		if autre != id and e.camp(autre) == e.camp(id) and e.fiche(autre)["place"] == "acolyte":
-			return autre
-	return ""
+		if autre != id and e.camp(autre) == e.camp(id) and e.fiche(autre)["place"] in ["acolyte", "echo"] and declarations.has(autre):
+			out.append(autre)
+	return out
 
 
 # --- Les Synergies -----------------------------------------------------------------------
 
-## Les Synergies que chaque case du joueur compléterait avec l'annonce de son acolyte (avec la cible choisie : exact ;
-## seulement en visant un autre perso : ailleurs).
+## Les Synergies que chaque case du joueur compléterait avec l'annonce d'un de ses Échos (avec la cible choisie :
+## exact ; seulement en visant un autre perso : ailleurs).
 func _calculer_synergies() -> void:
 	_syn = {}
-	var acol := _acolyte_de("a1")
-	if acol == "" or not declarations.has(acol) or not e.vivant("a1") or phase != "choix":
+	if not e.vivant("a1") or phase != "choix":
 		return
 	var ce := str(e.perso("a1")["cible_ennemie"])
 	var ca := str(e.perso("a1")["cible_alliee"])
-	for o in Regles.synergies_possibles(e, "a1", declarations[acol]):
+	var possibles: Array[Dictionary] = []
+	for x in _annonceurs("a1"):
+		possibles.append_array(Regles.synergies_possibles(e, "a1", declarations[x]))
+	for o in possibles:
 		var a: Dictionary = o["action"]
 		var i := 0 if a["source"] == "moyeu" else int(a["voie"]) + 1
 		if not _syn.has(i):
@@ -414,15 +443,17 @@ func _calculer_synergies() -> void:
 ## Le bandeau des Synergies : prête (la case choisie en complète une), possible (des cases dorées), en visant un autre
 ## perso, ou un rappel des quatre.
 func _maj_bandeau() -> void:
-	var acol := _acolyte_de("a1")
+	var annonceurs := _annonceurs("a1")
 	if phase != "choix" or not e.vivant("a1") or Regles.actions_legales(e, "a1").is_empty():
 		bandeau.maj("", "", "")
 		return
-	if acol == "" or not declarations.has(acol):
-		bandeau.maj("aucune", "Pas de Synergie ce tour-ci : %s ne joue pas" % (_nom(acol) if acol != "" else "ton acolyte"), _rappel_synergies()[0], _rappel_synergies()[1])
+	if annonceurs.is_empty():
+		bandeau.maj("aucune", "Pas de Synergie ce tour-ci : tes Échos ne jouent pas", _rappel_synergies()[0], _rappel_synergies()[1])
 		return
-	var a: Dictionary = declarations[acol]
-	var joue := "%s joue %s" % [_nom(acol), Texte.nom(Regles.noeud_de(e, a))]
+	var jeux: Array[String] = []
+	for x in annonceurs:
+		jeux.append("%s joue %s" % [_nom(x), Texte.nom(Regles.noeud_de(e, declarations[x]))])
+	var joue := " · ".join(jeux)
 	var exact: Array = []
 	var ailleurs: Array = []
 	var cible_ailleurs := ""
@@ -455,7 +486,7 @@ func _maj_bandeau() -> void:
 ## Le rappel des quatre Synergies, quand aucune n'est possible.
 func _rappel_synergies() -> Array[String]:
 	return ["Synergies : contrôle + coup · deux DoT · barrière + soin · Renfort + coup",
-		"(toi et ton acolyte, le même tour ; sur la même cible, sauf Renfort + coup)"]
+		"(toi et un Écho, ou tes deux Échos, le même tour ; sur la même cible, sauf Renfort + coup)"]
 
 
 ## Un ennemi a-t-il sa Clé prête (jouable ce tour-ci) ? Le seul signal qu'on voit de ses voies.
@@ -801,14 +832,14 @@ func _fermer_feuille() -> void:
 
 # --- L'annonce de l'acolyte ----------------------------------------------------------
 
-## L'annonce de l'acolyte du joueur (celle de l'acolyte adverse est cachée, comme tout l'adversaire).
+## Les annonces des Échos du joueur (celles d'en face sont cachées, comme tout l'adversaire).
 func _dessiner_traits() -> void:
 	_annonces = {}
 	if phase != "choix":
 		return
 	var police := ThemeDB.fallback_font
 	for id in declarations:
-		if e.fiche(id)["place"] != "acolyte" or e.camp(id) != "a":
+		if not e.fiche(id)["place"] in ["acolyte", "echo"] or e.camp(id) != "a":
 			continue
 		var a: Dictionary = declarations[id]
 		var n := Regles.noeud_de(e, a)
@@ -857,6 +888,31 @@ func _resoudre() -> void:
 		var a: Dictionary = e.actions_jouees.get(id, {})
 		if not a.is_empty() and (tour == null or id == "a1"):
 			trace[id].append({"nom": Texte.nom(Regles.noeud_de(e, a)), "cle": int(a["rang"]) == 4 and a["source"] == "voie"})
+	for ev in e.journal:
+		var x := str(ev["acteur"])
+		if x == "" or not e.statique.has(x) or e.camp(x) != "a":
+			continue
+		if not parts.has(x):
+			parts[x] = {"degats": 0, "soins": 0, "protections": 0}
+		var t := str(ev["cible"])
+		match str(ev["type"]):
+			"degats", "tick":
+				if ev["detail"] != "gardien" and t != "" and e.camp(t) == "b":
+					parts[x]["degats"] += int(ev["valeur"])
+				elif ev["detail"] == "gardien":
+					parts[x]["soins"] += int(ev["valeur"])
+			"soin":
+				parts[x]["soins"] += int(ev["valeur"])
+	# Ce que les barrières de chacun ont absorbé (la barrière d'un allié : à qui l'a posée en dernier).
+	for ev in e.journal:
+		var t := str(ev["cible"])
+		if str(ev["type"]) in ["degats", "tick"] and int(ev["absorbe"]) > 0 and t != "" and e.camp(t) == "a" and _poseurs.has(t):
+			var x := str(_poseurs[t])
+			if parts.has(x):
+				parts[x]["protections"] += int(ev["absorbe"])
+	for ev in e.journal:
+		if str(ev["type"]) == "barriere" and int(ev["valeur"]) > 0 and e.camp(str(ev["cible"])) == "a":
+			_poseurs[str(ev["cible"])] = str(ev["acteur"])
 	for id in e.actions_jouees:
 		if e.camp(id) == "b":
 			var nom := Texte.nom(Regles.noeud_de(e, e.actions_jouees[id]))
@@ -899,7 +955,7 @@ func _on_quitter() -> void:
 func _fin() -> void:
 	phase = "fin"
 	lbl_chrono.text = ""
-	var options := {"etat": e, "noms": noms, "trace": trace, "synergies": synergies}
+	var options := {"etat": e, "noms": noms, "trace": trace, "synergies": synergies, "parts": parts}
 	if tour != null:
 		options["tour"] = tour
 	app.show_screen("fin", options)

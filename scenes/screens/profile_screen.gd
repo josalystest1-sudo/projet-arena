@@ -1,4 +1,4 @@
-## Ton profil (GDD, écran « Profil ») : le duo en pied, ta classe, tes résultats et tes records.
+## Ton profil (GDD, écran « Profil ») : le trio en pied, ta classe, tes résultats et tes records.
 extends Control
 
 var app: ArenaApp
@@ -8,16 +8,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	app = p_app
 	var column := UiKit.scroll_column(self, 12)
 	column.add_child(UiKit.label("Ton profil", 30, UiKit.GOLD))
-	var duo := HBoxContainer.new()
-	duo.alignment = BoxContainer.ALIGNMENT_CENTER
-	duo.add_theme_constant_override("separation", 16)
-	column.add_child(duo)
-	var me := PortraitView.make(app.player_class, "Toi", app.class_label(app.player_class), 8.0)
-	me.title_color = UiKit.GOLD
-	var aco := PortraitView.make(app.acolyte_class(), app.acolyte_name, app.class_label(app.acolyte_class()), 8.0)
-	aco.title_color = UiKit.ACOLYTE_BLUE
-	duo.add_child(me)
-	duo.add_child(aco)
+	column.add_child(UiKit.rangee_trio(app, 6.0))
 	var profile := app.profile
 	var games := profile.wins + profile.losses
 	var duel := UiKit.card(column, 4)

@@ -69,7 +69,7 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 - Tests : chaque compétence de Soutien a un effet quand personne n'est blessé ; chaque classe a un geste ; l'IA Soutien ne frappe jamais quand un renfort ou un affaiblissement est jouable.
 - **Critère** : un test générique le vérifie pour toutes les compétences de Soutien. (L'égalité des quatre Soutiens se règle à la phase 9.)
 
-**PR 1.4 — Écrans : le trio en combat, l'adversaire opaque, la composition**
+**PR 1.4 — Écrans : le trio en combat, l'adversaire opaque, la composition** (**faite**, PR #56 ; l'adversaire caché, PR #50)
 - `scenes/combat/combat_screen.gd` : trois personnages côté joueur (format compact existant), deux cartes d'annonce enchaînées (ou une carte qui résume les deux : « Nima tire sur Bise · Saule te protège »), Synergies possibles avec chacun ; **adversaire opaque** : retirer les pastilles M/F des ennemis, le kit au toucher (garder le nom, la classe, la barre), ajouter **les icônes d'état** (pictogramme + tours, sur tous) et **la lueur « forte prête »** sur un ennemi.
 - `scenes/screens/trio_screen.gd` : composer le trio (ma case, deux cases « proposés par le jeu » ; amis et guilde grisés « à l'étape serveur ») avec la fiche de chaque Écho (classe, niveau, « comment il joue », nos Synergies) ; ce même écran sert à la Tour et au duel.
 - Retirer la rencontre de l'acolyte, l'onglet Acolyte, `acolyte_name` ; l'écran de création enchaîne sur un premier combat guidé puis l'accueil. Bulles d'aide du premier combat mises à jour (les deux annonces).

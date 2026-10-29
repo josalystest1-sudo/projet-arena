@@ -16,7 +16,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	_refresh_sound()
 	var proto := UiKit.card(column, 8)
 	proto.add_child(UiKit.label("Outils du prototype", 20, UiKit.GOLD, false))
-	proto.add_child(UiKit.label("Dans le vrai jeu, ton Destin et ton acolyte ne changent jamais. Ici, pour essayer d'autres roues, tu peux tirer à nouveau.", 15, UiKit.SOFT, false))
+	proto.add_child(UiKit.label("Dans le vrai jeu, ton Destin ne change jamais. Ici, pour essayer d'autres roues, tu peux tirer à nouveau.", 15, UiKit.SOFT, false))
 	proto.add_child(UiKit.button("Autre Destin (même classe)", _reroll_player, 52))
 	proto.add_child(UiKit.button("Gagner un niveau (pour allumer un nœud)", _level_up, 52))
 	proto.add_child(UiKit.button("Nouveau personnage (autre classe)", func(): app.show_screen("creation"), 52))
@@ -60,5 +60,6 @@ func _erase() -> void:
 	app.profile.save()
 	app.player_class = ""
 	app.destin = null
-	app.acolyte_destin = null
+	app.echos.clear()
+	app.echos_choisis = {}
 	app.show_screen("creation")
