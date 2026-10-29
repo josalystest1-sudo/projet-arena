@@ -105,7 +105,7 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 - Tests : un objet respecte ses fourchettes et son budget ; les plafonds tiennent ; un objet lié le reste ; la reforge ne touche qu'une ligne ; la simulation à graine fixe sans équipement est identique à avant.
 - **Critère** : `tools/equilibrage.gd` sait tirer des équipements au hasard par niveau et les appliquer.
 
-**PR 3.2 — La Forge et le butin**
+**PR 3.2 — La Forge et le butin** (**faite**, PR #61 : `scenes/screens/forge_screen.gd`, `Tour.butin`, les Éclats et le revenu passif dans `ArenaApp` et le profil ; la comparaison passe par `Equipement.apercu`, pas par un `Combat.preview`)
 - `scenes/screens/forge_screen.gd` : inventaire (5 emplacements, sac), fiche d'objet (lignes, fourchettes entre crochets, qualité, lié / échangeable), **comparaison** par `Combat.preview` (« Boule de feu : 54 au lieu de 48 »), équiper, recycler (Éclats), reforger (Éclats, coût croissant). Éclats dans le profil.
 - Butin : à la fin d'un étage (objet du niveau de l'étage ; épique aux Gardiens ; échangeable seulement au premier passage), coffre de fin de montée.
 - **Gautier teste** : trouver un objet, comparer, équiper, reforger ; sentir l'écart de puissance à la Tour.

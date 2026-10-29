@@ -42,7 +42,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 		column.add_child(UiKit.label("Victoire !" if gagne else "Défaite", 40, OR if gagne else ROUGE))
 		app.sfx.play("victoire" if gagne else "defaite")
 		column.add_child(cartes)
-		_carte(cartes, "XP", "+%d" % int(resultat["xp"]), "niveau %d%s" % [app.profile.level, (" (+%d)" % int(resultat["niveaux"])) if int(resultat["niveaux"]) > 0 else ""])
+		_carte(cartes, "XP", "+%d" % int(resultat["xp"]), "niveau %d%s · +%d Éclats" % [app.profile.level, (" (+%d)" % int(resultat["niveaux"])) if int(resultat["niveaux"]) > 0 else "", int(resultat["eclats"])])
 		_carte(cartes, "Série", str(app.profile.streak), "record %d" % app.profile.best_streak)
 		var syn: Array = options.get("synergies", [])
 		_carte(cartes, "Synergies", str(syn.size()), ", ".join(_uniques(syn)) if not syn.is_empty() else "aucune")
@@ -65,11 +65,13 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 			column.add_child(cartes)
 			var rendu := float(app.data.tour["pv_entre_etages"]) + Tour.valeur_faveur("repit", tour.faveur("repit"), app.data)
 			_carte(cartes, "PV rendus", "+%d %%" % roundi(rendu * 100.0), "à chacun")
-			_carte(cartes, "XP", "+%d" % xp, "niveau %d" % app.profile.level)
+			_carte(cartes, "XP", "+%d" % xp, "niveau %d · +%d Éclats" % [app.profile.level, int(franchi["eclats"])])
 			if bool(franchi["gardien"]):
 				_carte(cartes, "Palier", "étage %d" % tour.etage, "tu reprendras d'ici")
 			if bool(franchi["faveur"]):
 				_carte_faveur(column, tour, franchi["propositions"])
+			if not (franchi["butin"] as Dictionary).is_empty():
+				_carte_butin(column, franchi["butin"], bool(franchi["premier"]))
 			var noms_m: Array[String] = []
 			for id in tour.tirer_etage(tour.etage):
 				noms_m.append(str(app.data.bestiaire["monstres"][id]["nom"]))
@@ -132,6 +134,17 @@ func _carte_faveur(column: VBoxContainer, tour: Tour, propositions: Array) -> vo
 		bouton.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		bouton.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		carte.add_child(bouton)
+
+
+## La carte « Butin » : l'objet trouvé, ses lignes, et où il est (dans le sac, à voir à la Forge).
+func _carte_butin(column: VBoxContainer, objet: Dictionary, premier: bool) -> void:
+	var f := Equipement.fiche(objet, app.data)
+	var carte := UiKit.card(column, 4)
+	carte.add_child(UiKit.label("Butin", 17, ATTENUE, false))
+	carte.add_child(UiKit.label("%s · niveau %d · qualité %d %%" % [f["nom"], f["niveau"], f["qualite"]], 20, UiKit.rarete_couleur(int(f["rang"])), false))
+	for l in f["lignes"]:
+		carte.add_child(UiKit.label("%s  %s" % [l["texte"], l["fourchette"]], 16, Color.WHITE, false))
+	carte.add_child(UiKit.label(("Échangeable (premier passage)" if premier else "Lié à ton personnage") + " · dans ton sac, à voir à la Forge.", 14, ATTENUE, false))
 
 
 func _choisir_faveur(id: String, tour: Tour, carte: VBoxContainer) -> void:

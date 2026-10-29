@@ -3,7 +3,7 @@
 ## (user://capture_profil.cfg, effacé au départ) : le vrai profil n'est jamais touché.
 ##   godot --path . --script res://tools/capture.gd -- <dossier> '<étapes JSON>'
 ## Étapes : {"creer":"guerrier"} (nouveau perso, graine fixe 7), {"niveau":12} (niveau du perso), {"allumer":"v1.n2"},
-## {"ecran":"destin"}, {"duel":1} (un duel contre un duo IA), {"montee":1} (une montée de la Tour), {"fin":1} (un duel joué par l'IA, puis l'écran de fin), {"gardien":5} (l'étage 5 d'une montée joué par l'IA, puis l'écran de fin : la Faveur du Gardien), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
+## {"ecran":"destin"}, {"duel":1} (un duel contre un duo IA), {"montee":1} (une montée de la Tour), {"fin":1} (un duel joué par l'IA, puis l'écran de fin), {"gardien":5} (l'étage 5 d'une montée joué par l'IA, puis l'écran de fin : la Faveur du Gardien), {"sac":3} (trois objets dans le sac et 100 Éclats, pour la Forge), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
 ## (Sans --headless : il faut une fenêtre pour dessiner.)
 extends SceneTree
 
@@ -56,6 +56,12 @@ func _initialize() -> void:
 				e = Regles.resoudre_tour(e, IA.declarer(e))
 			options["etat"] = e
 			app.show_screen("fin", options)
+		elif etape.has("sac"):
+			# Des objets dans le sac (tirés comme un butin d'étage, puis de Gardien) et des Éclats, pour voir la Forge.
+			for i in range(int(etape["sac"])):
+				app.profile.sac.append(Equipement.butin("gardien" if i % 3 == 2 else "etage", app.profile.level, true, 100 + i, app.data))
+			app.profile.eclats += 100
+			app.profile.save()
 		elif etape.has("clic"):
 			await _clic(Vector2(etape["clic"][0], etape["clic"][1]), 0.05)
 		elif etape.has("appui"):

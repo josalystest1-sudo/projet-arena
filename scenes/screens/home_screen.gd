@@ -27,7 +27,15 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		facts.append("%d victoire%s · %d défaite%s" % [profile.wins, "s" if profile.wins > 1 else "", profile.losses, "s" if profile.losses > 1 else ""])
 		facts.append("série : %d (record %d)" % [profile.streak, profile.best_streak])
 	facts.append("Tour : étage %d" % record if record > 0 else "Tour : pas encore tentée")
+	facts.append("%d Éclat%s" % [profile.eclats, "s" if profile.eclats > 1 else ""])
 	column.add_child(UiKit.label(" · ".join(facts), 16, UiKit.SOFT))
+	# Le revenu passif du jour, montré une fois (GDD V2, § 6 : des Éclats et un peu d'XP selon la hauteur).
+	if not app.revenu_du_jour.is_empty():
+		var r: Dictionary = app.revenu_du_jour
+		var revenu := UiKit.card(column, 2)
+		revenu.add_child(UiKit.label("Revenu de la Tour", 18, UiKit.GOLD, false))
+		revenu.add_child(UiKit.label("+%d Éclats et +%d XP pour ton record (étage %d). Chaque jour, selon ta hauteur." % [int(r["eclats"]), int(r["xp"]), int(r["record"])], 15, UiKit.SOFT, false))
+		app.revenu_du_jour = {}
 	if app.destin_points_left() > 0:
 		column.add_child(UiKit.button("%d point%s de Destin à placer" % [app.destin_points_left(), "s" if app.destin_points_left() > 1 else ""], func(): app.show_screen("destin"), 48, 17))
 

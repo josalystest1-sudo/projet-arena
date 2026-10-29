@@ -220,6 +220,67 @@ static func reforger(objet: Dictionary, index: int, graine: int, d: Donnees) -> 
 	return o
 
 
+# --- Les Éclats ------------------------------------------------------------------------------------
+
+## Les Éclats rendus par le recyclage d'un objet : selon sa rareté (data/items.json).
+static func recyclage(objet: Dictionary, d: Donnees) -> int:
+	return int(d.objets["recyclage"][objet["rarete"]])
+
+
+## Les Éclats d'un duel : gagné ou perdu.
+static func eclats_duel(gagne: bool, d: Donnees) -> int:
+	return int(d.objets["eclats"]["duel_gagne" if gagne else "duel_perdu"])
+
+
+## Les Éclats d'un étage franchi de la Tour : base + pente × étage ; une part seulement si l'étage est rejoué.
+static func eclats_etage(n: int, premier_passage: bool, d: Donnees) -> int:
+	var e: Dictionary = d.objets["eclats"]
+	var total := float(e["etage_base"]) + float(e["etage_pente"]) * float(maxi(1, n))
+	return Regles.plancher(total * (1.0 if premier_passage else float(e["rejoue"])))
+
+
+# --- L'aperçu sur la roue ------------------------------------------------------------------------
+
+## Ce qu'un changement d'équipement fait aux valeurs de la roue d'un Destin : jusqu'à trois exemples, « Boule de feu :
+## 48 → 54 », parmi les nœuds allumés dont un chiffre change (le moyeu d'abord, puis par voie et par rang ; chacun sur
+## son premier effet à valeur, type compris). Vide si aucun chiffre de la roue ne change (des PV max, par exemple).
+## Les valeurs sont celles d'un combat au niveau donné.
+static func apercu(destin: Destin, avant: Dictionary, apres: Dictionary, niveau: int, d: Donnees) -> Array[String]:
+	var sauve := destin.mods
+	destin.mods = avant
+	var e0 := Regles.nouveau_combat([destin], [destin], niveau, "pvp", d)
+	destin.mods = apres
+	var e1 := Regles.nouveau_combat([destin], [destin], niveau, "pvp", d)
+	destin.mods = sauve
+	var out: Array[String] = []
+	var candidats: Array = [[-1, 0, destin.moyeu]]
+	for v in range(destin.voies.size()):
+		for r in range(4):
+			var noeud: Dictionary = destin.voies[v]["noeuds"][r]
+			if bool(noeud.get("allume", false)):
+				candidats.append([v, r + 1, noeud])
+	for c in candidats:
+		var ef: Dictionary = _effet_a_valeur(c[2])
+		if ef.is_empty():
+			continue
+		var base := float(ef.get("valeur", ef.get("par_tour", 0.0)))
+		var x0 := Regles.plancher(Regles.valeur(e0, "a1", int(c[0]), int(c[1]), base, str(ef["type"])))
+		var x1 := Regles.plancher(Regles.valeur(e1, "a1", int(c[0]), int(c[1]), base, str(ef["type"])))
+		if x0 != x1:
+			out.append("%s : %d → %d" % [Texte.nom(c[2], d), x0, x1])
+		if out.size() >= 3:
+			break
+	return out
+
+
+## Le premier effet à valeur d'un nœud (dégâts, soin, barrière, DoT, Gardien) ; vide s'il n'en a pas.
+static func _effet_a_valeur(noeud: Dictionary) -> Dictionary:
+	for ef in noeud.get("effets", []):
+		if STAT_PAR_TYPE.has(str(ef["type"])):
+			return ef
+	return {}
+
+
 # --- Textes et contrôle ------------------------------------------------------------------------
 
 ## « Épée épique », « Cotte de mailles commune ».

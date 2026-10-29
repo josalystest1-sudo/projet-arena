@@ -22,6 +22,12 @@ var tower_paliers: Dictionary = {}
 ## Par classe : les Faveurs de la Tour acquises (identifiant -> nombre de cumuls), une par Gardien vaincu pour la
 ## première fois ; elles ne valent que dans la Tour.
 var tower_faveurs: Dictionary = {}
+## La Forge (GDD V2, § 10) : les objets portés (emplacement -> objet, un dictionnaire d'engine/equipement.gd), le sac
+## (les objets trouvés, pas portés), les Éclats (la monnaie liée) et le jour du dernier revenu passif (« AAAA-MM-JJ »).
+var portes: Dictionary = {}
+var sac: Array = []
+var eclats: int = 0
+var revenu_jour: String = ""
 ## Les monstres déjà croisés à la Tour (identifiant -> true), pour le bestiaire.
 var monsters_seen: Dictionary = {}
 ## Les bulles d'aide du combat déjà lues (identifiant -> true) : chacune ne s'affiche qu'une fois.
@@ -45,6 +51,10 @@ static func load_profile() -> PlayerProfile:
 		profile.tower_records = cfg.get_value("tour", "records", {})
 		profile.tower_paliers = cfg.get_value("tour", "paliers", {})
 		profile.tower_faveurs = cfg.get_value("tour", "faveurs", {})
+		profile.portes = cfg.get_value("forge", "portes", {})
+		profile.sac = cfg.get_value("forge", "sac", [])
+		profile.eclats = int(cfg.get_value("forge", "eclats", 0))
+		profile.revenu_jour = str(cfg.get_value("forge", "revenu_jour", ""))
 		profile.monsters_seen = cfg.get_value("tour", "monstres", {})
 		profile.tips_seen = cfg.get_value("aide", "vues", {})
 		profile.level = int(cfg.get_value("progression", "niveau", 1))
@@ -63,6 +73,10 @@ func save() -> void:
 	cfg.set_value("tour", "records", tower_records)
 	cfg.set_value("tour", "paliers", tower_paliers)
 	cfg.set_value("tour", "faveurs", tower_faveurs)
+	cfg.set_value("forge", "portes", portes)
+	cfg.set_value("forge", "sac", sac)
+	cfg.set_value("forge", "eclats", eclats)
+	cfg.set_value("forge", "revenu_jour", revenu_jour)
 	cfg.set_value("tour", "monstres", monsters_seen)
 	cfg.set_value("aide", "vues", tips_seen)
 	cfg.set_value("progression", "niveau", level)
