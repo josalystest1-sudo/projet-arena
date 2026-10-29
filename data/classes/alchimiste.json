@@ -3,8 +3,8 @@
   "nom": "Alchimiste",
   "genre": "m",
   "role": "soutien",
-  "pv": 950,
-  "k": 1.0,
+  "pv": 376,
+  "k": 1.0581,
   "acolyte": "voleur",
   "moyeu": {
     "nom": "Fiole",
@@ -24,9 +24,10 @@
           "nom": "Éclaboussure",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 35, "cible": "un_ennemi"},
-            {"type": "dot", "sous_type": "poison", "par_tour": 10, "tours": 5, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 31.5, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "poison", "par_tour": 9.0, "tours": 5, "cible": "un_ennemi"}
+          ],
+          "budget_override": 63.0
         },
         {
           "rang": 2,
@@ -68,8 +69,9 @@
           "nom": "Tonique",
           "genre": "m",
           "effets": [
-            {"type": "soin", "valeur": 78, "cible": "un_allie"}
-          ]
+            {"type": "soin", "valeur": 70.0, "cible": "un_allie"}
+          ],
+          "budget_override": 63.0
         },
         {
           "rang": 2,
@@ -109,7 +111,8 @@
           "genre": "f",
           "effets": [
             {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "un_ennemi"}
-          ]
+          ],
+          "budget_override": 77.0
         },
         {
           "rang": 2,
@@ -117,8 +120,9 @@
           "genre": "m",
           "effets": [
             {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 30.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 110.0
         },
         {
           "rang": 3,
@@ -126,8 +130,9 @@
           "genre": "f",
           "effets": [
             {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "tous_les_ennemis"},
-            {"type": "degats", "valeur": 38, "cible": "tous_les_ennemis"}
-          ]
+            {"type": "degats", "valeur": 38.46, "cible": "tous_les_ennemis"}
+          ],
+          "budget_override": 154.0
         },
         {
           "rang": 4,
@@ -135,9 +140,10 @@
           "genre": "f",
           "effets": [
             {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
-            {"type": "affaiblissement", "pourcent": 30, "tours": 2, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
-          ]
+            {"type": "affaiblissement", "pourcent": 36.27, "tours": 2, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60.45, "cible": "un_ennemi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -151,9 +157,10 @@
           "nom": "Stimulant",
           "genre": "m",
           "effets": [
-            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "un_allie"},
-            {"type": "soin", "valeur": 22, "cible": "un_allie"}
-          ]
+            {"type": "renfort", "pourcent": 22.57, "tours": 2, "cible": "un_allie"},
+            {"type": "soin", "valeur": 19.85, "cible": "un_allie"}
+          ],
+          "budget_override": 63.0
         },
         {
           "rang": 2,
@@ -193,8 +200,9 @@
           "nom": "Nitro",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 63.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 63.0
         },
         {
           "rang": 2,

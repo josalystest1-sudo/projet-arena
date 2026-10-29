@@ -5,13 +5,15 @@ class_name PlayerProfile
 extends RefCounted
 
 const PATH := "user://profil.cfg"
+## Où le profil est gardé : PATH, sauf pour les outils de capture (tools/capture.gd), qui gardent le leur à part.
+static var chemin := PATH
 
 var wins: int = 0
 var losses: int = 0
 var streak: int = 0
 var best_streak: int = 0
 var muted: bool = false
-## Le duo : {player_class, player_picks, acolyte_class, acolyte_picks, acolyte_name} (vide tant qu'aucun duo n'est créé).
+## Le duo (combat V2) : {version: 2, classe, graine, allumage, acolyte_nom} (vide tant qu'aucun duo n'est créé).
 var duo: Dictionary = {}
 ## Record à la Tour par classe : étage atteint (GDD : le record est classé par classe).
 var tower_records: Dictionary = {}
@@ -23,15 +25,12 @@ var tips_seen: Dictionary = {}
 var level: int = 1
 var xp: int = 0
 const MAX_LEVEL := 30
-## Le Destin du joueur et le mini-Destin de l'acolyte : {seed, taken} (l'arbre se regénère à l'identique depuis sa graine).
-var destin: Dictionary = {}
-var acolyte_destin: Dictionary = {}
 
 
 static func load_profile() -> PlayerProfile:
 	var profile := PlayerProfile.new()
 	var cfg := ConfigFile.new()
-	if cfg.load(PATH) == OK:
+	if cfg.load(chemin) == OK:
 		profile.wins = int(cfg.get_value("stats", "wins", 0))
 		profile.losses = int(cfg.get_value("stats", "losses", 0))
 		profile.streak = int(cfg.get_value("stats", "streak", 0))
@@ -43,8 +42,6 @@ static func load_profile() -> PlayerProfile:
 		profile.tips_seen = cfg.get_value("aide", "vues", {})
 		profile.level = int(cfg.get_value("progression", "niveau", 1))
 		profile.xp = int(cfg.get_value("progression", "xp", 0))
-		profile.destin = cfg.get_value("destin", "joueur", {})
-		profile.acolyte_destin = cfg.get_value("destin", "acolyte", {})
 	return profile
 
 
@@ -61,9 +58,7 @@ func save() -> void:
 	cfg.set_value("aide", "vues", tips_seen)
 	cfg.set_value("progression", "niveau", level)
 	cfg.set_value("progression", "xp", xp)
-	cfg.set_value("destin", "joueur", destin)
-	cfg.set_value("destin", "acolyte", acolyte_destin)
-	cfg.save(PATH)
+	cfg.save(chemin)
 
 
 ## L'XP qu'il faut pour passer du niveau donné au suivant (prototype : rapide, pour tester l'arbre ; le GDD vise

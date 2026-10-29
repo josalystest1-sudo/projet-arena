@@ -3,8 +3,8 @@
   "nom": "Mage",
   "genre": "m",
   "role": "degats",
-  "pv": 900,
-  "k": 1.0,
+  "pv": 356,
+  "k": 0.8752,
   "acolyte": "guerrier",
   "moyeu": {
     "nom": "Trait arcanique",
@@ -50,9 +50,10 @@
           "nom": "Tempête de feu",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 105, "cible": "tous_les_ennemis"},
-            {"type": "dot", "sous_type": "brulure", "par_tour": 25, "tours": 4, "cible": "tous_les_ennemis"}
-          ]
+            {"type": "degats", "valeur": 116.78, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 27.8, "tours": 4, "cible": "tous_les_ennemis"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -94,8 +95,9 @@
           "genre": "m",
           "effets": [
             {"type": "etat", "nom": "gele", "tours": 1, "cible": "tous_les_ennemis"},
-            {"type": "degats", "valeur": 97, "cible": "tous_les_ennemis"}
-          ]
+            {"type": "degats", "valeur": 114.62, "cible": "tous_les_ennemis"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -109,33 +111,37 @@
           "nom": "Arc",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 74.3, "cible": "un_ennemi"}
+          ],
+          "budget_override": 74.3
         },
         {
           "rang": 2,
           "nom": "Éclair",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 106.1, "cible": "un_ennemi"}
+          ],
+          "budget_override": 106.1
         },
         {
           "rang": 3,
           "nom": "Chaîne",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 140, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 148.5, "cible": "un_ennemi"}
+          ],
+          "budget_override": 148.5
         },
         {
           "rang": 4,
           "nom": "Foudre céleste",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 133.0, "cible": "un_ennemi"},
             {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"}
-          ]
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -149,8 +155,9 @@
           "nom": "Voile",
           "genre": "m",
           "effets": [
-            {"type": "barriere", "valeur": 100, "cible": "soi"}
-          ]
+            {"type": "barriere", "valeur": 103.0, "cible": "soi"}
+          ],
+          "budget_override": 72.1
         },
         {
           "rang": 2,
@@ -158,16 +165,18 @@
           "genre": "m",
           "effets": [
             {"type": "etat", "nom": "silencie", "tours": 2, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 10, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 13.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 103.0
         },
         {
           "rang": 3,
           "nom": "Miroir",
           "genre": "m",
           "effets": [
-            {"type": "barriere", "valeur": 154, "cible": "duo"}
-          ]
+            {"type": "barriere", "valeur": 158.46, "cible": "duo"}
+          ],
+          "budget_override": 144.2
         },
         {
           "rang": 4,
@@ -176,8 +185,9 @@
           "effets": [
             {"type": "egare", "cible": "un_ennemi"},
             {"type": "etat", "nom": "silencie", "tours": 2, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 103.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -191,36 +201,40 @@
           "nom": "Siphon",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 40, "cible": "un_ennemi"},
-            {"type": "soin", "valeur": 33, "cible": "soi"}
-          ]
+            {"type": "degats", "valeur": 41.38, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 34.14, "cible": "soi"}
+          ],
+          "budget_override": 72.1
         },
         {
           "rang": 2,
           "nom": "Drain",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
-            {"type": "soin", "valeur": 50, "cible": "soi"}
-          ]
+            {"type": "degats", "valeur": 56.65, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 51.5, "cible": "soi"}
+          ],
+          "budget_override": 103.0
         },
         {
           "rang": 3,
           "nom": "Renvoi",
           "genre": "m",
           "effets": [
-            {"type": "renfort", "pourcent": 30, "tours": 2, "cible": "soi"},
-            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
-          ]
+            {"type": "renfort", "pourcent": 30.9, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 82.4, "cible": "un_ennemi"}
+          ],
+          "budget_override": 144.2
         },
         {
           "rang": 4,
           "nom": "Apothéose",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 130, "cible": "un_ennemi"},
-            {"type": "renfort", "pourcent": 50, "tours": 2, "cible": "soi"}
-          ]
+            {"type": "degats", "valeur": 143.0, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 55.0, "tours": 2, "cible": "soi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     }

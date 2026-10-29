@@ -3,8 +3,8 @@
   "nom": "Archer",
   "genre": "m",
   "role": "degats",
-  "pv": 900,
-  "k": 1.0,
+  "pv": 356,
+  "k": 0.8989,
   "acolyte": "guerrier",
   "moyeu": {
     "nom": "Flèche",
@@ -24,32 +24,36 @@
           "nom": "Tir précis",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 72.1, "cible": "un_ennemi"}
+          ],
+          "budget_override": 72.1
         },
         {
           "rang": 2,
           "nom": "Tir perçant",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 103.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 103.0
         },
         {
           "rang": 3,
           "nom": "Flèche lourde",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 140, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 144.2, "cible": "un_ennemi"}
+          ],
+          "budget_override": 144.2
         },
         {
           "rang": 4,
           "nom": "Flèche du jugement",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 253.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -87,9 +91,10 @@
           "nom": "Ciel noir",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 140, "cible": "tous_les_ennemis"},
-            {"type": "affaiblissement", "pourcent": 20, "tours": 2, "cible": "tous_les_ennemis"}
-          ]
+            {"type": "degats", "valeur": 151.36, "cible": "tous_les_ennemis"},
+            {"type": "affaiblissement", "pourcent": 21.63, "tours": 2, "cible": "tous_les_ennemis"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -122,7 +127,7 @@
           "genre": "f",
           "effets": [
             {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+            {"type": "degats", "valeur": 60.0, "cible": "un_ennemi"}
           ]
         },
         {
@@ -132,8 +137,9 @@
           "effets": [
             {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
             {"type": "etat", "nom": "enracine", "tours": 2, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 40, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 63.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -174,9 +180,10 @@
           "nom": "Pluie de feu",
           "genre": "f",
           "effets": [
-            {"type": "dot", "sous_type": "brulure", "par_tour": 30, "tours": 5, "cible": "tous_les_ennemis"},
-            {"type": "degats", "valeur": 72, "cible": "tous_les_ennemis"}
-          ]
+            {"type": "dot", "sous_type": "brulure", "par_tour": 32.98, "tours": 5, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 79.18, "cible": "tous_les_ennemis"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -190,34 +197,38 @@
           "nom": "Pas en arrière",
           "genre": "m",
           "effets": [
-            {"type": "barriere", "valeur": 100, "cible": "soi"}
-          ]
+            {"type": "barriere", "valeur": 103.0, "cible": "soi"}
+          ],
+          "budget_override": 72.1
         },
         {
           "rang": 2,
           "nom": "Pansement",
           "genre": "m",
           "effets": [
-            {"type": "soin", "valeur": 110, "cible": "soi"}
-          ]
+            {"type": "soin", "valeur": 114.44, "cible": "soi"}
+          ],
+          "budget_override": 103.0
         },
         {
           "rang": 3,
           "nom": "Œil de faucon",
           "genre": "m",
           "effets": [
-            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "soi"},
-            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
-          ]
+            {"type": "renfort", "pourcent": 36.05, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 72.1, "cible": "un_ennemi"}
+          ],
+          "budget_override": 144.2
         },
         {
           "rang": 4,
           "nom": "Dernière flèche",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 150, "cible": "un_ennemi"},
-            {"type": "soin", "valeur": 90, "cible": "soi"}
-          ]
+            {"type": "degats", "valeur": 164.28, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 98.57, "cible": "soi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     }

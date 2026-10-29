@@ -40,11 +40,15 @@ const CLES_COUTS := ["degats", "soin", "barriere", "dot", "gardien", "renfort", 
 	"aveugle", "desarme", "egare", "silencie", "provoque", "enracine", "purge", "dissipe"]
 const CLES_ETAT := ["nom", "type", "texte", "pictogramme", "couleur", "negatif", "dissipable", "purgeable"]
 const TYPES_ETAT := ["controle", "affaiblissement", "deplacement", "dot", "hot", "protection", "renfort"]
-const CLES_TEXTES := ["formes", "ligne", "phrase", "fiche"]
+const CLES_TEXTES := ["formes", "ligne", "phrase", "fiche", "pictos"]
 const FORMES := ["diffuse", "concentree", "persistante", "vive"]
 const CLES_CLASSE := ["id", "nom", "genre", "role", "pv", "k", "acolyte", "moyeu", "voies"]
 const CLES_VOIE := ["id", "nom", "acolyte", "noeuds"]
 const CLES_NOEUD := ["rang", "nom", "genre", "effets", "budget_override"]
+const CLES_BESTIAIRE := ["familles", "rangs", "monstres"]
+const CLES_MONSTRE := ["nom", "famille", "rang", "classe", "voies", "pv_mult", "description"]
+const CLES_TOUR := ["pv_entre_etages", "monstres_max", "somme_depart", "somme_pente", "somme_largeur", "classes",
+	"classes_pente", "tirages", "gardien_tous_les", "abandon_tour"]
 
 var regles: Dictionary = {}
 var etats: Dictionary = {}
@@ -52,8 +56,23 @@ var textes: Dictionary = {}
 ## Les classes par identifiant, et leur ordre (data/classes.json : celui de la section 9, et des écrans).
 var classes: Dictionary = {}
 var ordre_classes: Array[String] = []
+## Le bestiaire de la Tour (section 10.4) : familles, rangs, monstres (une classe, des voies, un multiplicateur de PV).
+var bestiaire: Dictionary = {}
+## Les règles de la Tour (data/tour.json) : PV rendus entre deux étages, tirage des monstres, Gardiens, abandon.
+var tour: Dictionary = {}
 ## Ce qui ne va pas dans les données : une ligne par problème (vide si tout est connu et cohérent).
 var erreurs: Array[String] = []
+## Une mémoire de calculs qui ne dépendent que des données (les formes de chaque nœud, pour le générateur).
+var memoire: Dictionary = {}
+
+static var _defaut: Donnees = null
+
+
+## Les données de res://data/, chargées une seule fois.
+static func defaut() -> Donnees:
+	if _defaut == null:
+		_defaut = charger()
+	return _defaut
 
 
 static func charger(dossier: String = DOSSIER) -> Donnees:
@@ -65,6 +84,8 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	for id in ordre:
 		donnees.ordre_classes.append(str(id))
 		donnees.classes[str(id)] = _lire(dossier + "classes/" + str(id) + ".json", donnees.erreurs)
+	donnees.bestiaire = _lire(dossier + "bestiaire.json", donnees.erreurs)
+	donnees.tour = _lire(dossier + "tour.json", donnees.erreurs)
 	donnees.valider()
 	return donnees
 
@@ -110,6 +131,27 @@ func valider() -> void:
 		_cles(textes["formes"][forme], GENRES, GENRES, "textes.json formes " + str(forme))
 	for id in ordre_classes:
 		erreurs.append_array(valider_classe(classes[id], id))
+	_cles(tour, CLES_TOUR, CLES_TOUR, "tour.json")
+	_cles(bestiaire, CLES_BESTIAIRE, CLES_BESTIAIRE, "bestiaire.json")
+	for id in bestiaire.get("monstres", {}):
+		var m: Dictionary = bestiaire["monstres"][id]
+		var ou := "bestiaire.json " + str(id)
+		_cles(m, CLES_MONSTRE, CLES_MONSTRE, ou)
+		if not classes.has(str(m.get("classe", ""))):
+			erreurs.append(ou + " : classe inconnue")
+			continue
+		var ids: Array = []
+		for voie in classes[str(m["classe"])]["voies"]:
+			ids.append(voie["id"])
+		for v in m.get("voies", []):
+			if not v in ids:
+				erreurs.append("%s : voie inconnue « %s »" % [ou, v])
+		if m.get("voies", []).is_empty():
+			erreurs.append(ou + " : aucune voie")
+		if not bestiaire.get("familles", {}).has(str(m.get("famille", ""))) or not bestiaire.get("rangs", {}).has(str(m.get("rang", ""))):
+			erreurs.append(ou + " : famille ou rang inconnu")
+		if float(m.get("pv_mult", 0.0)) < 0.5 or float(m.get("pv_mult", 0.0)) > 1.5:
+			erreurs.append(ou + " : pv_mult hors de 0,5 à 1,5")
 
 
 ## Les erreurs d'un fichier de classe (vide s'il est conforme à la section 13.1).

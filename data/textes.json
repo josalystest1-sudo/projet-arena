@@ -6,15 +6,16 @@
     "vive": {"m": "vif", "f": "vive", "mp": "vifs", "fp": "vives"}
   },
   "ligne": {
-    "cibles": {"un_ennemi": "un ennemi", "tous_les_ennemis": "tous", "un_allie": "un allié", "soi": "soi", "duo": "le duo"},
+    "cibles_a": {"un_ennemi": "à un ennemi", "tous_les_ennemis": "à tous", "un_allie": "à un allié", "soi": "à soi", "duo": "au duo"},
+    "cibles_sur": {"un_ennemi": "sur un ennemi", "tous_les_ennemis": "sur tous", "un_allie": "sur un allié", "soi": "sur soi", "duo": "sur le duo"},
     "effets": {
-      "degats": "{valeur} à {cible}",
-      "soin": "+{valeur} PV à {cible}",
-      "barriere": "barrière {valeur} sur {cible}",
+      "degats": "{valeur} {a_cible}",
+      "soin": "soin {valeur} {a_cible}",
+      "barriere": "barrière {valeur} {sur_cible}",
       "dot": "{par_tour}×{tours} {etat}",
       "gardien": "{par_tour}×{tours} {etat}",
       "renfort": "+{pourcent} % {etat} {tours} t",
-      "affaiblissement": "−{pourcent} % {etat} {tours} t",
+      "affaiblissement": "-{pourcent} % {etat} {tours} t",
       "etat": "{etat} {tours}",
       "egare": "{etat}",
       "purge": "Purge",
@@ -28,19 +29,19 @@
       "degats": "frappe",
       "soin": "soigne",
       "barriere": "protège",
-      "gardien": "soigne peu à peu",
+      "gardien": "régénère",
       "renfort": "renforce",
       "affaiblissement": "affaiblit",
       "purge": "purifie",
       "dissipe": "dépouille",
       "egare": "égare",
-      "saignement": "fait saigner",
+      "saignement": "lacère",
       "brulure": "brûle",
       "poison": "empoisonne",
       "familier": "harcèle",
       "etourdi": "étourdit",
       "gele": "gèle",
-      "silencie": "réduit au silence",
+      "silencie": "bâillonne",
       "enracine": "enracine",
       "aveugle": "aveugle",
       "desarme": "désarme",
@@ -49,7 +50,7 @@
     "soi": {
       "soin": "se soigne",
       "barriere": "se protège",
-      "gardien": "se soigne peu à peu",
+      "gardien": "se régénère",
       "renfort": "se renforce",
       "purge": "se purifie"
     },
@@ -66,11 +67,25 @@
     "jouable_dans": "Jouable dans {n} tours",
     "eteint_encore": "Éteint encore {n} tours",
     "eteint_encore_1": "Éteint encore 1 tour",
+    "depasse": "Déjà joué : la voie est plus loin",
     "pour_l_empecher": "Pour l'empêcher",
     "aucune_reponse": "Aucune réponse en main ce tour",
     "apres": "Après",
     "cle_remet": "Clé : remet la voie à zéro",
     "eclat_cle": "(+{pourcent} % éclat)",
-    "etat": "{etat} : {texte}"
+    "etat": "{etat} : {texte}",
+    "eclat_titre": "Éclat {n} · {voie}",
+    "eclats": ["+5 % sur les valeurs de cette voie", "+3 % de PV max", "+5 % sur les valeurs de cette voie", "+3 % de PV max", "+10 % sur les valeurs de la Clé de cette voie"],
+    "eclat_accroche": "Accroché à {noeud}"
+  },
+  "pictos": {
+    "effets": {
+      "degats": {"pictogramme": "epee", "couleur": "#e3b85f"},
+      "soin": {"pictogramme": "coeur", "couleur": "#5cc8b8"},
+      "barriere": {"pictogramme": "bouclier", "couleur": "#9bd3ca"},
+      "purge": {"pictogramme": "rayon", "couleur": "#5cc8b8"},
+      "dissipe": {"pictogramme": "rayon_barre", "couleur": "#e08a4f"}
+    },
+    "cibles": {"un_ennemi": "silhouette", "tous_les_ennemis": "deux_silhouettes", "soi": "silhouette_cerclee", "un_allie": "silhouette_coeur", "duo": "deux_silhouettes"}
   }
 }

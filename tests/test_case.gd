@@ -1,14 +1,12 @@
-## Classe de base des tests du moteur de règles. Pas de dépendance à une bibliothèque externe.
+## Classe de base des tests du combat V2. Pas de dépendance à une bibliothèque externe.
 extends RefCounted
 
 var failures: Array = []
-var data: CombatData
+var donnees: Donnees
 
 
 func setup() -> void:
-	data = CombatData.load_default()
-	# Les tests vérifient les règles avec les chiffres des classes : sans l'ajustement des Destins (testé à part).
-	data.destins = {"kit_pairs": {}}
+	donnees = Donnees.defaut()
 
 
 func assert_true(condition: bool, message: String = "") -> void:
@@ -35,109 +33,125 @@ func assert_between(actual: float, low: float, high: float, message: String = ""
 		failures.append("%s : %s hors de [%s, %s]" % [message, str(actual), str(low), str(high)])
 
 
-# --- Aides pour construire des combats ---------------------------------------
-
-## Kit par défaut : première compétence de chaque palier, premier passif.
-func member(class_id: String, picks: Dictionary = {}) -> Dictionary:
-	return {"class_id": class_id, "picks": picks}
+func assert_almost(actual: float, expected: float, message: String) -> void:
+	if absf(actual - expected) > 0.001:
+		failures.append("%s : attendu %s, obtenu %s" % [message, str(expected), str(actual)])
 
 
-## Un camp en duo : le premier membre est le personnage principal, le second son acolyte.
-## picks_by_class : kits par classe, ex. {"mage": {"basique": 1}} (par défaut, premier choix de chaque palier).
-func duo_team(classes: Array, picks_by_class: Dictionary = {}) -> Array:
-	var team := []
-	for i in range(classes.size()):
-		var entry := member(classes[i], picks_by_class.get(classes[i], {}))
-		entry["is_acolyte"] = i == 1
-		team.append(entry)
-	return team
+# --- Effets écrits en clair, pour des Destins d'essai ----------------------------
+
+func deg(valeur: int, cible: String = "un_ennemi") -> Dictionary:
+	return {"type": "degats", "valeur": valeur, "cible": cible}
 
 
-## Un combat en duo : a1 et a2 contre b1 et b2 (dans l'ordre des classes données).
-func duo_combat(classes_a: Array, classes_b: Array, picks_a: Dictionary = {}, picks_b: Dictionary = {}) -> Combat:
-	return Combat.create(data, duo_team(classes_a, picks_a), duo_team(classes_b, picks_b))
+func soin(valeur: int, cible: String = "un_allie") -> Dictionary:
+	return {"type": "soin", "valeur": valeur, "cible": cible}
 
 
-## Puissance d'un effet d'une compétence, lue dans les données (pour que les tests suivent les réglages).
-func skill_power(skill_id: String, effect_type: String = "damage") -> int:
-	for effect in data.skill(skill_id)["effects"]:
-		if effect["type"] == effect_type:
-			return int(effect.get("power", effect.get("value", 0)))
-	return 0
+func barriere(valeur: int, cible: String = "soi") -> Dictionary:
+	return {"type": "barriere", "valeur": valeur, "cible": cible}
 
 
-## Un chiffre de passif ou de Synergie, lu dans les données (ils bougent avec l'équilibrage).
-func pp(passive_id: String, key: String) -> float:
-	return data.passive_param(passive_id, key, 0.0)
+func dot(sous_type: String, par_tour: int, tours: int, cible: String = "un_ennemi") -> Dictionary:
+	return {"type": "dot", "sous_type": sous_type, "par_tour": par_tour, "tours": tours, "cible": cible}
 
 
-func sp(synergy_id: String, key: String) -> float:
-	return data.synergy_param(synergy_id, key, 0.0)
+func gardien(par_tour: int, tours: int, cible: String = "un_allie") -> Dictionary:
+	return {"type": "gardien", "par_tour": par_tour, "tours": tours, "cible": cible}
 
 
-## Met un perso à un pourcentage de ses PV max (les PV de chaque classe bougent avec l'équilibrage).
-func set_ratio(combat: Combat, unit_id: String, ratio: float) -> void:
-	var unit := combat.get_unit(unit_id)
-	unit.hp = maxi(1, int(floor(float(unit.max_hp) * ratio)))
+func etat(nom: String, tours: int, cible: String = "un_ennemi") -> Dictionary:
+	return {"type": "etat", "nom": nom, "tours": tours, "cible": cible}
 
 
-## Puissance d'une classe, en multiplicateur (le Mage frappe plus fort que les autres).
-func class_power(class_id: String) -> float:
-	return float(data.classes[class_id]["stats"]["power"]) / 100.0
+func renfort(pc: int, cible: String = "soi") -> Dictionary:
+	return {"type": "renfort", "pourcent": pc, "tours": 2, "cible": cible}
 
 
-func action(actor: String, skill: String, target: String) -> CombatAction:
-	return CombatAction.make(actor, skill, target)
+func affaiblissement(pc: int, cible: String = "un_ennemi") -> Dictionary:
+	return {"type": "affaiblissement", "pourcent": pc, "tours": 2, "cible": cible}
 
 
-## Fait passer des tours « vides » (tout le monde joue sa basique) jusqu'au tour demandé.
-func advance_to_turn(combat: Combat, target_turn: int) -> void:
-	while combat.turn < target_turn and not combat.finished:
-		combat.resolve_turn([])
+func egare(cible: String = "un_ennemi") -> Dictionary:
+	return {"type": "egare", "cible": cible}
 
 
-## Saute directement au tour demandé, sans jouer les tours intermédiaires (PV et états intacts).
-func jump_to_turn(combat: Combat, target_turn: int) -> void:
-	combat.turn = target_turn
+func purge(cible: String = "un_allie") -> Dictionary:
+	return {"type": "purge", "cible": cible}
 
 
-## Dégâts infligés par une source précise à une cible (tous types confondus, ou un type donné).
-func damage_from(events: Array, source_id: String, target_id: String, kind: String = "") -> int:
-	var total := 0
-	for event in events_of_type(events, "damage"):
-		if event["source"] == source_id and event["target"] == target_id and (kind == "" or event["kind"] == kind):
-			total += int(event["amount"])
-	return total
+func dissipe(cible: String = "un_ennemi") -> Dictionary:
+	return {"type": "dissipe", "cible": cible}
 
 
-## Remet tout le monde à fond de PV (pour tester une règle sans que personne ne tombe).
-func heal_all(combat: Combat) -> void:
-	for unit in combat.units:
-		unit.hp = unit.max_hp
+# --- Destins et combats d'essai --------------------------------------------------
+
+## Le Destin de base d'une classe (section 9) : tous les nœuds allumés, sans éclat.
+func destin(classe_id: String, nb_voies: int = 5) -> Destin:
+	return Destin.de_base(donnees, classe_id, nb_voies)
 
 
-func damage_from_all(events: Array, target_id: String) -> int:
-	return damage_to(events, target_id)
+## Un Destin d'essai : `voies` est une liste de voies, chacune une liste de nœuds (rang 1, 2, 3, Clé), chaque nœud une
+## liste d'effets ; un nœud manquant inflige 10 à un ennemi. Le moyeu inflige 0 à un ennemi (sauf s'il est donné),
+## pour que les PV ne bougent que par ce que le test fait jouer.
+func essai(voies: Array = [], pv: int = 1000, moyeu: Array = []) -> Destin:
+	var d := Destin.new()
+	d.classe_id = "essai"
+	d.nom = "Essai"
+	d.role = "degats"
+	d.pv_base = pv
+	d.k = 1.0
+	d.moyeu = {"nom": "Coup", "genre": "m", "rang": 0, "forme": "base", "allume": true, "effets": moyeu if not moyeu.is_empty() else [deg(0)]}
+	for v in range(voies.size()):
+		var noeuds: Array = []
+		for r in range(4):
+			var effets: Array = voies[v][r] if r < voies[v].size() else [deg(10)]
+			noeuds.append({"rang": r + 1, "nom": "N%d" % (r + 1), "genre": "m", "forme": "base", "allume": true, "effets": effets})
+		d.voies.append({"id": "v%d" % (v + 1), "nom": "Voie %d" % (v + 1), "noeuds": noeuds, "eclats": [false, false, false, false, false]})
+	return d
 
 
-func events_of_type(events: Array, type: String) -> Array:
-	var result := []
-	for event in events:
-		if event["type"] == type:
-			result.append(event)
-	return result
+func combat(camp_a: Array, camp_b: Array, niveau: int = 1, mode: String = "pvp") -> EtatCombat:
+	return Regles.nouveau_combat(camp_a, camp_b, niveau, mode, donnees)
 
 
-func damage_to(events: Array, target_id: String) -> int:
-	var total := 0
-	for event in events_of_type(events, "damage"):
-		if event["target"] == target_id:
-			total += int(event["amount"])
-	return total
+## Un duel de quatre Destins d'essai : chacun reçoit les mêmes voies d'essai par défaut.
+func duel_essai(a1: Destin = null, a2: Destin = null, b1: Destin = null, b2: Destin = null) -> EtatCombat:
+	return combat([a1 if a1 else essai(), a2 if a2 else essai()], [b1 if b1 else essai(), b2 if b2 else essai()])
 
 
-func action_order(events: Array) -> Array:
-	var order := []
-	for event in events_of_type(events, "action"):
-		order.append(event["actor"])
-	return order
+## L'action « jouer le prochain nœud de la voie v » d'un perso (cibles : celles données, sinon par défaut).
+func jouer(e: EtatCombat, id: String, v: int, cible_ennemie: String = "", cible_alliee: String = "") -> Dictionary:
+	var rang := int(e.perso(id)["jalons"][v]) + 1
+	return Regles.action(id, "voie", v, rang, cible_ennemie, cible_alliee)
+
+
+func moyeu(id: String, cible_ennemie: String = "", cible_alliee: String = "") -> Dictionary:
+	return Regles.action(id, "moyeu", -1, 0, cible_ennemie, cible_alliee)
+
+
+func tour(e: EtatCombat, declarations: Dictionary = {}) -> EtatCombat:
+	return Regles.resoudre_tour(e, declarations)
+
+
+## Pose un état actif dès le tour en cours, pour `tours` tours (le tour en cours compris).
+func poser(e: EtatCombat, id: String, nom: String, tours: int = 1, valeur: float = 0.0, source: String = "") -> void:
+	e.perso(id)["etats"][nom] = {"debut": e.tour, "fin": e.tour + tours - 1, "valeur": valeur, "source": source}
+
+
+## Les événements d'un type dans le journal du dernier tour.
+func evenements(e: EtatCombat, type: String, cible: String = "") -> Array:
+	var out: Array = []
+	for ev in e.journal:
+		if ev["type"] == type and (cible == "" or ev["cible"] == cible):
+			out.append(ev)
+	return out
+
+
+## Les voies jouables d'un perso (hors moyeu), sous la forme [voie, rang].
+func voies_legales(e: EtatCombat, id: String) -> Array:
+	var out: Array = []
+	for a in Regles.actions_legales(e, id):
+		if a["source"] == "voie":
+			out.append([a["voie"], a["rang"]])
+	return out

@@ -1,6 +1,8 @@
 ## L'application : garde le profil et le duo du joueur, affiche un écran à la fois et la barre de navigation.
-## Écrans du prototype (GDD, « Écrans et interface ») : création, rencontre de l'acolyte, Vitrine (accueil),
-## Acolyte, Compétences, La Tour, Profil, Paramètres, face-à-face avant le combat, combat.
+## Combat V2 (docs/SPEC-COMBAT-V2.md) : un perso, c'est une classe et une graine (sa roue du Destin en sort à
+## l'identique) et la liste des nœuds qu'il a allumés ; son acolyte se déduit de sa classe et de sa graine.
+## Écrans : création, rencontre de l'acolyte, Vitrine (accueil), Acolyte, Destin (la roue), La Tour et son bestiaire,
+## Profil, Paramètres, face-à-face, combat, fin de combat.
 ## Affichage et navigation seulement : toute la règle vit dans res://engine.
 class_name ArenaApp
 extends Control
@@ -8,37 +10,37 @@ extends Control
 const ACOLYTE_NAMES := ["Lys", "Orme", "Saule", "Iris", "Cèdre", "Aube", "Sorel", "Nima"]
 const NAV_HEIGHT := 74.0
 ## Les onglets de la barre du bas : identifiant d'écran, texte.
-const NAV := [["home", "Accueil"], ["acolyte", "Acolyte"], ["skills", "Compétences"], ["tower", "La Tour"], ["profile", "Profil"]]
+const NAV := [["home", "Accueil"], ["acolyte", "Acolyte"], ["destin", "Destin"], ["tower", "La Tour"], ["profile", "Profil"]]
 const SCREENS := {
 	"creation": preload("res://scenes/screens/creation_screen.gd"),
 	"meet": preload("res://scenes/screens/meet_screen.gd"),
 	"home": preload("res://scenes/screens/home_screen.gd"),
 	"acolyte": preload("res://scenes/screens/acolyte_screen.gd"),
-	"skills": preload("res://scenes/screens/skills_screen.gd"),
-	"tower": preload("res://scenes/screens/tower_screen.gd"),
-	"bestiaire": preload("res://scenes/screens/bestiary_screen.gd"),
 	"profile": preload("res://scenes/screens/profile_screen.gd"),
 	"settings": preload("res://scenes/screens/settings_screen.gd"),
 	"destin": preload("res://scenes/screens/destin_screen.gd"),
+	"tower": preload("res://scenes/screens/tower_screen.gd"),
+	"bestiaire": preload("res://scenes/screens/bestiary_screen.gd"),
 	"versus": preload("res://scenes/screens/versus_screen.gd"),
 	"combat": preload("res://scenes/combat/combat_screen.gd"),
+	"fin": preload("res://scenes/screens/fin_screen.gd"),
 }
 
-var data: CombatData
+var data: Donnees
 var profile: PlayerProfile
 var sfx: Sfx
 var rng := RandomNumberGenerator.new()
 
 # Le duo du joueur : un seul personnage et un seul acolyte par compte (GDD), gardés sur l'appareil.
 var player_class: String = ""
-var player_picks: Dictionary = {}
-var acolyte: Dictionary = {}
+## La graine du Destin, tirée une fois à la création (section 4 : le seul hasard du jeu).
+var graine: int = 0
+## Les nœuds allumés par le joueur, dans l'ordre (« v2.n2 », « v1.e1 »…), un par niveau ; les N1 le sont d'office.
+var allumage: Array[String] = []
 var acolyte_name: String = ""
-## Le Destin du joueur (l'arbre, regénéré depuis sa graine) et les nœuds pris ; le mini-Destin de l'acolyte (points placés seuls).
-var destin: Dictionary = {}
-var destin_taken: Array = []
-var acolyte_destin: Dictionary = {}
-var acolyte_taken: Array = []
+## Les deux roues, regénérées depuis la graine, le niveau et les nœuds allumés.
+var destin: Destin
+var acolyte_destin: Destin
 
 var content: Control
 var nav_bar: HBoxContainer
@@ -56,7 +58,7 @@ func _ready() -> void:
 		rng.randomize()
 	# Sur téléphone, un écran qui défile doit défiler au doigt, même quand le doigt part d'une carte ou d'un bouton.
 	get_tree().node_added.connect(_let_scroll_through)
-	data = CombatData.load_default()
+	data = Donnees.defaut()
 	profile = PlayerProfile.load_profile()
 	sfx = Sfx.new()
 	add_child(sfx)
@@ -152,175 +154,119 @@ func show_screen(screen: String, options: Dictionary = {}) -> void:
 # ---------------------------------------------------------------------------
 
 func has_duo() -> bool:
-	return player_class != "" and not acolyte.is_empty()
+	return player_class != "" and destin != null
 
 
+## Le duo gardé sur l'appareil. Un duo d'avant le combat V2 (sans « version » 2) n'est pas repris : on recrée un perso.
 func load_saved_duo() -> bool:
 	var saved := profile.duo
-	if saved.is_empty() or not data.classes.has(saved.get("player_class", "")) or not data.classes.has(saved.get("acolyte_class", "")):
+	if int(saved.get("version", 0)) != 2 or not data.classes.has(str(saved.get("classe", ""))):
 		return false
-	player_class = saved["player_class"]
-	player_picks = saved["player_picks"]
-	acolyte = {"class_id": saved["acolyte_class"], "picks": saved["acolyte_picks"]}
-	acolyte_name = str(saved.get("acolyte_name", ACOLYTE_NAMES[0]))
-	# Les profils d'avant le Destin n'en ont pas : on en tire un.
-	if profile.destin.is_empty():
-		_new_destin()
-	if profile.acolyte_destin.is_empty():
-		_new_acolyte_destin()
-	_load_destins()
+	player_class = str(saved["classe"])
+	graine = int(saved["graine"])
+	allumage.clear()
+	for cle in saved.get("allumage", []):
+		allumage.append(str(cle))
+	acolyte_name = str(saved.get("acolyte_nom", ACOLYTE_NAMES[0]))
+	_regenerer()
 	return true
 
 
-## Regénère les deux arbres depuis leurs graines et relit les points placés.
-func _load_destins() -> void:
-	destin = Destin.generate(data, player_class, player_picks, int(profile.destin["seed"]))
-	destin_taken = profile.destin.get("taken", []).duplicate()
-	acolyte_destin = Destin.generate(data, acolyte["class_id"], acolyte["picks"], int(profile.acolyte_destin["seed"]), true)
-	acolyte_taken = profile.acolyte_destin.get("taken", []).duplicate()
-	_place_acolyte_points()
+## Les deux roues, depuis la graine : celle du joueur avec ses nœuds allumés, celle de l'acolyte (allumée seule,
+## selon le niveau).
+func _regenerer() -> void:
+	destin = Generateur.generer(player_class, graine, profile.level, allumage, data)
+	acolyte_destin = Generateur.acolyte(player_class, graine, profile.level, data)
 
 
-## Un nouveau Destin : une graine, et le premier point sur la racine (le seul choix possible).
-func _new_destin() -> void:
-	profile.destin = {"seed": rng.randi(), "taken": [0]}
-
-
-func _new_acolyte_destin() -> void:
-	profile.acolyte_destin = {"seed": rng.randi(), "taken": []}
-
-
-## Les points de l'acolyte se placent seuls : un tous les deux niveaux (15 points au niveau 30), sur le nœud
-## disponible qui vaut le plus.
-func _place_acolyte_points() -> void:
-	var points := Destin.points_for_level(data, profile.level, true)
-	var changed := false
-	if acolyte_taken.size() < points:
-		acolyte_taken = Destin.auto_points(acolyte_destin, acolyte_taken, points)
-		changed = true
-	if changed:
-		profile.acolyte_destin["taken"] = acolyte_taken.duplicate()
-		profile.save()
-
-
-func destin_points_left() -> int:
-	return maxi(0, profile.level - destin_taken.size())
-
-
-## Place un point sur un nœud (relié à un nœud pris, un point par niveau). Renvoie vrai si c'est fait.
-func take_destin_node(node_id: int) -> bool:
-	if destin_points_left() <= 0 or not Destin.can_take(destin, destin_taken, node_id):
-		return false
-	destin_taken.append(node_id)
-	profile.destin["taken"] = destin_taken.duplicate()
+func save_duo() -> void:
+	profile.duo = {"version": 2, "classe": player_class, "graine": graine, "allumage": Array(allumage), "acolyte_nom": acolyte_name}
 	profile.save()
+
+
+## Création du personnage : sa classe et sa graine. Le Destin et l'acolyte (classe fixée par la sienne) en découlent.
+func create_character(class_id: String) -> void:
+	player_class = class_id
+	graine = _nouvelle_graine()
+	allumage.clear()
+	profile.level = 1
+	profile.xp = 0
+	acolyte_name = ACOLYTE_NAMES[rng.randi_range(0, ACOLYTE_NAMES.size() - 1)]
+	_regenerer()
+	save_duo()
+
+
+func _nouvelle_graine() -> int:
+	return ((rng.randi() & 0x7FFFFFFF) << 32) | rng.randi()
+
+
+## Prototype seulement : un autre Destin pour la même classe (dans le vrai jeu, il ne change jamais).
+func reroll_player() -> void:
+	graine = _nouvelle_graine()
+	allumage.clear()
+	_regenerer()
+	save_duo()
+
+
+## Les points de Destin qui restent à placer : un par niveau.
+func destin_points_left() -> int:
+	return maxi(0, profile.level - allumage.size())
+
+
+## Allume un nœud ou un éclat (« v2.n3 », « v1.e1 ») s'il reste un point et que la règle d'allumage le permet.
+func allumer(cle: String) -> bool:
+	if destin_points_left() <= 0 or not Generateur.peut_allumer(destin, cle):
+		return false
+	allumage.append(cle)
+	_regenerer()
+	save_duo()
 	return true
 
 
 ## De l'XP après un combat ; l'acolyte monte en même temps. Renvoie {levels, level}.
 func gain_xp(amount: int) -> Dictionary:
 	var result := profile.gain_xp(amount)
-	_place_acolyte_points()
+	_regenerer()
 	profile.save()
 	return result
 
 
-func save_duo() -> void:
-	profile.duo = {"player_class": player_class, "player_picks": player_picks, "acolyte_class": acolyte["class_id"],
-		"acolyte_picks": acolyte["picks"], "acolyte_name": acolyte_name}
+## Un duel contre un duo IA de ton niveau : une classe et une graine au hasard (l'étape 5 fera un vrai matchmaking).
+func duel_contre_ia() -> Dictionary:
+	var classe: String = data.ordre_classes[rng.randi_range(0, data.ordre_classes.size() - 1)]
+	var g := _nouvelle_graine()
+	var ennemis := [Generateur.generer(classe, g, profile.level, Generateur.PAR_DEFAUT, data), Generateur.acolyte(classe, g, profile.level, data)]
+	var e := Regles.nouveau_combat([destin, acolyte_destin], ennemis, profile.level, "pvp", data)
+	return {"etat": e, "noms": {"a1": "Toi", "a2": acolyte_name}}
+
+
+## Une montée de la Tour, à ton niveau : le combat de son premier étage.
+func commencer_tour() -> Dictionary:
+	var t := Tour.commencer(destin, acolyte_destin, profile.level, _nouvelle_graine(), data)
+	return {"etat": t.combat(), "tour": t, "noms": {"a1": "Toi", "a2": acolyte_name}}
+
+
+## La fin d'un duel : le résultat, la série, l'XP (+120 gagné, +80 perdu). Renvoie {xp, niveaux}.
+func fin_duel(gagne: bool) -> Dictionary:
+	profile.record_result(gagne)
+	var xp := 120 if gagne else 80
+	var r := gain_xp(xp)
+	return {"xp": xp, "niveaux": int(r["levels"])}
+
+
+## La fin d'une montée : le record de la classe (l'étage atteint). Renvoie {xp} (l'XP des étages est donnée au fil
+## de la montée).
+func fin_tour(t: Tour) -> Dictionary:
+	if t.atteint > int(profile.tower_records.get(player_class, 0)):
+		profile.tower_records[player_class] = t.atteint
 	profile.save()
+	return {"xp": 40 * maxi(0, t.atteint - 1)}
 
 
-## Création du personnage : sa classe, son Destin tiré au hasard, puis son acolyte (classe complémentaire,
-## compétences qui font Synergie avec les siennes).
-func create_character(class_id: String) -> void:
-	player_class = class_id
-	player_picks = CombatUnit.random_picks(rng)
-	profile.level = 1
-	profile.xp = 0
-	_new_destin()
-	draw_acolyte()
-	_load_destins()
-	save_duo()
-
-
-func draw_acolyte() -> void:
-	acolyte = Duo.draw_acolyte(data, player_class, player_picks, rng)
-	acolyte_name = ACOLYTE_NAMES[rng.randi_range(0, ACOLYTE_NAMES.size() - 1)]
-	_new_acolyte_destin()
-
-
-## Prototype seulement : un autre tirage pour le joueur (et donc un autre Destin). L'acolyte reste s'il fait toujours Synergie avec lui.
-func reroll_player() -> void:
-	player_picks = CombatUnit.random_picks(rng)
-	_new_destin()
-	if Duo.kit_synergies(data, player_class, player_picks, acolyte["class_id"], acolyte["picks"]).is_empty():
-		var keep_name := acolyte_name
-		draw_acolyte()
-		acolyte_name = keep_name
-	_load_destins()
-	save_duo()
-
-
-func reroll_acolyte() -> void:
-	draw_acolyte()
-	_load_destins()
-	save_duo()
-
-
-## Le duo pour le moteur : toi, puis ton acolyte, avec les nœuds de Destin pris.
-func duo_members() -> Array:
-	var team := Duo.members(player_class, player_picks, acolyte)
-	team[0]["name"] = "Toi"
-	team[0]["is_player"] = true
-	team[1]["name"] = acolyte_name
-	var mine := Destin.mods_for(destin, destin_taken)
-	team[0]["mods"] = mine["mods"]
-	team[0]["skill_mods"] = mine["skill_mods"]
-	var theirs := Destin.mods_for(acolyte_destin, acolyte_taken)
-	team[1]["mods"] = theirs["mods"]
-	team[1]["skill_mods"] = theirs["skill_mods"]
-	return team
-
-
-## Le duo IA d'en face : de ton niveau, avec un Destin et un mini-Destin dont les points sont placés seuls (comme le
-## fera le matchmaking par niveau de l'étape 5). Sans ça, chaque niveau gagné te donnerait l'avantage sur un adversaire
-## sans Destin.
-func random_enemy_duo() -> Array:
-	var team := Duo.random_duo(data, rng)
-	for i in range(team.size()):
-		var member: Dictionary = team[i]
-		var mini := i > 0
-		var tree := Destin.generate(data, member["class_id"], member["picks"], rng.randi(), mini)
-		var taken := Destin.auto_points(tree, [] if mini else [0], Destin.points_for_level(data, profile.level, mini))
-		var theirs := Destin.mods_for(tree, taken)
-		member["mods"] = theirs["mods"]
-		member["skill_mods"] = theirs["skill_mods"]
-	return team
-
-
-func player_skills() -> Array[String]:
-	return Duo.kit_skills(data, player_class, player_picks)
-
-
-func player_passive() -> String:
-	var pool: Array = data.classes[player_class]["passives"]
-	return pool[int(player_picks.get("passive", 0)) % pool.size()]
-
-
-func acolyte_skills() -> Array[String]:
-	return Duo.kit_skills(data, acolyte["class_id"], acolyte["picks"])
-
-
-func acolyte_passive() -> String:
-	var pool: Array = data.classes[acolyte["class_id"]]["passives"]
-	return pool[int(acolyte["picks"].get("passive", 0)) % pool.size()]
-
-
-func duo_synergies() -> Array[Dictionary]:
-	return Duo.kit_synergies(data, player_class, player_picks, acolyte["class_id"], acolyte["picks"])
+func acolyte_class() -> String:
+	return acolyte_destin.classe_id if acolyte_destin != null else ""
 
 
 func class_label(class_id: String) -> String:
-	var cls: Dictionary = data.classes[class_id]
-	return "%s · %s" % [cls["name"], UiKit.ROLE_LABELS[cls["roles"][0]]]
+	var cls := data.classe(class_id)
+	return "%s · %s" % [cls["nom"], UiKit.ROLE_LABELS[cls["role"]]]
