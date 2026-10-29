@@ -382,7 +382,7 @@ func _ligne_courte(_n: Dictionary, voie: int, rang: int) -> String:
 func _pictos_en_combat(id: String, voie: int, rang: int) -> Array[Dictionary]:
 	var fiche := e.fiche(id)
 	var bonus := 0.0 if rang == 0 else float(fiche["bonus"][voie][rang - 1])
-	return Texte.pictos(e.noeud(id, voie, rang), Regles.multiplicateur_niveau(e) * float(fiche["k"]) * (1.0 + bonus), 1.0 + bonus)
+	return Texte.pictos(e.noeud(id, voie, rang), Regles.multiplicateur_niveau(e) * float(fiche["k"]) * (1.0 + bonus), 1.0 + bonus, null, fiche.get("mods", {}), rang, bonus)
 
 
 func _nom(id: String) -> String:

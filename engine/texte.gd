@@ -16,7 +16,9 @@ static func nom(noeud: Dictionary, donnees: Donnees = null) -> String:
 
 ## « 45 à un ennemi + 12×3 Saignement » : chaque effet avec ses chiffres. Les valeurs numériques sont multipliées par
 ## `valeurs` (M(niveau) × k × éclats), les pourcentages par `pourcents` (éclats), puis arrondies à l'inférieur.
-static func ligne(noeud: Dictionary, valeurs: float = 1.0, pourcents: float = 1.0, donnees: Donnees = null) -> String:
+## Avec un équipement (`mods`, le rang du nœud et le bonus des éclats), chaque valeur reçoit en plus la ligne de son
+## type et celle de son rang (Equipement.bonus), comme en combat (Regles.valeur).
+static func ligne(noeud: Dictionary, valeurs: float = 1.0, pourcents: float = 1.0, donnees: Donnees = null, mods: Dictionary = {}, rang: int = -1, eclats: float = 0.0) -> String:
 	var d := donnees if donnees != null else Donnees.defaut()
 	var gabarits: Dictionary = d.textes["ligne"]["effets"]
 	var cibles_a: Dictionary = d.textes["ligne"]["cibles_a"]
@@ -25,10 +27,11 @@ static func ligne(noeud: Dictionary, valeurs: float = 1.0, pourcents: float = 1.
 	for ef in noeud["effets"]:
 		var type := str(ef["type"])
 		var champs := {"a_cible": cibles_a.get(str(ef["cible"]), ""), "sur_cible": cibles_sur.get(str(ef["cible"]), ""), "etat": _nom_etat(d, ef)}
+		var v := _valeurs_equipees(valeurs, mods, rang, type, eclats)
 		if ef.has("valeur"):
-			champs["valeur"] = Regles.plancher(float(ef["valeur"]) * valeurs)
+			champs["valeur"] = Regles.plancher(float(ef["valeur"]) * v)
 		if ef.has("par_tour"):
-			champs["par_tour"] = Regles.plancher(float(ef["par_tour"]) * valeurs)
+			champs["par_tour"] = Regles.plancher(float(ef["par_tour"]) * v)
 		if ef.has("pourcent"):
 			champs["pourcent"] = Regles.plancher(float(ef["pourcent"]) * pourcents)
 		if ef.has("tours"):
@@ -37,11 +40,19 @@ static func ligne(noeud: Dictionary, valeurs: float = 1.0, pourcents: float = 1.
 	return str(d.textes["ligne"]["separateur"]).join(parts)
 
 
-## La ligne d'un nœud d'un perso en combat : avec son niveau, son multiplicateur de classe et ses éclats.
+## Le multiplicateur des valeurs d'un effet avec un équipement : `valeurs` vaut M × k × (1 + éclats) ; la ligne du
+## type et celle du rang s'ajoutent aux éclats. Sans équipement, `valeurs` tel quel.
+static func _valeurs_equipees(valeurs: float, mods: Dictionary, rang: int, type: String, eclats: float) -> float:
+	if mods.is_empty():
+		return valeurs
+	return valeurs * (1.0 + eclats + Equipement.bonus(mods, rang, type)) / (1.0 + eclats)
+
+
+## La ligne d'un nœud d'un perso en combat : avec son niveau, son multiplicateur de classe, ses éclats et son équipement.
 static func ligne_en_combat(e: EtatCombat, id: String, voie: int, rang: int) -> String:
 	var fiche := e.fiche(id)
 	var bonus := 0.0 if rang == 0 else float(fiche["bonus"][voie][rang - 1])
-	return ligne(e.noeud(id, voie, rang), Regles.multiplicateur_niveau(e) * float(fiche["k"]) * (1.0 + bonus), 1.0 + bonus)
+	return ligne(e.noeud(id, voie, rang), Regles.multiplicateur_niveau(e) * float(fiche["k"]) * (1.0 + bonus), 1.0 + bonus, null, fiche.get("mods", {}), rang, bonus)
 
 
 static func _nom_etat(d: Donnees, ef: Dictionary) -> String:
@@ -113,18 +124,19 @@ static func picto(ef: Dictionary, donnees: Donnees = null) -> Dictionary:
 
 ## La rangée de pictogrammes d'un nœud (section 12.1) : pour chaque effet, son pictogramme, sa couleur, le glyphe de
 ## sa cible et son nombre (« 60 », « 30×3 », « +25 % », « 1 » pour un état d'un tour).
-static func pictos(noeud: Dictionary, valeurs: float = 1.0, pourcents: float = 1.0, donnees: Donnees = null) -> Array[Dictionary]:
+static func pictos(noeud: Dictionary, valeurs: float = 1.0, pourcents: float = 1.0, donnees: Donnees = null, mods: Dictionary = {}, rang: int = -1, eclats: float = 0.0) -> Array[Dictionary]:
 	var d := donnees if donnees != null else Donnees.defaut()
 	var out: Array[Dictionary] = []
 	for ef in noeud["effets"]:
 		var p := picto(ef, d)
 		p["cible"] = str(d.textes["pictos"]["cibles"][str(ef["cible"])])
 		var n := ""
+		var v := _valeurs_equipees(valeurs, mods, rang, str(ef["type"]), eclats)
 		match str(ef["type"]):
 			"degats", "soin", "barriere":
-				n = str(Regles.plancher(float(ef["valeur"]) * valeurs))
+				n = str(Regles.plancher(float(ef["valeur"]) * v))
 			"dot", "gardien":
-				n = "%d×%d" % [Regles.plancher(float(ef["par_tour"]) * valeurs), int(ef["tours"])]
+				n = "%d×%d" % [Regles.plancher(float(ef["par_tour"]) * v), int(ef["tours"])]
 			"renfort":
 				n = "+%d %%" % Regles.plancher(float(ef["pourcent"]) * pourcents)
 			"affaiblissement":
@@ -145,13 +157,14 @@ static func fiche_destin(destin: Destin, voie: int, rang: int, niveau: int, donn
 	var noeud: Dictionary = destin.moyeu if rang == 0 else destin.voies[voie]["noeuds"][rang - 1]
 	var bonus := destin.bonus_valeurs(voie, rang)
 	var m := 1.0 + float(d.regles["niveau_pente"]) * float(maxi(1, niveau) - 1)
-	var valeurs := m * destin.k * (1.0 + bonus)
+	# L'équipement porté : sa Force sur le multiplicateur de classe, ses autres lignes dans pictos et ligne.
+	var valeurs := m * destin.k * (1.0 + float(destin.mods.get("force", 0.0))) * (1.0 + bonus)
 	var sous_titre := str(fiche_txt["moyeu"])
 	if rang > 0:
 		var gabarit := str(fiche_txt["cle"] if rang == 4 else fiche_txt["rang"])
 		sous_titre = gabarit.format({"voie": destin.voies[voie]["nom"], "rang": rang})
-	var out := {"nom": nom(noeud, d), "sous_titre": "%s · %s" % [destin.nom, sous_titre], "pictos": pictos(noeud, valeurs, 1.0 + bonus, d),
-		"ligne": ligne(noeud, valeurs, 1.0 + bonus, d), "phrase": phrase(noeud, d), "etats": _details_etats(noeud, d),
+	var out := {"nom": nom(noeud, d), "sous_titre": "%s · %s" % [destin.nom, sous_titre], "pictos": pictos(noeud, valeurs, 1.0 + bonus, d, destin.mods, rang, bonus),
+		"ligne": ligne(noeud, valeurs, 1.0 + bonus, d, destin.mods, rang, bonus), "phrase": phrase(noeud, d), "etats": _details_etats(noeud, d),
 		"apres": "", "eclat": "", "allume": bool(noeud.get("allume", true))}
 	if rang > 0:
 		if rang == 4:
@@ -181,7 +194,7 @@ static func fiche(e: EtatCombat, id: String, voie: int, rang: int, point_de_vue:
 	if rang > 0:
 		sous_titre = str(txt["cle"] if rang == 4 else txt["rang"]).format({"voie": statique["voies"][voie]["nom"], "rang": rang})
 	var out := {"nom": nom(noeud, d), "sous_titre": "%s · %s" % [classe.get("nom", statique["nom"]), sous_titre],
-		"pictos": pictos(noeud, valeurs, 1.0 + bonus, d), "ligne": ligne(noeud, valeurs, 1.0 + bonus, d), "phrase": phrase(noeud, d),
+		"pictos": pictos(noeud, valeurs, 1.0 + bonus, d, statique.get("mods", {}), rang, bonus), "ligne": ligne(noeud, valeurs, 1.0 + bonus, d, statique.get("mods", {}), rang, bonus), "phrase": phrase(noeud, d),
 		"etats": _details_etats(noeud, d), "apres": "", "eclat": "", "echeance": ""}
 	var a_soi := e.camp(id) == e.camp(point_de_vue)
 	out["echeance"] = echeance_texte(e, id, voie, rang, a_soi, d)

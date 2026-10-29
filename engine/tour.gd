@@ -159,6 +159,25 @@ func _egide(e: EtatCombat) -> void:
 			e.perso(id)["barrier_until"] = e.tour + 2
 
 
+## Le butin d'un étage franchi (GDD V2, § 10.1) : un objet du niveau de l'étage, tiré avec la graine de l'étage ;
+## épique à un Gardien, commun ou rare ailleurs ; échangeable seulement au premier passage, lié sinon ; un étage
+## rejoué n'en lâche qu'une fois sur deux (vide alors). Voir Equipement.butin.
+func butin(franchi: int, premier_passage: bool) -> Dictionary:
+	var g := int(donnees.tour["gardien_tous_les"])
+	var source := "gardien" if g > 0 and franchi % g == 0 else "etage"
+	return Equipement.butin(source, niveau_etage(franchi), premier_passage, graine_etage(franchi), donnees)
+
+
+## Le revenu passif d'un jour (GDD V2, § 6 : « selon la hauteur, plafonné, jamais d'objets ») : des Éclats et de l'XP
+## proportionnels au meilleur record, chacun sous son plafond (data/tour.json, revenu). Rien sans record.
+static func revenu(record: int, p_donnees: Donnees) -> Dictionary:
+	if record <= 0:
+		return {"eclats": 0, "xp": 0}
+	var r: Dictionary = p_donnees.tour["revenu"]
+	return {"eclats": mini(int(r["eclats_max"]), int(r["eclats_par_etage"]) * record),
+		"xp": mini(int(r["xp_max"]), int(r["xp_par_etage"]) * record)}
+
+
 ## La graine d'un étage : celle de la montée, mêlée au numéro de l'étage.
 func graine_etage(n: int) -> int:
 	return graine ^ (n * 0x9E3779B1)

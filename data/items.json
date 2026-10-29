@@ -44,5 +44,7 @@
     "gardien": {"epique": 100},
     "rejoue": 0.5
   },
-  "reforge": {"cout": 20, "pente": 1.0}
+  "reforge": {"cout": 20, "pente": 1.0},
+  "recyclage": {"commun": 5, "rare": 15, "epique": 40, "legendaire": 100},
+  "eclats": {"duel_gagne": 15, "duel_perdu": 5, "etage_base": 10, "etage_pente": 2, "rejoue": 0.5}
 }

@@ -13,6 +13,8 @@ const RED := Color("ff6b6b")
 const ORANGE := Color("ffa94d")
 const ROLE_LABELS := {"front": "Front", "degats": "Dégâts", "soutien": "Soutien"}
 const TIER_LABELS := {"basique": "Basique", "moyenne": "Moyenne", "forte": "Forte"}
+## Les couleurs des raretés d'un objet, par rang (1 commun, 2 rare, 3 épique, 4 légendaire).
+const RARETES := [Color("d4d4d4"), Color("5ea8ff"), Color("c57bff"), Color("ffb347")]
 
 
 static func make_theme() -> Theme:
@@ -79,6 +81,11 @@ static func main_button(text: String, callback: Callable, height: float = 78.0) 
 	node.add_theme_stylebox_override("hover", hover)
 	node.add_theme_stylebox_override("pressed", hover)
 	return node
+
+
+## La couleur d'une rareté d'objet (son rang, 1 à 4).
+static func rarete_couleur(rang: int) -> Color:
+	return RARETES[clampi(rang, 1, RARETES.size()) - 1]
 
 
 static func spacer(height: float) -> Control:

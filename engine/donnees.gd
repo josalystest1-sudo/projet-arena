@@ -48,7 +48,9 @@ const CLES_NOEUD := ["rang", "nom", "genre", "effets", "budget_override"]
 const CLES_BESTIAIRE := ["familles", "rangs", "monstres"]
 const CLES_MONSTRE := ["nom", "famille", "rang", "classe", "voies", "pv_mult", "description"]
 const CLES_TOUR := ["pv_entre_etages", "monstres_max", "somme_depart", "somme_pente", "somme_largeur", "somme_max",
-	"niveau_par_etage", "tirages", "gardien_tous_les"]
+	"niveau_par_etage", "tirages", "gardien_tous_les", "revenu"]
+## Le revenu passif de la Tour (data/tour.json, GDD V2 § 6) : des Éclats et un peu d'XP par jour selon le record, plafonnés.
+const CLES_REVENU := ["eclats_par_etage", "xp_par_etage", "eclats_max", "xp_max"]
 ## Une Faveur de la Tour (data/faveurs.json) : son nom, son texte (« {v} » : la valeur cumulée, en %), sa valeur par
 ## cumul (une fraction), et son plafond (facultatif).
 const CLES_FAVEUR := ["nom", "texte", "valeur", "max"]
@@ -57,7 +59,9 @@ const CLES_FAVEUR_OBLIGATOIRES := ["nom", "texte", "valeur"]
 const FAVEURS := ["vigueur", "puissance", "repit", "egide", "effroi", "savoir"]
 ## L'équipement (data/items.json, engine/equipement.gd) : les emplacements, les huit lignes que le moteur sait
 ## appliquer, les raretés, l'échelle du niveau, les bases, le butin par source, la reforge.
-const CLES_OBJETS := ["emplacements", "lignes", "raretes", "niveau", "bases", "butin", "reforge"]
+const CLES_OBJETS := ["emplacements", "lignes", "raretes", "niveau", "bases", "butin", "reforge", "recyclage", "eclats"]
+## Les Éclats (la monnaie liée, GDD V2 § 10.2) gagnés en duel et par étage de la Tour (data/items.json).
+const CLES_ECLATS := ["duel_gagne", "duel_perdu", "etage_base", "etage_pente", "rejoue"]
 const CLES_EMPLACEMENT := ["nom"]
 const LIGNES := ["pv", "force", "degats", "soins", "barrieres", "dot", "cle", "ouverture"]
 const CLES_LIGNE := ["nom", "texte", "fourchette", "plafond"]
@@ -155,6 +159,7 @@ func valider() -> void:
 	for id in ordre_classes:
 		erreurs.append_array(valider_classe(classes[id], id))
 	_cles(tour, CLES_TOUR, CLES_TOUR, "tour.json")
+	_cles(tour.get("revenu", {}), CLES_REVENU, CLES_REVENU, "tour.json revenu")
 	_cles(faveurs, FAVEURS, FAVEURS, "faveurs.json")
 	for id in faveurs:
 		var ou := "faveurs.json " + str(id)
@@ -260,6 +265,13 @@ func _valider_objets() -> void:
 		if rejoue < 0.0 or rejoue > 1.0:
 			erreurs.append("items.json butin : rejoue entre 0 et 1 attendu")
 	_cles(objets.get("reforge", {}), CLES_REFORGE, CLES_REFORGE, "items.json reforge")
+	var raretes: Array = objets.get("raretes", {}).keys()
+	_cles(objets.get("recyclage", {}), raretes, raretes, "items.json recyclage")
+	if objets.get("recyclage", {}) is Dictionary:
+		for r in objets["recyclage"]:
+			if int(objets["recyclage"][r]) < 0:
+				erreurs.append("items.json recyclage %s : valeur négative" % r)
+	_cles(objets.get("eclats", {}), CLES_ECLATS, CLES_ECLATS, "items.json eclats")
 
 
 ## Les erreurs d'un fichier de classe (vide s'il est conforme à la section 13.1).

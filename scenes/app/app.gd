@@ -3,8 +3,11 @@
 ## l'identique) et la liste des nœuds qu'il a allumés. Il joue toujours en trio (docs/GDD_V2.md) : avec deux Échos,
 ## un de chacun des deux autres rôles, proposés par le jeu à son niveau (une graine et un nom chacun, gardés jusqu'à ce
 ## que le joueur en demande un autre ; amis et guilde viendront avec le serveur).
-## Écrans : création, Vitrine (accueil), Trio (composer son trio), Destin (la roue), La Tour et son bestiaire, Profil,
-## Paramètres, face-à-face, combat, fin de combat.
+## Écrans : création, Vitrine (accueil), Trio (composer son trio), Destin (la roue), la Forge (l'équipement), La Tour et
+## son bestiaire, Profil, Paramètres, face-à-face, combat, fin de combat.
+## L'équipement (GDD V2, § 10 ; PR 3.2) : les objets portés et le sac vivent dans le profil ; les bonus des objets portés
+## entrent dans la roue du joueur (`Destin.mods`) à chaque régénération ; le butin tombe à la fin des étages de la Tour ;
+## les Éclats (monnaie liée) viennent des duels, des étages et du revenu passif, et paient la reforge.
 ## Affichage et navigation seulement : toute la règle vit dans res://engine.
 class_name ArenaApp
 extends Control
@@ -13,7 +16,7 @@ extends Control
 const ECHO_NAMES := ["Lys", "Orme", "Saule", "Iris", "Cèdre", "Aube", "Sorel", "Nima", "Bram", "Elio", "Mira", "Tess"]
 const NAV_HEIGHT := 74.0
 ## Les onglets de la barre du bas : identifiant d'écran, texte.
-const NAV := [["home", "Accueil"], ["trio", "Trio"], ["destin", "Destin"], ["tower", "La Tour"], ["profile", "Profil"]]
+const NAV := [["home", "Accueil"], ["trio", "Trio"], ["destin", "Destin"], ["forge", "Forge"], ["tower", "La Tour"], ["profile", "Profil"]]
 const SCREENS := {
 	"creation": preload("res://scenes/screens/creation_screen.gd"),
 	"home": preload("res://scenes/screens/home_screen.gd"),
@@ -21,6 +24,7 @@ const SCREENS := {
 	"profile": preload("res://scenes/screens/profile_screen.gd"),
 	"settings": preload("res://scenes/screens/settings_screen.gd"),
 	"destin": preload("res://scenes/screens/destin_screen.gd"),
+	"forge": preload("res://scenes/screens/forge_screen.gd"),
 	"tower": preload("res://scenes/screens/tower_screen.gd"),
 	"bestiaire": preload("res://scenes/screens/bestiary_screen.gd"),
 	"versus": preload("res://scenes/screens/versus_screen.gd"),
@@ -45,6 +49,9 @@ var echos_choisis: Dictionary = {}
 var echos: Array[Destin] = []
 ## Les deux roues, regénérées depuis la graine, le niveau et les nœuds allumés.
 var destin: Destin
+## Le revenu passif réclamé à l'ouverture du jeu ({eclats, xp, record} ; vide s'il n'y en a pas eu), montré une fois par
+## l'accueil.
+var revenu_du_jour: Dictionary = {}
 
 var content: Control
 var nav_bar: HBoxContainer
@@ -69,7 +76,11 @@ func _ready() -> void:
 	sfx.muted = profile.muted
 	theme = UiKit.make_theme()
 	_build_layout()
-	show_screen("home" if charger_perso() else "creation")
+	if charger_perso():
+		reclamer_revenu()
+		show_screen("home")
+	else:
+		show_screen("creation")
 
 
 func _seed_from_url() -> int:
@@ -205,6 +216,7 @@ func _nom_d_echo() -> String:
 ## niveau).
 func _regenerer() -> void:
 	destin = Generateur.generer(player_class, graine, profile.level, allumage, data)
+	destin.mods = Equipement.mods(objets_portes(), data)
 	echos.clear()
 	for role in Trio.roles_des_echos(player_class, data):
 		echos.append(Trio.echo(role, int(echos_choisis[role]["graine"]), profile.level, data))
@@ -271,6 +283,116 @@ func gain_xp(amount: int) -> Dictionary:
 	return result
 
 
+# ---------------------------------------------------------------------------
+# La Forge : l'équipement et les Éclats
+# ---------------------------------------------------------------------------
+
+## Les objets portés (un par emplacement au plus).
+func objets_portes() -> Array:
+	var out: Array = []
+	for e in data.objets["emplacements"]:
+		if profile.portes.has(e):
+			out.append(profile.portes[e])
+	return out
+
+
+## Les bonus de ce qu'on porte (ligne -> fraction).
+func bonus_portes() -> Dictionary:
+	return Equipement.mods(objets_portes(), data)
+
+
+## Équiper un objet du sac : il prend la place de son emplacement (l'objet porté retourne au sac) et devient lié.
+func equiper(index_sac: int) -> bool:
+	if index_sac < 0 or index_sac >= profile.sac.size():
+		return false
+	var objet: Dictionary = profile.sac[index_sac]
+	var e := Equipement.emplacement(objet, data)
+	profile.sac.remove_at(index_sac)
+	if profile.portes.has(e):
+		profile.sac.append(profile.portes[e])
+	profile.portes[e] = Equipement.equiper(objet)
+	_regenerer()
+	profile.save()
+	return true
+
+
+## Retirer l'objet porté d'un emplacement : il retourne au sac (toujours lié).
+func retirer(emplacement: String) -> bool:
+	if not profile.portes.has(emplacement):
+		return false
+	profile.sac.append(profile.portes[emplacement])
+	profile.portes.erase(emplacement)
+	_regenerer()
+	profile.save()
+	return true
+
+
+## Recycler un objet du sac : il disparaît contre des Éclats (selon sa rareté). Renvoie les Éclats rendus (0 : rien fait).
+func recycler(index_sac: int) -> int:
+	if index_sac < 0 or index_sac >= profile.sac.size():
+		return 0
+	var rendu := Equipement.recyclage(profile.sac[index_sac], data)
+	profile.sac.remove_at(index_sac)
+	profile.eclats += rendu
+	profile.save()
+	return rendu
+
+
+## L'objet désigné par un endroit (« sac » ou « porte ») et une clé (l'index du sac, ou l'emplacement) ; vide sinon.
+func objet_a(ou: String, cle: Variant) -> Dictionary:
+	if ou == "sac" and int(cle) >= 0 and int(cle) < profile.sac.size():
+		return profile.sac[int(cle)]
+	if ou == "porte" and profile.portes.has(str(cle)):
+		return profile.portes[str(cle)]
+	return {}
+
+
+## Reforger une ligne d'un objet (porté ou du sac) contre des Éclats, à coût croissant. Faux s'il manque des Éclats.
+func reforger(ou: String, cle: Variant, ligne: int) -> bool:
+	var objet := objet_a(ou, cle)
+	if objet.is_empty() or ligne < 0 or ligne >= objet["lignes"].size():
+		return false
+	var cout := Equipement.cout_reforge(objet, data)
+	if profile.eclats < cout:
+		return false
+	var neuf := Equipement.reforger(objet, ligne, _nouvelle_graine(), data)
+	if ou == "sac":
+		profile.sac[int(cle)] = neuf
+	else:
+		profile.portes[str(cle)] = neuf
+		_regenerer()
+	profile.eclats -= cout
+	profile.save()
+	return true
+
+
+## Le meilleur record de la Tour, toutes classes confondues (la « hauteur » du revenu passif).
+func meilleur_record() -> int:
+	var record := 0
+	for c in profile.tower_records:
+		record = maxi(record, int(profile.tower_records[c]))
+	return record
+
+
+## Le revenu passif du jour (GDD V2, § 6 ; reporté ici par Gautier) : une fois par jour de calendrier, des Éclats et un
+## peu d'XP selon le meilleur record, plafonnés (Tour.revenu). Renvoie {eclats, xp, record}, ou vide si déjà réclamé ou
+## sans record.
+func reclamer_revenu() -> Dictionary:
+	var aujourd_hui := Time.get_date_string_from_system()
+	if profile.revenu_jour == aujourd_hui:
+		return {}
+	profile.revenu_jour = aujourd_hui
+	var record := meilleur_record()
+	var r := Tour.revenu(record, data)
+	if int(r["eclats"]) <= 0 and int(r["xp"]) <= 0:
+		profile.save()
+		return {}
+	profile.eclats += int(r["eclats"])
+	gain_xp(int(r["xp"]))
+	revenu_du_jour = {"eclats": int(r["eclats"]), "xp": int(r["xp"]), "record": record}
+	return revenu_du_jour
+
+
 ## Le trio du joueur : lui, puis ses Échos (Front, Dégâts, Soutien moins son rôle).
 func trio() -> Array[Destin]:
 	var out: Array[Destin] = [destin]
@@ -327,18 +449,26 @@ func xp_etage(n: int) -> int:
 ## Un étage franchi, dès qu'il l'est (pas en fin de montée seulement : fermer le jeu en pleine montée ne doit rien
 ## perdre) : le record de la classe et, si c'est un Gardien, le palier. Un Gardien vaincu pour la première fois offre
 ## une Faveur : le palier n'est alors avancé qu'au choix de la Faveur (choisir_faveur), pour qu'un jeu fermé avant le
-## choix la propose encore. Renvoie {gardien, faveur, propositions}.
+## choix la propose encore. Le butin (un objet dans le sac, échangeable au premier passage de l'étage avec cette
+## classe, lié sinon) et les Éclats de l'étage. Renvoie {gardien, faveur, propositions, premier, butin, eclats}.
 func etage_franchi(t: Tour) -> Dictionary:
 	var franchi := t.etage - 1
 	var g := int(data.tour["gardien_tous_les"])
 	var gardien := g > 0 and franchi % g == 0
 	var faveur := Tour.gardien_premiere_fois(franchi, palier(), g)
+	var premier := franchi >= int(profile.tower_records.get(player_class, 0))
 	if t.atteint > int(profile.tower_records.get(player_class, 0)):
 		profile.tower_records[player_class] = t.atteint
 	if gardien and not faveur:
 		profile.tower_paliers[player_class] = maxi(palier(), Tour.palier_apres(franchi, g))
+	var butin := t.butin(franchi, premier)
+	if not butin.is_empty():
+		profile.sac.append(butin)
+	var eclats := Equipement.eclats_etage(franchi, premier, data)
+	profile.eclats += eclats
 	profile.save()
-	return {"gardien": gardien, "faveur": faveur, "propositions": t.proposer_faveurs(franchi) if faveur else []}
+	return {"gardien": gardien, "faveur": faveur, "propositions": t.proposer_faveurs(franchi) if faveur else [],
+		"premier": premier, "butin": butin, "eclats": eclats}
 
 
 ## Le choix d'une Faveur après le Gardien de l'étage franchi : elle est acquise pour ta classe, ajoutée à la montée en
@@ -354,12 +484,14 @@ func choisir_faveur(id: String, t: Tour) -> void:
 	t.faveurs = faveurs()
 
 
-## La fin d'un duel : le résultat, la série, l'XP (+120 gagné, +80 perdu). Renvoie {xp, niveaux}.
+## La fin d'un duel : le résultat, la série, l'XP (+120 gagné, +80 perdu), les Éclats. Renvoie {xp, niveaux, eclats}.
 func fin_duel(gagne: bool) -> Dictionary:
 	profile.record_result(gagne)
 	var xp := 120 if gagne else 80
+	var eclats := Equipement.eclats_duel(gagne, data)
+	profile.eclats += eclats
 	var r := gain_xp(xp)
-	return {"xp": xp, "niveaux": int(r["levels"])}
+	return {"xp": xp, "niveaux": int(r["levels"]), "eclats": eclats}
 
 
 ## La fin d'une montée : le record de la classe (l'étage atteint) et son palier (l'étage qui suit le dernier Gardien
