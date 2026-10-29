@@ -4,7 +4,7 @@ Rédigé le 29 octobre 2026 à partir des décisions prises avec Gautier ce jour
 
 Chaque règle porte une étiquette : **[Décidé]** (validé par Gautier), **[Proposé]** (choix de Claude Code là où Gautier a demandé de décider ou n'a rien dit ; on construit ça tel quel sauf correction), **[Ouvert]** (rien à construire avant la réponse).
 
-**Raccord avec le combat V2 (29 octobre au soir)** : ce document a été écrit sans connaître le combat V2 (`docs/SPEC-COMBAT-V2.md`), qui reste la référence pour les règles d'un combat (roue, voies, jalons, menaces, 4 Synergies universelles, 20 tours). Ce qui est caduc ici, et les deux points à trancher par Gautier (l'adversaire opaque, le rôle de l'Invocateur) : `docs/PLAN.md`, « Raccord avec le combat V2 ».
+**Raccord avec le combat V2 (29 octobre au soir)** : ce document a été écrit sans connaître le combat V2 (`docs/SPEC-COMBAT-V2.md`), qui reste la référence pour les règles d'un combat (roue, voies, jalons, menaces, 4 Synergies universelles, 20 tours). Ce qui est caduc ici : `docs/PLAN.md`, « Raccord avec le combat V2 ». Les deux points qui le contredisaient sont tranchés (29 octobre au soir) : l'adversaire est caché (§ 4.2), l'Invocateur reste Dégâts (§ 3, § 5).
 
 ---
 
@@ -41,6 +41,7 @@ Modifiées le 29 octobre :
 - **Puissance, sans méta** : une classe rare vaut une classe évoluée de rang 2 ; une épique est légèrement plus forte ; une légendaire légèrement plus forte qu'une épique. **[Décidé]** Pour que ça ne fasse pas de méta : chaque classe de grimoire a sa propre réserve de compétences et de Synergies, est réglée au simulateur comme les autres, et **joue dans la ligue de sa puissance** (voir § 6). **[Proposé]**
 - **Changer de classe** (Évolution ou grimoire) **garde le niveau et donne un tout nouveau Destin** de la nouvelle classe. **[Décidé]** Le nouveau Destin reçoit aussitôt autant de points à placer que le niveau le permet (30 au plus), pour que le joueur reconstruise son arbre ; les points suivants viennent des niveaux suivants. **[Proposé]**
 - **Le niveau continue** au-delà de 30 : 1–30 pour la classe de base, 31–60 pour le rang 1, 61–90 pour le rang 2 ; un grimoire se joue au niveau où on l'a reçu. **[Proposé]**
+- **Une Évolution peut changer le rôle.** **[Décidé le 29 octobre au soir]** Chaque classe peut avoir des évolutions de plusieurs rôles : un Prêtre peut avoir une ou plusieurs évolutions Front, Dégâts ou Soutien, et de même pour toutes les classes. L'Invocateur reste une classe de Dégâts (comme dans le combat V2) ; une ou plusieurs de ses évolutions pourront le faire passer Front. Le rôle d'une classe évoluée est celui de ses données, et c'est lui qui place le personnage dans le trio.
 - **Le geste de classe** : chaque classe a un geste constant quel que soit son Destin (ses deux basiques partagent un élément propre ; une forte est toujours une forte). Les conditions de boss ne parlent que de gestes, de paliers ou de rôles. **[Décidé]** Les classes évoluées et de grimoire ont aussi leur geste.
 
 ## 4. Le combat
@@ -53,8 +54,8 @@ Modifiées le 29 octobre :
 
 ### 4.2 L'adversaire est opaque
 
-- En combat, on ne voit de l'adversaire ni ses compétences, ni son Destin, ni ses recharges, ni son équipement : on le découvre en le regardant jouer. **[Décidé]**
-- Deux exceptions, des signaux et non des informations à lire : **les icônes d'état** sur tous les personnages (avec le nombre de tours) et **une lueur « forte prête »** sur un ennemi dont la grosse attaque est disponible. **[Décidé]**
+- En combat, on ne voit de l'adversaire ni ses compétences, ni son Destin, ni ses recharges, ni son équipement : on le découvre en le regardant jouer. **[Décidé ; confirmé par Gautier le 29 octobre au soir, combat V2 compris : « On cache les sorts adverses »]** Dans le combat V2 : ni ses voies, ni ses jalons, ni ses nœuds éteints, ni ses menaces, ni l'annonce de son acolyte ; sa fiche dit seulement ce qu'on l'a vu jouer (PR #50).
+- Deux exceptions, des signaux et non des informations à lire : **les icônes d'état** sur tous les personnages (avec le nombre de tours) et **une lueur « forte prête »** sur un ennemi dont la grosse attaque est disponible. **[Décidé]** Dans le combat V2 : la lueur violette et une pastille « Clé » quand une Clé de l'ennemi est jouable ce tour-ci (on ne sait pas laquelle).
 - Après le combat, l'écran de fin peut résumer le Destin et le kit de l'adversaire. **[Proposé]**
 - Côté joueur, tout reste visible : ses recharges, celles de ses Échos, leurs annonces, les Synergies possibles.
 - À retirer du prototype : pastilles de recharge des ennemis, kit complet au toucher, bandeau des sorts adverses.
@@ -81,7 +82,7 @@ Modifiées le 29 octobre :
 ## 5. Les Échos
 
 - Un Écho est **le personnage d'un vrai joueur** (classe, Destin, équipement) piloté par l'IA. Avant le serveur, des Échos générés en tiennent lieu.
-- **Composition** : toujours un Front, un Dégâts, un Soutien, par rôle principal (Fronts : Guerrier, Pugiliste, Invocateur ; Dégâts : Mage, Voleur, Archer ; Soutiens : Prêtre, Alchimiste, Barde, Diplomate ; les classes évoluées et de grimoire ont chacune leur rôle). Le joueur occupe sa case. **[Décidé]**
+- **Composition** : toujours un Front, un Dégâts, un Soutien, par rôle principal (Fronts : Guerrier, Pugiliste ; Dégâts : Mage, Voleur, Archer, Invocateur ; Soutiens : Prêtre, Alchimiste, Barde, Diplomate ; les classes évoluées et de grimoire ont chacune leur rôle, qui peut différer de celui de leur classe de base). Le joueur occupe sa case. **[Décidé]** (L'Invocateur, d'abord rangé parmi les Fronts, reste Dégâts : décision de Gautier du 29 octobre au soir.)
 - **Trois sources** : amis, membres de la guilde, profils proposés par le jeu. **[Décidé]**
   - Amis et guilde : **à leur vrai niveau** (ils peuvent porter : un nouveau rattrape les anciens sans frustration). **3 aides par jour.** **[Décidé]**
   - Proposés par le jeu : **au niveau du joueur**, sans limite. **[Décidé]**
