@@ -15,7 +15,10 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	var column := UiKit.scroll_column(self, 12)
 	column.add_child(UiKit.label("Le Comptoir", 34, UiKit.GOLD))
 	column.add_child(UiKit.label("%d Or · %d Éclat%s" % [app.profile.monnaie_or, app.profile.eclats, "s" if app.profile.eclats > 1 else ""], 18, Color.WHITE))
-	column.add_child(UiKit.label("L'Or ne tombe jamais du jeu : il naît ici, quand tu vends un objet échangeable (premier passage de la Tour, boss de donjon). Il servira à la Boutique et au Marché, avec le serveur.", 14, UiKit.SOFT))
+	column.add_child(UiKit.label("L'Or ne tombe jamais du jeu : il naît ici, quand tu vends un objet échangeable (premier passage de la Tour, boss de donjon). Il sert au Marché, entre joueurs, et servira à la Boutique.", 14, UiKit.SOFT))
+	column.add_child(UiKit.main_button("Le Marché (entre joueurs)%s" % ("" if app.marche_ouvert() else " · fermé pour toi"), func():
+		app.sfx.play("clic")
+		app.show_screen("marche"), 70))
 	# L'étal du jour.
 	var etal := UiKit.card(column, 6)
 	etal.add_child(UiKit.label("L'étal du jour", 20, UiKit.GOLD, false))

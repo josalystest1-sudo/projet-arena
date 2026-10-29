@@ -92,6 +92,9 @@ const CLES_BOSS := ["tours_max", "solutions", "boss"]
 ## Le serveur (data/serveur.json, phase 5) : l'adresse et la clé publique du projet (vides : serveur simulé), la table
 ## des fiches, les mots des pseudos par défaut, le monde simulé (nombre de joueurs, graine, niveau le plus haut).
 const CLES_SERVEUR := ["url", "cle_publique", "table", "pseudos", "simule"]
+## Le Marché (data/marche.json, GDD V2 § 10.2) : seuils d'ouverture, taxe, annonces par joueur, monde simulé.
+const CLES_MARCHE := ["niveau_min", "jours_min", "taxe", "annonces_max", "simule"]
+const CLES_MARCHE_SIMULE := ["annonces", "raretes", "vente_par_jour"]
 const CLES_SIMULE := ["joueurs", "graine", "niveau_max"]
 const CLES_PALIER := ["pv", "solution", "texte", "manque"]
 const CLES_OBJECTIF := ["id", "texte", "compteur", "cible", "xp", "eclats"]
@@ -111,6 +114,8 @@ var regles: Dictionary = {}
 var etats: Dictionary = {}
 ## Le serveur (data/serveur.json) : adresse, clé publique, table, pseudos, monde simulé.
 var serveur: Dictionary = {}
+## Le Marché (data/marche.json) : seuils, taxe, annonces par joueur, monde simulé.
+var marche: Dictionary = {}
 var textes: Dictionary = {}
 ## Les classes par identifiant (les dix classes de base et leurs évolutions), et l'ordre des classes de base
 ## (data/classes.json : celui de la section 9, et des écrans).
@@ -180,6 +185,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.comptoir = _lire(dossier + "comptoir.json", donnees.erreurs)
 	donnees.boss = _lire(dossier + "boss.json", donnees.erreurs)
 	donnees.serveur = _lire(dossier + "serveur.json", donnees.erreurs)
+	donnees.marche = _lire(dossier + "marche.json", donnees.erreurs)
 	donnees.valider()
 	return donnees
 
@@ -277,6 +283,13 @@ func valider() -> void:
 	_valider_comptoir()
 	_valider_boss()
 	_cles(serveur, CLES_SERVEUR, CLES_SERVEUR, "serveur.json")
+	_cles(marche, CLES_MARCHE, CLES_MARCHE, "marche.json")
+	_cles(marche.get("simule", {}), CLES_MARCHE_SIMULE, CLES_MARCHE_SIMULE, "marche.json simule")
+	if float(marche.get("taxe", 1.0)) < 0.0 or float(marche.get("taxe", 1.0)) >= 1.0:
+		erreurs.append("marche.json : une taxe entre 0 et 1 attendue")
+	for r in marche.get("simule", {}).get("raretes", {}):
+		if not objets.get("raretes", {}).has(str(r)):
+			erreurs.append("marche.json : rareté inconnue « %s »" % str(r))
 	_cles(serveur.get("simule", {}), CLES_SIMULE, CLES_SIMULE, "serveur.json simule")
 	if serveur.get("pseudos", []).is_empty():
 		erreurs.append("serveur.json : aucun mot de pseudo")

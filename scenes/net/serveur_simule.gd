@@ -1,6 +1,8 @@
 ## Le serveur simulé (scenes/net/serveur.gd) : tant qu'il n'y a pas de vrai serveur, un monde de joueurs générés avec
 ## la graine de data/serveur.json (pseudo, classe, niveau, roue par défaut ; une évolution au-delà du niveau 30), et ta
-## fiche gardée dans le profil. Tout répond tout de suite, sans réseau.
+## fiche gardée dans le profil. Le Marché : les annonces du jour sont tirées avec la date (engine/marche.gd) ; celles
+## que tu achètes disparaissent (gardées dans le profil) ; tes annonces vivent dans le profil, et le monde simulé en
+## achète une de temps en temps (une chance par jour, tirée avec la date et l'identifiant). Tout répond tout de suite.
 extends Serveur
 
 var joueurs: Array = []
@@ -84,6 +86,85 @@ func classement(saison: int, n: int) -> Array:
 	if not mienne.is_empty() and int(mienne.get("saison", -1)) == saison:
 		fiches.append(mienne)
 	return Serveur.par_points(fiches, n)
+
+
+func annonces(n: int) -> Array:
+	var jour := Time.get_date_string_from_system()
+	var achetees: Array = profile.serveur.get("achetees", [])
+	var out: Array = []
+	for a in Marche.annonces_simulees(joueurs, jour, donnees):
+		if not achetees.has(str(a["id"])):
+			out.append(a)
+	for a in profile.serveur.get("annonces", []):
+		if not bool(a.get("vendu", false)):
+			var copie: Dictionary = a.duplicate(true)
+			copie["mienne"] = true
+			out.append(copie)
+	return out.slice(0, n)
+
+
+func deposer(annonce: Dictionary) -> bool:
+	if not est_connecte() or not Marche.annonce_valide(annonce, donnees):
+		erreur = "annonce refusée"
+		return false
+	var miennes: Array = profile.serveur.get("annonces", [])
+	var copie := annonce.duplicate(true)
+	copie["vendeur"] = compte_id
+	copie["jour"] = Time.get_date_string_from_system()
+	copie["vendu"] = false
+	copie["encaisse"] = false
+	miennes.append(copie)
+	profile.serveur["annonces"] = miennes
+	profile.save()
+	return true
+
+
+func retirer(id: String) -> Dictionary:
+	var miennes: Array = profile.serveur.get("annonces", [])
+	for i in range(miennes.size()):
+		var a: Dictionary = miennes[i]
+		if str(a["id"]) == id and not bool(a.get("vendu", false)):
+			miennes.remove_at(i)
+			profile.serveur["annonces"] = miennes
+			profile.save()
+			return a
+	return {}
+
+
+func acheter(id: String) -> Dictionary:
+	for a in annonces(1000):
+		if str(a["id"]) != id or bool(a.get("mienne", false)):
+			continue
+		var achetees: Array = profile.serveur.get("achetees", [])
+		achetees.append(id)
+		profile.serveur["achetees"] = achetees
+		profile.save()
+		return a
+	return {}
+
+
+## Le monde simulé achète : chaque jour après celui du dépôt, une annonce a une chance (vente_par_jour) d'être vendue,
+## tirée avec la date et son identifiant ; les ventes pas encore encaissées sont rendues et marquées.
+func encaisser() -> Array:
+	var jour := Time.get_date_string_from_system()
+	var miennes: Array = profile.serveur.get("annonces", [])
+	var out: Array = []
+	var change := false
+	for a in miennes:
+		if not bool(a.get("vendu", false)) and str(a.get("jour", jour)) != jour:
+			var rng := RandomNumberGenerator.new()
+			rng.seed = (jour + str(a["id"])).hash()
+			if rng.randf_range(0.0, 1.0) < float(donnees.marche["simule"]["vente_par_jour"]):
+				a["vendu"] = true
+				change = true
+		if bool(a.get("vendu", false)) and not bool(a.get("encaisse", false)):
+			a["encaisse"] = true
+			change = true
+			out.append({"annonce": a.duplicate(true), "net": Marche.net(int(a["prix"]), donnees)})
+	if change:
+		profile.serveur["annonces"] = miennes
+		profile.save()
+	return out
 
 
 func nombre_personnages() -> int:

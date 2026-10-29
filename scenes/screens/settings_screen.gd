@@ -19,6 +19,10 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	proto.add_child(UiKit.label("Dans le vrai jeu, ton Destin ne change jamais. Ici, pour essayer d'autres roues, tu peux tirer à nouveau.", 15, UiKit.SOFT, false))
 	proto.add_child(UiKit.button("Autre Destin (même classe)", _reroll_player, 52))
 	proto.add_child(UiKit.button("Gagner un niveau (pour allumer un nœud)", _level_up, 52))
+	proto.add_child(UiKit.button("Vieillir le compte de 7 jours (pour le Marché)", func():
+		app.sfx.play("clic")
+		app.vieillir_compte(7)
+		app.show_screen("marche"), 52))
 	proto.add_child(UiKit.button("Nouveau personnage (autre classe)", func(): app.show_screen("creation"), 52))
 	erase_button = UiKit.button("Effacer toutes mes données", _erase, 52)
 	proto.add_child(erase_button)

@@ -52,6 +52,30 @@ begin
 end;
 $$;
 
+-- Le Marché : les annonces (anonymes pour les joueurs : le jeu ne montre jamais le vendeur), au premier acheteur.
+create table if not exists public.annonces (
+  id text primary key,
+  vendeur uuid not null references auth.users (id) on delete cascade,
+  objet jsonb not null,
+  prix integer not null,
+  rarete text not null default '',
+  niveau integer not null default 1,
+  acheteur uuid references auth.users (id) on delete set null,
+  encaisse boolean not null default false,
+  cree timestamptz not null default now()
+);
+alter table public.annonces enable row level security;
+drop policy if exists "annonces lues par les connectes" on public.annonces;
+create policy "annonces lues par les connectes" on public.annonces for select to authenticated using (true);
+drop policy if exists "chacun depose ses annonces" on public.annonces;
+create policy "chacun depose ses annonces" on public.annonces for insert to authenticated with check (auth.uid() = vendeur);
+drop policy if exists "chacun retire ses annonces" on public.annonces;
+create policy "chacun retire ses annonces" on public.annonces for delete to authenticated using (auth.uid() = vendeur and acheteur is null);
+drop policy if exists "acheter ou encaisser" on public.annonces;
+create policy "acheter ou encaisser" on public.annonces for update to authenticated
+  using ((acheteur is null and vendeur <> auth.uid()) or vendeur = auth.uid())
+  with check ((acheteur = auth.uid() and vendeur <> auth.uid()) or vendeur = auth.uid());
+
 drop trigger if exists personnages_mis_a_jour on public.personnages;
 create trigger personnages_mis_a_jour
   before update on public.personnages
