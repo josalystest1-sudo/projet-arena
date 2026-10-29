@@ -1,11 +1,13 @@
 ## La bande d'une voie (docs/SPEC-COMBAT-V2.md, section 12.2) : ses 4 nœuds reliés, le jalon en point doré épais, les
 ## nœuds éteints en pointillé, les nœuds pas allumés grisés, la Clé en losange ; à droite, « Clé » et son échéance.
-## Sert au bas de l'écran de combat et à la fiche d'un personnage. Appui long sur un point : la fiche du nœud.
+## Sert au bas de l'écran de combat et à la fiche d'un personnage. Toucher (ou appui long sur) un point : la fiche
+## du nœud.
 ## Affichage seulement.
 class_name BandeVoie
 extends Control
 
-signal appui_long_noeud(voie: int, rang: int, ancre: Vector2)
+## tenu : par un appui long (la fiche se ferme au relâchement).
+signal noeud_touche(voie: int, rang: int, ancre: Vector2, tenu: bool)
 
 const APPUI_LONG := 0.25
 const OR := Color("e3b85f")
@@ -40,7 +42,7 @@ func _process(delta: float) -> void:
 	_t += delta
 	if _appui >= 0.0 and not _long_fait and _t - _appui >= APPUI_LONG and _appui_rang > 0:
 		_long_fait = true
-		appui_long_noeud.emit(voie, _appui_rang, global_position + _point(_appui_rang))
+		noeud_touche.emit(voie, _appui_rang, global_position + _point(_appui_rang), true)
 	queue_redraw()
 
 
@@ -55,6 +57,8 @@ func _gui_input(event: InputEvent) -> void:
 			if _point(r).distance_to(event.position) < 22.0:
 				_appui_rang = r
 	else:
+		if _appui >= 0.0 and not _long_fait and _appui_rang > 0:
+			noeud_touche.emit(voie, _appui_rang, global_position + _point(_appui_rang), false)
 		_appui = -1.0
 	accept_event()
 

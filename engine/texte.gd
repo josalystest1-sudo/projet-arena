@@ -198,19 +198,19 @@ static func fiche(e: EtatCombat, id: String, voie: int, rang: int, point_de_vue:
 	return out
 
 
-## « Jouable maintenant » (à soi, légal ce tour-ci), « Jouable au prochain tour », « Jouable dans 2 tours »,
+## « Jouable maintenant » (à soi, légal ce tour-ci), « Peut le jouer ce tour-ci » (un ennemi, légal ce tour-ci),
+## « Jouable au prochain tour », « Jouable dans 2 tours »,
 ## « Éteint encore 2 tours », ou, pour un nœud que le jalon a déjà dépassé, « Déjà joué : la voie est plus loin ».
 static func echeance_texte(e: EtatCombat, id: String, voie: int, rang: int, a_soi: bool, d: Donnees) -> String:
 	var txt: Dictionary = d.textes["fiche"]
 	if rang == 0:
-		return str(txt["jouable_maintenant"]) if a_soi else ""
+		return str(txt["jouable_maintenant"] if a_soi else txt["jouable_ce_tour"])
 	var p := e.perso(id)
 	if rang <= int(p["jalons"][voie]):
 		return str(txt["depasse"])
-	if a_soi:
-		for a in Regles.actions_legales(e, id):
-			if a["source"] == "voie" and int(a["voie"]) == voie and int(a["rang"]) == rang:
-				return str(txt["jouable_maintenant"])
+	for a in Regles.actions_legales(e, id):
+		if a["source"] == "voie" and int(a["voie"]) == voie and int(a["rang"]) == rang:
+			return str(txt["jouable_maintenant"] if a_soi else txt["jouable_ce_tour"])
 	var restant := int(p["spent_until"][voie][rang - 1]) - e.tour
 	if restant > 0 and restant >= rang - int(p["jalons"][voie]):
 		return str(txt["eteint_encore_1"]) if restant == 1 else str(txt["eteint_encore"]).format({"n": restant})
@@ -261,6 +261,37 @@ static func pour_l_empecher(e: EtatCombat, id: String, voie: int, rang: int, poi
 				reponse["nom"] = nom_reponse
 				out.append(reponse)
 	return out
+
+
+## Une Synergie en clair (section 8) : { nom, regle, effet } ; « dégâts ×1,25 », avec les chiffres des règles.
+static func synergie(nom_synergie: String, donnees: Donnees = null) -> Dictionary:
+	var d := donnees if donnees != null else Donnees.defaut()
+	var gab: Dictionary = d.textes["synergies"].get(nom_synergie, {"regle": "", "effet": ""})
+	var chiffres := {"Brisure": Regles.BRISURE_DEGATS, "Bastion": Regles.BASTION_BARRIERE, "Embrasement": Regles.EMBRASEMENT_TOURS,
+		"Harmonie": Regles.HARMONIE_TOURS}
+	var x := str(chiffres.get(nom_synergie, 1)).replace(".", ",")
+	return {"nom": nom_synergie, "regle": str(gab["regle"]), "effet": str(gab["effet"]).format({"x": x, "n": x})}
+
+
+## La fiche d'un état posé sur un perso : { nom, pictogramme, couleur, sous_titre (« Sur Mage · encore 2 tours »),
+## valeur (« 12 par tour », « +25 % », ou ""), texte (ce qu'il fait), source (« Posé par Cèdre », ou "") }.
+## noms : les noms affichés des persos (sinon ceux de leur fiche).
+static func fiche_etat(e: EtatCombat, id: String, nom_etat: String, noms: Dictionary = {}, donnees: Donnees = null) -> Dictionary:
+	var d := donnees if donnees != null else Donnees.defaut()
+	var gab: Dictionary = d.textes["etat_fiche"]
+	var def: Dictionary = d.etats[nom_etat]
+	var s: Dictionary = e.perso(id)["etats"][nom_etat]
+	var n := e.tours_restants(id, nom_etat)
+	var valeur := ""
+	if str(def["type"]) in ["dot", "hot"]:
+		valeur = str(gab["par_tour"]).format({"n": int(s["valeur"])})
+	elif nom_etat in ["renfort", "affaiblissement"]:
+		valeur = str(gab["pourcent"]).format({"signe": "+" if nom_etat == "renfort" else "-", "n": roundi(float(s["valeur"]) * 100.0)})
+	var source := str(s.get("source", ""))
+	return {"nom": str(def["nom"]), "pictogramme": str(def["pictogramme"]), "couleur": str(def["couleur"]),
+		"sous_titre": str(gab["sur"]).format({"nom": noms.get(id, e.fiche(id)["nom"]), "n": n, "s": "s" if n > 1 else ""}),
+		"valeur": valeur, "texte": str(def["texte"]).substr(0, 1).to_upper() + str(def["texte"]).substr(1) + ".",
+		"source": str(gab["pose_par"]).format({"nom": noms.get(source, e.fiche(source)["nom"])}) if e.statique.has(source) else ""}
 
 
 ## Pour chaque état qu'un nœud pose, sa ligne fixe : « Enraciné : ne peut pas changer de voie ».
