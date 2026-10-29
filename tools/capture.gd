@@ -3,7 +3,7 @@
 ## (user://capture_profil.cfg, effacé au départ) : le vrai profil n'est jamais touché.
 ##   godot --path . --script res://tools/capture.gd -- <dossier> '<étapes JSON>'
 ## Étapes : {"creer":"guerrier"} (nouveau perso, graine fixe 7), {"niveau":12} (niveau du perso), {"allumer":"v1.n2"},
-## {"ecran":"destin"}, {"duel":1} (un duel contre un duo IA), {"montee":1} (une montée de la Tour), {"fin":1} (un duel joué par l'IA, puis l'écran de fin), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
+## {"ecran":"destin"}, {"duel":1} (un duel contre un duo IA), {"montee":1} (une montée de la Tour), {"fin":1} (un duel joué par l'IA, puis l'écran de fin), {"gardien":5} (l'étage 5 d'une montée joué par l'IA, puis l'écran de fin : la Faveur du Gardien), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
 ## (Sans --headless : il faut une fenêtre pour dessiner.)
 extends SceneTree
 
@@ -46,6 +46,15 @@ func _initialize() -> void:
 			options["etat"] = e
 			options["trace"] = {"a1": [{"nom": "Taillade", "cle": false}, {"nom": "Entaille", "cle": false}, {"nom": "Exsangue", "cle": true}], "b1": []}
 			options["synergies"] = ["Brisure"]
+			app.show_screen("fin", options)
+		elif etape.has("gardien"):
+			# Une montée depuis l'étage donné (un Gardien : 5, 10…), son étage joué jusqu'au bout par l'IA des deux
+			# côtés, puis l'écran de fin (la carte « Faveur du Gardien » si c'est une première fois).
+			var options := app.commencer_tour(int(etape["gardien"]))
+			var e: EtatCombat = options["etat"]
+			while not e.fini:
+				e = Regles.resoudre_tour(e, IA.declarer(e))
+			options["etat"] = e
 			app.show_screen("fin", options)
 		elif etape.has("clic"):
 			await _clic(Vector2(etape["clic"][0], etape["clic"][1]), 0.05)

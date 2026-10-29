@@ -91,8 +91,8 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 - Tests : reprise au palier, usure entre paliers, soins qui s'affaiblissent, étage 200 généré sans erreur, aucune limite de tours.
 - **Gautier teste** : monter, tomber, revenir le lendemain au même endroit ; un combat long qui ne s'arrête pas tout seul.
 
-**PR 2.2 — Faveurs, revenu passif** (le réglage « niveau → étage » passe à la phase 9)
-- `data/faveurs.json` (modificateurs PvE seulement, trois au choix par Gardien), `engine/combat_unit.gd` : les Faveurs s'ajoutent aux `mods` seulement en mode Tour. Revenu passif quotidien (Éclats, un peu d'XP, plafonné) calculé à l'ouverture du jeu selon l'étage.
+**PR 2.2 — Faveurs, revenu passif** (**faite** pour les Faveurs, PR #59 ; le revenu passif est reporté à la PR 3.2, avec la Forge, par décision de Gautier ; le réglage « niveau → étage » passe à la phase 9)
+- `data/faveurs.json` (six Faveurs cumulables, trois au choix par Gardien vaincu pour la première fois), `engine/tour.gd` : les Faveurs s'appliquent au début de chaque étage et entre deux étages, dans la Tour seulement. ~~Revenu passif quotidien (Éclats, un peu d'XP, plafonné) calculé à l'ouverture du jeu selon l'étage.~~ → PR 3.2.
 - La courbe de la Tour : des chiffres de départ à la main (étage 3 au niveau 1, Gardien 5 vers les niveaux 8–10, étage 10 vers 25–30), réglés à la phase 9.
 - **Critère** : l'étage 1 000 se génère sans erreur.
 

@@ -9,6 +9,10 @@
 ## Les paliers : un Gardien tous les 5 étages ; une fois le Gardien d'un étage franchi, les montées suivantes peuvent
 ## reprendre à l'étage d'après, avec tous leurs PV (palier_apres). Les étages d'un même numéro sont les mêmes pour tous :
 ## leurs monstres sont tirés avec la graine de la montée, mais leur force ne dépend que du numéro.
+## Les Faveurs (GDD V2, § 6 ; data/faveurs.json) : chaque Gardien vaincu pour la première fois offre une Faveur à
+## choisir parmi trois (proposer_faveurs). Elles se cumulent (identifiant -> nombre), ne valent que dans la Tour, et
+## s'appliquent au début de chaque étage (Vigueur, Puissance, Égide, Effroi) ou entre deux étages (Répit) ; le Savoir
+## (XP) est appliqué par l'application. Jamais pendant un combat : l'état statique est partagé entre ses copies.
 ## Module pur : le hasard vient de la graine de la montée.
 class_name Tour
 extends RefCounted
@@ -16,6 +20,8 @@ extends RefCounted
 var donnees: Donnees
 var graine := 0
 var niveau := 1
+## Les Faveurs acquises par le joueur avec cette classe (identifiant -> nombre de cumuls).
+var faveurs: Dictionary = {}
 ## L'étage de départ de la montée (1, ou un palier), l'étage en cours, et l'étage atteint (le record : celui où le camp
 ## est tombé).
 var depart := 1
@@ -37,10 +43,13 @@ static func commencer(p_joueur: Destin, p_acolyte: Destin, p_niveau: int, p_grai
 
 
 ## Une montée avec un camp quelconque : [joueur, acolyte] ou [joueur, Écho, Écho] (engine/trio.gd), à partir de
-## l'étage p_depart (1, ou un palier), tous ses PV.
-static func commencer_camp(p_membres: Array, p_niveau: int, p_graine: int, p_donnees: Donnees = null, p_depart: int = 1) -> Tour:
+## l'étage p_depart (1, ou un palier), tous ses PV, avec les Faveurs déjà acquises (identifiant -> nombre).
+static func commencer_camp(p_membres: Array, p_niveau: int, p_graine: int, p_donnees: Donnees = null, p_depart: int = 1, p_faveurs: Dictionary = {}) -> Tour:
 	var t := Tour.new()
 	t.donnees = p_donnees if p_donnees != null else Donnees.defaut()
+	for id in p_faveurs:
+		if int(p_faveurs[id]) > 0:
+			t.faveurs[str(id)] = int(p_faveurs[id])
 	for m in p_membres:
 		t.membres.append(m)
 	t.joueur = t.membres[0]
@@ -68,6 +77,86 @@ static func paliers(franchi: int, gardien_tous_les: int) -> Array[int]:
 		out.append(p)
 		p += gardien_tous_les
 	return out
+
+
+## L'étage franchi est-il celui d'un Gardien qu'on bat pour la première fois (avec cette classe) ? C'est le cas quand
+## il porte un Gardien et que le palier d'avant ne le dépasse pas encore : il offre alors une Faveur.
+static func gardien_premiere_fois(franchi: int, palier_actuel: int, gardien_tous_les: int) -> bool:
+	return gardien_tous_les > 0 and franchi % gardien_tous_les == 0 and franchi + 1 > palier_actuel
+
+
+# --- Les Faveurs ---------------------------------------------------------------
+
+## Le nombre de cumuls d'une Faveur dans cette montée.
+func faveur(id: String) -> int:
+	return int(faveurs.get(id, 0))
+
+
+## La valeur cumulée d'une Faveur (sa valeur × son nombre, sous son plafond s'il y en a un), en fraction.
+static func valeur_faveur(id: String, n: int, p_donnees: Donnees) -> float:
+	if n <= 0 or not p_donnees.faveurs.has(id):
+		return 0.0
+	var f: Dictionary = p_donnees.faveurs[id]
+	var v := float(f["valeur"]) * float(n)
+	if f.has("max"):
+		v = minf(v, float(f["max"]))
+	return v
+
+
+## Le texte d'une Faveur cumulée n fois : « Vigueur ×2 : +8 % de PV max pour tout le trio ».
+static func texte_faveur(id: String, n: int, p_donnees: Donnees) -> String:
+	if not p_donnees.faveurs.has(id):
+		return id
+	var f: Dictionary = p_donnees.faveurs[id]
+	var pc := roundi(valeur_faveur(id, maxi(1, n), p_donnees) * 100.0)
+	var nom := str(f["nom"]) + (" ×%d" % n if n > 1 else "")
+	return "%s : %s" % [nom, str(f["texte"]).replace("{v}", str(pc))]
+
+
+## Les trois Faveurs proposées quand le Gardien de l'étage n est vaincu pour la première fois : tirées avec la graine
+## de l'étage, trois différentes (les six, si moins de trois existent).
+func proposer_faveurs(n: int) -> Array[String]:
+	var ids: Array[String] = []
+	for id in donnees.faveurs:
+		ids.append(str(id))
+	ids.sort()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = graine_etage(n) ^ 0x5F4A7C15
+	var out: Array[String] = []
+	while out.size() < 3 and not ids.is_empty():
+		out.append(ids.pop_at(rng.randi_range(0, ids.size() - 1)))
+	return out
+
+
+## Les Faveurs au début d'un étage, sur un combat qui vient d'être créé (avant que ses PV gardés soient posés) :
+## Vigueur (PV max du camp), Puissance (le multiplicateur de classe, qui multiplie toutes les valeurs), Effroi (les
+## monstres Affaiblis pendant 2 tours). L'Égide vient après les PV gardés (_egide), sur les membres debout.
+func _faveurs_au_depart(e: EtatCombat) -> void:
+	var vigueur := valeur_faveur("vigueur", faveur("vigueur"), donnees)
+	var puissance := valeur_faveur("puissance", faveur("puissance"), donnees)
+	var effroi := valeur_faveur("effroi", faveur("effroi"), donnees)
+	for id in e.ordre:
+		if e.camp(id) == "a":
+			if vigueur > 0.0:
+				var pv_max := Regles.plancher(float(e.fiche(id)["pv_max"]) * (1.0 + vigueur))
+				e.statique[id]["pv_max"] = pv_max
+				e.perso(id)["pv"] = pv_max
+			if puissance > 0.0:
+				e.statique[id]["k"] = float(e.fiche(id)["k"]) * (1.0 + puissance)
+		elif effroi > 0.0:
+			e.perso(id)["etats"]["affaiblissement"] = {"debut": 1, "fin": 2, "valeur": effroi, "source": ""}
+
+
+## L'Égide : au début de l'étage, une barrière (8 % des PV max par cumul) sur chaque membre debout, pour 3 tours
+## (comme une barrière posée au tour 1).
+func _egide(e: EtatCombat) -> void:
+	var egide := valeur_faveur("egide", faveur("egide"), donnees)
+	if egide <= 0.0:
+		return
+	for id in e.ordre:
+		if e.camp(id) == "a" and e.vivant(id):
+			e.perso(id)["barriere"] = Regles.plancher(float(e.fiche(id)["pv_max"]) * egide)
+			e.perso(id)["barrier_until"] = e.tour + 2
 
 
 ## La graine d'un étage : celle de la montée, mêlée au numéro de l'étage.
@@ -157,15 +246,18 @@ func monstres(n: int = -1) -> Array[Destin]:
 	return out
 
 
-## Le combat de l'étage en cours : le camp (avec ses PV et ses KO gardés) contre les monstres de l'étage.
+## Le combat de l'étage en cours : le camp (avec ses PV et ses KO gardés, et ses Faveurs) contre les monstres de
+## l'étage.
 func combat() -> EtatCombat:
 	var e := Regles.nouveau_combat(membres, monstres(), niveau, "tour", donnees)
+	_faveurs_au_depart(e)
 	for id in ko:
 		if pv.has(id):
-			e.perso(id)["pv"] = pv[id]
+			e.perso(id)["pv"] = mini(int(pv[id]), int(e.fiche(id)["pv_max"]))
 		if ko[id]:
 			e.perso(id)["ko"] = true
 			e.perso(id)["pv"] = 0
+	_egide(e)
 	return e
 
 
@@ -175,7 +267,8 @@ func terminer(e: EtatCombat) -> void:
 		fini = true
 		atteint = etage
 		return
-	var rendu := float(donnees.tour["pv_entre_etages"])
+	# Le Répit : 5 points de PV rendus de plus par cumul (20 % → 25 %).
+	var rendu := float(donnees.tour["pv_entre_etages"]) + valeur_faveur("repit", faveur("repit"), donnees)
 	for id in ko:
 		var pv_max := int(e.fiche(id)["pv_max"])
 		if e.vivant(id):
