@@ -107,7 +107,7 @@ Modifiées le 29 octobre :
 
 - **Asynchrone classé** : ton personnage + 2 Échos choisis parmi amis, guilde ou profils proposés (de ton niveau), contre le trio d'un autre joueur piloté par l'IA. **5 combats par jour** (modulable). **[Décidé]** Les amis et guildés comptent dans les 3 aides du jour ; le matchmaking se fait sur la puissance totale du trio (niveau, classe, équipement), pas seulement sur le joueur, pour que porter ne soit pas tricher. **[Proposé]**
 - **Synchrone classé** : **3 contre 3 à 6 humains**, limité par jour aussi (5). **[Décidé]** Il faut une file par rôle pour former deux trios Front + Dégâts + Soutien ; en attendant 6 joueurs, le jeu propose de lancer la partie à 2 humains + 4 Échos. **[Proposé]**
-- Amicaux illimités, sans XP ni classement. **[Proposé]**
+- Amicaux illimités, sans XP ni classement. **[Proposé]** Fait (PR #64) : l'Arène hors ligne, avec des adversaires générés en attendant le serveur ; 5 classés par jour, +20 / −10, saison de 90 jours, coffre de la semaine (3 / 5 / 7 victoires : commun / rare / épique, lié), amicaux sans rien.
 - **Ligues par puissance** : Aspirants (classes de base), Élus (rang 1), Ascendants (rang 2 et classes de grimoire). **[Proposé]**
 - **Saisons** : le classement PvP se remet à zéro à chaque saison. **[Décidé]** Durée : 3 mois. **[Proposé]**
 

@@ -7,14 +7,22 @@ const ENEMY_NAMES := ["Ombre", "Brume", "Cendre", "Givre", "Ronce", "Écume", "N
 
 var app: ArenaApp
 var options := {}
+## Un combat classé (l'Arène) ou un amical.
+var classe := false
 
 
-func setup(p_app: ArenaApp, _options: Dictionary) -> void:
+func setup(p_app: ArenaApp, p_options: Dictionary) -> void:
 	app = p_app
-	options = app.duel_contre_ia()
-	var libres := ENEMY_NAMES.duplicate()
+	classe = bool(p_options.get("classe", false))
+	options = app.duel_classe() if classe else app.duel_contre_ia()
+	if options.is_empty():
+		# Plus de combat classé aujourd'hui : retour à l'Arène.
+		app.show_screen("arene")
+		return
+	var libres := ENEMY_NAMES.filter(func(n): return n != str(options["noms"].get("b1", "")))
 	for id in ["b1", "b2", "b3"]:
-		options["noms"][id] = libres.pop_at(app.rng.randi_range(0, libres.size() - 1))
+		if not options["noms"].has(id):
+			options["noms"][id] = libres.pop_at(app.rng.randi_range(0, libres.size() - 1))
 	var column := UiKit.scroll_column(self, 10)
 	var cherche := UiKit.label("Recherche d'un adversaire...", 24, UiKit.SOFT)
 	column.add_child(UiKit.spacer(40))
@@ -42,7 +50,11 @@ func _face_a_face(column: VBoxContainer, cherche: Label) -> void:
 			p.appear()
 			rangee.add_child(p)
 		if camp[1]:
-			column.add_child(UiKit.label("Trio IA · niveau %d" % e.niveau, 15, UiKit.SOFT))
+			var adv: Dictionary = options.get("adversaire", {})
+			if classe:
+				column.add_child(UiKit.label("Combat classé · %s, niveau %d%s · trio généré en attendant le serveur" % [adv.get("nom", "?"), int(adv.get("niveau", e.niveau)), " · équipé" if str(adv.get("equipement", "")) != "" else ""], 14, UiKit.SOFT))
+			else:
+				column.add_child(UiKit.label("Amical · trio IA · niveau %d" % e.niveau, 15, UiKit.SOFT))
 			column.add_child(UiKit.label("contre", 20, Color.WHITE))
 	column.add_child(UiKit.main_button("Combattre", func(): app.show_screen("combat", options)))
-	column.add_child(UiKit.button("Retour", func(): app.show_screen("trio", {"mode": "duel"}), 52))
+	column.add_child(UiKit.button("Retour", func(): app.show_screen("trio", {"mode": "classe" if classe else "duel"}), 52))

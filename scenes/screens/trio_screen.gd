@@ -1,7 +1,8 @@
 ## Composer son trio (docs/GDD_V2.md, § 5 et § 11) : un seul écran pour tous les modes. Ta case, puis tes deux Échos
 ## (un de chacun des deux autres rôles), proposés par le jeu à ton niveau : leur fiche (classe, niveau, voies, comment
 ## ils jouent, les Synergies possibles avec toi) et « Un autre Écho ». Amis et guilde viendront avec le serveur.
-## options : « mode » = « duel » ou « tour » : le bouton du bas lance ce mode ; sans mode (l'onglet Trio), les deux.
+## options : « mode » = « duel » (amical), « classe » (un combat classé de l'Arène) ou « tour » : le bouton du bas lance
+## ce mode ; sans mode, les deux.
 extends Control
 
 var app: ArenaApp
@@ -31,10 +32,11 @@ func _construire() -> void:
 	plus.add_child(UiKit.label("Amis et guilde", 18, UiKit.SOFT, false))
 	plus.add_child(UiKit.label("Avec les comptes (étape serveur) : tes amis et ta guilde pourront compléter ton trio, à leur vrai niveau, trois aides par jour.", 14, UiKit.SOFT, false))
 	column.add_child(UiKit.spacer(4))
-	if mode in ["", "duel"]:
-		column.add_child(UiKit.main_button("Chercher un adversaire", func():
+	if mode in ["", "duel", "classe"]:
+		var classe := mode == "classe"
+		column.add_child(UiKit.main_button("Chercher un adversaire classé" if classe else "Chercher un adversaire (amical)", func():
 			app.sfx.play("clic")
-			app.show_screen("versus")))
+			app.show_screen("versus", {"classe": classe})))
 	if mode in ["", "tour"]:
 		var monter := func():
 			app.sfx.play("clic")
@@ -43,7 +45,7 @@ func _construire() -> void:
 		var texte := "Monter la Tour" if etage <= 1 else "Monter la Tour (étage %d)" % etage
 		column.add_child(UiKit.main_button(texte, monter) if mode == "tour" else UiKit.button(texte, monter, 64))
 	if mode != "":
-		column.add_child(UiKit.button("Retour", func(): app.show_screen("ville" if mode == "duel" else "tower"), 52))
+		column.add_child(UiKit.button("Retour", func(): app.show_screen("arene" if mode in ["duel", "classe"] else "tower"), 52))
 
 
 ## La fiche d'un membre du trio. role : celui d'un Écho (« » pour le joueur), pour en proposer un autre.
