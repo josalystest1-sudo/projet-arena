@@ -22,6 +22,9 @@ var app: ArenaApp
 var canvas: Control
 var header: Label
 var info: VBoxContainer
+var evolution_box: VBoxContainer
+var evolution_button: Button
+var _evolution_armee := false
 var light_button: Button
 var popup: PanelContainer
 ## Où est chaque nœud sur la roue : « moyeu », « v1.n2 », « v3.e1 »… -> position.
@@ -71,6 +74,10 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 4)
 	panel.add_child(box)
+	evolution_box = VBoxContainer.new()
+	evolution_box.add_theme_constant_override("separation", 4)
+	box.add_child(evolution_box)
+	_remplir_evolution()
 	info = VBoxContainer.new()
 	info.add_theme_constant_override("separation", 3)
 	box.add_child(info)
@@ -222,7 +229,10 @@ func _choisir(cle: String) -> void:
 		child.queue_free()
 	_remplir_fiche(info, cle)
 	var left := app.destin_points_left()
-	header.text = "Niveau %d · %s" % [app.profile.level, ("%d point%s à placer" % [left, "s" if left > 1 else ""]) if left > 0 else "aucun point à placer (un par niveau)"]
+	var etat := ("%d point%s à placer" % [left, "s" if left > 1 else ""]) if left > 0 else "aucun point à placer (un par niveau)"
+	if app.peut_evoluer():
+		etat = "ton évolution t'attend (ci-dessous)"
+	header.text = "%s · niveau %d · %s" % [app.destin.nom, app.profile.level, etat]
 	var peut := cle != "moyeu" and Generateur.peut_allumer(app.destin, cle)
 	light_button.disabled = not peut or left <= 0
 	if cle == "moyeu" or _deja_allume(cle):
@@ -257,6 +267,45 @@ func _remplir_fiche(box: VBoxContainer, cle: String) -> void:
 	box.add_child(UiKit.label(str(textes["eclat_titre"]).format({"n": n, "voie": voie["nom"]}), 20, UiKit.GOLD, false))
 	box.add_child(UiKit.label(str(textes["eclats"][n - 1]), 17, Color.WHITE, false))
 	box.add_child(UiKit.label(str(textes["eclat_accroche"]).format({"noeud": Texte.nom(voie["noeuds"][Destin.ECLAT_NOEUD[n - 1] - 1])}), 14, UiKit.SOFT, false))
+
+
+## La carte de l'évolution (GDD V2, § 3) : avant le niveau 30, ce que la classe deviendra ; au niveau 30, le bouton
+## « Évoluer » (deux appuis : le second confirme) ; après, rien.
+func _remplir_evolution() -> void:
+	for child in evolution_box.get_children():
+		child.queue_free()
+	var possibles := app.evolutions_possibles()
+	if possibles.is_empty():
+		return
+	var ev := app.data.classe(possibles[0])
+	var role := str(UiKit.ROLE_LABELS[ev["role"]])
+	var plafond := app.niveau_max()
+	if not app.peut_evoluer():
+		evolution_box.add_child(UiKit.label("Au niveau %d, %s pourra devenir %s (%s)." % [plafond, app.destin.nom, ev["nom"], role], 14, UiKit.SOFT, false))
+		return
+	evolution_box.add_child(UiKit.label("Ton évolution : %s" % ev["nom"], 22, UiKit.GOLD, false))
+	evolution_box.add_child(UiKit.label(str(ev["description"]), 15, Color.WHITE, false))
+	var voies: Array = []
+	for v in ev["voies"]:
+		voies.append(str(v["nom"]).trim_prefix("Voie ").trim_prefix("de la ").trim_prefix("de l'").trim_prefix("du ").trim_prefix("des ").trim_prefix("de "))
+	evolution_box.add_child(UiKit.label("Rôle : %s. Voies : %s." % [role, ", ".join(voies)], 14, UiKit.SOFT, false))
+	evolution_box.add_child(UiKit.label("Nouvelle roue, même graine : tes points repartent à zéro, puis un par niveau jusqu'au niveau %d. Sans retour." % Evolution.niveau_max(1, app.data), 14, UiKit.SOFT, false))
+	evolution_button = UiKit.button("Évoluer en %s" % ev["nom"], _evoluer.bind(str(ev["id"])), 56)
+	evolution_box.add_child(evolution_button)
+	evolution_box.add_child(UiKit.spacer(6))
+
+
+## Évoluer demande une confirmation : un second appui.
+func _evoluer(evolution_id: String) -> void:
+	if not _evolution_armee:
+		_evolution_armee = true
+		evolution_button.text = "Sûr ? Touche encore pour évoluer"
+		evolution_button.modulate = Color(1.0, 0.85, 0.3)
+		return
+	if not app.evoluer(evolution_id):
+		return
+	app.sfx.play("releve")
+	app.show_screen("destin")
 
 
 func _allumer() -> void:

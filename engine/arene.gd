@@ -8,8 +8,9 @@
 class_name Arene
 extends RefCounted
 
-## Le niveau le plus haut (celui du profil : 30).
-const MAX_NIVEAU := 30
+## Le niveau le plus haut d'un adversaire généré : le plafond du rang le plus haut qui existe (engine/evolution.gd).
+static func niveau_max(d: Donnees) -> int:
+	return Evolution.niveau_max(Evolution.rang_max(d), d)
 
 
 # --- Le temps --------------------------------------------------------------------------
@@ -89,14 +90,16 @@ static func coffre(victoires: int, niveau: int, graine: int, d: Donnees) -> Dict
 # --- L'adversaire ----------------------------------------------------------------------------
 
 ## Un adversaire classé pour un joueur de ce niveau, tiré avec la graine : sa classe, sa graine, son niveau (à
-## niveau_ecart près, dans 1 à 30), son nom, son équipement (une rareté de jeu complet tirée selon les poids, ou rien).
+## niveau_ecart près, dans 1 à 60 ; une évolution de sa classe au-delà du niveau 30), son nom, son équipement (une
+## rareté de jeu complet tirée selon les poids, ou rien).
 static func adversaire(niveau: int, graine: int, d: Donnees) -> Dictionary:
 	var a: Dictionary = d.objets_arene["adversaire"]
 	var rng := RandomNumberGenerator.new()
 	rng.seed = graine ^ 0x5A17E3C9
 	var classe: String = d.ordre_classes[rng.randi_range(0, d.ordre_classes.size() - 1)]
 	var ecart := int(a["niveau_ecart"])
-	var nv := clampi(niveau + rng.randi_range(-ecart, ecart), 1, MAX_NIVEAU)
+	var nv := clampi(niveau + rng.randi_range(-ecart, ecart), 1, niveau_max(d))
+	classe = Evolution.classe_au_niveau(classe, nv, graine, d)
 	var noms: Array = d.objets_arene["noms"]
 	var nom: String = noms[rng.randi_range(0, noms.size() - 1)]
 	var poids: Dictionary = a["equipement"]

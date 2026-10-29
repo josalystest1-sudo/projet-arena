@@ -1,0 +1,227 @@
+{
+  "id": "rodeur",
+  "nom": "Rôdeur",
+  "genre": "m",
+  "role": "degats",
+  "base": "archer",
+  "rang": 1,
+  "pv": 720,
+  "k": 0.8916,
+  "description": "L'Archer qui a pris les bois : la chasse, les collets, et un loup qui ne le quitte plus.",
+  "moyeu": {
+    "nom": "Flèche du rôdeur",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "chasse",
+      "nom": "Voie de la Chasse",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Flèche de chasse",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Tir mortel",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Flèche perforante",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 140, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Tir du chasseur",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nuee",
+      "nom": "Voie de la Nuée",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Nuée",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 53.85, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grêle de flèches",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 76.92, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Tempête de flèches",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Ciel de fer",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 146.92, "cible": "tous_les_ennemis"},
+            {"type": "affaiblissement", "pourcent": 15, "tours": 2, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "collets",
+      "nom": "Voie des Collets",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Collet",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Fosse",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 2, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Flèche aveuglante",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Filet d'acier",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 75, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loup",
+      "nom": "Voie du Loup",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Compagnon",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 14.29, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Meute du rôdeur",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 20, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Crocs",
+          "genre": "mp",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 20, "tours": 2, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grand loup",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 42.86, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "foret",
+      "nom": "Voie de la Forêt",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Camouflage",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Baume",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 111.11, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Œil perçant",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Flèche ultime",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 158, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 80, "cible": "soi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

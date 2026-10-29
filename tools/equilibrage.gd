@@ -1,7 +1,8 @@
 ## Le simulateur d'équilibrage du combat V2 en ligne de commande (la logique est dans tools/equilibrage_lib.gd).
 ## Un travailleur (une part d'une mesure, écrite en JSON) :
 ##   godot --headless --path . --script res://tools/equilibrage.gd -- simuler <matrice|routes|tour|bon_sens> <part> <parts> <n> <graine0> <sortie.json> [duo|trio] [ia] [equipement] [cle=valeur…]
-## (réglages en fin de ligne, dans n'importe quel ordre : niveau=12 (le niveau des Destins, 30 par défaut), etage_max=41
+## (réglages en fin de ligne, dans n'importe quel ordre : niveau=12 (le niveau des Destins, 30 par défaut, jusqu'à 60 :
+## au-delà de 30, chaque classe joue son évolution), etage_max=41
 ## (la Tour s'arrête à cet étage, 21 par défaut), equipement=epique, ia=section10 ;
 ## (le format : « duo » par défaut, le jeu publié ; « trio » : le joueur et ses deux Échos, docs/PLAN.md, PR 1.1 ;
 ## ia : « section10 » pour jouer sans les règles de bon sens de la PR 1.2, « bon_sens » sinon ; « bon_sens » comme mesure :
@@ -46,7 +47,7 @@ func _initialize() -> void:
 				var valeur := args[i].get_slice("=", 1)
 				match cle:
 					"niveau":
-						Lib.niveau = clampi(int(valeur), 1, 30)
+						Lib.niveau = clampi(int(valeur), 1, Evolution.niveau_max(Evolution.rang_max(d), d))
 					"etage_max":
 						Lib.etage_max = maxi(2, int(valeur))
 					"equipement":

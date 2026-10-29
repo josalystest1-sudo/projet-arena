@@ -1,0 +1,230 @@
+{
+  "id": "archimage",
+  "nom": "Archimage",
+  "genre": "m",
+  "role": "degats",
+  "base": "mage",
+  "rang": 1,
+  "pv": 720,
+  "k": 0.8287,
+  "description": "Le Mage au sommet de son art : météores, glace éternelle et runes d'exil.",
+  "moyeu": {
+    "nom": "Trait d'arcane",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "meteore",
+      "nom": "Voie du Météore",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Braise",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 16.67, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Comète",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Pluie de météores",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 65.69, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 20, "tours": 3, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Météore",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 146, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 30, "tours": 4, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "glace",
+      "nom": "Voie de la Glace éternelle",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Stalactite",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Cercueil de glace",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Avalanche",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 72.69, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Âge de glace",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 96.92, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tonnerre",
+      "nom": "Voie du Tonnerre",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Étincelle",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Fulgurance",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Orage",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Jugement du ciel",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "runes",
+      "nom": "Voie des Runes",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Rune de garde",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Rune de silence",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Rune de protection",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Rune d'exil",
+          "genre": "f",
+          "effets": [
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "etat", "nom": "silencie", "tours": 2, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vide",
+      "nom": "Voie du Vide",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Absorption",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 43, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 30, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Siphon d'âme",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Puissance du vide",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 30, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Annihilation",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 130, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 50, "tours": 2, "cible": "soi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

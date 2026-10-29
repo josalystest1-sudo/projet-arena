@@ -67,10 +67,11 @@ static func faute(regles: Dictionary, noeud: Dictionary) -> String:
 	return ""
 
 
-## Tous les nœuds hors budget des classes chargées : { classe, voie, rang, nom, cout, budget, faute }.
+## Tous les nœuds hors budget des classes chargées (les classes de base et leurs évolutions) : { classe, voie, rang,
+## nom, cout, budget, faute }.
 static func fautes(donnees: Donnees) -> Array[Dictionary]:
 	var out: Array[Dictionary] = []
-	for id in donnees.ordre_classes:
+	for id in donnees.ordre_classes + donnees.ordre_evolutions:
 		var cls: Dictionary = donnees.classes[id]
 		var noeuds: Array = [["moyeu", cls.get("moyeu", {})]]
 		for voie in cls.get("voies", []):

@@ -1,0 +1,231 @@
+{
+  "id": "ambassadeur",
+  "nom": "Ambassadeur",
+  "genre": "m",
+  "role": "soutien",
+  "base": "diplomate",
+  "rang": 1,
+  "pv": 880,
+  "k": 1.2,
+  "description": "Le Diplomate qui parle au nom d'un royaume : autorité, protocole, intrigues, et le duel d'honneur quand les mots ne suffisent plus.",
+  "moyeu": {
+    "nom": "Réplique cinglante",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "autorite",
+      "nom": "Voie de l'Autorité",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Sommation",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 15, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Injonction",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 27.5, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Disgrâce",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 17.5, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Reddition",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 25, "tours": 2, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "protocole",
+      "nom": "Voie du Protocole",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Sauf-conduit",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Immunité",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 142.86, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Garantie",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Traité de paix",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 142.86, "cible": "duo"},
+            {"type": "purge", "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_eloquence",
+      "nom": "Voie de la Grande éloquence",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Exhortation",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Discours",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 29.91, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Plaidoirie",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 119.66, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Discours du siècle",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 107.69, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "intrigue",
+      "nom": "Voie de l'Intrigue",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Rumeur",
+          "genre": "f",
+          "effets": [
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 5, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Démenti",
+          "genre": "m",
+          "effets": [
+            {"type": "dissipe", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 25, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Scandale",
+          "genre": "m",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 31.35, "tours": 2, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Coup d'État",
+          "genre": "m",
+          "effets": [
+            {"type": "egare", "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "silencie", "tours": 2, "cible": "tous_les_ennemis"},
+            {"type": "affaiblissement", "pourcent": 13.46, "tours": 2, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "duel_d_honneur",
+      "nom": "Voie du Duel d'honneur",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Estocade d'honneur",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Riposte",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 65, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Botte de maître",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 140, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Coup de grâce",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 170, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

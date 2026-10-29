@@ -34,7 +34,9 @@ const CLES_EFFETS := {
 	"dissipe": ["type", "cible"],
 }
 const CLES_REGLES := ["extinction", "refroidissement", "mort_subite_tour", "mort_subite_pas", "chrono_s", "niveau_pente",
-	"multi_cible", "tolerance_budget", "budgets", "couts", "couts_multi", "tour_soins_usure"]
+	"multi_cible", "tolerance_budget", "budgets", "couts", "couts_multi", "tour_soins_usure", "evolution"]
+## Les évolutions (data/rules.json, GDD V2 § 3) : le nombre de niveaux d'un rang, le saut de puissance (PV et valeurs).
+const CLES_EVOLUTION_REGLES := ["niveau", "puissance_pv", "puissance_valeurs"]
 const CLES_BUDGETS := ["moyeu", "1", "2", "3", "4"]
 const CLES_COUTS := ["degats", "soin", "barriere", "dot", "gardien", "renfort", "affaiblissement", "etourdi", "gele",
 	"aveugle", "desarme", "egare", "silencie", "provoque", "enracine", "purge", "dissipe"]
@@ -43,6 +45,8 @@ const TYPES_ETAT := ["controle", "affaiblissement", "deplacement", "dot", "hot",
 const CLES_TEXTES := ["formes", "ligne", "phrase", "fiche", "pictos", "synergies", "etat_fiche"]
 const FORMES := ["diffuse", "concentree", "persistante", "vive"]
 const CLES_CLASSE := ["id", "nom", "genre", "role", "pv", "k", "acolyte", "moyeu", "voies"]
+## Une évolution (data/evolutions/<id>.json) : une classe, avec sa classe de base, son rang et une description.
+const CLES_EVOLUTION := ["id", "nom", "genre", "role", "pv", "k", "base", "rang", "description", "moyeu", "voies"]
 const CLES_VOIE := ["id", "nom", "acolyte", "noeuds"]
 const CLES_NOEUD := ["rang", "nom", "genre", "effets", "budget_override"]
 const CLES_BESTIAIRE := ["familles", "rangs", "monstres"]
@@ -102,9 +106,12 @@ const CLES_REFORGE := ["cout", "pente"]
 var regles: Dictionary = {}
 var etats: Dictionary = {}
 var textes: Dictionary = {}
-## Les classes par identifiant, et leur ordre (data/classes.json : celui de la section 9, et des écrans).
+## Les classes par identifiant (les dix classes de base et leurs évolutions), et l'ordre des classes de base
+## (data/classes.json : celui de la section 9, et des écrans).
 var classes: Dictionary = {}
 var ordre_classes: Array[String] = []
+## L'ordre des évolutions (data/evolutions.json) ; chacune est aussi dans `classes`, avec `base` et `rang`.
+var ordre_evolutions: Array[String] = []
 ## Le bestiaire de la Tour (section 10.4) : familles, rangs, monstres (une classe, des voies, un multiplicateur de PV).
 var bestiaire: Dictionary = {}
 ## Les règles de la Tour (data/tour.json) : PV rendus entre deux étages, tirage des monstres, Gardiens, abandon.
@@ -149,6 +156,13 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	for id in ordre:
 		donnees.ordre_classes.append(str(id))
 		donnees.classes[str(id)] = _lire(dossier + "classes/" + str(id) + ".json", donnees.erreurs)
+	var ordre_evo: Variant = _lire(dossier + "evolutions.json", donnees.erreurs, [])
+	for id in ordre_evo:
+		if donnees.classes.has(str(id)):
+			donnees.erreurs.append("evolutions.json : « %s » est déjà une classe" % str(id))
+			continue
+		donnees.ordre_evolutions.append(str(id))
+		donnees.classes[str(id)] = _lire(dossier + "evolutions/" + str(id) + ".json", donnees.erreurs)
 	donnees.bestiaire = _lire(dossier + "bestiaire.json", donnees.erreurs)
 	donnees.tour = _lire(dossier + "tour.json", donnees.erreurs)
 	donnees.faveurs = _lire(dossier + "faveurs.json", donnees.erreurs)
@@ -204,6 +218,16 @@ func valider() -> void:
 		_cles(textes["formes"][forme], GENRES, GENRES, "textes.json formes " + str(forme))
 	for id in ordre_classes:
 		erreurs.append_array(valider_classe(classes[id], id))
+	_cles(regles.get("evolution", {}), CLES_EVOLUTION_REGLES, CLES_EVOLUTION_REGLES, "rules.json evolution")
+	for id in ordre_evolutions:
+		erreurs.append_array(valider_classe(classes[id], id))
+		var ev: Dictionary = classes[id]
+		if not ordre_classes.has(str(ev.get("base", ""))):
+			erreurs.append("évolution %s : classe de base inconnue « %s »" % [id, ev.get("base", "")])
+		if int(ev.get("rang", 0)) != 1:
+			erreurs.append("évolution %s : seul le rang 1 existe pour l'instant" % id)
+		if str(ev.get("description", "")) == "":
+			erreurs.append("évolution %s : description vide" % id)
 	_cles(tour, CLES_TOUR, CLES_TOUR, "tour.json")
 	_cles(tour.get("revenu", {}), CLES_REVENU, CLES_REVENU, "tour.json revenu")
 	_cles(faveurs, FAVEURS, FAVEURS, "faveurs.json")
@@ -471,10 +495,12 @@ func _valider_donjons() -> void:
 			erreurs.append(ou + " : niveaux et entrée incohérents")
 
 
-## Les erreurs d'un fichier de classe (vide s'il est conforme à la section 13.1).
+## Les erreurs d'un fichier de classe (vide s'il est conforme à la section 13.1) ; une évolution (clés `base` et
+## `rang`) a ses propres clés.
 static func valider_classe(cls: Dictionary, id: String = "?") -> Array[String]:
 	var out: Array[String] = []
-	_cles_dans(cls, CLES_CLASSE, CLES_CLASSE, "classe " + id, out)
+	var cles := CLES_EVOLUTION if cls.has("base") or cls.has("rang") else CLES_CLASSE
+	_cles_dans(cls, cles, cles, "classe " + id, out)
 	if str(cls.get("id", "")) != id:
 		out.append("classe %s : identifiant « %s » différent du nom du fichier" % [id, cls.get("id", "")])
 	if not str(cls.get("role", "")) in ROLES:

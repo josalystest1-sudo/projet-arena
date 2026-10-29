@@ -13,9 +13,11 @@ const ROLES := ["front", "degats", "soutien"]
 const XOR_ECHO := 0x3C6EF372
 
 
-## Les classes d'un rôle, dans l'ordre des données.
-static func classes_du_role(role: String, donnees: Donnees = null) -> Array[String]:
+## Les classes d'un rôle, dans l'ordre des données : les classes de base (rang 0) ou les évolutions (rang 1).
+static func classes_du_role(role: String, donnees: Donnees = null, rang: int = 0) -> Array[String]:
 	var d := donnees if donnees != null else Donnees.defaut()
+	if rang >= 1:
+		return Evolution.du_role(role, d)
 	var out: Array[String] = []
 	for c in d.ordre_classes:
 		if str(d.classe(c)["role"]) == role:
@@ -49,10 +51,11 @@ static func echos(classe_joueur: String, graine_joueur: int, niveau: int, donnee
 	return out
 
 
-## Un Écho généré d'un rôle : une classe de ce rôle tirée avec sa graine, sa roue au niveau donné.
+## Un Écho généré d'un rôle : une classe de ce rôle tirée avec sa graine (une évolution au-delà du niveau 30 :
+## engine/evolution.gd), sa roue au niveau donné.
 static func echo(role: String, graine: int, niveau: int, donnees: Donnees = null) -> Destin:
 	var d := donnees if donnees != null else Donnees.defaut()
-	var classes := classes_du_role(role, d)
+	var classes := classes_du_role(role, d, Evolution.rang_du_niveau(niveau, d))
 	var rng := RandomNumberGenerator.new()
 	rng.seed = graine
 	return Generateur.echo(classes[rng.randi_range(0, classes.size() - 1)], graine, niveau, d)

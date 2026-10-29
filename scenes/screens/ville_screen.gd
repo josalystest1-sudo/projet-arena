@@ -97,6 +97,8 @@ func _batiment(b: Dictionary) -> Button:
 func _pastille(id: String) -> String:
 	match id:
 		"maison":
+			if app.peut_evoluer():
+				return "!"
 			return "+%d" % app.destin_points_left() if app.destin_points_left() > 0 else ""
 		"forge":
 			return str(app.profile.sac.size()) if not app.profile.sac.is_empty() else ""

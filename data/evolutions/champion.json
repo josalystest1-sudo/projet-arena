@@ -1,0 +1,228 @@
+{
+  "id": "champion",
+  "nom": "Champion",
+  "genre": "m",
+  "role": "front",
+  "base": "guerrier",
+  "rang": 1,
+  "pv": 1120,
+  "k": 0.8328,
+  "description": "Le Guerrier devenu bannière vivante : il frappe, il encaisse, et il relève les siens.",
+  "moyeu": {
+    "nom": "Coup de champion",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "gloire",
+      "nom": "Voie de la Gloire",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Frappe héroïque",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Charge",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 65, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Bravoure",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Triomphe",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "etendard",
+      "nom": "Voie de l'Étendard",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Étendard",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Ralliement",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 20, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 41.03, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Serment",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Oriflamme",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "barriere", "valeur": 138.46, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bouclier",
+      "nom": "Voie du Bouclier",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Parade",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Provocation",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 85.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Rempart vivant",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "barriere", "valeur": 125.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Inébranlable",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 151.43, "cible": "soi"},
+            {"type": "soin", "valeur": 80, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lame",
+      "nom": "Voie de la Lame",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Taille",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Estoc",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Moulinet",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Exécution",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fer",
+      "nom": "Voie du Fer",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Entaille profonde",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 19.05, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Lame cruelle",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "saignement", "par_tour": 25, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Brise-garde",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Coup de grâce",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 86, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 30, "tours": 4, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}
