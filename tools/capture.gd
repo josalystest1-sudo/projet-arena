@@ -36,7 +36,7 @@ func _initialize() -> void:
 		elif etape.has("duel"):
 			app.show_screen("combat", app.duel_contre_ia())
 		elif etape.has("classe"):
-			app.show_screen("combat", app.duel_classe())
+			app.show_screen("combat", await app.duel_classe())
 		elif etape.has("donjon"):
 			# Une descente dans ce donjon (100 Éclats offerts), aux portes ; {"donjon": ["terrier", "vague"]} : la première
 			# vague jouée par l'IA, puis l'écran de fin.
@@ -75,7 +75,7 @@ func _initialize() -> void:
 			app.show_screen(str(etape["ouvrir"][0]), etape["ouvrir"][1] if etape["ouvrir"].size() > 1 else {})
 		elif etape.has("fin"):
 			# Un duel (amical, ou classé avec {"fin": "classe"}) joué jusqu'au bout par l'IA des deux côtés, puis l'écran de fin.
-			var options := app.duel_classe() if str(etape["fin"]) == "classe" else app.duel_contre_ia()
+			var options: Dictionary = (await app.duel_classe()) if str(etape["fin"]) == "classe" else app.duel_contre_ia()
 			var e: EtatCombat = options["etat"]
 			while not e.fini:
 				e = Regles.resoudre_tour(e, IA.declarer(e))

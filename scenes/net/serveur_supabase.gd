@@ -31,6 +31,19 @@ static func chemin_personnages(table: String, role: String, niveau: int, n: int,
 	return out
 
 
+## Le chemin des adversaires possibles : tous rôles, autour du niveau, hors la sienne.
+static func chemin_adversaires(table: String, niveau: int, n: int, moi: String, ecart: int = 10) -> String:
+	var out := "/rest/v1/%s?select=*&niveau=gte.%d&niveau=lte.%d&order=mis_a_jour.desc&limit=%d" % [table, maxi(1, niveau - ecart), niveau + ecart, n * 4]
+	if moi != "":
+		out += "&id=neq." + moi
+	return out
+
+
+## Le chemin du classement d'une saison : les points décroissants.
+static func chemin_classement(table: String, saison: int, n: int) -> String:
+	return "/rest/v1/%s?select=*&saison=eq.%d&order=points.desc,niveau.desc&limit=%d" % [table, saison, n]
+
+
 func connecter() -> bool:
 	erreur = ""
 	if rafraichir != "":
@@ -77,10 +90,34 @@ func publier(fiche: Dictionary) -> bool:
 
 
 func personnages(role: String, niveau: int, n: int) -> Array:
+	return await _lire(chemin_personnages(str(donnees.serveur["table"]), role, niveau, n, compte_id), niveau, n)
+
+
+func adversaires(niveau: int, n: int) -> Array:
+	return await _lire(chemin_adversaires(str(donnees.serveur["table"]), niveau, n, compte_id), niveau, n)
+
+
+func classement(saison: int, n: int) -> Array:
 	erreur = ""
 	if not est_connecte() and not await connecter():
 		return []
-	var r := await _requete_connectee(HTTPClient.METHOD_GET, chemin_personnages(str(donnees.serveur["table"]), role, niveau, n, compte_id))
+	var r := await _requete_connectee(HTTPClient.METHOD_GET, chemin_classement(str(donnees.serveur["table"]), saison, n))
+	if int(r["code"]) != 200 or not r["corps"] is Array:
+		erreur = "lecture impossible (%s)" % _texte_erreur(r)
+		return []
+	var fiches: Array = []
+	for f in r["corps"]:
+		if f is Dictionary and Serveur.fiche_valide(f, donnees):
+			fiches.append(f)
+	return Serveur.par_points(fiches, n)
+
+
+## Lire des fiches à un chemin, garder les valides, les plus proches du niveau d'abord.
+func _lire(chemin: String, niveau: int, n: int) -> Array:
+	erreur = ""
+	if not est_connecte() and not await connecter():
+		return []
+	var r := await _requete_connectee(HTTPClient.METHOD_GET, chemin)
 	if int(r["code"]) != 200 or not r["corps"] is Array:
 		erreur = "lecture impossible (%s)" % _texte_erreur(r)
 		return []
