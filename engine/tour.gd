@@ -5,8 +5,8 @@
 ## avec 20 %, et tout le reste repart à zéro (jalons, extinctions, états). La montée s'arrête quand le duo tombe ;
 ## l'étage atteint est le record.
 ## Règles d'étage gardées de l'ancienne Tour (data/tour.json) : les monstres d'un étage sont d'une même famille, un
-## Gardien tous les 5 étages (avec une escorte de sa famille), et des ennemis qui n'ont pas abattu le duo au bout de
-## 24 tours abandonnent l'étage. Module pur : le hasard vient de la graine de la montée.
+## Gardien tous les 5 étages (avec une escorte de sa famille), et des ennemis qui n'ont pas abattu le duo au bout du tour limite
+## (data/tour.json) abandonnent l'étage. Module pur : le hasard vient de la graine de la montée.
 class_name Tour
 extends RefCounted
 
@@ -125,7 +125,7 @@ func combat() -> EtatCombat:
 	return e
 
 
-## Les ennemis abandonnent : le combat n'est pas fini après le tour limite (24) ; l'étage est franchi.
+## Les ennemis abandonnent : le combat n'est pas fini après le tour limite (data/tour.json) ; l'étage est franchi.
 func abandonne(e: EtatCombat) -> bool:
 	return not e.fini and e.tour > int(donnees.tour["abandon_tour"])
 

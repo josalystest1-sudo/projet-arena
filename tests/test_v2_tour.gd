@@ -39,8 +39,8 @@ func test_46_pv_entre_les_etages() -> void:
 	assert_eq(t.atteint, 3, "étage atteint : celui où il est tombé")
 
 
-# 47. Les règles d'étage transposées : un Gardien tous les 5 étages, une famille par étage, abandon au tour 24, pas de
-# mort subite.
+# 47. Les règles d'étage transposées : un Gardien tous les 5 étages, une famille par étage, abandon au tour limite
+# (data/tour.json), pas de mort subite.
 func test_47_regles_d_etage() -> void:
 	var t := _tour()
 	var monstres: Dictionary = donnees.bestiaire["monstres"]
@@ -59,8 +59,8 @@ func test_47_regles_d_etage() -> void:
 	assert_eq(e.mode, "tour", "combat de Tour")
 	e.tour = 12
 	assert_eq(Regles.mort_subite(e), 1.0, "pas de mort subite à la Tour")
-	e.tour = 25
-	assert_true(t.abandonne(e), "au-delà du tour 24, les ennemis abandonnent")
+	e.tour = int(donnees.tour["abandon_tour"]) + 1
+	assert_true(t.abandonne(e), "au-delà du tour limite, les ennemis abandonnent")
 	t.terminer(e)
 	assert_eq(t.etage, 2, "l'étage est franchi")
 	assert_false(t.fini, "la montée continue")
@@ -108,6 +108,6 @@ func test_un_etage_joue_par_l_ia() -> void:
 	for graine in range(1, 9):
 		var t := _tour(donnees.ordre_classes[graine], 12, graine)
 		var e := t.combat()
-		while not e.fini and not t.abandonne(e) and e.tour <= 60:
+		while not e.fini and not t.abandonne(e) and e.tour <= 100:
 			e = tour(e, IA.declarer(e))
 		assert_true(e.fini or t.abandonne(e), "graine %d : l'étage se termine" % graine)

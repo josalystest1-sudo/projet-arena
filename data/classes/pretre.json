@@ -3,8 +3,8 @@
   "nom": "Prêtre",
   "genre": "m",
   "role": "soutien",
-  "pv": 376,
-  "k": 0.8801,
+  "pv": 760,
+  "k": 0.8547,
   "acolyte": "mage",
   "moyeu": {
     "nom": "Lueur",

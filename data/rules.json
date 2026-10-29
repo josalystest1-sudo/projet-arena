@@ -1,7 +1,7 @@
 {
   "extinction": 3,
   "refroidissement": 2,
-  "mort_subite_tour": 10,
+  "mort_subite_tour": 18,
   "mort_subite_pas": 0.2,
   "chrono_s": 20,
   "niveau_pente": 0.05,

@@ -3,8 +3,8 @@
   "nom": "Mage",
   "genre": "m",
   "role": "degats",
-  "pv": 356,
-  "k": 0.8752,
+  "pv": 720,
+  "k": 0.8287,
   "acolyte": "guerrier",
   "moyeu": {
     "nom": "Trait arcanique",

@@ -3,8 +3,8 @@
   "nom": "Alchimiste",
   "genre": "m",
   "role": "soutien",
-  "pv": 376,
-  "k": 1.0581,
+  "pv": 760,
+  "k": 0.9368,
   "acolyte": "voleur",
   "moyeu": {
     "nom": "Fiole",
