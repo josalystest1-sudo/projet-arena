@@ -6802,3 +6802,82 @@ Le joueur et ses deux Échos générés contre un autre trio (`docs/GDD_V2.md`),
 ### Boutons touchés, et pourquoi
 
 Aucun (mesure seule).
+
+## L'IA de bon sens (29 octobre, PR 1.2 du plan)
+
+Les règles de bon sens (`engine/ia.gd`, `docs/JOURNAL-COMBAT-V2.md`) mesurées au simulateur : les erreurs de l'IA pour 100 actions de chaque rôle, avant (l'IA de la section 10 seule) → **après** ; puis les deux IA l'une contre l'autre. Graines neuves, niveau 30.
+
+### En trio (le format visé : 6 000 duels par mesure d'erreurs, 20 000 pour l'affrontement des deux IA)
+
+| Rôle | Coup perdu | Soin perdu | Barrière inutile | Clé gaspillée | Achèvement raté |
+| --- | --- | --- | --- | --- | --- |
+| Front | 3,9 → **2,9** | 0,6 → **0,2** | 6,1 → **3,3** | 4,5 → **2,7** | 2,7 → **1,4** |
+| Dégâts | 3,8 → **3,1** | 0,7 → **0,4** | 4,9 → **1,9** | 3,3 → **2,3** | 2,1 → **0,8** |
+| Soutien | 3,5 → **2,9** | 1,0 → **0,6** | 4,9 → **1,7** | 2,5 → **1,6** | 2,9 → **1,7** |
+
+**L'IA de bon sens contre l'IA de la section 10** : 51,7 % de victoires sur 20000 duels de trios (200 graines : sur 20 graines seulement, on lisait de 48 à 56 %, chaque graine fixant les Destins de toutes les classes). Classes, sans réglage pour le trio : 40,8 % à 57,7 % avant, 39,3 % à 55,8 % après.
+
+### En duo (le jeu publié)
+
+| Rôle | Coup perdu | Soin perdu | Barrière inutile | Clé gaspillée | Achèvement raté |
+| --- | --- | --- | --- | --- | --- |
+| Front | 2,2 → **1,2** | 0,4 → **0,1** | 4,8 → **2,4** | 3,7 → **1,9** | 1,8 → **0,9** |
+| Dégâts | 2,6 → **1,5** | 0,2 → **0,0** | 1,4 → **0,7** | 2,3 → **1,2** | 1,3 → **0,6** |
+| Soutien | 1,9 → **1,0** | 0,7 → **0,4** | 3,5 → **1,4** | 1,7 → **0,9** | 2,0 → **0,9** |
+
+**L'IA de bon sens contre l'IA de la section 10** : 56,2 % de victoires sur 6000 duels. Le duo publié avec la nouvelle IA (10 000 duels, 3 000 montées) : **1 critères tenus sur 6**, classes de 42,7 % à 51,2 %, médiane de 17 tours. **Le jeu publié, encore en duo, garde donc l'IA de la section 10 jusqu'à la PR 1.4** (le trio à l'écran), réglée de nouveau à la PR 1.5.
+
+### Le duo publié avec l'IA de bon sens (le rapport complet)
+
+**1 critères tenus sur 6.** 10000 combats de duel (médiane 17 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : voleur 45,4 %, archer 44,5 %, pretre 46,8 %, alchimiste 42,7 %, diplomate 45,0 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre archer 63,0 %, mage contre guerrier 33,0 %, mage contre mage 36,0 %, mage contre alchimiste 68,0 %, voleur contre guerrier 32,0 %, voleur contre mage 35,0 %, archer contre guerrier 23,0 %, archer contre mage 35,0 %, pretre contre mage 37,0 %, alchimiste contre mage 32,0 %, alchimiste contre voleur 33,0 %, alchimiste contre archer 24,0 %, alchimiste contre pugiliste 38,0 %, barde contre guerrier 39,0 %, barde contre mage 38,0 %, diplomate contre guerrier 37,0 %, diplomate contre mage 34,0 %, diplomate contre diplomate 37,0 %, pugiliste contre guerrier 26,0 %
+- ✅ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)**
+- ❌ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %** : mage voie 4 4,9 %, voleur voie 4 13,6 %, archer voie 5 8,9 %, pretre voie 3 11,5 %
+- ❌ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30** : médiane 17 tours
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : guerrier étage 20 3,0 %, mage étage 10 35,0 %, mage étage 20 0,3 %, archer étage 10 26,7 %, archer étage 20 0,0 %, écart entre classes : étage 10 de 26,7 % à 58,3 %, étage 20 de 0,0 % à 9,3 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 46 | 56 | 55 | 63 | 41 | 49 | 48 | 41 | 45 | 58 | **50,2 %** |
+| Mage | 33 | 36 | 47 | 55 | 54 | 68 | 52 | 55 | 50 | 49 | **49,9 %** |
+| Voleur | 32 | 35 | 51 | 44 | 51 | 59 | 49 | 46 | 40 | 47 | **45,4 %** |
+| Archer | 23 | 35 | 52 | 44 | 46 | 60 | 45 | 51 | 45 | 44 | **44,5 %** |
+| Prêtre | 50 | 37 | 49 | 48 | 48 | 41 | 52 | 48 | 42 | 53 | **46,8 %** |
+| Alchimiste | 44 | 32 | 33 | 24 | 52 | 59 | 43 | 58 | 44 | 38 | **42,7 %** |
+| Invocateur | 40 | 45 | 50 | 52 | 54 | 59 | 59 | 52 | 41 | 60 | **51,2 %** |
+| Barde | 39 | 38 | 48 | 54 | 57 | 41 | 46 | 52 | 42 | 54 | **47,1 %** |
+| Diplomate | 37 | 34 | 44 | 40 | 60 | 52 | 55 | 45 | 37 | 46 | **45,0 %** |
+| Pugiliste | 26 | 42 | 59 | 54 | 50 | 55 | 51 | 41 | 51 | 46 | **47,5 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 48,5 % | 17,5 % | 50,2 % | 56,9 % | 37,3 % | 47,3 % | 84,8 % | 72,9 % | 96,3 % | 51,7 % | 3,0 % | 10,4 |
+| Mage | 55,0 % | 20,5 % | 49,9 % | 27,4 % | 74,0 % | 37,0 % | 4,9 % | 19,4 % | 85,0 % | 35,0 % | 0,3 % | 8,6 |
+| Voleur | 47,5 % | 23,0 % | 45,4 % | 37,5 % | 34,6 % | 66,3 % | 13,6 % | 49,6 % | 87,4 % | 58,3 % | 7,3 % | 11,1 |
+| Archer | 60,5 % | 19,0 % | 44,5 % | 35,1 % | 42,7 % | 65,6 % | 19,4 % | 8,9 % | 83,0 % | 26,7 % | 0,0 % | 8,2 |
+| Prêtre | 22,0 % | 8,0 % | 46,8 % | 52,8 % | 80,5 % | 11,5 % | 82,6 % | 81,5 % | 95,2 % | 53,7 % | 8,0 % | 10,9 |
+| Alchimiste | 33,0 % | 9,5 % | 42,7 % | 58,7 % | 28,4 % | 61,0 % | 36,1 % | 67,8 % | 96,3 % | 53,7 % | 9,0 % | 11,1 |
+| Invocateur | 45,5 % | 18,5 % | 51,2 % | 36,3 % | 34,8 % | 69,9 % | 45,1 % | 39,5 % | 88,9 % | 48,7 % | 5,7 % | 10,2 |
+| Barde | 44,0 % | 16,0 % | 47,1 % | 45,8 % | 64,2 % | 59,5 % | 47,0 % | 48,3 % | 90,7 % | 52,0 % | 6,7 % | 10,7 |
+| Diplomate | 24,5 % | 6,0 % | 45,0 % | 33,2 % | 18,3 % | 91,8 % | 50,8 % | 91,6 % | 95,7 % | 50,7 % | 9,3 % | 10,5 |
+| Pugiliste | 16,5 % | 5,5 % | 47,5 % | 40,6 % | 50,7 % | 62,7 % | 88,1 % | 40,5 % | 95,8 % | 46,3 % | 6,7 % | 10,2 |
+
+### Les erreurs de l'IA (pour 100 actions de chaque rôle)
+
+| Rôle | Actions | Coup perdu | Soin perdu | Barrière inutile | Clé gaspillée | Achèvement raté |
+| --- | --- | --- | --- | --- | --- | --- |
+| Front | 193099 | 1,2 | 0,1 | 2,4 | 1,9 | 0,9 |
+| Dégâts | 172314 | 1,5 | 0,0 | 0,7 | 1,2 | 0,6 |
+| Soutien | 172003 | 1,0 | 0,4 | 1,4 | 0,9 | 0,9 |
+
+### Boutons touchés, et pourquoi
+
+Aucun (mesure seule).

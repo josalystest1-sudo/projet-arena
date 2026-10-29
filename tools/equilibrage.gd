@@ -1,7 +1,9 @@
 ## Le simulateur d'équilibrage du combat V2 en ligne de commande (la logique est dans tools/equilibrage_lib.gd).
 ## Un travailleur (une part d'une mesure, écrite en JSON) :
-##   godot --headless --path . --script res://tools/equilibrage.gd -- simuler <matrice|routes|tour> <part> <parts> <n> <graine0> <sortie.json> [duo|trio]
-## (le format : « duo » par défaut, le jeu publié ; « trio » : le joueur et ses deux Échos, docs/PLAN.md, PR 1.1)
+##   godot --headless --path . --script res://tools/equilibrage.gd -- simuler <matrice|routes|tour|bon_sens> <part> <parts> <n> <graine0> <sortie.json> [duo|trio] [ia]
+## (le format : « duo » par défaut, le jeu publié ; « trio » : le joueur et ses deux Échos, docs/PLAN.md, PR 1.1 ;
+## ia : « section10 » pour jouer sans les règles de bon sens de la PR 1.2 ; « bon_sens » : l'IA de bon sens contre
+## l'IA de la section 10 seule)
 ## Le rapport (additionne les parts d'un dossier, écrit le rapport en français et le résumé en JSON) :
 ##   godot --headless --path . --script res://tools/equilibrage.gd -- rapport <dossier> <rapport.md> <resume.json> "<titre>" [boutons.json]
 ## tools/regleur.py lance les travailleurs en parallèle, puis le rapport.
@@ -26,6 +28,7 @@ func _initialize() -> void:
 				printerr("format inconnu : " + format)
 				quit(1)
 				return
+			IA.bon_sens = not (args.size() > 8 and args[8] == "section10")
 			var out := Lib.simuler(d, args[1], int(args[2]), int(args[3]), int(args[4]), int(args[5]), format)
 			var f := FileAccess.open(args[6], FileAccess.WRITE)
 			f.store_string(JSON.stringify(out))

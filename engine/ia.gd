@@ -2,8 +2,20 @@
 ## les Échos (d'un trio, ou d'un joueur absent), les ennemis de la Tour et le simulateur. Elle fixe ses deux cibles
 ## du tour, donne un score à chaque action légale et joue la meilleure ; à égalité, la dernière de la liste (moyeu,
 ## voie 1, voie 2…). Aucun tirage. Module pur.
+## Les règles de bon sens (docs/GDD_V2.md, § 4.5 ; docs/PLAN.md, PR 1.2) s'ajoutent au score : achever un ennemi que les
+## coups annoncés par les alliés (et ses dégâts sur la durée) laissent à portée, ne pas frapper un ennemi qu'ils abattent
+## déjà, ne pas gaspiller une Clé, ne poser une barrière que sur un allié que les ennemis viseront (journal du combat V2).
 class_name IA
 extends RefCounted
+
+## Les règles de bon sens. false : l'IA de la section 10 seule (le simulateur mesure ce qu'elles changent).
+static var bon_sens := true
+## Le bonus d'un coup qui achève un ennemi ce tour-ci, avec les coups annoncés par les alliés.
+const ACHEVER := 120.0
+## Une Clé dont moins de cette part de la valeur sert (dégâts absorbés ou perdus sur un ennemi déjà abattu, soin ou
+## barrière en trop) perd son bonus de progression ; de même une Clé qui achève un ennemi qu'un coup moins cher achève
+## aussi.
+const CLE_UTILE := 0.5
 
 ## Les chiffres du score (section 10.1).
 const DOT_POIDS := 0.7
@@ -64,9 +76,9 @@ static func choisir(e: EtatCombat, id: String, declarations_connues: Dictionary 
 	var legales := Regles.actions_legales(e, id)
 	if legales.is_empty():
 		return {}
-	var ce := cible_ennemie(e, id, memoire)
-	var ca := cible_alliee(e, id)
 	var allies := _declarations_alliees(e, id, declarations_connues)
+	var ce := cible_ennemie(e, id, memoire, allies, legales)
+	var ca := cible_alliee(e, id)
 	var meilleure: Dictionary = {}
 	var meilleur := -INF
 	for l in legales:
@@ -87,19 +99,173 @@ static func choisir(e: EtatCombat, id: String, declarations_connues: Dictionary 
 
 
 ## La cible ennemie de l'IA (section 10.2) : le provocateur s'il est Provoqué, sinon l'ennemi vivant qui maximise
-## (PV manquants en %) × 100 + 30 s'il a une menace d'échéance 1 ; à égalité, le premier dans l'ordre.
-static func cible_ennemie(e: EtatCombat, id: String, memoire: Dictionary = {}) -> String:
+## (PV manquants en %) × 100 + 30 s'il a une menace d'échéance 1 ; à égalité, le premier dans l'ordre. Avec le bon sens
+## (et ses actions légales) : parmi les ennemis qu'un de ses coups achève ce tour-ci avec ceux annoncés par ses alliés
+## s'il y en a, sinon parmi ceux que ces coups annoncés n'abattent pas déjà.
+static func cible_ennemie(e: EtatCombat, id: String, memoire: Dictionary = {}, allies: Array[Dictionary] = [], legales: Array[Dictionary] = []) -> String:
 	var forcee := Regles.provocateur(e, id)
 	if forcee != "":
 		return forcee
+	var ennemis := e.ennemis_vivants(id)
+	if bon_sens and not legales.is_empty():
+		var annonces := degats_annonces(e, allies)
+		var a_portee := ennemis_a_portee(e, id, allies, legales)
+		var debout: Array[String] = []
+		for t in ennemis:
+			if reste(e, t, annonces) > 0:
+				debout.append(t)
+		if not a_portee.is_empty():
+			ennemis = a_portee
+		elif not debout.is_empty():
+			ennemis = debout
 	var meilleure := ""
 	var meilleur := -INF
-	for t in e.ennemis_vivants(id):
+	for t in ennemis:
 		var v := (1.0 - e.pv_pourcent(t)) * 100.0 + (CIBLE_MENACE if a_menace_imminente(e, t, memoire) else 0.0)
 		if v > meilleur:
 			meilleur = v
 			meilleure = t
 	return meilleure
+
+
+# --- Le bon sens : les coups annoncés, achever ----------------------------------------------
+
+## Les dégâts directs qu'une action infligera à chaque ennemi touché, avant sa barrière (Renfort, Affaiblissement,
+## Désarmé, mort subite ; rien sur un ennemi unique si l'attaquant est Aveuglé) : { cible -> montant }.
+static func degats_prevus(e: EtatCombat, a: Dictionary) -> Dictionary:
+	var out := {}
+	var id := str(a["perso"])
+	var voie := int(a["voie"])
+	var rang := int(a["rang"]) if str(a["source"]) == "voie" else 0
+	var forces := _forces(e, id)
+	for ef in Regles.noeud_de(e, a)["effets"]:
+		if str(ef["type"]) != "degats" or (e.a_etat(id, "aveugle") and ef["cible"] == "un_ennemi"):
+			continue
+		var m := _montant_degats(e, id, voie, rang, ef, forces)
+		for t in Regles.cibles(e, a, str(ef["cible"])):
+			out[t] = int(out.get(t, 0)) + m
+	return out
+
+
+## Les dégâts directs annoncés par des alliés, cumulés par ennemi.
+static func degats_annonces(e: EtatCombat, allies: Array[Dictionary]) -> Dictionary:
+	var out := {}
+	for x in allies:
+		var d := degats_prevus(e, x)
+		for t in d:
+			out[t] = int(out.get(t, 0)) + int(d[t])
+	return out
+
+
+## Ce qu'il reste à infliger à un ennemi pour l'abattre ce tour-ci, après les coups annoncés et ses dégâts sur la durée
+## de ce tour (PV + barrière − les deux) ; 0 ou moins : il tombe déjà.
+static func reste(e: EtatCombat, t: String, annonces: Dictionary) -> int:
+	return int(e.perso(t)["pv"]) + int(e.perso(t)["barriere"]) - _deja_engage(e, t, annonces)
+
+
+## Ce qu'un ennemi va déjà perdre ce tour-ci : les coups annoncés par les alliés, et ses DoT de la fin du tour (moins ce
+## que son Gardien lui rend).
+static func _deja_engage(e: EtatCombat, t: String, annonces: Dictionary) -> int:
+	return int(annonces.get(t, 0)) + ticks_a_venir(e, t)
+
+
+## Les dégâts sur la durée qu'un perso prendra à la fin de ce tour (phase 2f, mort subite comprise), moins ce que son
+## Gardien lui rend.
+static func ticks_a_venir(e: EtatCombat, t: String) -> int:
+	var ms := Regles.mort_subite(e)
+	var total := 0
+	for nom in Regles.ORDRE_DOTS:
+		if e.a_etat(t, nom):
+			total += Regles.plancher(float(e.perso(t)["etats"][nom]["valeur"]) * ms)
+	if e.a_etat(t, "gardien"):
+		var soin := int(e.perso(t)["etats"]["gardien"]["valeur"])
+		total -= Regles.plancher(float(soin) * Regles.POISON_SOINS) if e.a_etat(t, "poison") else soin
+	return total
+
+
+## Les dégâts qui menacent un allié (pour la valeur d'une barrière posée sur lui, avec le bon sens) : 55 et le budget des
+## menaces d'échéance 1 de chaque ennemi qui le visera (sa cible prévue par la section 10.2, ou parce que l'action le
+## provoque), et pour tous les ennemis, leurs menaces d'échéance 1 qui touchent tout le camp.
+static func degats_sur(e: EtatCombat, t: String, memoire: Dictionary = {}, provoques: Array = []) -> float:
+	var total := 0.0
+	for x in e.ennemis_vivants(t):
+		var vise := x in provoques or cible_ennemie(e, x, memoire) == t
+		if vise:
+			total += DEGATS_PAR_ENNEMI
+		for m in menaces(e, x, memoire):
+			if int(m["echeance"]) != 1 or bool(m["barre"]):
+				continue
+			for ef in e.noeud(x, int(m["voie"]), int(m["rang"]))["effets"]:
+				if ef["cible"] == "tous_les_ennemis" or (vise and ef["cible"] == "un_ennemi"):
+					total += float(m["budget"])
+					break
+	return total
+
+
+## Les ennemis qu'une des actions légales d'un perso abat ce tour-ci, avec les coups annoncés par ses alliés (et qu'ils
+## n'abattent pas déjà seuls). Provoqué : seulement le provocateur.
+static func ennemis_a_portee(e: EtatCombat, id: String, allies: Array[Dictionary], legales: Array[Dictionary]) -> Array[String]:
+	var annonces := degats_annonces(e, allies)
+	var out: Array[String] = []
+	var ennemis := e.ennemis_vivants(id)
+	if Regles.provocateur(e, id) != "":
+		ennemis = [Regles.provocateur(e, id)]
+	for t in ennemis:
+		var r := reste(e, t, annonces)
+		if r <= 0:
+			continue
+		for l in legales:
+			var essai := l.duplicate()
+			essai["cible_ennemie"] = t
+			if int(degats_prevus(e, essai).get(t, 0)) >= r:
+				out.append(t)
+				break
+	return out
+
+
+## Les déclarations qu'un perso connaît au moment de choisir (l'ordre de declarer) : rien pour un acolyte ; les Échos
+## d'avant lui dans son camp pour un Écho ; toutes celles des acolytes et des Échos de son camp pour les autres.
+static func annonces_connues(e: EtatCombat, id: String, decl: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var place := str(e.fiche(id)["place"])
+	if place == "acolyte":
+		return out
+	for autre in e.ordre:
+		if autre == id:
+			if place == "echo":
+				break
+			continue
+		if e.camp(autre) == e.camp(id) and decl.has(autre) and e.fiche(autre)["place"] in ["acolyte", "echo"]:
+			out.append(decl[autre])
+	return out
+
+
+static func _forces(e: EtatCombat, id: String) -> float:
+	return maxf(0.0, 1.0 + e.valeur_etat(id, "renfort") - e.valeur_etat(id, "affaiblissement"))
+
+
+## Les dégâts directs d'un effet (arrondis comme à la résolution).
+static func _montant_degats(e: EtatCombat, id: String, voie: int, rang: int, ef: Dictionary, forces: float) -> int:
+	var montant := Regles.valeur(e, id, voie, rang, float(ef["valeur"])) * forces * Regles.mort_subite(e)
+	if e.a_etat(id, "desarme"):
+		montant *= Regles.DESARME
+	return Regles.plancher(montant)
+
+
+## Une Clé qui achève un ennemi qu'une action moins chère (de rang inférieur, ou le moyeu) achève aussi, avec les mêmes
+## cibles.
+static func _acheve_sans_cle(e: EtatCombat, a: Dictionary, tues: Array, annonces: Dictionary) -> bool:
+	for l in Regles.actions_legales(e, str(a["perso"])):
+		if l["source"] == "voie" and int(l["rang"]) == 4:
+			continue
+		var essai := l.duplicate()
+		essai["cible_ennemie"] = a["cible_ennemie"]
+		essai["cible_alliee"] = a["cible_alliee"]
+		var d := degats_prevus(e, essai)
+		for t in tues:
+			if int(d.get(t, 0)) >= reste(e, t, annonces):
+				return true
+	return false
 
 
 ## La cible alliée de l'IA : l'allié vivant (soi compris) aux PV les plus bas en pourcentage.
@@ -141,12 +307,21 @@ static func score(e: EtatCombat, a: Dictionary, allies: Array[Dictionary] = [], 
 	var noeud := Regles.noeud_de(e, a)
 	var voie := int(a["voie"])
 	var rang := int(a["rang"]) if str(a["source"]) == "voie" else 0
-	var forces := maxf(0.0, 1.0 + e.valeur_etat(id, "renfort") - e.valeur_etat(id, "affaiblissement"))
+	var forces := _forces(e, id)
 	var aveugle := e.a_etat(id, "aveugle")
 	var m_niveau := Regles.multiplicateur_niveau(e)
 	var offensive := 0.0
 	var defensive := 0.0
 	var soutien_seul := true
+	# Le bon sens : les coups déjà annoncés par les alliés, ce qui se perdrait, les ennemis que l'action achève.
+	var annonces := degats_annonces(e, allies) if bon_sens else {}
+	var perdu := 0.0
+	var tues: Array[String] = []
+	var provoques: Array = []
+	if bon_sens:
+		for ef in noeud["effets"]:
+			if ef["type"] == "etat" and ef["nom"] == "provoque":
+				provoques.append_array(Regles.cibles(e, a, str(ef["cible"])))
 	for ef in noeud["effets"]:
 		var type := str(ef["type"])
 		if not type in SOUTIEN:
@@ -156,12 +331,21 @@ static func score(e: EtatCombat, a: Dictionary, allies: Array[Dictionary] = [], 
 		var touches := Regles.cibles(e, a, str(ef["cible"]))
 		match type:
 			"degats":
-				var montant := Regles.valeur(e, id, voie, rang, float(ef["valeur"])) * forces * Regles.mort_subite(e)
-				if e.a_etat(id, "desarme"):
-					montant *= Regles.DESARME
-				var m := Regles.plancher(montant)
+				var m := _montant_degats(e, id, voie, rang, ef, forces)
 				for t in touches:
-					offensive += minf(maxf(0.0, float(m - int(e.perso(t)["barriere"]))), float(e.perso(t)["pv"])) / m_niveau
+					if not bon_sens:
+						offensive += minf(maxf(0.0, float(m - int(e.perso(t)["barriere"]))), float(e.perso(t)["pv"])) / m_niveau
+						continue
+					# Après les coups annoncés et ses DoT : ce qui reste de sa barrière, puis de ses PV ; le reste est perdu.
+					var ann := _deja_engage(e, t, annonces)
+					var b := maxi(0, int(e.perso(t)["barriere"]) - ann)
+					var pv := int(e.perso(t)["pv"]) - maxi(0, ann - int(e.perso(t)["barriere"]))
+					var utile := minf(maxf(0.0, float(m - b)), maxf(0.0, float(pv)))
+					offensive += utile / m_niveau
+					perdu += (float(m) - utile) / m_niveau
+					if pv > 0 and m - b >= pv:
+						tues.append(t)
+						offensive += ACHEVER
 			"dot":
 				# Les ticks sont multipliés par la mort subite (section 5.5), comme les dégâts directs : sans ça, deux
 				# soutiens dont les seuls dégâts sont des DoT se purgeaient l'un l'autre sans fin.
@@ -198,7 +382,9 @@ static func score(e: EtatCombat, a: Dictionary, allies: Array[Dictionary] = [], 
 					var s := soin
 					if e.a_etat(t, "poison"):
 						s = Regles.plancher(float(s) * Regles.POISON_SOINS)
-					defensive += minf(float(s), float(int(e.fiche(t)["pv_max"]) - int(e.perso(t)["pv"]))) / m_niveau
+					var effectif := minf(float(s), float(int(e.fiche(t)["pv_max"]) - int(e.perso(t)["pv"])))
+					defensive += effectif / m_niveau
+					perdu += (float(s) - effectif) / m_niveau
 			"gardien":
 				var total := float(Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["par_tour"])) * forces) * int(ef["tours"]))
 				for t in touches:
@@ -207,11 +393,15 @@ static func score(e: EtatCombat, a: Dictionary, allies: Array[Dictionary] = [], 
 				var b := Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["valeur"])) * forces)
 				var potentiels := degats_potentiels(e, id, memoire)
 				for t in touches:
+					if bon_sens:
+						# Seulement ce que les ennemis qui viseront cet allié peuvent lui faire (soi : ceux que l'action provoque aussi).
+						potentiels = degats_sur(e, t, memoire, provoques if t == id else [])
 					var nouvelle := b
 					if e.a_etat(t, "brulure"):
 						nouvelle = Regles.plancher(float(nouvelle) * Regles.BRULURE_BARRIERES)
 					var gain := maxi(0, nouvelle - int(e.perso(t)["barriere"]))
 					defensive += minf(float(gain) / m_niveau, potentiels) * BARRIERE_POIDS
+					perdu += maxf(0.0, float(nouvelle) / m_niveau - minf(float(gain) / m_niveau, potentiels))
 			"renfort":
 				var pc := Regles.pourcent(e, id, voie, rang, float(ef["pourcent"])) * 100.0
 				for t in touches:
@@ -228,7 +418,13 @@ static func score(e: EtatCombat, a: Dictionary, allies: Array[Dictionary] = [], 
 	var total := offensive + defensive
 	if not allies.is_empty() and _fait_synergie(e, a, allies):
 		total += SYNERGIE_BONUS
-	if rang > 0:
+	# Une Clé gaspillée (la moitié de sa valeur se perd, ou un coup moins cher achève le même ennemi) perd son bonus de
+	# progression : elle attend un meilleur tour.
+	var cle_gaspillee := false
+	if bon_sens and rang == 4:
+		cle_gaspillee = (perdu > 0.0 and offensive + defensive < CLE_UTILE * (offensive + defensive + perdu)) \
+			or (not tues.is_empty() and _acheve_sans_cle(e, a, tues, annonces))
+	if rang > 0 and not cle_gaspillee:
 		total += PROGRESSION_PAR_RANG * float(rang)
 		if voie == int(e.perso(id)["last_voie"]):
 			total += CONTINUITE
