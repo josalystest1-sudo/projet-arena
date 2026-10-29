@@ -1,6 +1,7 @@
 ## L'IA du combat V2 (docs/SPEC-COMBAT-V2.md, section 10) : une seule, déterministe, pour l'acolyte (des deux camps),
-## les Échos, les ennemis de la Tour et le simulateur. Elle fixe ses deux cibles du tour, donne un score à chaque action
-## légale et joue la meilleure ; à égalité, la dernière de la liste (moyeu, voie 1, voie 2…). Aucun tirage. Module pur.
+## les Échos (d'un trio, ou d'un joueur absent), les ennemis de la Tour et le simulateur. Elle fixe ses deux cibles
+## du tour, donne un score à chaque action légale et joue la meilleure ; à égalité, la dernière de la liste (moyeu,
+## voie 1, voie 2…). Aucun tirage. Module pur.
 class_name IA
 extends RefCounted
 
@@ -31,8 +32,9 @@ const SOUTIEN := ["soin", "barriere", "gardien", "renfort", "purge"]
 
 
 ## Les déclarations de tous les persos joués par l'IA, dans l'ordre de la phase 1 : les acolytes d'abord (sans rien
-## savoir), puis les autres (joueurs IA, Échos, ennemis de la Tour), qui voient les choix des acolytes.
-## humains : les persos que l'IA ne joue pas.
+## savoir) ; puis les Échos d'un trio, dans l'ordre du camp, chacun en connaissant les annonces déjà faites dans son camp
+## (le premier ne sait rien, le second connaît le premier : docs/GDD_V2.md, § 4.3) ; puis les autres (joueurs IA,
+## ennemis de la Tour), qui voient toutes ces annonces. humains : les persos que l'IA ne joue pas.
 static func declarer(e: EtatCombat, humains: Array = []) -> Dictionary:
 	var decl := {}
 	var memoire := {}
@@ -41,16 +43,22 @@ static func declarer(e: EtatCombat, humains: Array = []) -> Dictionary:
 			var a := choisir(e, id, {}, memoire)
 			if not a.is_empty():
 				decl[id] = a
+	for id in e.ordre:
+		if e.fiche(id)["place"] == "echo" and not id in humains:
+			var a := choisir(e, id, decl.duplicate(), memoire)
+			if not a.is_empty():
+				decl[id] = a
 	var connues := decl.duplicate()
 	for id in e.ordre:
-		if e.fiche(id)["place"] != "acolyte" and not id in humains:
+		if not e.fiche(id)["place"] in ["acolyte", "echo"] and not id in humains:
 			var a := choisir(e, id, connues, memoire)
 			if not a.is_empty():
 				decl[id] = a
 	return decl
 
 
-## L'action d'un perso. declarations_connues : les actions déjà déclarées (celle de son acolyte, pour un joueur IA).
+## L'action d'un perso. declarations_connues : les actions déjà déclarées (celle de son acolyte, pour un joueur IA ;
+## celles des Échos qui ont annoncé avant lui, dans un trio).
 ## memoire : les menaces déjà calculées ce tour-ci (l'état ne change pas pendant la phase de déclaration).
 static func choisir(e: EtatCombat, id: String, declarations_connues: Dictionary = {}, memoire: Dictionary = {}) -> Dictionary:
 	var legales := Regles.actions_legales(e, id)
@@ -58,14 +66,14 @@ static func choisir(e: EtatCombat, id: String, declarations_connues: Dictionary 
 		return {}
 	var ce := cible_ennemie(e, id, memoire)
 	var ca := cible_alliee(e, id)
-	var allie := _declaration_alliee(e, id, declarations_connues)
+	var allies := _declarations_alliees(e, id, declarations_connues)
 	var meilleure: Dictionary = {}
 	var meilleur := -INF
 	for l in legales:
 		var a := l.duplicate()
 		a["cible_ennemie"] = ce
 		a["cible_alliee"] = ca
-		var s := score(e, a, allie, legales.size() > 1, memoire)
+		var s := score(e, a, allies, legales.size() > 1, memoire)
 		if is_nan(s):
 			continue
 		if s >= meilleur:
@@ -115,18 +123,20 @@ static func menaces(e: EtatCombat, id: String, memoire: Dictionary) -> Array:
 	return memoire[cle]
 
 
-static func _declaration_alliee(e: EtatCombat, id: String, connues: Dictionary) -> Dictionary:
-	for autre in connues:
-		if autre != id and e.statique.has(autre) and e.camp(autre) == e.camp(id):
-			return connues[autre]
-	return {}
+## Les actions déjà déclarées par les alliés d'un perso, dans l'ordre du camp.
+static func _declarations_alliees(e: EtatCombat, id: String, connues: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	for autre in e.ordre:
+		if autre != id and connues.has(autre) and e.camp(autre) == e.camp(id):
+			out.append(connues[autre])
+	return out
 
 
 ## Le score d'une action (section 10.1) : valeur offensive + valeur défensive + bonus de Synergie + progression −
 ## pénalité. NAN : action retirée (un soutien qui ne sert à rien). Les montants (dégâts, soins, barrières, PV) sont
 ## ramenés au niveau 1 (divisés par M(niveau)), comme les chiffres fixes du score (la grille des états, Purge, les
 ## bonus) : le niveau ne fait que grossir les chiffres (section 3.3), l'IA joue donc pareil à tous les niveaux.
-static func score(e: EtatCombat, a: Dictionary, allie: Dictionary = {}, autres_legales: bool = true, memoire: Dictionary = {}) -> float:
+static func score(e: EtatCombat, a: Dictionary, allies: Array[Dictionary] = [], autres_legales: bool = true, memoire: Dictionary = {}) -> float:
 	var id := str(a["perso"])
 	var noeud := Regles.noeud_de(e, a)
 	var voie := int(a["voie"])
@@ -161,8 +171,8 @@ static func score(e: EtatCombat, a: Dictionary, allie: Dictionary = {}, autres_l
 			"etat":
 				var nom := str(ef["nom"])
 				if nom == "provoque":
-					# Provoquer protège son allié s'il est plus bas (valeur défensive).
-					var autre := _autre_allie(e, id)
+					# Provoquer protège son allié s'il est plus bas (valeur défensive) ; dans un trio, le plus bas des deux.
+					var autre := _autre_allie_le_plus_bas(e, id)
 					if autre != "" and e.pv_pourcent(id) > e.pv_pourcent(autre):
 						defensive += PROVOQUE_VALEUR * touches.size()
 					continue
@@ -216,7 +226,7 @@ static func score(e: EtatCombat, a: Dictionary, allie: Dictionary = {}, autres_l
 	if soutien_seul and defensive < VALEUR_MINIMALE:
 		return NAN
 	var total := offensive + defensive
-	if not allie.is_empty() and _fait_synergie(e, a, allie):
+	if not allies.is_empty() and _fait_synergie(e, a, allies):
 		total += SYNERGIE_BONUS
 	if rang > 0:
 		total += PROGRESSION_PAR_RANG * float(rang)
@@ -248,14 +258,22 @@ static func degats_potentiels(e: EtatCombat, id: String, memoire: Dictionary = {
 	return total
 
 
-static func _autre_allie(e: EtatCombat, id: String) -> String:
+## L'allié vivant (pas soi) aux PV les plus bas en pourcentage ; à égalité, le premier dans l'ordre.
+static func _autre_allie_le_plus_bas(e: EtatCombat, id: String) -> String:
+	var autres: Array[String] = []
 	for autre in e.allies_vivants(id):
 		if autre != id:
-			return autre
-	return ""
+			autres.append(autre)
+	return Regles.plus_bas(e, autres) if not autres.is_empty() else ""
 
 
-## L'action ferait-elle une Synergie avec celle, déjà déclarée, de l'allié ?
-static func _fait_synergie(e: EtatCombat, a: Dictionary, allie: Dictionary) -> bool:
-	var actions := {str(a["perso"]): a, str(allie["perso"]): allie}
-	return not Regles.synergies(e, actions)["liste"].is_empty()
+## L'action ferait-elle une Synergie avec l'une des actions, déjà déclarées, de ses alliés ? (Une seule fois +40, même
+## si elle en complète plusieurs ; une Synergie entre deux autres alliés ne compte pas.)
+static func _fait_synergie(e: EtatCombat, a: Dictionary, allies: Array[Dictionary]) -> bool:
+	var actions := {str(a["perso"]): a}
+	for x in allies:
+		actions[str(x["perso"])] = x
+	for s in Regles.synergies(e, actions)["liste"]:
+		if str(a["perso"]) in s["acteurs"]:
+			return true
+	return false

@@ -39,4 +39,6 @@ GODOT=chemin/vers/godot PROCESSUS=24 python tools/regleur.py passes 6 --matrice 
 
 `tools/equilibrage_lib.gd` contient la simulation, les critères et le rapport ; `tools/equilibrage.gd` les lance en ligne de commande (un travailleur, ou le rapport) ; `tools/regleur.py` lance les travailleurs en parallèle ; `tools/regleur_boutons.py` touche les boutons de la section 11.3 et garde son état dans `tools/regleur_etat.json`.
 
+Le simulateur fait aussi jouer des **trios** (le joueur et ses deux Échos générés, `docs/GDD_V2.md`, `docs/PLAN.md` PR 1.1) : dernier argument `trio` d'un travailleur, par exemple `godot --headless --path . --script res://tools/equilibrage.gd -- simuler matrice 0 1 100 1 sortie.json trio` (sans lui : le duo, le jeu publié). Le régleur passera au trio avec la PR 1.5.
+
 Voir un écran sans téléphone : `godot --path . --script res://tools/capture.gd -- <dossier> '<étapes JSON>'` (mode d'emploi en tête du fichier : créer un perso, monter de niveau, allumer un nœud, lancer un duel ou une montée, toucher, appui long, captures).

@@ -1,6 +1,7 @@
 ## Le simulateur d'équilibrage du combat V2 en ligne de commande (la logique est dans tools/equilibrage_lib.gd).
 ## Un travailleur (une part d'une mesure, écrite en JSON) :
-##   godot --headless --path . --script res://tools/equilibrage.gd -- simuler <matrice|routes|tour> <part> <parts> <n> <graine0> <sortie.json>
+##   godot --headless --path . --script res://tools/equilibrage.gd -- simuler <matrice|routes|tour> <part> <parts> <n> <graine0> <sortie.json> [duo|trio]
+## (le format : « duo » par défaut, le jeu publié ; « trio » : le joueur et ses deux Échos, docs/PLAN.md, PR 1.1)
 ## Le rapport (additionne les parts d'un dossier, écrit le rapport en français et le résumé en JSON) :
 ##   godot --headless --path . --script res://tools/equilibrage.gd -- rapport <dossier> <rapport.md> <resume.json> "<titre>" [boutons.json]
 ## tools/regleur.py lance les travailleurs en parallèle, puis le rapport.
@@ -20,11 +21,16 @@ func _initialize() -> void:
 	match args[0] if args.size() > 0 else "":
 		"simuler":
 			var debut := Time.get_ticks_msec()
-			var out := Lib.simuler(d, args[1], int(args[2]), int(args[3]), int(args[4]), int(args[5]))
+			var format: String = args[7] if args.size() > 7 else "duo"
+			if not format in Lib.FORMATS:
+				printerr("format inconnu : " + format)
+				quit(1)
+				return
+			var out := Lib.simuler(d, args[1], int(args[2]), int(args[3]), int(args[4]), int(args[5]), format)
 			var f := FileAccess.open(args[6], FileAccess.WRITE)
 			f.store_string(JSON.stringify(out))
 			f.close()
-			print("%s, part %s sur %s : %d s" % [args[1], args[2], args[3], (Time.get_ticks_msec() - debut) / 1000])
+			print("%s (%s), part %s sur %s : %d s" % [args[1], format, args[2], args[3], (Time.get_ticks_msec() - debut) / 1000])
 		"rapport":
 			var parts: Array = []
 			var dir := DirAccess.open(args[1])

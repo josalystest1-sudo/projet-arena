@@ -6753,3 +6753,52 @@ La vérification finale à 20 tours tenait les critères 1 à 5 ; le critère 6 
 | Barde | 0,875 → 0,878 | 1,270 | 49,6 % → 49,4 % | 7,6 % → 7,2 % | 10,6 |
 | Diplomate | 1,032 → 1,025 | 0,974 → 1,038 | 50,1 % → 50,3 % | 10,8 % → 9,8 % | 10,6 |
 | Pugiliste | 0,970 → 0,986 | 1,008 | 52,8 % → 53,6 % | 9,3 % → 9,0 % | 11,0 |
+
+## Premier trio contre trio (29 octobre, PR 1.1 du plan, sans réglage)
+
+Le joueur et ses deux Échos générés contre un autre trio (`docs/GDD_V2.md`), avec les chiffres réglés pour le duo (PR #47) : 100 duels par case (10 000) et 300 montées par classe, au niveau 30, graines 5 000 à 7 299. Rien n'est réglé pour le trio : c'est la PR 1.5 du plan. À retenir : la longueur tient toute seule (médiane de 19 tours) ; les classes vont de 45 à 63 % (le Pugiliste et l'Archer trop forts, l'Invocateur trop faible) ; la Tour est bien trop facile à trois (presque tous les trios atteignent l'étage 10).
+
+**2 critères tenus sur 6.** 10000 combats de duel (médiane 19 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : mage 53,1 %, archer 58,8 %, invocateur 45,3 %, diplomate 55,7 %, pugiliste 63,0 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre barde 62,0 %, voleur contre diplomate 39,0 %, archer contre voleur 62,0 %, archer contre archer 61,0 %, archer contre alchimiste 64,0 %, archer contre barde 61,0 %, pretre contre diplomate 37,0 %, alchimiste contre diplomate 34,0 %, invocateur contre archer 37,0 %, invocateur contre diplomate 30,0 %, barde contre mage 34,0 %, barde contre diplomate 37,0 %, diplomate contre voleur 64,0 %, diplomate contre invocateur 61,0 %, pugiliste contre guerrier 74,0 %, pugiliste contre mage 64,0 %, pugiliste contre voleur 67,0 %, pugiliste contre pretre 62,0 %, pugiliste contre alchimiste 65,0 %, pugiliste contre barde 71,0 %, pugiliste contre pugiliste 61,0 %
+- ❌ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)** : archer Réactive 58,8 %, diplomate Réactive 55,7 %, pugiliste Réactive 63,0 %
+- ✅ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %**
+- ✅ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30**
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : guerrier étage 10 96,7 %, guerrier étage 20 75,0 %, mage étage 10 100,0 %, mage étage 20 96,7 %, voleur étage 10 99,7 %, voleur étage 20 93,7 %, archer étage 10 100,0 %, archer étage 20 97,7 %, pretre étage 10 100,0 %, pretre étage 20 96,3 %, alchimiste étage 10 99,7 %, alchimiste étage 20 89,0 %, invocateur étage 10 99,0 %, invocateur étage 20 91,7 %, barde étage 10 99,3 %, barde étage 20 91,0 %, diplomate étage 10 100,0 %, diplomate étage 20 94,0 %, pugiliste étage 10 100,0 %, pugiliste étage 20 96,3 %, écart entre classes : étage 10 de 96,7 % à 100,0 %, étage 20 de 75,0 % à 97,7 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 49 | 44 | 55 | 48 | 49 | 53 | 53 | 62 | 43 | 50 | **50,6 %** |
+| Mage | 55 | 45 | 54 | 50 | 55 | 58 | 52 | 57 | 52 | 53 | **53,1 %** |
+| Voleur | 47 | 49 | 49 | 44 | 51 | 52 | 46 | 50 | 39 | 48 | **47,5 %** |
+| Archer | 59 | 57 | 62 | 61 | 59 | 64 | 60 | 61 | 52 | 53 | **58,8 %** |
+| Prêtre | 52 | 53 | 50 | 52 | 54 | 54 | 53 | 55 | 37 | 43 | **50,3 %** |
+| Alchimiste | 48 | 45 | 53 | 50 | 49 | 49 | 50 | 53 | 34 | 54 | **48,5 %** |
+| Invocateur | 47 | 40 | 52 | 37 | 47 | 51 | 46 | 53 | 30 | 50 | **45,3 %** |
+| Barde | 51 | 34 | 56 | 49 | 55 | 44 | 52 | 53 | 37 | 50 | **48,1 %** |
+| Diplomate | 56 | 55 | 64 | 54 | 53 | 55 | 61 | 56 | 49 | 54 | **55,7 %** |
+| Pugiliste | 74 | 64 | 67 | 60 | 62 | 65 | 57 | 71 | 49 | 61 | **63,0 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 39,5 % | 18,0 % | 50,6 % | 43,8 % | 54,7 % | 38,1 % | 89,0 % | 67,1 % | 98,5 % | 96,7 % | 75,0 % | 19,4 |
+| Mage | 59,0 % | 22,5 % | 53,1 % | 24,7 % | 58,4 % | 48,3 % | 47,1 % | 34,3 % | 90,7 % | 100,0 % | 96,7 % | 20,8 |
+| Voleur | 44,5 % | 20,0 % | 47,5 % | 43,1 % | 23,9 % | 47,9 % | 47,2 % | 68,6 % | 89,7 % | 99,7 % | 93,7 % | 20,6 |
+| Archer | 58,0 % | 23,5 % | 58,8 % | 41,4 % | 62,5 % | 51,4 % | 26,3 % | 46,7 % | 88,9 % | 100,0 % | 97,7 % | 20,9 |
+| Prêtre | 38,0 % | 22,0 % | 50,3 % | 41,9 % | 64,2 % | 51,7 % | 83,3 % | 75,1 % | 97,3 % | 100,0 % | 96,3 % | 20,8 |
+| Alchimiste | 57,0 % | 26,5 % | 48,5 % | 42,4 % | 27,2 % | 50,7 % | 51,0 % | 55,3 % | 96,1 % | 99,7 % | 89,0 % | 20,4 |
+| Invocateur | 39,0 % | 21,5 % | 45,3 % | 36,3 % | 44,8 % | 66,2 % | 44,4 % | 50,4 % | 92,0 % | 99,0 % | 91,7 % | 20,6 |
+| Barde | 49,0 % | 24,5 % | 48,1 % | 45,3 % | 45,7 % | 53,7 % | 37,2 % | 46,2 % | 95,7 % | 99,3 % | 91,0 % | 20,4 |
+| Diplomate | 48,5 % | 23,5 % | 55,7 % | 35,9 % | 60,9 % | 91,8 % | 59,0 % | 61,7 % | 96,9 % | 100,0 % | 94,0 % | 20,7 |
+| Pugiliste | 34,0 % | 16,0 % | 63,0 % | 30,3 % | 46,1 % | 62,4 % | 92,3 % | 46,0 % | 98,2 % | 100,0 % | 96,3 % | 20,8 |
+
+### Boutons touchés, et pourquoi
+
+Aucun (mesure seule).

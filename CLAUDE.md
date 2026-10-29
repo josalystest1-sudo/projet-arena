@@ -76,6 +76,8 @@ Voir `docs/GDD.md`, section « Décisions prises et questions ouvertes ». En pa
 
 **Suivi (2026-10-28)** : `docs/SUIVI.md` tient l'avancement, les retours de Gautier et la suite ; `tools/navigateur.js` pilote le jeu web dans un navigateur au format téléphone (souris ou doigt) et prend des captures, pour vérifier un écran comme Gautier le verra.
 
+**Le trio (2026-10-29, PR 1.1 du plan, PR #49)** : `engine/trio.gd` compose le camp (le joueur, puis un Écho de chacun des deux autres rôles : classe tirée avec la graine du joueur, roue entière au niveau du joueur, allumage par défaut ; un Destin marqué `echo`, place « echo » en combat). Annonces en chaîne dans `IA.declarer` ; Synergies entre chaque paire d'un camp ; la Tour monte avec un camp de deux ou trois. Les choix, et les deux points à faire valider (le rôle de l'Invocateur, l'adversaire opaque), sont dans `docs/JOURNAL-COMBAT-V2.md` et en tête de `docs/PLAN.md`. Le jeu publié reste en duo jusqu'à la PR 1.4.
+
 **Technique (2026-10-26, étape 1)**
 
 - Godot **4.5 stable**, rendu « Compatibility » (le seul qui tourne partout sur le web mobile). Export web **sans threads** : GitHub Pages ne permet pas les en-têtes de sécurité qu'exigent les threads.
