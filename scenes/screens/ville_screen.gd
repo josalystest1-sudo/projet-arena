@@ -99,7 +99,7 @@ func _pastille(id: String) -> String:
 		"forge":
 			return str(app.profile.sac.size()) if not app.profile.sac.is_empty() else ""
 		"tableau":
-			return "!" if not app.revenu_du_jour.is_empty() else ""
+			return "!" if not app.revenu_du_jour.is_empty() or app.objectif_a_reclamer() else ""
 	return ""
 
 

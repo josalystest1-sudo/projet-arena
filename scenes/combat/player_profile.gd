@@ -28,6 +28,11 @@ var portes: Dictionary = {}
 var sac: Array = []
 var eclats: int = 0
 var revenu_jour: String = ""
+## Les objectifs du jour (engine/objectifs.gd) : le jour en cours (« AAAA-MM-JJ »), les compteurs du jour (compteur ->
+## nombre) et les objectifs déjà réclamés ce jour-là.
+var objectifs_jour: String = ""
+var compteurs: Dictionary = {}
+var objectifs_reclames: Array = []
 ## Les monstres déjà croisés à la Tour (identifiant -> true), pour le bestiaire.
 var monsters_seen: Dictionary = {}
 ## Les bulles d'aide du combat déjà lues (identifiant -> true) : chacune ne s'affiche qu'une fois.
@@ -55,6 +60,9 @@ static func load_profile() -> PlayerProfile:
 		profile.sac = cfg.get_value("forge", "sac", [])
 		profile.eclats = int(cfg.get_value("forge", "eclats", 0))
 		profile.revenu_jour = str(cfg.get_value("forge", "revenu_jour", ""))
+		profile.objectifs_jour = str(cfg.get_value("objectifs", "jour", ""))
+		profile.compteurs = cfg.get_value("objectifs", "compteurs", {})
+		profile.objectifs_reclames = cfg.get_value("objectifs", "reclames", [])
 		profile.monsters_seen = cfg.get_value("tour", "monstres", {})
 		profile.tips_seen = cfg.get_value("aide", "vues", {})
 		profile.level = int(cfg.get_value("progression", "niveau", 1))
@@ -77,6 +85,9 @@ func save() -> void:
 	cfg.set_value("forge", "sac", sac)
 	cfg.set_value("forge", "eclats", eclats)
 	cfg.set_value("forge", "revenu_jour", revenu_jour)
+	cfg.set_value("objectifs", "jour", objectifs_jour)
+	cfg.set_value("objectifs", "compteurs", compteurs)
+	cfg.set_value("objectifs", "reclames", objectifs_reclames)
 	cfg.set_value("tour", "monstres", monsters_seen)
 	cfg.set_value("aide", "vues", tips_seen)
 	cfg.set_value("progression", "niveau", level)

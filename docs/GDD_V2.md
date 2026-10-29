@@ -206,7 +206,7 @@ Trois volontés de Gautier, compatibles : celui qui a eu la chance d'un grand ob
 
 ### 10.3 Progression
 
-- **XP** : duels (toujours la plus rapide), étages de la Tour (y compris rejoués), sélection comme Écho, donjons, revenu passif, trois objectifs du jour (bonus). Courbe : 20 à 60 min par niveau au début. **[Décidé ; objectifs du jour : Proposé]**
+- **XP** : duels (toujours la plus rapide), étages de la Tour (y compris rejoués), sélection comme Écho, donjons, revenu passif, trois objectifs du jour (bonus). Courbe : 20 à 60 min par niveau au début. **[Décidé ; objectifs du jour : Proposé]** Fait (PR #63) : trois objectifs par jour tirés avec la date (`data/objectifs.json`), réclamés au Tableau.
 - **Boutique** : skins de lignée, animations, poses, titres, modèles de bannière. Rien d'autre. **[Décidé]**
 
 ## 11. Les écrans et la navigation **[Décidé dans le principe ; détail : Proposé]**

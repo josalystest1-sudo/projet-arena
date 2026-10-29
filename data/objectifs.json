@@ -1,0 +1,14 @@
+{
+  "par_jour": 3,
+  "reserve": [
+    {"id": "duel_gagne", "texte": "Gagne un duel", "compteur": "duels_gagnes", "cible": 1, "xp": 60, "eclats": 20},
+    {"id": "trois_duels", "texte": "Joue trois duels", "compteur": "duels", "cible": 3, "xp": 80, "eclats": 25},
+    {"id": "deux_etages", "texte": "Franchis deux étages de la Tour", "compteur": "etages", "cible": 2, "xp": 80, "eclats": 25},
+    {"id": "gardien", "texte": "Bats un Gardien de la Tour", "compteur": "gardiens", "cible": 1, "xp": 120, "eclats": 40},
+    {"id": "equiper", "texte": "Équipe un objet à la Forge", "compteur": "equipes", "cible": 1, "xp": 40, "eclats": 15},
+    {"id": "reforger", "texte": "Reforge une ligne", "compteur": "reforges", "cible": 1, "xp": 40, "eclats": 15},
+    {"id": "cinq_cles", "texte": "Joue cinq Clés", "compteur": "cles", "cible": 5, "xp": 80, "eclats": 25},
+    {"id": "synergies", "texte": "Déclenche trois Synergies avec tes Échos", "compteur": "synergies", "cible": 3, "xp": 80, "eclats": 25},
+    {"id": "recycler", "texte": "Recycle un objet", "compteur": "recycles", "cible": 1, "xp": 30, "eclats": 10}
+  ]
+}

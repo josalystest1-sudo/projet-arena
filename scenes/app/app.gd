@@ -321,6 +321,7 @@ func equiper(index_sac: int) -> bool:
 	profile.portes[e] = Equipement.equiper(objet)
 	_regenerer()
 	profile.save()
+	compter("equipes")
 	return true
 
 
@@ -343,6 +344,7 @@ func recycler(index_sac: int) -> int:
 	profile.sac.remove_at(index_sac)
 	profile.eclats += rendu
 	profile.save()
+	compter("recycles")
 	return rendu
 
 
@@ -371,7 +373,67 @@ func reforger(ou: String, cle: Variant, ligne: int) -> bool:
 		_regenerer()
 	profile.eclats -= cout
 	profile.save()
+	compter("reforges")
 	return true
+
+
+# ---------------------------------------------------------------------------
+# Les objectifs du jour
+# ---------------------------------------------------------------------------
+
+## Le jour des objectifs : quand la date change, les compteurs et les objectifs réclamés repartent de zéro.
+func _jour_objectifs() -> String:
+	var aujourd_hui := Time.get_date_string_from_system()
+	if profile.objectifs_jour != aujourd_hui:
+		profile.objectifs_jour = aujourd_hui
+		profile.compteurs = {}
+		profile.objectifs_reclames = []
+		profile.save()
+	return aujourd_hui
+
+
+## Un compteur du jour qui monte (duels, étages, Clés jouées…), pour les objectifs.
+func compter(compteur: String, n: int = 1) -> void:
+	if n <= 0 or not compteur in Objectifs.COMPTEURS:
+		return
+	_jour_objectifs()
+	profile.compteurs[compteur] = int(profile.compteurs.get(compteur, 0)) + n
+	profile.save()
+
+
+## Ce qu'un combat fini compte : les Clés jouées par le joueur (son tracé) et les Synergies de son camp.
+func compter_combat(options: Dictionary) -> void:
+	var cles := 0
+	for pas in options.get("trace", {}).get("a1", []):
+		if bool(pas.get("cle", false)):
+			cles += 1
+	compter("cles", cles)
+	compter("synergies", options.get("synergies", []).size())
+
+
+## Les objectifs du jour, prêts à afficher.
+func objectifs_du_jour() -> Array[Dictionary]:
+	return Objectifs.etat_du_jour(_jour_objectifs(), profile.compteurs, profile.objectifs_reclames, data)
+
+
+## Y a-t-il un objectif fini et pas encore réclamé ?
+func objectif_a_reclamer() -> bool:
+	for o in objectifs_du_jour():
+		if bool(o["fini"]) and not bool(o["reclame"]):
+			return true
+	return false
+
+
+## Réclamer la récompense d'un objectif fini : une fois par jour. Renvoie {xp, eclats} (vide si rien à réclamer).
+func reclamer_objectif(id: String) -> Dictionary:
+	_jour_objectifs()
+	if not id in Objectifs.du_jour(profile.objectifs_jour, data) or profile.objectifs_reclames.has(id) or not Objectifs.fini(id, profile.compteurs, data):
+		return {}
+	var r := Objectifs.recompense(id, data)
+	profile.objectifs_reclames.append(id)
+	profile.eclats += int(r["eclats"])
+	gain_xp(int(r["xp"]))
+	return r
 
 
 ## Le meilleur record de la Tour, toutes classes confondues (la « hauteur » du revenu passif).
@@ -475,6 +537,9 @@ func etage_franchi(t: Tour) -> Dictionary:
 	var eclats := Equipement.eclats_etage(franchi, premier, data)
 	profile.eclats += eclats
 	profile.save()
+	compter("etages")
+	if gardien:
+		compter("gardiens")
 	return {"gardien": gardien, "faveur": faveur, "propositions": t.proposer_faveurs(franchi) if faveur else [],
 		"premier": premier, "butin": butin, "eclats": eclats}
 
@@ -498,6 +563,9 @@ func fin_duel(gagne: bool) -> Dictionary:
 	var xp := 120 if gagne else 80
 	var eclats := Equipement.eclats_duel(gagne, data)
 	profile.eclats += eclats
+	compter("duels")
+	if gagne:
+		compter("duels_gagnes")
 	var r := gain_xp(xp)
 	return {"xp": xp, "niveaux": int(r["levels"]), "eclats": eclats}
 
