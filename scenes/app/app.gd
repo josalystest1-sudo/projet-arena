@@ -449,7 +449,7 @@ func reclamer_objectif(id: String) -> Dictionary:
 ## La carte d'un donjon pour ce joueur : {chasse, explorees, revelees, boss}.
 func carte_donjon(id: String) -> Dictionary:
 	if not profile.donjons.has(id):
-		profile.donjons[id] = {"chasse": 0, "explorees": [], "revelees": [], "boss": 0}
+		profile.donjons[id] = {"chasse": 0, "explorees": [], "revelees": [], "boss": 0, "secrets": []}
 	return profile.donjons[id]
 
 
@@ -474,7 +474,13 @@ func fin_combat_donjon(dj: Donjon, e: EtatCombat) -> Dictionary:
 	for c in dj.chemins_explores():
 		if not carte["explorees"].has(c):
 			carte["explorees"].append(c)
-	var out := {"resultat": dj.resultat, "butin": {}, "eclats": 0, "fragments": 0, "revelee": "", "suite": "portes" if dj.phase == "portes" else "fini"}
+	var out := {"resultat": dj.resultat, "butin": {}, "eclats": 0, "fragments": 0, "revelee": "", "suite": "portes" if dj.phase == "portes" else "fini", "manque": dj.manque}
+	# Les secrets du boss trouvés (ses paliers franchis) restent sur la carte, d'une chasse à l'autre.
+	if not carte.has("secrets"):
+		carte["secrets"] = []
+	for s in dj.secrets_trouves():
+		if not carte["secrets"].has(s):
+			carte["secrets"].append(s)
 	if dj.phase == "fini":
 		var r := dj.recompense()
 		if not r.is_empty():

@@ -173,6 +173,11 @@ func _donjon(column: VBoxContainer, cartes: HBoxContainer, dj: Donjon, e: EtatCo
 			column.add_child(cartes)
 			_carte(cartes, "Carte", "gardée", "%d chemin(s)" % app.carte_donjon(dj.id)["explorees"].size())
 			_carte(cartes, "Entrée", "perdue", "pas de récompense")
+			if str(r["manque"]) != "":
+				var m := UiKit.card(column, 4)
+				m.add_child(UiKit.label("Ce qui a manqué", 18, OR, false))
+				m.add_child(UiKit.label(str(r["manque"]), 16, Color.WHITE, false))
+				m.add_child(UiKit.label("Le boss se verrouille à certains paliers de vie. La solution est toujours un geste de classe, un rang ou un rôle, jamais un sort précis ; elle se trouve en essayant.", 14, ATTENUE, false))
 		"elite", "boss":
 			var boss := str(r["resultat"]) == "boss"
 			column.add_child(UiKit.label("Le boss de %s est tombé !" % nom if boss else "L'élite de %s est vaincu" % nom, 30, OR))
@@ -181,6 +186,12 @@ func _donjon(column: VBoxContainer, cartes: HBoxContainer, dj: Donjon, e: EtatCo
 			_carte(cartes, "Éclats", "+%d" % int(r["eclats"]), "total %d" % app.profile.eclats)
 			if boss:
 				_carte(cartes, "Chasse", "nouvelle", "nouvelles routes, carte à zéro")
+				var secrets: Array = app.carte_donjon(dj.id).get("secrets", [])
+				if not secrets.is_empty():
+					var s := UiKit.card(column, 2)
+					s.add_child(UiKit.label("Les secrets du boss", 17, ATTENUE, false))
+					for id in secrets:
+						s.add_child(UiKit.label("· " + str(app.data.boss["solutions"].get(str(id), id)), 15, Color.WHITE, false))
 			elif str(r["revelee"]) != "":
 				_carte(cartes, "Fragment", "+1", "une porte du boss révélée")
 			if not (r["butin"] as Dictionary).is_empty():

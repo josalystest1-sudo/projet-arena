@@ -33,6 +33,12 @@ func _liste() -> void:
 		var routes := int(carte.get("explorees", []).size())
 		var boss := int(carte.get("boss", 0))
 		c.add_child(UiKit.label("Ta carte : %d chemin%s explor%s · %d porte%s révélée%s · boss vaincu %d fois (chasse %d)" % [routes, "s" if routes > 1 else "", "és" if routes > 1 else "é", carte.get("revelees", []).size(), "s" if carte.get("revelees", []).size() > 1 else "", "s" if carte.get("revelees", []).size() > 1 else "", boss, int(carte.get("chasse", 0)) + 1], 14, Color.WHITE, false))
+		var secrets: Array = carte.get("secrets", [])
+		var nb_paliers: int = app.data.boss["boss"].get(str(dj["boss"]), {}).get("paliers", []).size()
+		if nb_paliers > 0:
+			c.add_child(UiKit.label("Secrets du boss : %d sur %d trouvé%s" % [secrets.size(), nb_paliers, "s" if secrets.size() > 1 else ""], 14, Color.WHITE, false))
+			for s in secrets:
+				c.add_child(UiKit.label("· " + str(app.data.boss["solutions"].get(str(s), s)), 13, ATTENUE, false))
 		var entree := int(dj["entree"])
 		var assez := app.profile.eclats >= entree
 		var hors := app.profile.level < int(dj["niveau_min"])

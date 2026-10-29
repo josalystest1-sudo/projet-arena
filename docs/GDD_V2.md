@@ -135,7 +135,7 @@ Modifiées le 29 octobre :
 
 ### 8.5 Le combat de boss
 
-- **La porte est ouverte à tous.** Le boss a des **paliers de vie** avec un blocage (coup mortel, immortalité, fuite) dont **la solution est secrète** et se trouve en essayant : toujours un geste de classe, un palier ou un rôle, jamais un sort précis d'un Destin ; sans hasard. Le jeu dit après coup ce qui a manqué, en termes vagues. Sans la bonne classe, on ne passe pas : voulu. **[Décidé]**
+- **La porte est ouverte à tous.** Le boss a des **paliers de vie** avec un blocage (coup mortel, immortalité, fuite) dont **la solution est secrète** et se trouve en essayant : toujours un geste de classe, un palier ou un rôle, jamais un sort précis d'un Destin ; sans hasard. Le jeu dit après coup ce qui a manqué, en termes vagues. Sans la bonne classe, on ne passe pas : voulu. **[Décidé]** Fait en solo (PR #67) : `data/boss.json`, deux paliers par boss, verrou et solutions par geste, rang ou rôle, « ce qui a manqué », limite de 60 tours.
 - **Le coup final ne porte que s'il vient de trois membres d'une même guilde**, dit à l'entrée et expliqué par l'histoire. Un groupe d'inconnus va jusqu'au bout, apprend tout, repart avec la récompense d'élite. **[Décidé]**
 
 ### 8.6 Les récompenses

@@ -30,6 +30,11 @@ var phase := "portes"
 var resultat := ""
 ## Vrai quand les vagues sont passées et qu'il reste le combat final (l'élite ou le boss).
 var finale := false
+## Le boss à paliers (GDD V2, § 8.5 ; data/boss.json) : le palier qui verrouille le boss (−1 : aucun), ceux déjà
+## franchis, et « ce qui a manqué » quand le trio tombe verrouillé.
+var verrou := -1
+var paliers_passes: Array[int] = []
+var manque := ""
 var pv := {}
 var ko := {}
 
@@ -252,6 +257,122 @@ func terminer(e: EtatCombat) -> void:
 func abandonner() -> void:
 	phase = "fini"
 	resultat = "tombe"
+
+
+# --- Le boss à paliers (GDD V2, § 8.5) ------------------------------------------------------
+
+## Les paliers du boss de ce donjon (data/boss.json), ou vide s'il n'en a pas.
+func paliers() -> Array:
+	return donnees.boss["boss"].get(str(def["boss"]), {}).get("paliers", [])
+
+
+## Le combat en cours est-il celui du boss ?
+func combat_du_boss() -> bool:
+	return finale and sur_la_route_du_boss()
+
+
+## La solution d'un palier a-t-elle été jouée pendant le tour qui vient d'être résolu ? Toujours un geste de classe, un
+## rang ou un rôle, jamais un sort précis (§ 8.5) : lue dans les actions jouées et le journal du tour.
+static func solution_jouee(e: EtatCombat, solution: String, boss: String = "b1") -> bool:
+	var frappeurs: Dictionary = {}
+	for ev in e.journal:
+		var x := str(ev["acteur"])
+		if x == "" or not e.statique.has(x) or e.camp(x) != "a":
+			continue
+		if str(ev["type"]) == "degats" and str(ev["cible"]) == boss:
+			frappeurs[x] = true
+	match solution:
+		"geste_front":
+			for id in e.actions_jouees:
+				var a: Dictionary = e.actions_jouees[id]
+				if e.camp(id) == "a" and str(e.fiche(id)["role"]) == "front" and str(a["source"]) == "moyeu" and frappeurs.has(id):
+					return true
+		"cle_degats":
+			for id in e.actions_jouees:
+				var a: Dictionary = e.actions_jouees[id]
+				if e.camp(id) == "a" and str(e.fiche(id)["role"]) == "degats" and str(a["source"]) == "voie" and int(a["rang"]) == 4:
+					return true
+		"soin_soutien":
+			for ev in e.journal:
+				var x := str(ev["acteur"])
+				if x != "" and e.statique.has(x) and e.camp(x) == "a" and str(e.fiche(x)["role"]) == "soutien" and str(ev["type"]) == "soin":
+					return true
+		"controle":
+			for ev in e.journal:
+				if str(ev["type"]) == "etat" and str(ev["cible"]) == boss and str(ev["detail"]) in Regles.CONTROLES_BRISURE:
+					return true
+		"trois_coups":
+			var vivants := 0
+			for id in e.ordre:
+				if e.camp(id) == "a" and e.statique.has(id):
+					vivants += 1
+			return frappeurs.size() >= mini(3, vivants) and frappeurs.size() >= 2
+	return false
+
+
+## Après chaque tour d'un combat de boss (appelé par l'écran de combat et le simulateur) : les paliers. Quand les PV du
+## boss passent sous un palier non franchi, il se verrouille : ses PV reviennent au palier tant que la solution n'est pas
+## jouée dans le tour ; jouée, le verrou saute. Au-delà de tours_max, le trio tombe (et « ce qui a manqué » est dit).
+## Renvoie {message, verrou (index ou −1), deverrouille}.
+func apres_tour(e: EtatCombat) -> Dictionary:
+	var out := {"message": "", "verrou": verrou, "deverrouille": false}
+	if not combat_du_boss():
+		return out
+	var liste := paliers()
+	if liste.is_empty():
+		return out
+	var boss := "b1"
+	var p := e.perso(boss)
+	var pv_max := int(e.fiche(boss)["pv_max"])
+	# Le verrou en place : la solution jouée le fait sauter ; sinon les PV reviennent au palier.
+	if verrou >= 0:
+		if solution_jouee(e, str(liste[verrou]["solution"]), boss):
+			paliers_passes.append(verrou)
+			out["deverrouille"] = true
+			out["message"] = "Le verrou saute ! Le boss est de nouveau vulnérable."
+			verrou = -1
+		else:
+			_revenir_au_palier(e, boss, pv_max, int(liste[verrou]["pv"] * 0 + verrou))
+	# Un palier atteint : le verrou se pose (même si le coup l'aurait abattu).
+	if verrou < 0:
+		for i in range(liste.size()):
+			if paliers_passes.has(i):
+				continue
+			if int(p["pv"]) <= Regles.plancher(float(pv_max) * float(liste[i]["pv"])):
+				verrou = i
+				_revenir_au_palier(e, boss, pv_max, i)
+				out["message"] = str(liste[i]["texte"])
+				break
+	# Trop long : le trio tombe, et ce qui a manqué est dit.
+	if not e.fini and e.tour > int(donnees.boss["tours_max"]):
+		e.fini = true
+		e.vainqueur = "b"
+	if e.fini and e.vainqueur == "b" and verrou >= 0:
+		manque = str(liste[verrou]["manque"])
+	out["verrou"] = verrou
+	return out
+
+
+## Les PV du boss reviennent au palier (et il se relève s'il venait de tomber).
+func _revenir_au_palier(e: EtatCombat, boss: String, pv_max: int, i: int) -> void:
+	var seuil := Regles.plancher(float(pv_max) * float(paliers()[i]["pv"]))
+	var p := e.perso(boss)
+	p["pv"] = maxi(int(p["pv"]), seuil)
+	if bool(p["ko"]):
+		p["ko"] = false
+	if e.fini and e.vainqueur == "a":
+		e.fini = false
+		e.vainqueur = ""
+
+
+## Les solutions trouvées (leurs identifiants), pour la carte du donjon.
+func secrets_trouves() -> Array[String]:
+	var out: Array[String] = []
+	var liste := paliers()
+	for i in paliers_passes:
+		if i < liste.size():
+			out.append(str(liste[i]["solution"]))
+	return out
 
 
 # --- La carte et les récompenses ------------------------------------------------------------

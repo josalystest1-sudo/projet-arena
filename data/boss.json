@@ -1,0 +1,24 @@
+{
+  "tours_max": 60,
+  "solutions": {
+    "geste_front": "le geste de classe d'un Front, porté sur le boss",
+    "cle_degats": "la Clé d'un Dégâts",
+    "soin_soutien": "un soin d'un Soutien sur un allié, le même tour",
+    "controle": "un contrôle sur le boss (Étourdi, Gelé, Enraciné, Aveuglé, Silencié, Provoqué)",
+    "trois_coups": "les trois membres du trio frappent le boss le même tour"
+  },
+  "boss": {
+    "dragonnet": {
+      "paliers": [
+        {"pv": 0.66, "solution": "geste_front", "texte": "Le dragonnet replie ses ailes sur lui : plus rien ne passe.", "manque": "Il attendait qu'un Front vienne le frapper de son geste, face à face."},
+        {"pv": 0.33, "solution": "controle", "texte": "Le dragonnet prend son envol : hors d'atteinte.", "manque": "Il fallait le clouer au sol, d'une façon ou d'une autre."}
+      ]
+    },
+    "liche": {
+      "paliers": [
+        {"pv": 0.66, "solution": "soin_soutien", "texte": "La Liche aspire la vie autour d'elle : ses blessures se referment.", "manque": "Quelqu'un devait rendre de la vie à un allié, le même tour, pour rompre son emprise."},
+        {"pv": 0.33, "solution": "cle_degats", "texte": "La Liche se dissout en brume : les coups la traversent.", "manque": "Seul le plus grand coup d'un Dégâts pouvait la rattraper dans la brume."}
+      ]
+    }
+  }
+}

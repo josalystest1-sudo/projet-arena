@@ -43,6 +43,8 @@ var cible_ennemie := false
 var cible_alliee := false
 ## La Clé d'un ennemi est prête (jouable ce tour-ci) : la lueur.
 var cle_prete := false
+## Un boss de donjon verrouillé par un palier (GDD V2, § 8.5) : une étiquette rouge.
+var verrou := false
 var _t := 0.0
 var _phase := 0.0
 var _appui := -1.0
@@ -159,6 +161,15 @@ func _draw() -> void:
 		style.set_corner_radius_all(12)
 		draw_style_box(style, r)
 		draw_string(police, Vector2(r.position.x, r.position.y + 17.0), texte_cle, HORIZONTAL_ALIGNMENT_CENTER, l, 15, Color("0f0e17"))
+	if verrou and not ko:
+		var texte_v := "VERROUILLÉ"
+		var lv := police.get_string_size(texte_v, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x + 18.0
+		var rv := Rect2(rs.get_center().x - lv / 2.0, rs.position.y - 26.0 - (26.0 if cle_prete else 0.0), lv, 24.0)
+		var sv := StyleBoxFlat.new()
+		sv.bg_color = Color("c93b3b")
+		sv.set_corner_radius_all(12)
+		draw_style_box(sv, rv)
+		draw_string(police, Vector2(rv.position.x, rv.position.y + 17.0), texte_v, HORIZONTAL_ALIGNMENT_CENTER, lv, 15, Color.WHITE)
 	# La plaque : PV.
 	var y := rs.end.y + 4.0
 	var largeur := minf(size.x - 8.0, maxf(rs.size.x, 110.0))
