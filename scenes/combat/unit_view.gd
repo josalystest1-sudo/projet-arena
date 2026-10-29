@@ -1,14 +1,16 @@
 ## Un personnage dans l'arène du combat V2 (docs/SPEC-COMBAT-V2.md, section 12.2) : son sprite (de face s'il est
 ## ennemi, tourné vers l'adversaire s'il est allié) et sa plaque : la barre de PV (rouge côté ennemi, teal côté allié),
 ## puis ses menaces et ses états en pastilles (3 de chaque au plus, « +n » au-delà). Anneau doré en pointillé : la
-## cible ennemie choisie ; teal : la cible alliée. Toucher : le choisir pour cible ; appui long : sa fiche (ou celle de
-## la menace touchée). Affichage seulement.
+## cible ennemie choisie ; teal : la cible alliée. Toucher : le choisir pour cible ; appui long : sa fiche. Toucher
+## (ou appui long sur) une pastille : ce qu'elle fait. Affichage seulement.
 class_name UnitView
 extends Control
 
 signal touche(id: String)
 signal appui_long(id: String)
-signal appui_menace(id: String, index: int, ancre: Vector2)
+## Une pastille touchée (tenu : par un appui long, la fiche se ferme au relâchement) ; index dans les pastilles
+## affichées (voir contenu_pastille).
+signal pastille(id: String, index: int, ancre: Vector2, tenu: bool)
 
 const APPUI_LONG := 0.25
 const PASTILLE := 26.0
@@ -29,7 +31,8 @@ var pv := 0
 var pv_max := 1
 var barriere := 0
 var ko := false
-## Les menaces ({pictogramme, couleur, cible, echeance, barre}) et les états ({pictogramme, couleur, tours}).
+## Les menaces ({pictogramme, couleur, cible, echeance, barre, voie, rang}) et les états ({nom, pictogramme, couleur,
+## tours}).
 var menaces: Array = []
 var etats: Array = []
 var cible_ennemie := false
@@ -92,9 +95,9 @@ func _process(delta: float) -> void:
 	_flottants = _flottants.filter(func(f): return f[2] < 1.4)
 	if _appui >= 0.0 and not _appui_long_fait and _t - _appui >= APPUI_LONG:
 		_appui_long_fait = true
-		var index := _menace_sous(_appui_pos)
+		var index := _pastille_sous(_appui_pos)
 		if index >= 0:
-			appui_menace.emit(id, index, global_position + _rect_pastille(index).get_center())
+			pastille.emit(id, index, global_position + _rect_pastille(index).get_center(), true)
 		else:
 			appui_long.emit(id)
 	queue_redraw()
@@ -109,7 +112,11 @@ func _gui_input(event: InputEvent) -> void:
 		_appui_long_fait = false
 	else:
 		if _appui >= 0.0 and not _appui_long_fait:
-			touche.emit(id)
+			var index := _pastille_sous(_appui_pos)
+			if index >= 0:
+				pastille.emit(id, index, global_position + _rect_pastille(index).get_center(), false)
+			else:
+				touche.emit(id)
 		_appui = -1.0
 	accept_event()
 
@@ -153,8 +160,7 @@ func _draw() -> void:
 	draw_string(police, Vector2(x0, y + 22.0), affiche, HORIZONTAL_ALIGNMENT_LEFT, place, taille_nom, TEXTE)
 	draw_string(police, Vector2(x0, y + 22.0), texte_pv, HORIZONTAL_ALIGNMENT_RIGHT, largeur, 14, Color("aaa49b"))
 	# Les pastilles : menaces, puis états.
-	var n := mini(menaces.size(), 3) + mini(etats.size(), 3) + (1 if menaces.size() > 3 or etats.size() > 3 else 0)
-	for i in range(n):
+	for i in range(_nb_pastilles()):
 		var r := _rect_pastille(i)
 		var p := _pastille(i)
 		var bord: Color = p.get("bord", BORD)
@@ -179,15 +185,28 @@ func _draw() -> void:
 		draw_string(police, pos, str(f[0]), HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(f[1], a))
 
 
-func _pastille(i: int) -> Dictionary:
+## Ce que montre la pastille i : { type : « menace », « etat » ou « plus », i : son rang dans menaces ou etats }.
+func contenu_pastille(i: int) -> Dictionary:
 	var nm := mini(menaces.size(), 3)
 	if i < nm:
-		var m: Dictionary = menaces[i]
+		return {"type": "menace", "i": i}
+	if i - nm < mini(etats.size(), 3):
+		return {"type": "etat", "i": i - nm}
+	return {"type": "plus", "i": 0}
+
+
+func _nb_pastilles() -> int:
+	return mini(menaces.size(), 3) + mini(etats.size(), 3) + (1 if menaces.size() > 3 or etats.size() > 3 else 0)
+
+
+func _pastille(i: int) -> Dictionary:
+	var c := contenu_pastille(i)
+	if c["type"] == "menace":
+		var m: Dictionary = menaces[c["i"]]
 		return {"pictogramme": m["pictogramme"], "couleur": m["couleur"], "cible": m["cible"], "texte": str(m["echeance"]),
 			"bord": VIOLET if allie else ROUGE, "halo": int(m["echeance"]) == 1 and not m["barre"], "barre": m["barre"]}
-	var j := i - nm
-	if j < mini(etats.size(), 3):
-		var s: Dictionary = etats[j]
+	if c["type"] == "etat":
+		var s: Dictionary = etats[c["i"]]
 		return {"pictogramme": s["pictogramme"], "couleur": s["couleur"], "texte": str(s["tours"]), "bord": BORD}
 	return {"texte": "+%d" % (maxi(0, menaces.size() - 3) + maxi(0, etats.size() - 3)), "bord": BORD}
 
@@ -196,14 +215,13 @@ func _rect_pastille(i: int) -> Rect2:
 	var rs := rect_sprite()
 	var y := rs.end.y + 30.0
 	var largeur := PASTILLE * 1.9
-	var n := mini(menaces.size(), 3) + mini(etats.size(), 3) + (1 if menaces.size() > 3 or etats.size() > 3 else 0)
-	var total := float(n) * (largeur + 4.0) - 4.0
+	var total := float(_nb_pastilles()) * (largeur + 4.0) - 4.0
 	var x0 := (size.x - total) / 2.0
 	return Rect2(x0 + float(i) * (largeur + 4.0), y, largeur, PASTILLE)
 
 
-func _menace_sous(pos: Vector2) -> int:
-	for i in range(mini(menaces.size(), 3)):
+func _pastille_sous(pos: Vector2) -> int:
+	for i in range(_nb_pastilles()):
 		if _rect_pastille(i).grow(4.0).has_point(pos):
 			return i
 	return -1

@@ -329,6 +329,35 @@ static func synergies(e: EtatCombat, actions: Dictionary) -> Dictionary:
 	return {"liste": liste, "mods": mods}
 
 
+## Les Synergies qu'un perso peut compléter ce tour-ci avec l'action déjà déclarée de son allié : pour chacune de ses
+## actions légales et chaque cible possible, les noms des Synergies qu'elle déclencherait. Rend [{ action, noms }],
+## l'action avec ses cibles. Sert à l'affichage (les cases dorées, les ennemis qui préparent une Synergie) ; la règle
+## reste synergies().
+static func synergies_possibles(e: EtatCombat, id: String, action_alliee: Dictionary) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	if action_alliee.is_empty():
+		return out
+	var allie := str(action_alliee["perso"])
+	var validee := valider(e, allie, action_alliee)
+	if validee.is_empty():
+		return out
+	var ennemis: Array[String] = e.ennemis_vivants(id)
+	if provocateur(e, id) != "":
+		ennemis = [provocateur(e, id)]
+	for a in actions_legales(e, id):
+		for ce in ennemis:
+			for ca in e.allies_vivants(id):
+				var essai := a.duplicate()
+				essai["cible_ennemie"] = ce
+				essai["cible_alliee"] = ca
+				var noms: Array[String] = []
+				for s in synergies(e, {id: essai, allie: validee})["liste"]:
+					noms.append(str(s["nom"]))
+				if not noms.is_empty():
+					out.append({"action": essai, "noms": noms})
+	return out
+
+
 static func _effets_cibles(e: EtatCombat, a: Dictionary) -> Array:
 	var out: Array = []
 	var effets: Array = noeud_de(e, a)["effets"]

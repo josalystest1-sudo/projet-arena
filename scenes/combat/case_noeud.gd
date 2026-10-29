@@ -1,8 +1,9 @@
 ## Une des six cases fixes du bas de l'écran de combat (docs/SPEC-COMBAT-V2.md, section 12.2) : le moyeu, ou le
 ## prochain nœud d'une voie. Elle montre ses pictogrammes et sa cible, son nom, sa ligne chiffrée ; grisée avec la raison
 ## (sablier, flocon, bâillon, racine, chaînes) si elle ne peut pas être jouée ; un œil barré sous Aveuglé pour un nœud à
-## une seule cible ennemie. Premier toucher : elle se soulève ; second : elle est jouée (verrouillée). Appui long : la
-## fiche du nœud (ou, verrouillée, la déverrouiller). Affichage seulement.
+## une seule cible ennemie ; dorée, avec le nom de la Synergie, si elle complète une Synergie avec ce que l'acolyte a
+## annoncé (« Brisure → Loup » : seulement en visant ce perso). Premier toucher : elle se soulève ; second : elle est
+## jouée (verrouillée). Appui long : la fiche du nœud (ou, verrouillée, la déverrouiller). Affichage seulement.
 class_name CaseNoeud
 extends Control
 
@@ -30,6 +31,10 @@ var cle := false
 var choisie := false
 var verrouillee := false
 var vide := false
+## La Synergie que cette case complète avec la cible choisie (« Brisure »), ou "" ; sinon, celle qu'elle compléterait
+## en visant un autre perso (« Brisure → Loup »).
+var synergie := ""
+var synergie_ailleurs := ""
 var _t := 0.0
 var _appui := -1.0
 var _long_fait := false
@@ -69,7 +74,10 @@ func _draw() -> void:
 	var fond := Color("3a2f12") if verrouillee else (SURFACE_HAUTE if choisie else SURFACE)
 	_rect_arrondi(r, fond)
 	var bord := OR if (choisie or verrouillee) else (Color("c9a0ff") if cle and jouable else BORD)
-	_rect_arrondi(r, bord, false, 3.0 if choisie or verrouillee else 1.5)
+	if synergie != "" and jouable:
+		bord = OR
+		_rect_arrondi(r.grow(2.0 + 1.5 * sin(_t * 5.0)), Color(OR, 0.45), false, 2.0)
+	_rect_arrondi(r, bord, false, 3.0 if choisie or verrouillee or (synergie != "" and jouable) else 1.5)
 	var alpha := 1.0 if jouable or verrouillee else 0.38
 	if vide:
 		draw_string(police, Vector2(r.position.x, r.get_center().y + 6), "—", HORIZONTAL_ALIGNMENT_CENTER, r.size.x, 22, Color(ATTENUE, 0.5))
@@ -100,6 +108,22 @@ func _draw() -> void:
 		Picto.dessiner(self, raison, Vector2(r.get_center().x, r.position.y + 22), 26.0, Color("c9a0ff"))
 	if aveugle and jouable:
 		Picto.dessiner(self, "oeil_barre", Vector2(r.position.x + 18, r.end.y - 16), 18.0, Color("c9a0ff"))
+	# Le ruban de la Synergie, à cheval sur le bord du haut.
+	var ruban := synergie if synergie != "" else synergie_ailleurs
+	if ruban != "" and jouable and not verrouillee:
+		var taille_r := 13
+		while taille_r > 9 and police.get_string_size(ruban, HORIZONTAL_ALIGNMENT_LEFT, -1, taille_r).x > r.size.x - 24:
+			taille_r -= 1
+		var w := police.get_string_size(ruban, HORIZONTAL_ALIGNMENT_LEFT, -1, taille_r).x + 16.0
+		var rr := Rect2(Vector2(r.get_center().x - w / 2.0, r.position.y - 9.0), Vector2(w, 18.0))
+		var style := StyleBoxFlat.new()
+		style.set_corner_radius_all(9)
+		style.bg_color = OR if synergie != "" else Color("2b2410")
+		style.border_color = OR
+		style.set_border_width_all(1)
+		draw_style_box(style, rr)
+		draw_string(police, Vector2(rr.position.x, rr.position.y + 13.5), ruban, HORIZONTAL_ALIGNMENT_CENTER, rr.size.x, taille_r,
+			Color("0f0e17") if synergie != "" else OR)
 
 
 func _rect_arrondi(r: Rect2, col: Color, plein: bool = true, epaisseur: float = 1.0) -> void:

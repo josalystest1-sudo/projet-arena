@@ -1,6 +1,6 @@
 # Suivi du projet
 
-Mis à jour le **29 octobre 2026** (nuit : combat V2, étape 8). Ce fichier dit où en est le projet, ce qui attend Gautier et ce qui vient ensuite. Il est lu au début de chaque session (avec `CLAUDE.md`) et mis à jour à la fin de chaque PR. Les règles du jeu sont dans `docs/GDD.md`, les choix techniques et les chiffres dans `CLAUDE.md` (« Choix faits par Claude Code »).
+Mis à jour le **29 octobre 2026** (matin : retours de Gautier sur l'écran de combat et la durée). Ce fichier dit où en est le projet, ce qui attend Gautier et ce qui vient ensuite. Il est lu au début de chaque session (avec `CLAUDE.md`) et mis à jour à la fin de chaque PR. Les règles du jeu sont dans `docs/GDD.md`, les choix techniques et les chiffres dans `CLAUDE.md` (« Choix faits par Claude Code »).
 
 ## Où on en est
 
@@ -80,6 +80,7 @@ Dernier retour : la spécification du combat V2, validée, avec la consigne de s
 | 28 oct, soir | Spécification du combat V2 « l'Arbre vivant », validée : « applique son plan dans l'ordre, une PR par étape, n'invente rien, note les choix dans le journal » | Étape 1 (PR #34) : données des 10 classes recopiées de la spécification, tous les nœuds dans leur budget. |
 | 28 oct, soir | Trois critères d'équilibrage impossibles avec les seuls boutons de la spécification (durée, route Éventail, Tour) : « On vise 10 » (tours) ; Éventail « seulement pas plus de 55 % » ; « Difficulté propre à la Tour » | PV de toutes les classes jusqu'à −40 % ; plus de plancher pour Éventail ; la force des monstres monte avec les étages, avec un facteur par classe, réglée au simulateur (étape 5). |
 | 28 oct, soir | Ruée et Éventail : « Repères, plus critères » | Les deux routes sont mesurées et affichées sans seuil ; le critère 3 porte sur la route Réactive. |
+| 29 oct, matin | « Les combats sont bien trop rapides, on peut viser 20 tours » ; « les petites vignettes, ce serait bien de cliquer dessus pour voir ce que ça fait » ; « les Synergies ne sont pas claires, je les déclenche sans savoir pourquoi » ; « quand on clique sur l'adversaire, on voit ses chemins mais pas son prochain sort possible : tout doit être visible sans clic » | PR #45 : toucher une pastille, un jeton ou un point de voie ouvre sa fiche ; un bandeau en haut montre en permanence ce que chaque ennemi peut jouer ce tour-ci ; un bandeau des Synergies et des cases dorées (avec le nom de la Synergie) ; l'explication dans la résolution. La durée (20 tours) : PR suivante, après le réglage. |
 | 28 oct, nuit | « Je vais me coucher, travaille le plus possible et prends les décisions par toi-même, compte rendu demain matin » | Étape 5 finie (le k de chaque classe réglé en tenant compte de son acolyte ; mesures plus grosses ; 5 critères sur 6 sur des combats jamais vus), puis les étapes 6 et 7. Choix notés dans le journal, marqués « à valider ». |
 
 ## Historique des PR
@@ -125,6 +126,8 @@ Dernier retour : la spécification du combat V2, validée, avec la consigne de s
 | #36 | 28 oct | Publication : un aperçu de la branche `combat-v2` sous `/v2/`, à chaque fusion sur elle (le jeu actuel reste à la racine). |
 | #37 | 28 oct | Combat V2, étape 3 (sur `combat-v2`) : le générateur de Destin (formes Base, Diffuse, Concentrée, Persistante, Vive, neutres en budget ; allumage ; acolyte), les textes générés (`engine/texte.gd`), la roue du Destin à l'écran, l'application rebranchée sur le Destin V2 ; tests 5 à 10 et 45 ; outil de captures `tools/capture.gd`. |
 | #38 | 28 oct | Combat V2, étape 4 (sur `combat-v2`) : l'IA à score (`engine/ia.gd`), le bestiaire transposé (14 monstres : une classe, des voies, un multiplicateur de PV), la Tour sur le nouveau moteur (`engine/tour.gd`, `data/tour.json`) ; tests 37 à 40 et 46 à 48. |
+| #39 à #44 | 29 oct | Combat V2, étapes 5 à 8 : le simulateur et le réglage (5 critères sur 6), l'écran de combat, la résolution et l'écran de fin, la publication, le rapport final (`docs/RAPPORT-COMBAT-V2.md`), l'IA qui compte la mort subite dans ses DoT, les noms longs sous un petit perso. |
+| #45 | 29 oct | Écran de combat plus lisible : le bandeau « en face » (ce que chaque ennemi peut jouer ce tour-ci, doré s'il prépare une Synergie), le bandeau des Synergies et les cases dorées, toucher une pastille ou un jeton pour sa fiche (états compris), la fiche d'un perso avec le prochain nœud de chaque voie, l'explication des Synergies dans la résolution. |
 
 ## Reprendre le travail (pour Claude Code)
 

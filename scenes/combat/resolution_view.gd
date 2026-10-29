@@ -1,8 +1,10 @@
 ## La résolution d'un tour (docs/SPEC-COMBAT-V2.md, section 12.5) : plein écran, un cut-in par action, dans l'ordre
 ## joueur A, acolyte A, joueur B, acolyte B (ou les ennemis), puis les ticks regroupés, puis les KO. Chaque cut-in : le
 ## perso en grand, le nom du nœud, ses pictogrammes, les nombres sur les cibles (or : dégâts ; teal : soin ; teal clair :
-## barrière ; violet : état posé ; rouge : tick). Une Synergie : un bandeau doré à son nom. 4 secondes au plus ; un
-## toucher accélère, un second saute à la fin. Tout vient du journal d'événements du moteur : rien n'est recalculé.
+## barrière ; violet : état posé ; rouge : tick). Une Synergie : un bandeau à son nom (doré pour ton duo, rouge pour
+## l'adversaire), avec qui l'a faite, sur qui, la règle et son effet ; ce cut-in dure plus longtemps. 4 secondes au plus
+## (plus le temps de lire les Synergies) ; un toucher accélère, un second saute à la fin. Tout vient du journal
+## d'événements du moteur : rien n'est recalculé.
 ## Affichage seulement.
 extends Control
 
@@ -21,7 +23,8 @@ const DUREE_MAX := 4.0
 var app: ArenaApp
 var e: EtatCombat
 var noms := {}
-## Les cut-ins : {acteur, titre, sous_titre, pictos, nombres: [[cible, texte, couleur]], synergie, tick, ko}.
+## Les cut-ins : {acteur, titre, sous_titre, pictos, nombres: [[cible, texte, couleur]], synergie, synergie_qui (qui,
+## sur qui), synergie_ligne (la règle et l'effet), synergie_adverse, tick, ko}.
 var sequence: Array = []
 var courant := -1
 var _temps := 0.0
@@ -44,6 +47,13 @@ func jouer(p_app: ArenaApp, _avant: EtatCombat, apres: EtatCombat, p_noms: Dicti
 	_suivant()
 
 
+## Un cut-in de Synergie dure le temps de lire son explication.
+func _duree_cut() -> float:
+	if courant >= 0 and courant < sequence.size() and str(sequence[courant]["synergie"]) != "":
+		return maxf(_duree, 2.2)
+	return _duree
+
+
 func _nom(id: String) -> String:
 	if id == "":
 		return ""
@@ -55,7 +65,7 @@ func _construire_sequence() -> void:
 	var synergies := {}
 	for ev in journal:
 		if ev["type"] == "synergie":
-			synergies[ev["acteur"]] = str(ev["detail"])
+			synergies[ev["acteur"]] = ev
 	var ordre_actions: Array = []
 	for id in e.ordre:
 		if e.actions_jouees.has(id):
@@ -63,7 +73,8 @@ func _construire_sequence() -> void:
 	for id in ordre_actions:
 		var a: Dictionary = e.actions_jouees[id]
 		var n := Regles.noeud_de(e, a)
-		var cut := {"acteur": id, "titre": Texte.nom(n), "pictos": Texte.pictos(n), "nombres": [], "synergie": "", "tick": false}
+		var cut := {"acteur": id, "titre": Texte.nom(n), "pictos": Texte.pictos(n), "nombres": [], "synergie": "", "synergie_ligne": "",
+			"synergie_adverse": false, "tick": false}
 		var rang := int(a["rang"]) if a["source"] == "voie" else 0
 		var cible := ""
 		for ef in n["effets"]:
@@ -81,7 +92,14 @@ func _construire_sequence() -> void:
 		# La Synergie s'annonce au cut-in du second de ses deux acteurs.
 		for acteur in synergies:
 			if acteur != id and e.camp(acteur) == e.camp(id) and ordre_actions.find(id) > ordre_actions.find(acteur):
-				cut["synergie"] = synergies[acteur]
+				var ev: Dictionary = synergies[acteur]
+				var s := Texte.synergie(str(ev["detail"]))
+				cut["synergie"] = str(ev["detail"])
+				cut["synergie_adverse"] = e.camp(id) == "b"
+				var qui := "%s et %s" % [_nom(acteur), _nom(id)]
+				var sur := " sur %s" % _nom(str(ev["cible"])) if str(ev["cible"]) != "" else ""
+				cut["synergie_qui"] = "%s%s" % [qui, sur]
+				cut["synergie_ligne"] = "%s → %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]]
 		sequence.append(cut)
 	var ticks := {"acteur": "", "titre": "Les effets qui durent", "sous_titre": "", "pictos": [], "nombres": [], "synergie": "", "tick": true}
 	var kos := {"acteur": "", "titre": "", "sous_titre": "", "pictos": [], "nombres": [], "synergie": "", "tick": true}
@@ -160,7 +178,7 @@ func _process(delta: float) -> void:
 	if _fini or courant < 0:
 		return
 	_temps += delta * _vitesse
-	if _temps >= _duree:
+	if _temps >= _duree_cut():
 		_suivant()
 	queue_redraw()
 
@@ -181,7 +199,7 @@ func _draw() -> void:
 		return
 	var police := ThemeDB.fallback_font
 	var cut: Dictionary = sequence[courant]
-	var t := clampf(_temps / _duree, 0.0, 1.0)
+	var t := clampf(_temps / _duree_cut(), 0.0, 1.0)
 	var arrivee := minf(1.0, t * 4.0)
 	# Le perso en grand, avec son halo.
 	if cut["acteur"] != "":
@@ -211,9 +229,18 @@ func _draw() -> void:
 		draw_string(police, Vector2(0, y + chute), ligne, HORIZONTAL_ALIGNMENT_CENTER, size.x, 30, n[2])
 		y += 40.0
 	if cut["synergie"] != "":
-		var r := Rect2(0, size.y * 0.52 - 30, size.x, 54)
-		draw_rect(r, Color(OR, 0.85))
-		draw_string(police, Vector2(0, r.position.y + 38), "SYNERGIE : %s" % cut["synergie"], HORIZONTAL_ALIGNMENT_CENTER, size.x, 28, NUIT)
+		var r := Rect2(0, size.y * 0.52 - 40, size.x, 96)
+		var adverse: bool = cut.get("synergie_adverse", false)
+		draw_rect(r, Color(ROUGE if adverse else OR, 0.9))
+		var titre := ("SYNERGIE ADVERSE : %s" if adverse else "SYNERGIE : %s") % str(cut["synergie"]).to_upper()
+		draw_string(police, Vector2(0, r.position.y + 34), titre, HORIZONTAL_ALIGNMENT_CENTER, size.x, 28, NUIT)
+		var ys := r.position.y + 60.0
+		for ligne in [str(cut.get("synergie_qui", "")), str(cut.get("synergie_ligne", ""))]:
+			var taille := 17
+			while taille > 11 and police.get_string_size(ligne, HORIZONTAL_ALIGNMENT_LEFT, -1, taille).x > size.x - 24:
+				taille -= 1
+			draw_string(police, Vector2(12, ys), ligne, HORIZONTAL_ALIGNMENT_CENTER, size.x - 24, taille, NUIT)
+			ys += 24.0
 	# L'ordre du tour.
 	var yl := size.y - 230.0
 	var i := 0

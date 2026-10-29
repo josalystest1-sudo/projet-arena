@@ -1,15 +1,18 @@
 ## L'écran de combat V2 (docs/SPEC-COMBAT-V2.md, section 12.2) : une seule scène d'arène. Le duo ennemi en haut à
 ## droite, le duo du joueur en bas à gauche (à la Tour, 1 à 4 monstres en haut, le plus gros au centre). En haut : le
-## tour, le chrono, « Quitter ». En bas : la bande de la voie en cours, les six cases fixes (moyeu en bas à gauche, puis
-## les voies), une ligne d'aide. Les acolytes annoncent leur choix en premier (pastille et trait vers la cible). Jouer :
-## toucher une case, puis la toucher encore. Rien d'autre ne s'ouvre que les fiches (appui long) et le menu Quitter.
+## tour, le chrono, « Quitter », puis le bandeau « en face » : ce que chaque ennemi peut jouer ce tour-ci, toujours
+## visible. En bas : le bandeau des Synergies, la bande de la voie en cours, les six cases fixes (moyeu en bas à gauche,
+## puis les voies ; dorées si elles complètent une Synergie avec ce que l'acolyte a annoncé), une ligne d'aide (ce que
+## fait la case choisie). Les acolytes annoncent leur choix en premier (pastille et trait vers la cible). Jouer :
+## toucher une case, puis la toucher encore. Toucher une pastille, un jeton ou un point d'une voie : sa fiche, jusqu'au
+## toucher suivant ; un appui long : la même, tant que le doigt reste posé.
 ## Affichage seulement : toute la règle vient de res://engine (Regles, IA, Texte, Tour).
 extends Control
 
 const ResolutionVue := preload("res://scenes/combat/resolution_view.gd")
 
-const HAUT := 58.0
-const HUD_H := 430.0
+const HAUT := 52.0
+const HUD_H := 410.0
 const OR := Color("e3b85f")
 const TEAL := Color("5cc8b8")
 const ROUGE := Color("d35b5b")
@@ -22,7 +25,7 @@ const SURFACE_HAUTE := Color("262337")
 ## L'ordre des cases : la rangée du haut (voies 3, 4, 5), puis celle du bas (moyeu, voies 1, 2).
 const ORDRE_CASES := [3, 4, 5, 0, 1, 2]
 ## Les places du duo et des ennemis dans l'arène (fractions de sa largeur et de sa hauteur) et la taille de leur pixel.
-const PLACES := {"a1": [0.47, 0.70, 9.0], "a2": [0.20, 0.52, 6.5], "b1": [0.62, 0.36, 7.5], "b2": [0.84, 0.15, 6.5]}
+const PLACES := {"a1": [0.47, 0.70, 9.0], "a2": [0.20, 0.52, 6.5], "b1": [0.62, 0.36, 7.5], "b2": [0.84, 0.21, 6.5]}
 
 var app: ArenaApp
 var e: EtatCombat
@@ -40,9 +43,20 @@ var lbl_tour: Label
 var lbl_chrono: Label
 var btn_quitter: Button
 var bande: BandeVoie
+var adverse: BandeAdverse
+var bandeau: BandeauSynergie
 var cases := {}
 var aide: Label
 var popup: PanelContainer = null
+## La fiche ouverte se ferme au relâchement (appui long) ou au toucher suivant ; un toucher sur ce qui vient de la
+## fermer ne la rouvre pas.
+var popup_tenu := true
+var _popup_cle := ""
+var _fermee := {"cle": "", "t": -10.0}
+## Les Synergies que chaque case compléterait avec l'annonce de l'acolyte : index -> { exact, ailleurs, cible }.
+var _syn := {}
+## Les pastilles d'annonce des acolytes (dans l'arène), pour les toucher.
+var _annonces := {}
 var feuille: Control = null
 ## Le tracé des deux joueurs sur leur roue (pour la fin du combat) et les Synergies du duo.
 var trace := {"a1": [], "b1": []}
@@ -82,7 +96,7 @@ func _construire() -> void:
 		var v := UnitView.make(id, str(fiche["sprite"]), str(noms.get(id, fiche["nom"])), pixel, allie)
 		v.touche.connect(_on_perso_touche)
 		v.appui_long.connect(_on_perso_appui_long)
-		v.appui_menace.connect(_on_menace_appui_long)
+		v.pastille.connect(_on_pastille)
 		arene.add_child(v)
 		vues[id] = v
 	# Le haut : le tour, le chrono, Quitter.
@@ -100,13 +114,19 @@ func _construire() -> void:
 	btn_quitter.add_theme_color_override("font_color", ATTENUE)
 	btn_quitter.pressed.connect(_on_quitter)
 	add_child(btn_quitter)
-	# Le bas : la bande de la voie, les six cases, l'aide.
+	# Le bandeau « en face ».
+	adverse = BandeAdverse.new()
+	adverse.jeton_touche.connect(func(id, v, r, ancre, tenu): _ouvrir_fiche(_fiche_noeud(id, v, r), ancre, tenu, "%s|%d|%d" % [id, v, r]))
+	add_child(adverse)
+	# Le bas : le bandeau des Synergies, la bande de la voie, les six cases, l'aide.
 	var hud := VBoxContainer.new()
 	hud.name = "hud"
 	hud.add_theme_constant_override("separation", 6)
 	add_child(hud)
+	bandeau = BandeauSynergie.new()
+	hud.add_child(bandeau)
 	bande = BandeVoie.new()
-	bande.appui_long_noeud.connect(func(v, r, ancre): _ouvrir_fiche(_fiche_noeud("a1", v, r), ancre))
+	bande.noeud_touche.connect(func(v, r, ancre, tenu): _ouvrir_fiche(_fiche_noeud("a1", v, r), ancre, tenu, "a1|%d|%d" % [v, r]))
 	hud.add_child(bande)
 	var grille := GridContainer.new()
 	grille.columns = 3
@@ -121,6 +141,9 @@ func _construire() -> void:
 		grille.add_child(c)
 		cases[i] = c
 	aide = UiKit.label("", 14, ATTENUE)
+	aide.custom_minimum_size = Vector2(0, 40)
+	aide.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	aide.max_lines_visible = 2
 	hud.add_child(aide)
 	resized.connect(_placer)
 	_placer()
@@ -138,8 +161,14 @@ func _placer() -> void:
 	lbl_chrono.size = Vector2(size.x, 44)
 	btn_quitter.position = Vector2(size.x - 110, 10)
 	btn_quitter.size = Vector2(100, 36)
-	arene.position = Vector2(0, HAUT)
-	arene.size = Vector2(size.x, size.y - HUD_H - HAUT)
+	var nb_ennemis := 0
+	for id in e.ordre:
+		if e.camp(id) == "b":
+			nb_ennemis += 1
+	adverse.position = Vector2(0, HAUT)
+	adverse.size = Vector2(size.x, adverse.hauteur(nb_ennemis))
+	arene.position = Vector2(0, HAUT + adverse.size.y)
+	arene.size = Vector2(size.x, size.y - HUD_H - arene.position.y)
 	traits.size = arene.size
 	var monstres: Array = []
 	for id in e.ordre:
@@ -163,7 +192,7 @@ func _placer() -> void:
 func _draw() -> void:
 	# Le ciel et le sol de l'arène.
 	draw_rect(Rect2(Vector2.ZERO, size), NUIT)
-	var haut_sol := HAUT + (size.y - HUD_H - HAUT) * 0.35
+	var haut_sol := arene.position.y + arene.size.y * 0.35
 	for i in range(12):
 		var t := float(i) / 12.0
 		draw_rect(Rect2(0, t * haut_sol, size.x, haut_sol / 12.0 + 1.0), NUIT.lerp(Color("2a2140"), t * 0.8))
@@ -247,11 +276,30 @@ func _maj() -> void:
 			if restants <= 0:
 				continue
 			var def: Dictionary = e.defs_etats[nom]
-			v.etats.append({"pictogramme": def["pictogramme"], "couleur": def["couleur"], "tours": restants})
+			v.etats.append({"nom": nom, "pictogramme": def["pictogramme"], "couleur": def["couleur"], "tours": restants})
+	_calculer_synergies()
 	_maj_cases()
-	var nom_cible := str(noms.get(cible_e, e.fiche(cible_e)["nom"])) if cible_e != "" else "—"
-	if e.vivant("a1") and not Regles.actions_legales(e, "a1").is_empty():
-		aide.text = "cible : %s · touche un nœud deux fois pour jouer" % nom_cible
+	_maj_bandeau()
+	_maj_adverse()
+	_maj_aide()
+
+
+## La ligne d'aide : ce que fait la case choisie, sinon la cible et comment jouer.
+func _maj_aide() -> void:
+	if not e.vivant("a1") or Regles.actions_legales(e, "a1").is_empty():
+		return
+	var cible_e := str(e.perso("a1")["cible_ennemie"])
+	var nom_cible := _nom(cible_e) if cible_e != "" else "—"
+	if choisie < 0 or not cases.has(choisie) or cases[choisie].vide:
+		aide.text = "Cible : %s · touche une case pour voir ce qu'elle fait, deux fois pour la jouer" % nom_cible
+		return
+	var voie := choisie - 1
+	var rang := 0 if choisie == 0 else int(e.perso("a1")["jalons"][voie]) + 1
+	var a := Regles.action("a1", "moyeu" if choisie == 0 else "voie", voie, rang, cible_e, str(e.perso("a1")["cible_alliee"]))
+	var cible := _cible_de("a1", a)
+	var sur := (" (sur %s)" % ("toi" if cible == "a1" else _nom(cible))) if cible != "" else ""
+	aide.text = "%s : %s%s%s" % [cases[choisie].nom, Texte.ligne_en_combat(e, "a1", voie, rang), sur,
+		" · touche encore pour jouer" if not verrouillee else " · verrouillé (appui long pour changer)"]
 
 
 func _maj_cases() -> void:
@@ -272,6 +320,8 @@ func _maj_cases() -> void:
 			if rang > 4 or not bool(e.noeud("a1", voie, rang)["allume"]):
 				c.vide = true
 				c.jouable = false
+				c.synergie = ""
+				c.synergie_ailleurs = ""
 				continue
 		c.vide = false
 		var n := e.noeud("a1", voie, rang)
@@ -282,6 +332,11 @@ func _maj_cases() -> void:
 			pic["cible"] = str(app.data.textes["pictos"]["cibles"][str(n["effets"][c.pictos.find(pic)]["cible"])])
 		c.cle = rang == 4
 		c.jouable = legales.has(i)
+		var s: Dictionary = _syn.get(i, {})
+		c.synergie = " · ".join(s.get("exact", []))
+		c.synergie_ailleurs = ""
+		if c.synergie == "" and not s.get("ailleurs", []).is_empty():
+			c.synergie_ailleurs = "%s → %s" % [s["ailleurs"][0], _nom(str(s["cible"]))]
 		if not c.jouable and e.vivant("a1"):
 			c.raison = _raison(voie, rang)
 		if c.aveugle:
@@ -295,14 +350,179 @@ func _maj_cases() -> void:
 
 
 ## « 60 + 30×3 » : les nombres seuls, avec le niveau, le multiplicateur de classe et les éclats.
-func _ligne_courte(n: Dictionary, voie: int, rang: int) -> String:
-	var fiche := e.fiche("a1")
-	var bonus := 0.0 if rang == 0 else float(fiche["bonus"][voie][rang - 1])
+func _ligne_courte(_n: Dictionary, voie: int, rang: int) -> String:
 	var morceaux: Array[String] = []
-	for p in Texte.pictos(n, Regles.multiplicateur_niveau(e) * float(fiche["k"]) * (1.0 + bonus), 1.0 + bonus):
+	for p in _pictos_en_combat("a1", voie, rang):
 		if str(p["texte"]) != "":
 			morceaux.append(str(p["texte"]))
 	return " + ".join(morceaux)
+
+
+## Les pictogrammes d'un nœud d'un perso, avec ses chiffres en combat (niveau, multiplicateur de classe, éclats).
+func _pictos_en_combat(id: String, voie: int, rang: int) -> Array[Dictionary]:
+	var fiche := e.fiche(id)
+	var bonus := 0.0 if rang == 0 else float(fiche["bonus"][voie][rang - 1])
+	return Texte.pictos(e.noeud(id, voie, rang), Regles.multiplicateur_niveau(e) * float(fiche["k"]) * (1.0 + bonus), 1.0 + bonus)
+
+
+func _nom(id: String) -> String:
+	return str(noms.get(id, e.fiche(id)["nom"])) if id != "" else ""
+
+
+## Le perso que vise une action (celui de son premier effet à une seule cible ; soi), ou "" (tous, le duo).
+func _cible_de(id: String, a: Dictionary) -> String:
+	for ef in Regles.noeud_de(e, a)["effets"]:
+		match str(ef["cible"]):
+			"un_ennemi":
+				return str(a["cible_ennemie"])
+			"un_allie":
+				return str(a["cible_alliee"])
+			"soi":
+				return id
+	return ""
+
+
+## L'acolyte du même camp qu'un joueur, ou "".
+func _acolyte_de(id: String) -> String:
+	for autre in e.ordre:
+		if autre != id and e.camp(autre) == e.camp(id) and e.fiche(autre)["place"] == "acolyte":
+			return autre
+	return ""
+
+
+func _cle_action(a: Dictionary) -> String:
+	return "%s|%d|%d" % [a["source"], int(a["voie"]), int(a["rang"]) if a["source"] == "voie" else 0]
+
+
+# --- Les Synergies et le bandeau « en face » ------------------------------------------
+
+## Les Synergies que chaque case du joueur compléterait avec l'annonce de son acolyte (avec la cible choisie : exact ;
+## seulement en visant un autre perso : ailleurs).
+func _calculer_synergies() -> void:
+	_syn = {}
+	var acol := _acolyte_de("a1")
+	if acol == "" or not declarations.has(acol) or not e.vivant("a1") or phase != "choix":
+		return
+	var ce := str(e.perso("a1")["cible_ennemie"])
+	var ca := str(e.perso("a1")["cible_alliee"])
+	for o in Regles.synergies_possibles(e, "a1", declarations[acol]):
+		var a: Dictionary = o["action"]
+		var i := 0 if a["source"] == "moyeu" else int(a["voie"]) + 1
+		if not _syn.has(i):
+			_syn[i] = {"exact": [], "ailleurs": [], "cible": ""}
+		var s: Dictionary = _syn[i]
+		var exact := str(a["cible_ennemie"]) == ce and str(a["cible_alliee"]) == ca
+		for nom_syn in o["noms"]:
+			if exact and not nom_syn in s["exact"]:
+				s["exact"].append(nom_syn)
+			elif not exact and not nom_syn in s["ailleurs"]:
+				s["ailleurs"].append(nom_syn)
+				if s["cible"] == "":
+					s["cible"] = str(a["cible_ennemie"]) if str(a["cible_ennemie"]) != ce else str(a["cible_alliee"])
+
+
+## Le bandeau des Synergies : prête (la case choisie en complète une), possible (des cases dorées), en visant un autre
+## perso, ou un rappel des quatre.
+func _maj_bandeau() -> void:
+	var acol := _acolyte_de("a1")
+	if phase != "choix" or not e.vivant("a1") or Regles.actions_legales(e, "a1").is_empty():
+		bandeau.maj("", "", "")
+		return
+	if acol == "" or not declarations.has(acol):
+		bandeau.maj("aucune", "Pas de Synergie ce tour-ci : %s ne joue pas" % (_nom(acol) if acol != "" else "ton acolyte"), _rappel_synergies()[0], _rappel_synergies()[1])
+		return
+	var a: Dictionary = declarations[acol]
+	var joue := "%s joue %s" % [_nom(acol), Texte.nom(Regles.noeud_de(e, a))]
+	var exact: Array = []
+	var ailleurs: Array = []
+	var cible_ailleurs := ""
+	for i in _syn:
+		for n in _syn[i]["exact"]:
+			if not n in exact:
+				exact.append(n)
+		for n in _syn[i]["ailleurs"]:
+			if not n in ailleurs:
+				ailleurs.append(n)
+				if cible_ailleurs == "":
+					cible_ailleurs = str(_syn[i]["cible"])
+	var choisies: Array = _syn.get(choisie, {}).get("exact", []) if choisie >= 0 else []
+	if not choisies.is_empty():
+		var s := Texte.synergie(str(choisies[0]))
+		bandeau.maj("prete", "SYNERGIE PRÊTE : %s ! Touche encore pour jouer" % " · ".join(choisies).to_upper(), joue + " + ta case dorée",
+			"%s → %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]])
+	elif not exact.is_empty():
+		var s := Texte.synergie(str(exact[0]))
+		bandeau.maj("possible", "SYNERGIE POSSIBLE : %s · joue une case dorée" % " · ".join(exact).to_upper(), joue,
+			"%s → %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]])
+	elif not ailleurs.is_empty():
+		var s := Texte.synergie(str(ailleurs[0]))
+		bandeau.maj("ailleurs", "Synergie %s possible : vise %s" % [" · ".join(ailleurs), _nom(cible_ailleurs)], joue,
+			"%s → %s" % [s["regle"].substr(0, 1).to_upper() + s["regle"].substr(1), s["effet"]])
+	else:
+		bandeau.maj("aucune", "%s : pas de Synergie avec ce coup" % joue, _rappel_synergies()[0], _rappel_synergies()[1])
+
+
+## Le rappel des quatre Synergies, quand aucune n'est possible.
+func _rappel_synergies() -> Array[String]:
+	return ["Synergies : contrôle + coup · deux DoT · barrière + soin · Renfort + coup",
+		"(toi et ton acolyte, le même tour ; sur la même cible, sauf Renfort + coup)"]
+
+
+## Le bandeau « en face » : une ligne par ennemi ; ce qu'il peut jouer ce tour-ci, ou ce qu'il a annoncé.
+func _maj_adverse() -> void:
+	var lignes: Array = []
+	for id in e.ordre:
+		if e.camp(id) != "b":
+			continue
+		var l := {"id": id, "nom": _nom(id), "titre": "", "note": "", "note_or": false, "ko": not e.vivant(id), "jetons": []}
+		lignes.append(l)
+		if not e.vivant(id):
+			continue
+		if declarations.has(id) and e.fiche(id)["place"] == "acolyte" and phase == "choix":
+			var a: Dictionary = declarations[id]
+			l["titre"] = "va jouer"
+			l["jetons"].append(_jeton(id, a, true))
+			var cible := _cible_de(id, a)
+			if cible != "":
+				l["note"] = "sur " + ("toi" if cible == "a1" else _nom(cible))
+			continue
+		var legales := Regles.actions_legales(e, id)
+		if legales.is_empty():
+			l["note"] = "ne peut rien jouer"
+			continue
+		l["titre"] = "peut jouer"
+		var syn := {}
+		var acol := _acolyte_de(id)
+		if acol != "" and declarations.has(acol) and phase == "choix":
+			for o in Regles.synergies_possibles(e, id, declarations[acol]):
+				syn[_cle_action(o["action"])] = o["noms"]
+		var noms_syn: Array = []
+		# Les voies d'abord, le moyeu (toujours là) en dernier.
+		legales.push_back(legales.pop_front())
+		for a in legales:
+			var j := _jeton(id, a, false)
+			if syn.has(_cle_action(a)):
+				j["synergie"] = true
+				for n in syn[_cle_action(a)]:
+					if not n in noms_syn:
+						noms_syn.append(n)
+			l["jetons"].append(j)
+		if not noms_syn.is_empty():
+			l["note"] = "Synergie : " + ", ".join(noms_syn)
+			l["note_or"] = true
+	adverse.lignes = lignes
+
+
+func _jeton(id: String, a: Dictionary, annonce: bool) -> Dictionary:
+	var voie := int(a["voie"])
+	var rang := int(a["rang"]) if a["source"] == "voie" else 0
+	var pictos := _pictos_en_combat(id, voie, rang)
+	var texte := ""
+	for p in pictos:
+		if str(p["texte"]) != "":
+			texte = str(p["texte"])
+			break
+	return {"voie": voie, "rang": rang, "pictos": pictos, "texte": texte, "cle": rang == 4, "synergie": false, "annonce": annonce}
 
 
 func _raison(voie: int, rang: int) -> String:
@@ -347,6 +567,7 @@ func _on_case_touche(i: int) -> void:
 		verrouillee = true
 		app.sfx.play("clic", 0.8)
 		_maj_cases()
+		_maj_aide()
 		var rang := 0 if i == 0 else int(e.perso("a1")["jalons"][i - 1]) + 1
 		declarations["a1"] = Regles.action("a1", "moyeu" if i == 0 else "voie", i - 1, rang, str(e.perso("a1")["cible_ennemie"]), str(e.perso("a1")["cible_alliee"]))
 		# Contre l'IA, personne d'autre à attendre : le tour part tout de suite.
@@ -357,6 +578,8 @@ func _on_case_touche(i: int) -> void:
 		choisie = i
 		app.sfx.play("clic", 1.3, -6.0)
 		_maj_cases()
+		_maj_bandeau()
+		_maj_aide()
 
 
 func _on_case_appui_long(i: int) -> void:
@@ -365,6 +588,7 @@ func _on_case_appui_long(i: int) -> void:
 	if verrouillee and i == choisie:
 		verrouillee = false
 		_maj_cases()
+		_maj_aide()
 		return
 	var c: CaseNoeud = cases[i]
 	if c.vide:
@@ -389,16 +613,43 @@ func _on_perso_appui_long(id: String) -> void:
 	_ouvrir_feuille(id)
 
 
-func _on_menace_appui_long(id: String, index: int, ancre: Vector2) -> void:
+## Une pastille sous un perso : la fiche de la menace (le nœud), de l'état, ou la liste de tout ce qu'il porte.
+func _on_pastille(id: String, index: int, ancre: Vector2, tenu: bool) -> void:
 	var v: UnitView = vues[id]
-	if index < v.menaces.size():
-		_ouvrir_fiche(_fiche_noeud(id, int(v.menaces[index]["voie"]), int(v.menaces[index]["rang"])), ancre)
+	var c := v.contenu_pastille(index)
+	var cle := "%s|pastille|%d" % [id, index]
+	match str(c["type"]):
+		"menace":
+			var m: Dictionary = v.menaces[c["i"]]
+			_ouvrir_fiche(_fiche_noeud(id, int(m["voie"]), int(m["rang"])), ancre, tenu, cle)
+		"etat":
+			_ouvrir_fiche_etat(id, str(v.etats[c["i"]]["nom"]), ancre, tenu, cle)
+		_:
+			_ouvrir_liste(id, ancre, tenu, cle)
 
 
 func _input(event: InputEvent) -> void:
-	# Une fiche ouverte par un appui long se ferme au relâchement.
-	if popup != null and event is InputEventMouseButton and not event.pressed:
+	if popup == null or not event is InputEventMouseButton or event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	# Une fiche ouverte par un appui long se ferme au relâchement ; par un toucher, au toucher suivant.
+	if popup_tenu and not event.pressed:
 		_fermer_popup()
+	elif not popup_tenu and event.pressed:
+		_fermee = {"cle": _popup_cle, "t": _t}
+		_fermer_popup()
+
+
+## Toucher la pastille d'annonce d'un acolyte : la fiche du nœud annoncé.
+func _gui_input(event: InputEvent) -> void:
+	if phase != "choix" or not event is InputEventMouseButton or event.button_index != MOUSE_BUTTON_LEFT or event.pressed:
+		return
+	var pos: Vector2 = event.position - arene.position
+	for id in _annonces:
+		if (_annonces[id] as Rect2).grow(6.0).has_point(pos) and declarations.has(id):
+			var a: Dictionary = declarations[id]
+			var rang := int(a["rang"]) if a["source"] == "voie" else 0
+			_ouvrir_fiche(_fiche_noeud(id, int(a["voie"]), rang), arene.global_position + (_annonces[id] as Rect2).get_center() + Vector2(0, 20), false, "%s|annonce" % id)
+			return
 
 
 # --- Fiches -------------------------------------------------------------------------
@@ -407,12 +658,17 @@ func _fiche_noeud(id: String, voie: int, rang: int) -> Dictionary:
 	return Texte.fiche(e, id, voie, rang, "a1")
 
 
-func _ouvrir_fiche(fiche: Dictionary, ancre: Vector2) -> void:
+## Une fiche flottante, vide ; rend sa colonne, ou null si ce toucher est celui qui vient de la fermer.
+func _nouveau_popup(tenu: bool, cle: String, bord: Color = OR) -> VBoxContainer:
 	_fermer_popup()
+	if not tenu and cle != "" and _fermee["cle"] == cle and _t - float(_fermee["t"]) < 0.6:
+		return null
+	popup_tenu = tenu
+	_popup_cle = cle
 	popup = PanelContainer.new()
 	var style := StyleBoxFlat.new()
 	style.bg_color = SURFACE_HAUTE
-	style.border_color = OR
+	style.border_color = bord
 	style.set_border_width_all(2)
 	style.set_corner_radius_all(12)
 	style.set_content_margin_all(10)
@@ -422,6 +678,65 @@ func _ouvrir_fiche(fiche: Dictionary, ancre: Vector2) -> void:
 	box.custom_minimum_size = Vector2(minf(size.x - 24.0, 440.0), 0)
 	box.add_theme_constant_override("separation", 3)
 	popup.add_child(box)
+	return box
+
+
+## La fiche flottante, au-dessus de l'ancre (en dessous s'il n'y a pas la place), dans l'écran.
+func _montrer_popup(box: VBoxContainer, ancre: Vector2) -> void:
+	for child in box.get_children():
+		if child is Control:
+			(child as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var p := popup
+	add_child(p)
+	await get_tree().process_frame
+	if popup == null or popup != p:
+		return
+	var pos := Vector2(ancre.x - popup.size.x / 2.0, ancre.y - popup.size.y - 16.0) - global_position
+	if pos.y < 8.0:
+		pos.y = ancre.y - global_position.y + 30.0
+	pos.x = clampf(pos.x, 8.0, size.x - popup.size.x - 8.0)
+	pos.y = clampf(pos.y, 8.0, maxf(8.0, size.y - popup.size.y - 8.0))
+	popup.position = pos
+
+
+## La fiche d'un état posé sur un perso : ce qu'il fait, sa valeur, combien de tours encore, qui l'a posé.
+func _ouvrir_fiche_etat(id: String, nom_etat: String, ancre: Vector2, tenu: bool, cle: String) -> void:
+	var f := Texte.fiche_etat(e, id, nom_etat, noms)
+	var box := _nouveau_popup(tenu, cle, Color(f["couleur"]))
+	if box == null:
+		return
+	var titre := HBoxContainer.new()
+	titre.add_theme_constant_override("separation", 8)
+	titre.add_child(Picto.make(str(f["pictogramme"]), Color(f["couleur"]), 24.0))
+	titre.add_child(UiKit.label(str(f["nom"]) + ("  " + str(f["valeur"]) if str(f["valeur"]) != "" else ""), 21, Color(f["couleur"]), false))
+	box.add_child(titre)
+	box.add_child(UiKit.label(str(f["sous_titre"]), 14, ATTENUE, false))
+	box.add_child(UiKit.label(str(f["texte"]), 17, TEXTE, false))
+	if str(f["source"]) != "":
+		box.add_child(UiKit.label(str(f["source"]), 14, ATTENUE, false))
+	_montrer_popup(box, ancre)
+
+
+## Tout ce que porte un perso : ses menaces et ses états, une ligne chacun.
+func _ouvrir_liste(id: String, ancre: Vector2, tenu: bool, cle: String) -> void:
+	var box := _nouveau_popup(tenu, cle)
+	if box == null:
+		return
+	box.add_child(UiKit.label(_nom(id), 21, OR, false))
+	for m in Regles.menaces(e, id):
+		var f := _fiche_noeud(id, int(m["voie"]), int(m["rang"]))
+		box.add_child(UiKit.label("%s : %s · %s" % [f["nom"], f["ligne"], f["echeance"]], 15, TEXTE, false))
+	for nom_etat in e.perso(id)["etats"]:
+		if e.tours_restants(id, str(nom_etat)) > 0:
+			var f := Texte.fiche_etat(e, id, str(nom_etat), noms)
+			box.add_child(UiKit.label("%s%s : %s" % [f["nom"], " " + str(f["valeur"]) if str(f["valeur"]) != "" else "", f["texte"]], 15, VIOLET, false))
+	_montrer_popup(box, ancre)
+
+
+func _ouvrir_fiche(fiche: Dictionary, ancre: Vector2, tenu: bool = true, cle: String = "") -> void:
+	var box := _nouveau_popup(tenu, cle)
+	if box == null:
+		return
 	UiKit.fiche_noeud(box, fiche)
 	if str(fiche.get("echeance", "")) != "":
 		box.add_child(UiKit.label(str(fiche["echeance"]), 15, OR, false))
@@ -441,18 +756,7 @@ func _ouvrir_fiche(fiche: Dictionary, ancre: Vector2) -> void:
 				g.add_child(l)
 				ligne.add_child(g)
 			box.add_child(ligne)
-	for child in box.get_children():
-		if child is Control:
-			(child as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(popup)
-	await get_tree().process_frame
-	if popup == null:
-		return
-	var pos := Vector2(ancre.x - popup.size.x / 2.0, ancre.y - popup.size.y - 16.0) - global_position
-	if pos.y < 8.0:
-		pos.y = ancre.y - global_position.y + 30.0
-	pos.x = clampf(pos.x, 8.0, size.x - popup.size.x - 8.0)
-	popup.position = pos
+	_montrer_popup(box, ancre)
 
 
 func _fermer_popup() -> void:
@@ -493,12 +797,15 @@ func _ouvrir_feuille(id: String) -> void:
 		if r > 0:
 			etats.append("%s (%d tour%s)" % [e.defs_etats[nom]["nom"], r, "s" if r > 1 else ""])
 	col.add_child(UiKit.label("États : " + (", ".join(etats) if not etats.is_empty() else "aucun"), 15, VIOLET, false))
-	col.add_child(UiKit.label("Ses voies (appui long sur un nœud : sa fiche)", 14, ATTENUE, false))
+	var moyeu := _fiche_noeud(id, -1, 0)
+	col.add_child(UiKit.label("Moyeu, toujours jouable : %s · %s" % [moyeu["nom"], moyeu["ligne"]], 14, TEXTE, false))
+	col.add_child(UiKit.label("Ses voies, et le prochain nœud de chacune (touche un point : sa fiche)", 14, ATTENUE, false))
 	for v in range(e.nb_voies(id)):
 		var b := BandeVoie.new()
 		_maj_bande(b, id, v)
-		b.appui_long_noeud.connect(func(voie, rang, ancre): _ouvrir_fiche(_fiche_noeud(id, voie, rang), ancre))
+		b.noeud_touche.connect(func(voie, rang, ancre, tenu): _ouvrir_fiche(_fiche_noeud(id, voie, rang), ancre, tenu, "%s|%d|%d" % [id, voie, rang]))
 		col.add_child(b)
+		col.add_child(_ligne_prochain(id, v))
 	var boutons := HBoxContainer.new()
 	boutons.add_theme_constant_override("separation", 10)
 	col.add_child(boutons)
@@ -507,6 +814,20 @@ func _ouvrir_feuille(id: String) -> void:
 			_on_perso_touche(id)
 			_fermer_feuille(), 56))
 	boutons.add_child(UiKit.button("Fermer", _fermer_feuille, 56))
+
+
+## Sous la bande d'une voie : son prochain nœud, ce qu'il fait et quand il sera jouable.
+func _ligne_prochain(id: String, v: int) -> Label:
+	var rang := int(e.perso(id)["jalons"][v]) + 1
+	if rang > 4 or not bool(e.noeud(id, v, rang)["allume"]):
+		return UiKit.label("    Prochain : rien (la voie s'arrête là)", 13, ATTENUE, false)
+	var f := _fiche_noeud(id, v, rang)
+	var jouable := false
+	for a in Regles.actions_legales(e, id):
+		jouable = jouable or (a["source"] == "voie" and int(a["voie"]) == v and int(a["rang"]) == rang)
+	var quand := "jouable ce tour-ci" if jouable else str(f["echeance"]).to_lower()
+	return UiKit.label("    Prochain : %s%s · %s · %s" % [f["nom"], " (Clé)" if rang == 4 else "", f["ligne"], quand], 13,
+		OR if jouable else ATTENUE, false)
 
 
 func _fermer_feuille() -> void:
@@ -518,6 +839,7 @@ func _fermer_feuille() -> void:
 # --- Les annonces des acolytes -------------------------------------------------------
 
 func _dessiner_traits() -> void:
+	_annonces = {}
 	if phase != "choix":
 		return
 	var police := ThemeDB.fallback_font
@@ -544,6 +866,7 @@ func _dessiner_traits() -> void:
 		var nom := str(noms.get(id, e.fiche(id)["nom"]))
 		var largeur := 64.0 + police.get_string_size(nom, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
 		var r := Rect2(depart + Vector2(-largeur / 2.0, -(vues[id] as UnitView).rect_sprite().size.y * 0.5 - 34.0), Vector2(largeur, 28))
+		_annonces[id] = r
 		var style := StyleBoxFlat.new()
 		style.bg_color = SURFACE
 		style.border_color = couleur
@@ -563,6 +886,7 @@ func _resoudre() -> void:
 	phase = "resolution"
 	_fermer_popup()
 	_fermer_feuille()
+	bandeau.maj("", "", "")
 	var avant := e
 	e = Regles.resoudre_tour(e, declarations)
 	for id in trace:
