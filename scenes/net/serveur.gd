@@ -63,6 +63,12 @@ func personnages(_role: String, _niveau: int, _n: int) -> Array:
 	return []
 
 
+## Dire au serveur qu'un personnage vient d'être pris comme Écho (GDD V2, § 5 : son propriétaire sera récompensé, un
+## plafond par jour). Renvoie vrai si c'est noté. Le simulé compte seulement ; le vrai serveur attend sa table.
+func selectionner(_id: String) -> bool:
+	return true
+
+
 ## Le nombre de fiches publiées (la tienne comprise).
 func nombre_personnages() -> int:
 	return 0

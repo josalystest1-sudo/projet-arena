@@ -57,5 +57,13 @@ func personnages(role: String, niveau: int, n: int) -> Array:
 	return Serveur.plus_proches(du_role, niveau, n)
 
 
+func selectionner(id: String) -> bool:
+	var faites: Dictionary = profile.serveur.get("selections_faites", {})
+	faites[id] = int(faites.get(id, 0)) + 1
+	profile.serveur["selections_faites"] = faites
+	profile.save()
+	return true
+
+
 func nombre_personnages() -> int:
 	return joueurs.size() + (1 if profile.serveur.has("fiche") else 0)

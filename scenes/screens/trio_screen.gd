@@ -1,6 +1,8 @@
 ## Composer son trio (docs/GDD_V2.md, § 5 et § 11) : un seul écran pour tous les modes. Ta case, puis tes deux Échos
-## (un de chacun des deux autres rôles), proposés par le jeu à ton niveau : leur fiche (classe, niveau, voies, comment
-## ils jouent, les Synergies possibles avec toi) et « Un autre Écho ». Amis et guilde viendront avec le serveur.
+## (un de chacun des deux autres rôles) : leur fiche (classe, niveau, voies, comment ils jouent, les Synergies
+## possibles avec toi) et « Changer d'Écho », qui propose les personnages d'autres joueurs autour de ton niveau
+## (le serveur, PR 5.2 : ils jouent à leur vrai niveau) ou un Écho proposé par le jeu, à ton niveau. Amis et guilde
+## viendront ensuite.
 ## options : « mode » = « duel » (amical), « classe » (un combat classé de l'Arène) ou « tour » : le bouton du bas lance
 ## ce mode ; sans mode, les deux.
 extends Control
@@ -30,7 +32,7 @@ func _construire() -> void:
 		_carte(column, app.echos[i], str(app.echos_choisis[roles[i]]["nom"]), UiKit.ACOLYTE_BLUE, roles[i])
 	var plus := UiKit.card(column, 2)
 	plus.add_child(UiKit.label("Amis et guilde", 18, UiKit.SOFT, false))
-	plus.add_child(UiKit.label("Ton compte existe (voir ton profil) : à la prochaine étape, les personnages des autres joueurs pourront compléter ton trio, à leur vrai niveau, trois aides par jour.", 14, UiKit.SOFT, false))
+	plus.add_child(UiKit.label("Les personnages des autres joueurs peuvent déjà compléter ton trio (« Changer d'Écho »). Tes amis et ta guilde, à leur vrai niveau et trois aides par jour, viendront avec la suite du serveur.", 14, UiKit.SOFT, false))
 	column.add_child(UiKit.spacer(4))
 	if mode in ["", "duel", "classe"]:
 		var classe := mode == "classe"
@@ -59,7 +61,9 @@ func _carte(parent: VBoxContainer, d: Destin, nom: String, couleur: Color, role:
 	texte.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ligne.add_child(texte)
 	texte.add_child(UiKit.label(nom, 22, couleur, false))
-	texte.add_child(UiKit.label("%s · niveau %d%s" % [app.class_label(d.classe_id), app.profile.level, "" if role == "" else " · proposé par le jeu"], 15, UiKit.SOFT, false))
+	var reel := role != "" and app.echo_reel(role)
+	var niveau := int(app.echos_choisis[role]["fiche"]["niveau"]) if reel else app.profile.level
+	texte.add_child(UiKit.label("%s · niveau %d%s" % [app.class_label(d.classe_id), niveau, "" if role == "" else (" · personnage d'un autre joueur" if reel else " · proposé par le jeu")], 15, UiKit.SOFT, false))
 	var voies: Array[String] = []
 	for v in d.voies:
 		voies.append(str(v["nom"]).trim_prefix("Voie ").trim_prefix("du ").trim_prefix("de la ").trim_prefix("de l'").trim_prefix("des "))
@@ -68,10 +72,48 @@ func _carte(parent: VBoxContainer, d: Destin, nom: String, couleur: Color, role:
 		return
 	var syn := synergies_possibles(app.destin, d)
 	carte.add_child(UiKit.label("Avec toi : " + (", ".join(syn) if not syn.is_empty() else "pas de Synergie possible"), 15, UiKit.GOLD if not syn.is_empty() else UiKit.SOFT, false))
-	carte.add_child(UiKit.button("Un autre Écho %s" % UiKit.ROLE_LABELS[role], func():
+	var porte: Array = []
+	porte.append(UiKit.button("Changer d'Écho %s" % UiKit.ROLE_LABELS[role], func():
+		app.sfx.play("clic")
+		_ouvrir_choix(role, carte, porte[0]), 48, 16))
+	carte.add_child(porte[0])
+
+
+## Le choix d'un Écho pour ce rôle, dans sa carte : jusqu'à trois personnages d'autres joueurs autour de ton niveau
+## (le serveur), chacun avec « Prendre », et un Écho proposé par le jeu.
+func _ouvrir_choix(role: String, carte: VBoxContainer, bouton: Button) -> void:
+	bouton.disabled = true
+	var boite := UiKit.card(carte, 4)
+	boite.add_child(UiKit.label("Des personnages d'autres joueurs, autour de ton niveau (ils jouent à leur vrai niveau) :", 14, UiKit.SOFT, false))
+	var fiches: Array = await app.serveur.personnages(role, app.profile.level, 3)
+	if not is_inside_tree():
+		return
+	var actuel := str(app.echos_choisis[role].get("fiche", {}).get("id", ""))
+	var proposes := 0
+	for f in fiches:
+		if str(f["id"]) == actuel:
+			continue
+		proposes += 1
+		var d := Serveur.destin_de(f, app.data)
+		var ligne := HBoxContainer.new()
+		ligne.add_theme_constant_override("separation", 8)
+		boite.add_child(ligne)
+		var texte := VBoxContainer.new()
+		texte.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		ligne.add_child(texte)
+		texte.add_child(UiKit.label("%s · %s · niveau %d" % [f["pseudo"], app.class_label(str(f["classe"])), int(f["niveau"])], 15, Color.WHITE, false))
+		var syn := synergies_possibles(app.destin, d)
+		texte.add_child(UiKit.label("Avec toi : " + (", ".join(syn) if not syn.is_empty() else "pas de Synergie"), 13, UiKit.SOFT, false))
+		ligne.add_child(UiKit.button("Prendre", func():
+			app.sfx.play("releve")
+			app.choisir_echo_reel(role, f)
+			_construire(), 44, 15))
+	if proposes == 0:
+		boite.add_child(UiKit.label("Personne d'autre autour de ton niveau pour l'instant%s." % ((" (" + app.serveur.erreur + ")") if app.serveur.erreur != "" else ""), 14, UiKit.SOFT, false))
+	boite.add_child(UiKit.button("Un Écho proposé par le jeu, à ton niveau", func():
 		app.sfx.play("clic")
 		app.changer_echo(role)
-		_construire(), 48, 16))
+		_construire(), 44, 15))
 
 
 ## Les Synergies (section 8 de la spécification du combat) que deux roues peuvent faire ensemble, d'après les effets de

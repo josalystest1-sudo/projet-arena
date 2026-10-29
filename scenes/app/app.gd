@@ -60,8 +60,9 @@ var player_class: String = ""
 var graine: int = 0
 ## Les nœuds allumés par le joueur, dans l'ordre (« v2.n2 », « v1.e1 »…), un par niveau ; les N1 le sont d'office.
 var allumage: Array[String] = []
-## Les deux Échos : leur rôle, leur graine et leur nom (« front », « degats » ou « soutien » -> { graine, nom }), et
-## leurs roues, dans l'ordre Front, Dégâts, Soutien.
+## Les deux Échos : leur rôle, leur graine et leur nom (« front », « degats » ou « soutien » -> { graine, nom }) ; un
+## vrai Écho (PR 5.2 : le personnage d'un autre joueur, pris sur le serveur) porte en plus sa `fiche` (classe, graine,
+## niveau, nœuds allumés, équipement : il joue à son vrai niveau) ; et leurs roues, dans l'ordre Front, Dégâts, Soutien.
 var echos_choisis: Dictionary = {}
 var echos: Array[Destin] = []
 ## Les deux roues, regénérées depuis la graine, le niveau et les nœuds allumés.
@@ -211,7 +212,11 @@ func charger_perso() -> bool:
 		allumage.append(str(cle))
 	echos_choisis = {}
 	for role in saved.get("echos", {}):
-		echos_choisis[str(role)] = {"graine": int(saved["echos"][role]["graine"]), "nom": str(saved["echos"][role]["nom"])}
+		var e: Dictionary = saved["echos"][role]
+		var choix := {"graine": int(e["graine"]), "nom": str(e["nom"])}
+		if e.get("fiche") is Dictionary and Serveur.fiche_valide(e["fiche"], data) and str(e["fiche"]["role"]) == str(role):
+			choix["fiche"] = e["fiche"].duplicate(true)
+		echos_choisis[str(role)] = choix
 	_completer_echos()
 	_regenerer()
 	sauver_perso()
@@ -245,7 +250,11 @@ func _regenerer() -> void:
 	destin.mods = Equipement.mods(objets_portes(), data)
 	echos.clear()
 	for role in Trio.roles_des_echos(player_class, data):
-		echos.append(Trio.echo(role, int(echos_choisis[role]["graine"]), profile.level, data))
+		var choix: Dictionary = echos_choisis[role]
+		if choix.has("fiche"):
+			echos.append(Serveur.destin_de(choix["fiche"], data))
+		else:
+			echos.append(Trio.echo(role, int(choix["graine"]), profile.level, data))
 
 
 func sauver_perso() -> void:
@@ -306,6 +315,24 @@ func create_character(class_id: String) -> void:
 	_completer_echos()
 	_regenerer()
 	sauver_perso()
+
+
+## Prendre le personnage d'un autre joueur comme Écho de ce rôle (GDD V2, § 5) : sa fiche, telle que le serveur la
+## donne ; il joue à son vrai niveau, avec ses nœuds et son équipement. Le serveur note la sélection. Faux si la
+## fiche ne convient pas (rôle, classe, clés).
+func choisir_echo_reel(role: String, fiche: Dictionary) -> bool:
+	if not role in Trio.roles_des_echos(player_class, data) or str(fiche.get("role", "")) != role or not Serveur.fiche_valide(fiche, data):
+		return false
+	echos_choisis[role] = {"graine": int(str(fiche["graine"])), "nom": str(fiche["pseudo"]), "fiche": fiche.duplicate(true)}
+	serveur.selectionner(str(fiche["id"]))
+	_regenerer()
+	sauver_perso()
+	return true
+
+
+## L'Écho de ce rôle est-il le personnage d'un autre joueur ?
+func echo_reel(role: String) -> bool:
+	return echos_choisis.get(role, {}).has("fiche")
 
 
 ## Un autre Écho proposé par le jeu pour ce rôle (une autre classe du rôle, peut-être, et un autre nom).
