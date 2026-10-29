@@ -1,6 +1,6 @@
 # Projet Arena — GDD V2 : le trio, les Échos, la Tour infinie, les donjons et les guildes
 
-Rédigé le 29 octobre 2026 à partir des décisions prises avec Gautier ce jour-là (version 2.1, après ses réponses aux premières questions). **Ce document remplace le GDD V1 (`docs/GDD.md`) sur tout ce qu'il traite** ; le V1 reste la référence pour ce qu'il ne traite pas (les tableaux de compétences des 10 classes, les trois pistes d'univers, l'écran de création, les évolutions de base). En cas de contradiction, le V2 l'emporte. `CLAUDE.md` résume l'état du prototype ; `docs/MECANIQUES.md` liste toutes les mécaniques de combat.
+Rédigé le 29 octobre 2026 à partir des décisions prises avec Gautier ce jour-là (version 2.2 : économie et risques de guilde validés au soir ; le plan de développement est dans `docs/PLAN.md`). **Ce document remplace le GDD V1 (`docs/GDD.md`) sur tout ce qu'il traite** ; le V1 reste la référence pour ce qu'il ne traite pas (les tableaux de compétences des 10 classes, les trois pistes d'univers, l'écran de création, les évolutions de base). En cas de contradiction, le V2 l'emporte. `CLAUDE.md` résume l'état du prototype ; `docs/MECANIQUES.md` liste toutes les mécaniques de combat.
 
 Chaque règle porte une étiquette : **[Décidé]** (validé par Gautier), **[Proposé]** (choix de Claude Code là où Gautier a demandé de décider ou n'a rien dit ; on construit ça tel quel sauf correction), **[Ouvert]** (rien à construire avant la réponse).
 
@@ -29,7 +29,7 @@ Modifiées le 29 octobre :
 - **Le duo joueur + acolyte est remplacé par le trio joueur + 2 Échos.** Plus d'acolyte fixe, plus d'écran de rencontre. **[Décidé]**
 - **« Aucune limite de parties »** devient : **5 combats PvP classés par jour** (asynchrone) et le synchrone classé limité aussi ; le PvE n'a aucune limite. **[Décidé]**
 - **« La classe est fixe hors Évolution »** devient : **la classe change par Évolution (deux rangs) ou par grimoire de classe** ; changer de classe garde le niveau et donne un tout nouveau Destin. **[Décidé]**
-- **Pas d'inflation** : aucune monnaie dont la valeur peut fondre avec le temps (voir § 10). **[Décidé]**
+- **Pas d'inflation, pas de bots vendeurs d'or** : l'or ne vient que de la vente d'objets de chance ; les joueurs fixent leurs prix dans une fourchette ; aucun canal de transfert hors Marché (voir § 10.2). **[Décidé]**
 
 ## 3. Les classes
 
@@ -111,7 +111,7 @@ Modifiées le 29 octobre :
 
 - Plusieurs donjons ouverts en même temps, **un par tranche de niveau**, communs au serveur ; on y va avec sa guilde, ses amis ou des inconnus. **[Décidé]** Ils sont placés sur la carte du monde, avec leur niveau. **[Décidé]**
 - Un donjon est un arbre de routes : **trois portes** à chaque embranchement ; une route fait X combats ; au bout, **un élite**, sauf sur une seule route : **le boss**. Après chaque vague, le trio **vote** la porte suivante (majorité ; trois votes différents : celui qui a le plus de routes explorées tranche). **[Décidé ; départage : Proposé]**
-- Entrer coûte de la monnaie (une part va à la guilde qui tient le territoire, § 9). Pas de limite de tours, abandon libre.
+- Entrer coûte des Éclats (une part va à la guilde qui tient le territoire, § 9). Pas de limite de tours, abandon libre.
 
 ### 8.2 Les portes sans nom
 
@@ -161,6 +161,18 @@ Modifiées le 29 octobre :
 - Les membres ne peuvent pas être partout : 3 combats chacun, répartis entre les batailles du soir par les officiers. Une grande guilde attaque large mais défend mince ; une petite se concentre. C'est le frein à la boule de neige.
 - Le **foyer** d'une guilde est imprenable. Une guilde sans territoire garde son foyer et peut toujours attaquer un voisin neutre.
 
+### 9.4 Les risques du système de guilde et leurs réponses **[Décidé le 29 octobre au soir]**
+
+- **Personne ne se connecte pendant la guerre** → **la défense est automatique** : les défenseurs sont les personnages de la guilde pilotés par l'IA ; les membres qui jouent *ajoutent* au score. Les attaques sont optionnelles (3 combats par soir, dix minutes).
+- **Trop de territoires pour trop peu de guildes** → la carte **grandit et rétrécit avec la population** : des régions s'ouvrent quand des guildes se créent, se ferment quand elles meurent. Jamais de carte fixe.
+- **Fuseaux horaires** → un serveur par grande région ; la fenêtre du soir est celle du serveur.
+- **Guildes mortes** → un territoire sans aucun combat de guerre pendant 7 jours redevient neutre.
+- **Boule de neige, grosses alliances** → attaques limitées par la taille, 3 combats par membre, un même personnage ne défend pas plus de 3 fois par bataille, récompenses par membre, ligues de guilde par taille, remise à zéro chaque saison ; les alliances sont officielles et limitées à deux guildes (pour les boss).
+- **Guildes-miroirs** (une grosse guilde divisée pour tripler ses attaques) → pas de parade parfaite ; une guilde de moins de 10 membres actifs ne peut pas attaquer un territoire tenu, et le foyer ne se déplace pas.
+- **Échange de victoires** → impossible : les combats de guerre sont contre des IA, on ne peut pas « se laisser battre ».
+- **Ceux qui n'aiment pas la guerre** → les donjons, la carte, les Échos de guilde, le chat et les bonus de territoire ne demandent aucun combat de guerre. La guerre est une couche, pas une obligation.
+- **Faisabilité** → le combat de guerre est le combat de trio asynchrone ; ce qui coûte, c'est la carte et ses règles. Construit en dernier, testé avec une petite communauté avant d'en faire le cœur du jeu.
+
 ## 10. L'équipement et l'économie
 
 ### 10.1 L'équipement
@@ -170,17 +182,20 @@ Modifiées le 29 octobre :
 - **D'où il vient** **[Décidé dans le principe ; détail : Proposé]** :
   - **Les donjons** : le plus puissant (élites : épiques ; boss : légendaires).
   - **La Tour, en solo** : chaque étage lâche un objet de son niveau (commun à rare ; épique aux Gardiens) ; les étages rejoués depuis un palier en lâchent encore, moins souvent. Comme la Tour est infinie, l'équipement de la Tour n'a pas de plafond : un joueur bloqué refait ses étages et s'équipe. **Personne n'est bloqué en équipement parce qu'il ne trouve pas de groupe.**
-  - **Le coffre hebdomadaire du PvP**, **les territoires**, **le Comptoir** (§ 10.2) où l'on achète du commun et du rare à prix fixe.
-- **Reforge** d'une ligne contre de la monnaie, coût croissant. **[Proposé]**
+  - **Le coffre hebdomadaire du PvP**, **les territoires**, **le Marché** (§ 10.2).
+- **Lié ou échangeable** : un objet est **échangeable** seulement s'il vient d'un **premier passage** (un étage de la Tour franchi pour la première fois, un Gardien la première fois) ou d'un **donjon** (élite, boss). Tout objet d'un étage rejoué, du coffre PvP ou d'un territoire est **lié** au personnage. Un objet échangeable devient lié dès qu'on l'équipe. **[Décidé]**
+- **Reforge** d'une ligne contre des Éclats, coût croissant. **[Décidé]**
 
-### 10.2 La monnaie, sans inflation **[Proposé, Gautier a demandé de réfléchir]**
+### 10.2 L'économie : prix libres, or impossible à fabriquer **[Décidé le 29 octobre au soir]**
 
-Le problème : si le jeu distribue de la monnaie chaque jour et que les joueurs fixent les prix entre eux, les prix montent sans fin. La solution : **les joueurs ne fixent jamais un prix.**
-- **Une seule monnaie**, les **Éclats**, gagnée en jouant (Tour, revenu passif, sélections, routes, donjons, territoires), **plafonnée par jour** (les robinets sont connus et bornés).
-- **Le Comptoir** remplace l'hôtel des ventes à enchères : les joueurs y **vendent et achètent à des prix fixés par le jeu**, calculés par niveau, rareté et qualité de l'objet (une table, pas une enchère). Un objet rare de niveau 20 à 70 % de qualité vaut toujours le même prix. Pas d'enchère, pas de surenchère, donc pas d'inflation : la demande se voit dans la disponibilité (« vendu »), pas dans le prix.
-- **Des puits plus grands que les robinets** : la reforge (coût croissant), l'entrée des donjons, une **taxe de 15 % détruite** sur chaque vente au Comptoir, les améliorations de guilde, les cosmétiques. Le jeu mesure chaque semaine ce qui entre et ce qui sort ; si les réserves des joueurs gonflent, les puits montent (par exemple la taxe), jamais les prix.
-- **Le gel des grosses réserves** : au-delà d'un plafond de réserve, les Éclats ne s'accumulent plus (le surplus va dans le coffre de guilde). Personne ne peut thésauriser.
-- Les objets restent **liés au personnage une fois équipés** ; avant, ils se vendent au Comptoir. **[Proposé]**
+Trois volontés de Gautier, compatibles : celui qui a eu la chance d'un grand objet peut le vendre au prix qu'il veut et devenir riche ; aucun bot vendeur d'or, aucun farm automatique pour transférer de l'or à un tricheur ; aucune inflation (pas de monnaie distribuée à tour de bras qui rend tout exorbitant).
+
+- **Deux monnaies.** Les **Éclats**, **liés** (jamais échangeables) : c'est ce que donnent la Tour, les monstres, les duels, les sélections d'Écho, les routes, le revenu passif ; ils paient la reforge, les entrées de donjon, les améliorations de guilde. L'**Or**, **échangeable** : **il ne tombe jamais du contenu**. La seule façon d'avoir de l'or, c'est de **vendre un objet échangeable** (au Marché, à un autre joueur ; ou au Comptoir, au prix plancher fixé par le jeu). Un bot qui farm en boucle gagne des Éclats qu'il ne peut donner à personne, et des objets liés.
+- **L'or naît de la chance et meurt à la vente.** Les objets échangeables sont bornés par compte (premiers passages, donjons à trois humains avec entrée en Éclats et vote) ; chaque vente détruit **15 % de taxe** ; les cosmétiques et certains services s'achètent en or. L'or entre lentement, sort à chaque échange : pas de robinet à farmer, donc pas d'inflation. Les objets rares seront chers parce qu'ils sont rares, pas parce que tout le monde est riche.
+- **Le Marché** (l'hôtel des ventes) : le vendeur fixe **le prix qu'il veut**, dans une **fourchette autorisée** calculée par le jeu d'après la rareté, le niveau et la qualité du tirage : très large pour un bon légendaire (de 1 à 500 fois son prix plancher), étroite pour un objet quelconque. **Un objet de rien ne peut pas être mis à un prix exorbitant** : c'est ce qui tue le transfert d'or vers un tricheur. Les annonces sont **anonymes** et vont au **premier acheteur** : impossible de réserver une vente à un complice.
+- **Aucun autre canal** : pas d'échange direct, pas de don, pas d'envoi d'or, pas de retrait d'or de la banque de guilde (la guilde dépense, les membres ne retirent pas). Le Marché s'ouvre au **niveau 15 et après 7 jours** de compte. Un réseau de bots devrait faire des premiers passages avec des comptes mûrs, dont chaque objet vendu perd 15 % et reste dans sa fourchette : ça ne vaut plus le coup.
+- **Le Comptoir** achète tout objet échangeable au prix plancher (c'est le seul « robinet » d'or, borné par la chance) et vend du commun et du rare liés contre des Éclats.
+- Le jeu mesure chaque semaine l'or qui entre et qui sort ; si les réserves gonflent, la taxe monte, jamais les fourchettes.
 
 ### 10.3 Progression
 
@@ -204,9 +219,9 @@ Le problème : si le jeu distribue de la monnaie chaque jour et que les joueurs 
 **Ordre** (chaque bloc doit être amusant seul avant le suivant) :
 1. **Le trio avec Échos générés** : composition par rôle, annonces en chaîne, Synergies avec les deux, IA de bon sens et tableau des erreurs, adversaire opaque, écran de composition du trio ; retrait de l'acolyte fixe et de la rencontre ; Soutiens « toujours utiles » et geste de classe ; rééquilibrage (duel 3v3, Tour en trio).
 2. **La Tour infinie** : étages générés, paliers, rejouer depuis un palier, sans limite de tours, soins des monstres qui s'affaiblissent, Faveurs, revenu passif ; réglage « à quel niveau on passe tel étage ».
-3. **L'équipement** : données, Forge (inventaire, fiche, comparaison, reforge), butin de la Tour, Comptoir à prix fixes (en local d'abord), passe de simulateur sur les lignes.
+3. **L'équipement** : données, Forge (inventaire, fiche, comparaison, reforge), butin de la Tour (lié / échangeable), Éclats, passe de simulateur sur les lignes.
 4. **La ville** et la navigation en portrait, les objectifs du jour.
-5. **Serveur et comptes** : vrais Échos, récompenses de sélection, PvP asynchrone classé, chat, Comptoir en ligne, classements, saisons.
+5. **Serveur et comptes** : vrais Échos, récompenses de sélection, PvP asynchrone classé, chat, Marché et Comptoir (or, fourchettes, taxe, anonymat, seuils de compte), classements, saisons.
 6. **Guildes et donjons à routes** : Influence, rôles, bannière, carte du monde, portes sans nom, cartes, fragments, élites, boss unique et ses paliers, coup final de guilde, grimoires, appel.
 7. **Territoires et guerres du soir**, classement de guilde, ligues de guilde.
 8. **Évolutions de rang 1 et 2, classes de grimoire** (30 + 90 + les grimoires : le plus gros chantier de contenu), PvP synchrone à 6, art, boutique, bêta, lancement.
@@ -214,6 +229,6 @@ Le problème : si le jeu distribue de la monnaie chaque jour et que les joueurs 
 ## 13. Questions encore ouvertes
 
 1. **L'univers et le nom** : à décider ensemble, plus tard (nécessaires pour l'histoire des bannières, des Échos et des boss, et pour les noms des 120 classes).
-2. **La guerre de guilde (§ 9.3), les types de territoire (§ 9.2), le Comptoir à prix fixes (§ 10.2), les ligues par puissance (§ 7)** : décidés par Claude Code à la demande de Gautier, à confirmer à la lecture.
+2. **La guerre de guilde (§ 9.3), les types de territoire (§ 9.2), les ligues par puissance (§ 7)** : décidés par Claude Code à la demande de Gautier, validés dans le principe le 29 octobre au soir (« on adaptera en conséquence »).
 3. **Le niveau de la seconde Évolution** (60 ?) et ce qu'il advient du niveau au-delà de 90.
 4. **Qui reçoit le grimoire** dans le trio vainqueur : tirage visible, ou une règle (celui qui a exploré le plus, celui qui n'en a pas) ?
