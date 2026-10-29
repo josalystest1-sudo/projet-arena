@@ -63,7 +63,7 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 - Tests : chaque règle sur une situation construite (un ennemi à 30 PV et une moyenne qui tue → la moyenne, pas la forte ; tous les ennemis étourdis → pas de protection).
 - **Critère** : erreurs rares (objectif de départ : moins de 3 pour 100 tours et par rôle, à affiner), et le taux de victoire des trios ne baisse pas.
 
-**PR 1.3 — Les Soutiens toujours utiles, le geste de classe**
+**PR 1.3 — Les Soutiens toujours utiles, le geste de classe** (**faite**, PR #55 : Soutiens presque sans dégâts, voir le GDD V2 § 4.4 et le journal)
 - `data/skills.json` : replis (Résurrection → bénédiction, Purification → immunité, Catalyseur → Vif), au plus une compétence qui frappe par Soutien (revoir Châtiment, Acide, Trait d'ombre, Hymne : lesquelles restent offensives), basiques d'une même classe sur un même élément (le geste), `data/classes.json` : le geste de chaque classe.
 - `engine/combat_ai.gd` : le rôle Soutien ne « frappe sinon » plus : renforcer le Dégâts, affaiblir l'ennemi. Le Front suit la même logique.
 - Tests : chaque compétence de Soutien a un effet quand personne n'est blessé ; chaque classe a un geste ; l'IA Soutien ne frappe jamais quand un renfort ou un affaiblissement est jouable.

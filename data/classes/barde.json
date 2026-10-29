@@ -24,8 +24,7 @@
           "nom": "Hymne",
           "genre": "m",
           "effets": [
-            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "un_allie"},
-            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
           ]
         },
         {
@@ -33,8 +32,7 @@
           "nom": "Marche",
           "genre": "f",
           "effets": [
-            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"},
-            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+            {"type": "renfort", "pourcent": 38.46, "tours": 2, "cible": "duo"}
           ]
         },
         {
@@ -67,8 +65,7 @@
           "nom": "Complainte",
           "genre": "f",
           "effets": [
-            {"type": "affaiblissement", "pourcent": 25, "tours": 2, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+            {"type": "affaiblissement", "pourcent": 35, "tours": 2, "cible": "un_ennemi"}
           ]
         },
         {
@@ -76,8 +73,7 @@
           "nom": "Lamentation",
           "genre": "f",
           "effets": [
-            {"type": "affaiblissement", "pourcent": 20, "tours": 2, "cible": "tous_les_ennemis"},
-            {"type": "degats", "valeur": 37, "cible": "tous_les_ennemis"}
+            {"type": "affaiblissement", "pourcent": 38.46, "tours": 2, "cible": "tous_les_ennemis"}
           ]
         },
         {
@@ -86,8 +82,7 @@
           "genre": "f",
           "effets": [
             {"type": "dissipe", "cible": "un_ennemi"},
-            {"type": "affaiblissement", "pourcent": 30, "tours": 2, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+            {"type": "affaiblissement", "pourcent": 45, "tours": 2, "cible": "un_ennemi"}
           ]
         },
         {
@@ -97,7 +92,7 @@
           "effets": [
             {"type": "affaiblissement", "pourcent": 40, "tours": 2, "cible": "tous_les_ennemis"},
             {"type": "etat", "nom": "desarme", "tours": 1, "cible": "tous_les_ennemis"},
-            {"type": "degats", "valeur": 37, "cible": "tous_les_ennemis"}
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "tous_les_ennemis"}
           ]
         }
       ]
@@ -113,7 +108,7 @@
           "genre": "f",
           "effets": [
             {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 25, "cible": "un_ennemi"}
+            {"type": "affaiblissement", "pourcent": 12.5, "tours": 2, "cible": "un_ennemi"}
           ]
         },
         {
@@ -122,7 +117,7 @@
           "genre": "m",
           "effets": [
             {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+            {"type": "affaiblissement", "pourcent": 10, "tours": 2, "cible": "un_ennemi"}
           ]
         },
         {
@@ -131,7 +126,7 @@
           "genre": "f",
           "effets": [
             {"type": "egare", "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"}
           ]
         },
         {
@@ -141,7 +136,7 @@
           "effets": [
             {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
             {"type": "etat", "nom": "silencie", "tours": 2, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+            {"type": "affaiblissement", "pourcent": 10, "tours": 2, "cible": "un_ennemi"}
           ]
         }
       ]
