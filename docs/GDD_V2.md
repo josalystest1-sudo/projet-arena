@@ -1,212 +1,219 @@
-# Projet Arena — GDD V2 : le trio, les Échos, la Tour fixe, les donjons et les guildes
+# Projet Arena — GDD V2 : le trio, les Échos, la Tour infinie, les donjons et les guildes
 
-Rédigé le 29 octobre 2026 à partir des décisions prises avec Gautier ce jour-là. **Ce document remplace le GDD V1 (`docs/GDD.md`) sur tout ce qu'il traite** ; le V1 reste la référence pour ce qu'il ne traite pas (les tableaux de compétences des 10 classes, les trois pistes d'univers, les écrans de création et de combat, les évolutions). En cas de contradiction, le V2 l'emporte. `CLAUDE.md` résume l'état du prototype ; `docs/MECANIQUES.md` liste toutes les mécaniques de combat.
+Rédigé le 29 octobre 2026 à partir des décisions prises avec Gautier ce jour-là (version 2.1, après ses réponses aux premières questions). **Ce document remplace le GDD V1 (`docs/GDD.md`) sur tout ce qu'il traite** ; le V1 reste la référence pour ce qu'il ne traite pas (les tableaux de compétences des 10 classes, les trois pistes d'univers, l'écran de création, les évolutions de base). En cas de contradiction, le V2 l'emporte. `CLAUDE.md` résume l'état du prototype ; `docs/MECANIQUES.md` liste toutes les mécaniques de combat.
 
-Chaque règle porte une étiquette : **[Décidé]** (validé par Gautier), **[Proposé]** (choix de Claude Code, à confirmer ou corriger par Gautier ; en attendant, c'est ce qu'on construit), **[Ouvert]** (question posée à la fin, rien à construire avant la réponse).
+Chaque règle porte une étiquette : **[Décidé]** (validé par Gautier), **[Proposé]** (choix de Claude Code là où Gautier a demandé de décider ou n'a rien dit ; on construit ça tel quel sauf correction), **[Ouvert]** (rien à construire avant la réponse).
 
 ---
 
-## 1. Le jeu en dix lignes
+## 1. Le jeu en douze lignes
 
-- RPG mobile en pixel art, tour par tour **simultané** (12 s pour choisir, résolution par ordre de vitesse), **sans aucun hasard en combat**.
-- **Un seul personnage par compte**, d'une des 10 classes, avec un **Destin** unique (arbre de 45 nœuds, 30 points, un point par niveau) qui fixe ses 3 compétences, son passif et ses bonus. Le joueur ne joue jamais que lui. **[Décidé]**
+- RPG mobile en pixel art, **tout en mode portrait**, tour par tour **simultané** (12 s pour choisir, résolution par ordre de vitesse), **sans aucun hasard en combat**. **[Décidé]**
+- **Un seul personnage par compte**, avec un **Destin** unique (arbre de 45 nœuds, 30 points, un point par niveau). Le joueur ne joue jamais que lui. **[Décidé]**
+- **10 classes de base**, chacune avec **3 évolutions**, chacune avec **3 évolutions de second rang** (10 + 30 + 90), plus des **classes de grimoire** (rares, épiques, légendaires) obtenues sur les boss de donjon. **[Décidé]**
 - **On joue toujours en trio** Front + Dégâts + Soutien : le joueur occupe la case de son rôle principal, les deux autres sont des **Échos**, des personnages de vrais joueurs pilotés par l'IA. Le joueur ne leur donne jamais d'ordre. **[Décidé]** (Remplace le duo joueur + acolyte du V1.)
-- **La Tour** (solo en trio, fixe, sans remise à zéro), **le PvP** (trio contre trio, 5 combats classés par jour), **les donjons** (3 joueurs humains, routes secrètes, boss unique au serveur), **les guildes** (combats du soir, territoires) : voir les sections 4 à 8.
-- Les **Soutiens** n'ont pas besoin de faire des dégâts : chacune de leurs compétences est utile même quand personne n'est blessé. **[Décidé]**
-- **L'équipement** crée les écarts de puissance ; la base (classe, Destin) est équilibrée au maximum ; ni l'un ni l'autre ne crée de méta. **[Décidé]**
-- **Évolution** au niveau 30 : choix parmi 3, puissance ×2,5, nouveau Destin. Deux ligues : Aspirants et Élus.
+- **La Tour** est **infinie**, fixe, sans remise à zéro : le concours est à qui monte le plus haut. **[Décidé]**
+- **Le PvP** : trio contre trio, asynchrone (5 classés par jour) et synchrone à 6 humains. **[Décidé]**
+- **Les donjons** : 3 joueurs humains, routes secrètes impossibles à écrire, boss unique au serveur. **[Décidé]**
+- **Les guildes** : jusqu'à 100 membres, guerres du soir, territoires sur la carte du monde, ressource de guilde, classement. **[Décidé]**
+- Les **Soutiens** n'ont pas besoin de faire des dégâts. **[Décidé]**
+- **L'équipement** crée les écarts de puissance ; la base est équilibrée au maximum ; ni l'un ni l'autre ne crée de méta. **[Décidé]**
 - Financement par **cosmétiques uniquement**. Jamais de puissance vendue. **[Décidé]**
-- La Tour doit être **difficile par moments** : on y est bloqué, on revient plus fort. **[Décidé]**
-- L'IA est **prévisible plutôt que brillante**, mais jamais bête : des règles fixes, mesurées au simulateur.
+- L'IA est **prévisible plutôt que brillante**, mais jamais bête.
 
 ## 2. Décisions verrouillées (ne pas rouvrir sans Gautier)
 
-Inchangées : duo… remplacé par le trio (voir ci-dessous) ; pas de Garde/Brèche, pas de Tempo, pas de mana, pas de timing en temps réel, pas de pierre-feuille-ciseaux, pas de hasard en combat, Destin non modifiable, un seul personnage par compte, jamais de puissance vendue, moteur de règles pur et testé, données en fichiers.
+Inchangées : pas de Garde/Brèche, pas de Tempo, pas de mana, pas de timing en temps réel, pas de pierre-feuille-ciseaux, pas de hasard en combat, Destin non modifiable (on ne retire jamais un point), un seul personnage par compte, jamais de puissance vendue, moteur de règles pur et testé, données en fichiers.
 
 Modifiées le 29 octobre :
 - **Le duo joueur + acolyte est remplacé par le trio joueur + 2 Échos.** Plus d'acolyte fixe, plus d'écran de rencontre. **[Décidé]**
-- **« Aucune limite de parties »** devient : **5 combats PvP classés par jour** (valeur modulable), les combats amicaux restent illimités. Le PvE n'a aucune limite. **[Décidé pour le PvP ; amicaux illimités : Proposé]**
-- **La classe est fixe hors Évolution** : maintenue. La récompense « grimoire de changement de classe » évoquée pour les boss est donc à remplacer (voir § 7.6). **[Ouvert]**
+- **« Aucune limite de parties »** devient : **5 combats PvP classés par jour** (asynchrone) et le synchrone classé limité aussi ; le PvE n'a aucune limite. **[Décidé]**
+- **« La classe est fixe hors Évolution »** devient : **la classe change par Évolution (deux rangs) ou par grimoire de classe** ; changer de classe garde le niveau et donne un tout nouveau Destin. **[Décidé]**
+- **Pas d'inflation** : aucune monnaie dont la valeur peut fondre avec le temps (voir § 10). **[Décidé]**
 
-## 3. Le combat
+## 3. Les classes
 
-### 3.1 Règles (inchangées, rappel)
+- **10 classes de base** (Guerrier, Mage, Voleur, Archer, Prêtre, Alchimiste, Invocateur, Barde, Diplomate, Pugiliste ; rôles Front / Dégâts / Soutien). Kits : 6 actives (2 par palier) + 4 passifs ; un Destin tire une active par palier + 1 passif.
+- **Évolution de rang 1** au niveau 30 : choix parmi 3 (30 classes), puissance ×2,5, nouveau Destin. **Évolution de rang 2** : choix parmi 3 pour chaque classe de rang 1 (90 classes), même saut. **[Décidé ; le niveau de la seconde Évolution : Proposé, 60]**
+- **Classes de grimoire** : rares, épiques, légendaires. **Sans évolution, uniques.** Obtenues seulement par un **grimoire de classe** lâché par un boss de donjon : très forte chance pour un rare, très faible pour un épique, quasi nulle pour un légendaire. Un seul grimoire par boss, donné à **un seul** membre du trio vainqueur, en plus des récompenses communes. **[Décidé]** Le membre qui le reçoit est tiré au sort devant les trois (un tirage visible, pas en combat). **[Proposé]**
+- **Puissance, sans méta** : une classe rare vaut une classe évoluée de rang 2 ; une épique est légèrement plus forte ; une légendaire légèrement plus forte qu'une épique. **[Décidé]** Pour que ça ne fasse pas de méta : chaque classe de grimoire a sa propre réserve de compétences et de Synergies, est réglée au simulateur comme les autres, et **joue dans la ligue de sa puissance** (voir § 6). **[Proposé]**
+- **Changer de classe** (Évolution ou grimoire) **garde le niveau et donne un tout nouveau Destin** de la nouvelle classe. **[Décidé]** Le nouveau Destin reçoit aussitôt autant de points à placer que le niveau le permet (30 au plus), pour que le joueur reconstruise son arbre ; les points suivants viennent des niveaux suivants. **[Proposé]**
+- **Le niveau continue** au-delà de 30 : 1–30 pour la classe de base, 31–60 pour le rang 1, 61–90 pour le rang 2 ; un grimoire se joue au niveau où on l'a reçu. **[Proposé]**
+- **Le geste de classe** : chaque classe a un geste constant quel que soit son Destin (ses deux basiques partagent un élément propre ; une forte est toujours une forte). Les conditions de boss ne parlent que de gestes, de paliers ou de rôles. **[Décidé]** Les classes évoluées et de grimoire ont aussi leur geste.
 
-- 12 s pour choisir, puis résolution par vitesse. 3 compétences à recharge : basique (sans recharge), moyenne (revient 2 tours après), forte (4 tours, jouable dès le tour 3). 1 passif. Les chiffres sont dans `data/`.
-- **PvP** : mort subite au tour 8 (soins ÷ 2, dégâts +50 % par tour), fin forcée à la fin du tour 13 (plus de PV totaux, puis plus de dégâts, puis le camp prioritaire). Jamais de match nul.
-- **PvE : aucune limite de tours.** Un combat peut durer 100 tours ; le joueur peut abandonner quand il veut. Les règles « les monstres s'épuisent au tour 12 » et « ils abandonnent au tour 24 » sont retirées. **[Décidé]** Pour que tout étage reste gagnable en un temps fini : un seul soigneur par étage, et **les soins et régénérations des monstres s'affaiblissent à chaque usage** (100, 75, 56…). Le simulateur garde un plafond technique (300 tours, compté comme un abandon) que le joueur ne voit jamais. **[Proposé]**
+## 4. Le combat
 
-### 3.2 Ce que le joueur voit de l'adversaire : rien, ou presque
+### 4.1 Règles (rappel)
 
-- **En combat, l'adversaire est opaque** : ni ses compétences, ni son Destin, ni ses recharges, ni son équipement. On le découvre en le regardant jouer, comme dans tous les RPG. Le joueur ne lit pas de fiche pendant un tour de 12 s. **[Décidé]**
-- Deux exceptions, parce que ce sont des signaux et non des informations à lire : **les icônes d'état** sur tous les personnages (poison, brûlure, marque, étourdi… avec le nombre de tours) ; **une lueur « forte prête »** sur un ennemi dont la grosse attaque est disponible (une lueur, pas un chiffre). **[Décidé]**
+- 12 s pour choisir, résolution par vitesse. Basique (sans recharge), moyenne (revient 2 tours après), forte (4 tours, dès le tour 3), 1 passif. Chiffres dans `data/`.
+- **PvP** : mort subite au tour 8 (soins ÷ 2, dégâts +50 % par tour), fin forcée au tour 13 (PV totaux, puis dégâts, puis camp prioritaire). Jamais de match nul.
+- **PvE : aucune limite de tours.** Un combat peut durer 100 tours ; le joueur abandonne quand il veut. Les règles « les monstres s'épuisent au tour 12 » et « ils abandonnent au tour 24 » sont retirées. **[Décidé]** Pour que tout combat reste gagnable : un seul soigneur par groupe de monstres, et **leurs soins et régénérations s'affaiblissent à chaque usage** (100, 75, 56…). Plafond technique du simulateur : 300 tours, compté comme un abandon, invisible au joueur. **[Proposé]**
+
+### 4.2 L'adversaire est opaque
+
+- En combat, on ne voit de l'adversaire ni ses compétences, ni son Destin, ni ses recharges, ni son équipement : on le découvre en le regardant jouer. **[Décidé]**
+- Deux exceptions, des signaux et non des informations à lire : **les icônes d'état** sur tous les personnages (avec le nombre de tours) et **une lueur « forte prête »** sur un ennemi dont la grosse attaque est disponible. **[Décidé]**
 - Après le combat, l'écran de fin peut résumer le Destin et le kit de l'adversaire. **[Proposé]**
-- Côté joueur, tout reste visible : ses recharges, celles de ses Échos (pastilles M et F), leurs annonces, les Synergies possibles.
-- À retirer du prototype : les pastilles de recharge sur les ennemis, le kit complet quand on les touche, le bandeau des sorts adverses.
+- Côté joueur, tout reste visible : ses recharges, celles de ses Échos, leurs annonces, les Synergies possibles.
+- À retirer du prototype : pastilles de recharge des ennemis, kit complet au toucher, bandeau des sorts adverses.
 
-### 3.3 Le trio et les annonces
+### 4.3 Le trio et les annonces
 
-- Au début des 12 s, **le premier Écho annonce** son action (et sa raison, en une ligne), puis **le second** en connaissant la première, puis **le joueur choisit** en connaissant les deux. Le joueur décide toujours en dernier et n'est jamais pris de court. **[Décidé]**
-- Les **Synergies** (un couple de compétences jouées le même tour, un effet unique par couple) valent entre le joueur et chacun de ses deux Échos. Les 63 Synergies existantes couvrent déjà toutes les paires de classes de rôles différents.
-- La règle d'attente de l'IA (garder sa forte un tour pour une Synergie au tour suivant, jamais deux) est conservée.
+- Au début des 12 s, **le premier Écho annonce** (action et raison), **puis le second** en connaissant la première, **puis le joueur choisit** en connaissant les deux. **[Décidé]**
+- Les **Synergies** valent entre le joueur et chacun de ses Échos (les 63 existantes couvrent toutes les paires de classes de rôles différents). La règle d'attente (garder sa forte un tour pour une Synergie, jamais deux) est conservée.
 
-### 3.4 Les Soutiens
+### 4.4 Les Soutiens
 
-- **Un Soutien n'a pas besoin de faire des dégâts.** Dans le trio il y a toujours un Dégâts et un Front : sa valeur, c'est les PV du trio (rendus, non perdus, ou coups ennemis en moins). **[Décidé]**
-- **Chaque compétence de Soutien a un effet utile même quand personne n'est blessé.** Celles qui ne l'ont pas reçoivent un repli : Résurrection → si personne n'est KO, elle bénit (le prochain coup mortel sur l'allié le laisse à 1 PV, une fois) ; Purification → s'il n'y a rien à retirer, elle immunise contre le prochain état négatif ; Catalyseur → si l'allié n'a aucune recharge en cours, il le rend Vif. **[Proposé]**
-- **Quatre façons d'être Soutien, qui se valent par des chemins différents** : le Prêtre **répare** (soigne, relève), l'Alchimiste **dure** (régénération, états qui durent, affaiblissements), le Barde **accélère** (le trio agit avant, recharges plus courtes, dégâts qui montent), le Diplomate **interdit** (trêve, chantage, détournement). Le simulateur règle leurs chiffres jusqu'à ce que tout trio, quel que soit son Soutien, aille aussi loin à la Tour et gagne autant en PvP. **[Décidé]**
-- Les Soutiens gardent **au plus une** compétence qui frappe dans leur réserve de six ; un Destin de Soutien peut n'en avoir aucune sans être un handicap. **[Proposé]**
-- L'IA du rôle Soutien : soigner si besoin, sinon renforcer le Dégâts ou affaiblir l'ennemi, jamais « sinon frapper ». Le Front suit la même logique : sa valeur, c'est les coups qu'il prend à la place des autres.
+- **Un Soutien n'a pas besoin de faire des dégâts** : sa valeur, c'est les PV du trio (rendus, non perdus, ou coups ennemis en moins). **[Décidé]**
+- **Chaque compétence de Soutien a un effet utile même quand personne n'est blessé.** Replis pour celles qui ne l'ont pas : Résurrection → si personne n'est KO, le prochain coup mortel sur l'allié le laisse à 1 PV (une fois) ; Purification → s'il n'y a rien à retirer, immunité contre le prochain état négatif ; Catalyseur → sans recharge en cours chez l'allié, il le rend Vif. **[Proposé]**
+- **Quatre façons d'être Soutien, qui se valent** : le Prêtre répare, l'Alchimiste dure, le Barde accélère, le Diplomate interdit. Le simulateur règle leurs chiffres jusqu'à ce que tout trio, quel que soit son Soutien, aille aussi loin et gagne autant. **[Décidé]**
+- Au plus une compétence qui frappe dans la réserve de six d'un Soutien ; un Destin sans aucune n'est pas un handicap. **[Proposé]** L'IA du Soutien : soigner si besoin, sinon renforcer ou affaiblir, jamais « sinon frapper ».
 
-### 3.5 Le geste de classe
+### 4.5 L'IA (une seule : Échos, adversaires, monstres, simulateur)
 
-- Chaque classe a un **geste constant, quel que soit son Destin** : ses deux basiques partagent un élément propre (lumière pour le Prêtre, perforant pour l'Archer, contondant pour le Pugiliste, feu/givre/foudre pour le Mage…), et une forte est toujours une forte. Deux ou trois compétences des données sont à ajuster pour que ce soit vrai partout. **[Décidé]**
-- Les conditions des boss (§ 7.5) ne parlent que de gestes (« une basique de lumière »), de paliers (« deux fortes le même tour ») ou de rôles (« la forte d'un Front »), jamais d'une compétence précise d'un Destin.
+- Règles fixes par rôle, dans un ordre fixe (celles de `CLAUDE.md`, étendues au trio).
+- **Règles de bon sens avant les règles de rôle** **[Proposé]** : *achever* (si un ennemi peut tomber ce tour avec ce que les alliés ont annoncé plus mon coup, je le frappe avec la compétence la moins chère qui suffit) ; *ne pas gaspiller la forte* (protection forte seulement si un allié a perdu des PV ou si un ennemi a sa forte prête ; attaque forte seulement si elle tue, touche deux ennemis ou frappe une cible marquée ou étourdie ; les recharges passent d'un étage à l'autre) ; *lire la menace* (si tous les ennemis sont étourdis ou en trêve, pas de protection).
+- **La frustration se mesure** : tableau des erreurs par rôle au simulateur (actions perdues, soins en trop, protections jamais touchées, fortes gaspillées, achèvements ratés), IA réglée jusqu'à ce qu'elles soient rares. **[Proposé]**
+- Le joueur ne donne jamais d'ordre. **[Décidé]** Plus tard : chacun règle son propre Écho (deux ou trois choix visibles sur sa fiche). **[Proposé]**
 
-### 3.6 L'IA (une seule, pour tout : Échos, adversaires, monstres, simulateur)
+## 5. Les Échos
 
-- Des règles fixes par rôle, essayées dans le même ordre, la première qui s'applique décide (voir `CLAUDE.md`, « L'acolyte sans postures » : les règles de rôle sont celles-là, étendues au trio).
-- **Des règles de bon sens placées avant les règles de rôle** **[Proposé]** :
-  - *Achever* : si un ennemi peut tomber ce tour avec ce que les alliés ont annoncé plus mon coup, je le frappe, avec la compétence la moins chère qui suffit (la moyenne si elle tue, pas la forte).
-  - *Ne pas gaspiller la forte* : une protection forte seulement si un allié a perdu des PV ou si un ennemi a sa forte prête ; une attaque forte seulement si elle tue, touche deux ennemis ou frappe une cible marquée ou étourdie. À la Tour, les recharges passent d'un étage à l'autre : une forte lâchée pour rien manque au Gardien.
-  - *Lire la menace* : si tous les ennemis sont étourdis ou en trêve, pas de protection ce tour.
-- **La frustration se mesure** : le simulateur tient un tableau des erreurs par rôle (actions perdues sur un ennemi déjà mort, soins en trop, protections jamais touchées, fortes gaspillées, achèvements ratés) et l'IA se règle jusqu'à ce qu'elles soient rares. **[Proposé]**
-- Le joueur ne donne jamais d'ordre, ne pointe pas de cible, ne change pas de posture. **[Décidé]**
-- Plus tard (étape 5) : **chacun règle son propre Écho** (deux ou trois choix : « soigne dès 60 % », « garde la forte pour les Gardiens », « suit la cible du joueur »), visibles sur sa fiche quand on l'emprunte. C'est le propriétaire qui dit comment joue son personnage quand il n'est pas là, pas l'emprunteur. **[Proposé]**
+- Un Écho est **le personnage d'un vrai joueur** (classe, Destin, équipement) piloté par l'IA. Avant le serveur, des Échos générés en tiennent lieu.
+- **Composition** : toujours un Front, un Dégâts, un Soutien, par rôle principal (Fronts : Guerrier, Pugiliste, Invocateur ; Dégâts : Mage, Voleur, Archer ; Soutiens : Prêtre, Alchimiste, Barde, Diplomate ; les classes évoluées et de grimoire ont chacune leur rôle). Le joueur occupe sa case. **[Décidé]**
+- **Trois sources** : amis, membres de la guilde, profils proposés par le jeu. **[Décidé]**
+  - Amis et guilde : **à leur vrai niveau** (ils peuvent porter : un nouveau rattrape les anciens sans frustration). **3 aides par jour.** **[Décidé]**
+  - Proposés par le jeu : **au niveau du joueur**, sans limite. **[Décidé]**
+- **Récompense de sélection** : chaque fois qu'un personnage complète un trio, son propriétaire gagne un peu d'XP et de monnaie, sans jouer. Les classes rares dans le trio (Front, Soutien) sont choisies le plus : la rareté se paie toute seule. **[Décidé]** Plafond : 5 sélections payées par jour ; proposé en aléatoire seulement si son joueur a joué dans la semaine. **[Proposé]**
+- Mêmes règles de composition en Tour, en PvP et en donjon (au donjon, les trois sont humains).
 
-## 4. Les Échos
+## 6. La Tour (solo, en trio)
 
-- Un Écho est **le personnage d'un vrai joueur** (classe, Destin, équipement) piloté par l'IA. Avant le serveur (étape 5), des Échos générés en tiennent lieu.
-- **Composition** : toujours un Front, un Dégâts, un Soutien, par rôle principal. Fronts : Guerrier, Pugiliste, Invocateur. Dégâts : Mage, Voleur, Archer. Soutiens : Prêtre, Alchimiste, Barde, Diplomate. Le joueur occupe sa case ; les deux autres sont complétées. **[Décidé]**
-- **Trois sources** : des amis, des membres de la guilde, ou des profils aléatoires. **[Décidé]**
-  - Amis et guilde : **à leur vrai niveau**, donc ils peuvent porter ; c'est voulu, pour qu'un nouveau rattrape les anciens sans frustration. **Limite : 3 aides par jour.** Le classement par classe tient : celui qui monte seul avec des Échos aléatoires va plus haut que celui qui ne monte que de trois étages par jour avec de l'aide. **[Décidé]**
-  - Aléatoires : **ramenés au niveau du joueur** (leur Destin avec autant de points, même mini-arbre), sans limite. **[Décidé]**
-- **Récompense de sélection** : chaque fois qu'un personnage est choisi pour compléter un trio, son propriétaire gagne un peu d'XP et de la monnaie de cosmétiques, **sans jouer**. Plafonnée par jour (5 sélections payées) ; un personnage n'est proposé en aléatoire que si son joueur a joué dans la semaine. Jamais de puissance directe. Comme le trio a besoin d'un Front et d'un Soutien, ce sont les classes rares qui sont choisies le plus : la rareté se paie toute seule. **[Décidé ; plafonds : Proposé]**
-- **En PvP classé**, le joueur complète son trio avec deux Échos aléatoires à son niveau, jamais des amis (équité). **[Proposé]**
+- **Infinie, fixe, sans remise à zéro.** Tu atteins l'étage 40, demain tu reprends à l'étage 40. Le concours est à qui est le plus haut. **[Décidé]**
+- **Assez d'étages pour que personne n'atteigne jamais le plafond**, en tenant compte des sauts de puissance (Évolutions, grimoires, équipement) : les étages sont **générés** (famille, budget de menace, PV et puissance qui montent par une courbe réglée au simulateur), Gardien tous les 5 étages avec des variantes qui montent en gamme. **[Décidé ; génération : Proposé]**
+- **Paliers tous les 5 étages** (optionnels selon Gautier, gardés) : on reprend au dernier palier avec tous ses PV ; entre deux paliers, l'usure joue (20 % des PV rendus entre étages, un KO revient à 20 %, recharges conservées). **[Proposé]**
+- **Rejouer depuis un palier** est toujours possible : les étages déjà franchis redonnent de l'XP et du butin (moins qu'une première fois). C'est la boucle de ferme en solo : bloqué à l'étage 23, on refait 20 à 22 pour l'XP et l'équipement. **[Proposé]**
+- **La Tour est absolue, le joueur est relatif** : un étage a toujours la même force ; le simulateur règle « à quel niveau et avec quel équipement on passe tel étage ». **[Proposé]**
+- **Faveurs de la Tour** : chaque Gardien vaincu pour la première fois donne une Faveur permanente, à choisir parmi trois, **valable seulement dans la Tour**. **[Proposé]**
+- **Revenu passif selon la hauteur** : monnaie et un peu d'XP par jour, plafonnés, jamais d'objets de puissance. **[Décidé dans le principe, à mesurer contre l'économie]**
+- **Classement** = étage atteint, par classe. Pas de saison pour la Tour (elle ne se remet pas). **[Décidé]**
 
-## 5. La Tour (solo, en trio)
+## 7. Le PvP (trio contre trio)
 
-- **Fixe, sans remise à zéro.** Tu atteins l'étage 10, demain tu reprends à l'étage 10. C'est de là que vient le blocage. **[Décidé]**
-- **Paliers tous les 5 étages** (les Gardiens) : on reprend au dernier palier avec tous ses PV ; entre deux paliers, l'usure joue : 20 % des PV max rendus entre deux étages, un membre KO revient avec 20 %, recharges conservées. **[Proposé]**
-- **Étages** : des monstres du bestiaire (1 à 4 par étage, budget de menace, un seul soigneur), Gardiens aux étages 5 et 10 ; à rééquilibrer pour un trio (plus de monstres).
-- **La Tour est absolue, le joueur est relatif** : un étage a toujours la même force ; le simulateur règle « à quel niveau on passe tel étage » (par exemple : étage 3 dès le niveau 1, Gardien de l'étage 5 vers le niveau 8–10, sommet Aspirant vers le niveau 25–30). **[Proposé]**
-- **Étages des Élus** : 10 étages de plus, ouverts par l'Évolution. **[Proposé]**
-- **Faveurs de la Tour** : chaque Gardien vaincu pour la première fois donne une Faveur permanente, à choisir parmi trois (+10 % de PV dans la Tour, +15 % contre une famille, forte prête au départ, 30 % de PV rendus entre étages…). **Valables seulement dans la Tour** : une progression de puissance en PvE qui ne touche pas au PvP. **[Proposé]**
-- **Revenu passif selon la hauteur** : monnaie de cosmétiques et un peu d'XP par jour, plafonnés (l'équivalent d'un duel), jamais d'objets de puissance. À mesurer contre l'économie. **[Décidé dans le principe, à mesurer]**
-- **Record** = étage atteint, par classe. La Tour **grandit à chaque saison** (10 étages de plus), la course est au sommet du moment. **[Proposé]**
-- **Comment on devient plus fort quand on est bloqué** : par les duels (XP la plus rapide), par les étages déjà passés (chaque étage franchi donne son XP), par la sélection comme Écho, par les donjons, par un ami qui porte (3 par jour), par les Faveurs, par l'équipement, et au niveau 30 par l'Évolution. **[Décidé]**
-
-## 6. Le PvP (trio contre trio)
-
-- **Asynchrone** : ton trio contre le trio d'un autre joueur, piloté par l'IA (ce sont les Échos du V1). **5 combats classés par jour**, valeur modulable, pour que personne ne se lasse à force de spammer. **[Décidé]**
+- **Asynchrone classé** : ton personnage + 2 Échos choisis parmi amis, guilde ou profils proposés (de ton niveau), contre le trio d'un autre joueur piloté par l'IA. **5 combats par jour** (modulable). **[Décidé]** Les amis et guildés comptent dans les 3 aides du jour ; le matchmaking se fait sur la puissance totale du trio (niveau, classe, équipement), pas seulement sur le joueur, pour que porter ne soit pas tricher. **[Proposé]**
+- **Synchrone classé** : **3 contre 3 à 6 humains**, limité par jour aussi (5). **[Décidé]** Il faut une file par rôle pour former deux trios Front + Dégâts + Soutien ; en attendant 6 joueurs, le jeu propose de lancer la partie à 2 humains + 4 Échos. **[Proposé]**
 - Amicaux illimités, sans XP ni classement. **[Proposé]**
-- **Synchrone** : plutôt que 6 humains (introuvables), **2 humains en direct, chacun avec ses 2 Échos** ; 5 par jour aussi. **[Proposé]**
-- Matchmaking par ligue, niveau et score d'équipement (§ 9). Deux ligues : Aspirants, Élus.
-- Classement par saison. **[Ouvert : forme des ligues et divisions.]**
+- **Ligues par puissance** : Aspirants (classes de base), Élus (rang 1), Ascendants (rang 2 et classes de grimoire). **[Proposé]**
+- **Saisons** : le classement PvP se remet à zéro à chaque saison. **[Décidé]** Durée : 3 mois. **[Proposé]**
 
-## 7. Les donjons (3 joueurs humains)
+## 8. Les donjons (3 joueurs humains)
 
-### 7.1 Principe
+### 8.1 Principe
 
-- Plusieurs donjons ouverts en même temps, **un par tranche de niveau**, communs à tout le serveur (on y joue avec sa guilde, ses amis ou des inconnus). **[Décidé]**
-- Un donjon est un arbre de routes : à chaque embranchement, **trois portes** ; une route fait X combats ; au bout, **un combat d'élite**, sauf sur **une seule route : le boss**. Après chaque vague vaincue, le trio **vote** la porte suivante (majorité ; si les trois votent différemment, celui qui a le plus de routes explorées tranche). **[Décidé ; départage : Proposé]**
-- Le groupe a le droit d'abandonner quand il veut ; pas de limite de tours.
+- Plusieurs donjons ouverts en même temps, **un par tranche de niveau**, communs au serveur ; on y va avec sa guilde, ses amis ou des inconnus. **[Décidé]** Ils sont placés sur la carte du monde, avec leur niveau. **[Décidé]**
+- Un donjon est un arbre de routes : **trois portes** à chaque embranchement ; une route fait X combats ; au bout, **un élite**, sauf sur une seule route : **le boss**. Après chaque vague, le trio **vote** la porte suivante (majorité ; trois votes différents : celui qui a le plus de routes explorées tranche). **[Décidé ; départage : Proposé]**
+- Entrer coûte de la monnaie (une part va à la guilde qui tient le territoire, § 9). Pas de limite de tours, abandon libre.
 
-### 7.2 Les portes sans nom (contre le partage sur Internet)
+### 8.2 Les portes sans nom
 
-- Les trois portes d'un embranchement sont **identiques** et **leur ordre est propre à chaque joueur** (calculé à partir du joueur et de la porte ; aucun hasard en jeu). La porte que Léa voit à gauche, Tom la voit peut-être au milieu. Le jeu connaît la vraie identité de chaque porte ; personne ne la voit.
-- **Les trois portes mènent à la même vague** (les monstres dépendent de la profondeur, pas de la porte) : on ne peut pas décrire une porte par ce qu'il y a derrière.
-- Conséquence : **une route ne peut pas s'écrire**. « Gauche, milieu, gauche » ne veut rien dire pour un autre joueur ; une capture d'écran de carte est dans l'ordre de celui qui l'a prise ; un streamer montre ses portes à lui. **Seule la carte en jeu sait** : le jeu traduit pour chacun (« la porte de gauche est explorée », « Léa a voté pour la porte de droite »). **[Décidé]**
+- Trois portes **identiques** dont **l'ordre est propre à chaque joueur** (calculé à partir du joueur et de la porte) ; le jeu connaît la vraie identité de chaque porte, personne ne la voit ; **les trois mènent à la même vague** (les monstres dépendent de la profondeur). **Une route ne peut donc pas s'écrire** : « gauche, milieu » ne veut rien dire pour un autre ; une capture d'écran est dans l'ordre de son auteur ; un streamer montre ses portes à lui. Seule la carte en jeu sait, et le jeu traduit pour chacun (« la porte de gauche est explorée », « Léa a voté pour la porte de droite »). **[Décidé]**
 
-### 7.3 Les cartes
+### 8.3 Les cartes
 
-- **Carte personnelle** : les routes que le joueur a lui-même parcourues.
-- **Carte de guilde** : l'union des cartes de ses membres. Rejoindre une guilde active réduit les chemins ; un explorateur qui rejoint apporte sa carte. Quitter la guilde n'emporte que sa carte personnelle. **[Décidé]**
-- **Fragments de carte** : les combats d'élite (et certaines vagues) donnent un fragment qui révèle une porte à un embranchement, rendu dans l'ordre de chacun. La chasse n'est pas qu'un tâtonnement. **[Proposé]**
-- Les routes explorées rapportent par elles-mêmes (points de guilde, monnaie) : la carte est une progression (« 38 % du donjon connu »). **[Proposé]**
+- **Carte personnelle** (les routes qu'on a parcourues soi-même) ; **carte de guilde** (l'union des cartes de ses membres : rejoindre une guilde active réduit les chemins ; quitter n'emporte que sa carte personnelle). **[Décidé]**
+- **Fragments de carte** sur les élites : révèlent une porte, dans l'ordre de chacun. Les routes explorées rapportent par elles-mêmes (ressource de guilde, monnaie). **[Proposé]**
 
-### 7.4 Le boss, unique au serveur
+### 8.4 Le boss, unique au serveur
 
-- **Un seul boss par donjon et par serveur.** Il ne bouge pas tant qu'il n'est pas mort : la chasse peut durer des semaines. **[Décidé]**
-- **Sa mort est un événement** : annonce à tout le serveur, titre, récompenses uniques pour la guilde qui l'a tué en premier. Puis **une nouvelle chasse** : nouveau boss, nouvelles routes, cartes remises à zéro pour tout le monde. **[Décidé]**
-- Option : une **semaine de curée** après le premier, où les autres guildes peuvent le tuer pour des récompenses moindres. **[Proposé]**
+- Un seul boss par donjon et par serveur ; **il ne bouge pas** tant qu'il n'est pas mort (la chasse peut durer des semaines). **Sa mort est un événement** (annonce, titre, récompenses uniques), puis **nouvelle chasse** : nouveau boss, nouvelles routes, cartes remises à zéro. **[Décidé]** À la mort d'un boss, un donjon peut apparaître sur un territoire de guilde (§ 9). **[Décidé]**
+- Option : une semaine de curée pour les autres guildes, à récompenses moindres. **[Proposé]**
 
-### 7.5 Le combat de boss
+### 8.5 Le combat de boss
 
-- **La porte du boss est ouverte à tous**, guilde ou non. **[Décidé]**
-- Le boss a des **paliers de vie** (80 %, 50 %, 20 %…). À chaque palier, un blocage : il brille et prépare un coup qui tue tout le monde, ou devient immortel, ou s'enfuit. **La solution est secrète** et se trouve en essayant : toujours un geste de classe, un palier ou un rôle (« une basique de lumière pendant qu'il brille », « deux fortes le même tour », « la forte d'un Front pendant qu'il charge »). Sans hasard : il brille au tour 4, chaque fois. Le jeu dit après coup ce qui a manqué, en termes vagues (« il fallait de la lumière »). **[Décidé]**
-- Sans la bonne classe dans le trio, on ne passe pas : c'est voulu. Le groupe revient avec la classe qu'il faut.
-- **Le coup final ne porte que s'il vient de trois membres d'une même guilde.** Dit clairement à l'entrée du donjon et expliqué par l'histoire (le boss ne se laisse abattre que sous une bannière). Un groupe d'inconnus va jusqu'au bout, apprend tous les paliers, rentre avec la récompense d'élite et sait qu'il lui faut une guilde. **[Décidé]**
-- Les mécaniques des blocages viennent de `docs/MECANIQUES.md` (immortalité = barrière infinie jusqu'au geste, fuite = fin du combat sans récompense, coup mortel = dégâts > PV max).
+- **La porte est ouverte à tous.** Le boss a des **paliers de vie** avec un blocage (coup mortel, immortalité, fuite) dont **la solution est secrète** et se trouve en essayant : toujours un geste de classe, un palier ou un rôle, jamais un sort précis d'un Destin ; sans hasard. Le jeu dit après coup ce qui a manqué, en termes vagues. Sans la bonne classe, on ne passe pas : voulu. **[Décidé]**
+- **Le coup final ne porte que s'il vient de trois membres d'une même guilde**, dit à l'entrée et expliqué par l'histoire. Un groupe d'inconnus va jusqu'au bout, apprend tout, repart avec la récompense d'élite. **[Décidé]**
 
-### 7.6 Les récompenses
+### 8.6 Les récompenses
 
-- Élite : équipement épique, fragments, monnaie. Boss : **extraordinaires**, selon le niveau du donjon : équipement légendaire, skins de lignée uniques, titres, Faveur rare. **[Décidé dans le principe]**
-- **[Ouvert]** Gautier a évoqué « un grimoire de changement de classe ». Ça contredit « un seul personnage, classe fixe hors Évolution ». Propositions de remplacement : le choix de l'Évolution parmi **cinq** au lieu de trois, ou un **second Destin** proposé au moment d'évoluer. À trancher.
-- Aucune récompense de boss ne donne de puissance qui ne soit pas de l'équipement (soumis aux mêmes plafonds que le reste, § 9).
+- **Communes aux trois** : équipement (les plus puissants du jeu), ressources, titres. **Un grimoire de classe** à un seul membre (§ 3). Élites : équipement épique, fragments, monnaie. **[Décidé]**
 
-## 8. Les guildes et les territoires
+## 9. Les guildes, la carte du monde et les territoires
 
-- **Le cœur du jeu à terme** : les combats de guilde chaque soir. Conditions : qu'un joueur sans guilde s'amuse déjà (Tour, duels, donjons avec des inconnus) ; qu'une guilde inactive se dissolve doucement et que le jeu propose des guildes actives ; des soirées par fuseau horaire. **[Décidé dans le principe]**
-- **Les guerres se jouent en asynchrone** : chaque membre fait ses combats de trio dans la soirée, on somme. Personne n'a besoin d'être connecté à la même heure. **[Proposé]**
-- **Territoires** : la carte du monde est découpée ; une guilde qui tient un territoire où apparaît un donjon a un avantage : une part des routes révélées par les joueurs des autres guildes dans ce donjon, une part de la monnaie dépensée pour y entrer. **[Décidé dans le principe]** Garde-fous : avantages plafonnés (au plus 10 % des routes), nombre de territoires limité par guilde, carte remise à zéro chaque saison, bonus de rattrapage pour les petites guildes (contre la boule de neige). **[Proposé]**
-- **L'appel** : « on est au boss, il manque un Prêtre » notifie les membres de la classe voulue ; alliances entre deux guildes pour les boss (le coup final reste à une guilde). **[Proposé]**
-- **[Ouvert]** Taille (100 ?), création, rôles (chef, officiers), chat en jeu (et sa modération) ou non.
+### 9.1 La guilde
 
-## 9. L'équipement
+- **Taille qui grossit avec le niveau de guilde, 100 au plus. Rôles** (chef, officiers, membres). **Chat de guilde. Bannière** composée avec des modèles du jeu (pas d'image importée). **[Décidé]**
+- **Ressource de guilde** (nom provisoire : **l'Influence**), gagnée par l'activité des membres (duels, étages, routes explorées, sélections comme Écho), par les territoires (revenu quotidien) et par les boss ; dépensée pour **monter des effets** : taille de la guilde, XP des membres en plus, butin en plus (PvE seulement), aides par jour en plus, reforge moins chère, coffre de guilde. Jamais de puissance en PvP. **[Décidé dans le principe ; liste : Proposé]**
+- **Classement de guilde** par saison : points de territoires tenus (par jour), guerres gagnées, boss tués, routes explorées. **[Décidé]** Ligues de guilde par taille (petites, moyennes, grandes) pour que les petites se comparent entre elles. **[Proposé]**
+- **Les petites guildes doivent s'amuser** **[Décidé]** : récompenses de territoire **par membre** (un territoire rapporte plus à chacun dans une petite guilde) ; régions de la carte à petits territoires et donjons de niveau modeste, où les grandes guildes n'ont rien à gagner ; chaque guilde a un **foyer** imprenable ; un territoire ne peut être attaqué que par une guilde d'au plus le double de sa taille. **[Proposé]**
 
-- **La base (classe, Destin) est équilibrée au maximum ; l'équipement crée les écarts de puissance ; aucun des deux ne crée de méta.** **[Décidé]**
-- **Même langue que le Destin** : un objet est un paquet de modificateurs (+PV, +puissance, +feu, brûlure plus longue, forte qui revient plus tôt, ta moyenne +X %…), ceux que le moteur applique déjà aux nœuds du Destin. Un objet n'a pas de valeur en soi, il en a pour un Destin : « brûlure +2 tours » vaut de l'or avec Boule de feu et rien avec Trait de givre. Deux joueurs d'une même classe n'ont pas le même meilleur objet, et c'est voulu. **[Décidé]**
-- **À la Diablo** : **5 emplacements** (Arme, Armure, Anneau, Amulette, Talisman : le Talisman parle d'une compétence) ; **4 raretés** (Commun 1 ligne, Rare 2, Épique 3, Légendaire 3 + un trait unique) ; **des noms fixes dont les lignes et les fourchettes sont connues et affichées** (« Anneau de braise : +feu [4–10], +PV [10–30], brûlure [+1–2 tours] »), **les chiffres tirés à la trouvaille**, avec une qualité en % ; **le niveau de l'objet** fait grandir les fourchettes. **[Décidé]**
-- **Contre la méta** : un **budget par objet** (les lignes se partagent un budget selon rareté et niveau) ; des **plafonds par statistique** tous objets confondus (par exemple +30 % de puissance, −2 tours de recharge au plus) ; et **la mesure** : le simulateur règle les fourchettes avec la règle « en moyenne sur tous les Destins, aucune ligne ne gagne plus qu'une autre ; pour un Destin donné, elles diffèrent beaucoup ». **[Proposé]**
-- **Traits légendaires** : un seul par objet, pris dans les mécaniques ◇ de `docs/MECANIQUES.md`, jamais de hasard en combat. **[Proposé]**
-- **Sources** : Tour (étages, Gardiens), donjons (élites : épiques ; boss : légendaires), coffre hebdomadaire du PvP, territoires. **Jamais la boutique.** **[Décidé]**
-- **Reforge** : refaire le tirage d'une seule ligne contre de la monnaie du jeu, coût croissant sur le même objet. Objets **liés au personnage**, pas d'échange ; les objets en trop se recyclent. **[Proposé]**
-- **PvP** : matchmaking classé par niveau et **score d'équipement** ; à score égal, aucun choix n'est meilleur pour tout le monde. **[Proposé]**
-- Dans le moteur, l'équipement s'ajoute aux modificateurs du Destin (`CombatUnit.mods`, `skill_mods`) ; le simulateur tire des équipements au hasard pour mesurer.
+### 9.2 La carte du monde
 
-## 10. Progression et économie
+- **Une seule carte** : celle où l'on choisit son donjon est celle des territoires. On y voit les donjons (position, niveau), quelle guilde tient quel territoire, et donc quel donjon. **[Décidé]**
+- **Tenir un territoire avec un donjon** rapporte : une part de la monnaie payée pour entrer dans ce donjon ; chaque jour, **une route qui ne mène pas au boss** signalée sur la carte de la guilde (la guilde élimine des chemins sans jouer) ; et le prestige. **[Décidé dans le principe ; parts : Proposé, 10 % de l'entrée, 1 route par jour]**
+- **Tenir un territoire sans donjon** doit valoir quelque chose **[Décidé]** : chaque territoire a un **type** **[Proposé]** : *Mine* (Influence chaque jour), *Sanctuaire* (un peu d'XP par membre chaque jour), *Marché* (reforge et taxes moins chères pour les membres), *Relais* (une aide d'Écho de plus par jour), *Bastion* (défense plus solide des territoires voisins). Et surtout : **on ne peut attaquer qu'un territoire voisin d'un des siens** : les territoires sans donjon sont le chemin vers ceux qui en ont. Un donjon qui apparaît sur un territoire tenu le fait prospérer d'un coup.
+- **Saison** : à chaque saison, la carte redevient vierge (territoires neutres) et le classement de guilde repart. **[Décidé]**
 
-- **XP** : duels (toujours la plus rapide), étages de la Tour (chaque étage franchi, même si on tombe ensuite), sélection comme Écho (plafonnée), donjons, revenu passif de la Tour (plafonné). Le GDD vise 20 à 60 minutes par niveau au début ; la courbe du prototype est plus rapide pour tester et sera rallongée. **[Décidé]**
-- **Trois objectifs du jour** (« gagne 2 duels », « franchis 3 étages », « déclenche 2 Synergies ») avec un bonus d'XP : ils disent au joueur bloqué quoi faire. **[Proposé]**
-- **Niveau 30 → Évolution** (×2,5, nouveau Destin, ligue des Élus, étages des Élus).
-- **Monnaie** : une monnaie de cosmétiques gagnée en jouant (Tour, Échos, routes, donjons, territoires), dépensée en skins et en reforge. **[Ouvert : une seule monnaie, ou une seconde réservée à la reforge ?]**
-- **Boutique** : skins de lignée (personnage), animations, poses, titres. Rien d'autre. **[Décidé]**
-- **Saisons** : classements PvP, Tour qui grandit, carte des territoires remise à zéro, donjons renouvelés. **[Ouvert : durée (3 mois ?).]**
+### 9.3 La guerre de guilde **[Proposé, Gautier a demandé de décider]**
 
-## 11. Les écrans et la navigation **[Proposé, jamais discuté]**
+- **Chaque soir**, une fenêtre de guerre (trois heures, par fuseau horaire). Une guilde déclare au plus **N attaques** (1 + sa taille ÷ 20) sur des territoires **voisins** de ses territoires, neutres ou tenus.
+- **Une bataille se joue en asynchrone** : chaque membre dispose de **3 combats de guerre** par soir, à faire quand il veut dans la fenêtre, contre les trios des défenseurs (leurs personnages pilotés par l'IA, comme des Échos). Les défenseurs font de même contre les attaquants. Le score d'un camp = ses victoires, pondérées par la force de l'adversaire battu.
+- **Territoire neutre** : la guilde qui a le meilleur score à la fin de la fenêtre le prend (égalité : la première déclarée).
+- **Territoire tenu** : l'attaquant le prend si son score dépasse celui du défenseur multiplié par la défense du territoire (1,2 ; 1,5 avec un Bastion voisin). Un territoire pris est **protégé deux jours**.
+- Les membres ne peuvent pas être partout : 3 combats chacun, répartis entre les batailles du soir par les officiers. Une grande guilde attaque large mais défend mince ; une petite se concentre. C'est le frein à la boule de neige.
+- Le **foyer** d'une guilde est imprenable. Une guilde sans territoire garde son foyer et peut toujours attaquer un voisin neutre.
 
-Barre du bas, cinq onglets : **Accueil**, **Personnage**, **Guilde**, **Jouer**, **Profil**.
+## 10. L'équipement et l'économie
 
-- **Accueil** : ton personnage en grand, le mot du jour (objectifs du jour, appel de guilde, boss tué sur le serveur), trois gros boutons : La Tour (« Étage 7, palier 5 »), Duel (« 3 combats classés restants »), Donjon (« niveaux 10–20 ouvert »).
-- **Personnage** : Compétences (3 actives, passif, Synergies possibles par classe d'Écho), Destin (l'arbre, vue en lignes : une ligne par chemin depuis la racine, nœuds pris allumés), Équipement (5 emplacements, inventaire, comparaison « avec cet objet, Boule de feu fait 54 au lieu de 48 »), Mon Écho (comment mon personnage joue quand il est prêté, et ce qu'il m'a rapporté).
-- **Guilde** : membres, carte des donjons (38 % connu, fragments), territoires, guerre du soir (mes combats à faire, le score), appel, alliances.
-- **Jouer** : choisir le mode, puis **composer le trio** (toujours le même écran : ma case, deux cases à compléter : amis, guilde, aléatoire ; les aides restantes du jour ; la fiche de chaque Écho : classe, niveau, comment il joue, nos Synergies).
-- **Profil** : niveau, records (Tour par classe, duels, donjons), titres, skins, paramètres.
-- **Combat** : l'écran actuel (carte du milieu, consigne en gros, Synergies en doré), avec trois personnages côté joueur, l'adversaire opaque, les icônes d'état, la lueur « forte prête » ; au donjon, l'écran de vote des portes entre deux vagues.
-- **Premier lancement** : création (classe, Destin dévoilé), premier combat guidé contre des monstres, puis l'Accueil. Plus d'écran de rencontre de l'acolyte.
+### 10.1 L'équipement
+
+- **Même langue que le Destin** : un objet est un paquet de modificateurs ; il n'a de valeur que pour un Destin. **5 emplacements** (Arme, Armure, Anneau, Amulette, Talisman), **4 raretés**, **noms fixes aux lignes et fourchettes connues et affichées**, chiffres tirés à la trouvaille, qualité en %, fourchettes qui grandissent avec le niveau de l'objet. **[Décidé]**
+- **Contre la méta** : budget par objet, plafonds par statistique, et la règle du simulateur « en moyenne sur tous les Destins, aucune ligne ne gagne plus qu'une autre ; pour un Destin donné, elles diffèrent beaucoup ». Traits légendaires : un seul par objet, pris dans `docs/MECANIQUES.md`. **[Proposé]**
+- **D'où il vient** **[Décidé dans le principe ; détail : Proposé]** :
+  - **Les donjons** : le plus puissant (élites : épiques ; boss : légendaires).
+  - **La Tour, en solo** : chaque étage lâche un objet de son niveau (commun à rare ; épique aux Gardiens) ; les étages rejoués depuis un palier en lâchent encore, moins souvent. Comme la Tour est infinie, l'équipement de la Tour n'a pas de plafond : un joueur bloqué refait ses étages et s'équipe. **Personne n'est bloqué en équipement parce qu'il ne trouve pas de groupe.**
+  - **Le coffre hebdomadaire du PvP**, **les territoires**, **le Comptoir** (§ 10.2) où l'on achète du commun et du rare à prix fixe.
+- **Reforge** d'une ligne contre de la monnaie, coût croissant. **[Proposé]**
+
+### 10.2 La monnaie, sans inflation **[Proposé, Gautier a demandé de réfléchir]**
+
+Le problème : si le jeu distribue de la monnaie chaque jour et que les joueurs fixent les prix entre eux, les prix montent sans fin. La solution : **les joueurs ne fixent jamais un prix.**
+- **Une seule monnaie**, les **Éclats**, gagnée en jouant (Tour, revenu passif, sélections, routes, donjons, territoires), **plafonnée par jour** (les robinets sont connus et bornés).
+- **Le Comptoir** remplace l'hôtel des ventes à enchères : les joueurs y **vendent et achètent à des prix fixés par le jeu**, calculés par niveau, rareté et qualité de l'objet (une table, pas une enchère). Un objet rare de niveau 20 à 70 % de qualité vaut toujours le même prix. Pas d'enchère, pas de surenchère, donc pas d'inflation : la demande se voit dans la disponibilité (« vendu »), pas dans le prix.
+- **Des puits plus grands que les robinets** : la reforge (coût croissant), l'entrée des donjons, une **taxe de 15 % détruite** sur chaque vente au Comptoir, les améliorations de guilde, les cosmétiques. Le jeu mesure chaque semaine ce qui entre et ce qui sort ; si les réserves des joueurs gonflent, les puits montent (par exemple la taxe), jamais les prix.
+- **Le gel des grosses réserves** : au-delà d'un plafond de réserve, les Éclats ne s'accumulent plus (le surplus va dans le coffre de guilde). Personne ne peut thésauriser.
+- Les objets restent **liés au personnage une fois équipés** ; avant, ils se vendent au Comptoir. **[Proposé]**
+
+### 10.3 Progression
+
+- **XP** : duels (toujours la plus rapide), étages de la Tour (y compris rejoués), sélection comme Écho, donjons, revenu passif, trois objectifs du jour (bonus). Courbe : 20 à 60 min par niveau au début. **[Décidé ; objectifs du jour : Proposé]**
+- **Boutique** : skins de lignée, animations, poses, titres, modèles de bannière. Rien d'autre. **[Décidé]**
+
+## 11. Les écrans et la navigation **[Décidé dans le principe ; détail : Proposé]**
+
+- **Tout en portrait**, toutes les options accessibles en deux touchers au plus. **[Décidé]**
+- **La ville** (écran d'accueil) : une carte à la *Shakes & Fidget* avec des **bâtiments**, chacun un lieu du jeu : **la Tour**, **l'Arène** (PvP), **le Donjon** (ouvre la carte du monde), **la Guilde**, **le Comptoir**, **la Forge** (équipement, reforge), **la Maison** (personnage, Destin), **la Boutique** (cosmétiques), **le Tableau** (objectifs du jour, événements du serveur : « le boss des Catacombes est tombé »). La carte est un fichier de données (bâtiments, positions, écran ouvert) pour ajouter un lieu sans toucher au code. **[Décidé]**
+- **La carte du monde** : les territoires (couleur de la guilde qui les tient), les donjons (position, niveau, qui le tient), son foyer, les attaques du soir. On y choisit son donjon. **[Décidé]**
+- **Le chat** : **général**, **guilde**, **groupe**, dans un volet accessible de partout (une poignée en bas de l'écran). Modération : filtre de mots, signalement, silence par un officier dans la guilde. **[Décidé ; modération : Proposé]**
+- **Composer le trio** : un seul écran pour tous les modes : ma case, deux cases à compléter (amis, guilde, proposés), les aides restantes du jour, la fiche de chaque Écho (classe, niveau, comment il joue, nos Synergies). **[Proposé]**
+- **Combat** : l'écran actuel (carte du milieu, consigne en gros, Synergies en doré), trois personnages côté joueur, adversaire opaque, icônes d'état, lueur « forte prête » ; au donjon, l'écran de vote des portes entre deux vagues.
+- **Premier lancement** : création (classe, Destin dévoilé), premier combat guidé contre des monstres, la ville. Plus d'écran de rencontre.
 
 ## 12. Ce qui existe déjà et l'ordre de construction
 
 **Existe (prototype web, 28 octobre)** : moteur pur et testé (168 tests), 10 classes, 63 Synergies, Destin (45 nœuds, mini-Destin), niveaux et XP, Tour à monstres (10 étages, bestiaire), duel en duo contre une IA, simulateur et régleur (en local et sur GitHub Actions), écrans de création, accueil, compétences, Destin, Tour, bestiaire, profil, paramètres.
 
 **Ordre** (chaque bloc doit être amusant seul avant le suivant) :
-1. **Le trio avec Échos générés** (le moteur sait déjà faire du 3 contre N) : composition par rôle, annonces en chaîne, Synergies avec les deux, IA de bon sens et tableau des erreurs, adversaire opaque, écran de composition du trio. Retirer l'acolyte fixe et la rencontre. Les Soutiens « toujours utiles » et le geste de classe (données). Rééquilibrer (duel 3v3, Tour en trio).
-2. **La Tour fixe à paliers**, sans limite de tours, soins des monstres qui s'affaiblissent, Faveurs, étages des Élus (après l'Évolution), revenu passif. Réglage « à quel niveau on passe tel étage ».
-3. **L'équipement** : données, inventaire, fiche et comparaison, butin de la Tour, reforge, passe de simulateur sur les lignes.
-4. **Serveur et comptes** (étape 5 du V1) : vrais Échos (amis, guilde, aléatoires), récompenses de sélection, PvP asynchrone classé à 5 par jour, PvP synchrone à 2 humains, classements.
-5. **Guildes et donjons à routes** : portes sans nom, cartes, fragments, élites, boss unique au serveur et ses paliers, coup final de guilde, appel.
-6. **Territoires et guerres du soir** : quand les donjons ont prouvé qu'ils font revenir les gens.
-7. Art (PixelLab), évolutions, boutique, bêta, lancement (comme le V1).
+1. **Le trio avec Échos générés** : composition par rôle, annonces en chaîne, Synergies avec les deux, IA de bon sens et tableau des erreurs, adversaire opaque, écran de composition du trio ; retrait de l'acolyte fixe et de la rencontre ; Soutiens « toujours utiles » et geste de classe ; rééquilibrage (duel 3v3, Tour en trio).
+2. **La Tour infinie** : étages générés, paliers, rejouer depuis un palier, sans limite de tours, soins des monstres qui s'affaiblissent, Faveurs, revenu passif ; réglage « à quel niveau on passe tel étage ».
+3. **L'équipement** : données, Forge (inventaire, fiche, comparaison, reforge), butin de la Tour, Comptoir à prix fixes (en local d'abord), passe de simulateur sur les lignes.
+4. **La ville** et la navigation en portrait, les objectifs du jour.
+5. **Serveur et comptes** : vrais Échos, récompenses de sélection, PvP asynchrone classé, chat, Comptoir en ligne, classements, saisons.
+6. **Guildes et donjons à routes** : Influence, rôles, bannière, carte du monde, portes sans nom, cartes, fragments, élites, boss unique et ses paliers, coup final de guilde, grimoires, appel.
+7. **Territoires et guerres du soir**, classement de guilde, ligues de guilde.
+8. **Évolutions de rang 1 et 2, classes de grimoire** (30 + 90 + les grimoires : le plus gros chantier de contenu), PvP synchrone à 6, art, boutique, bêta, lancement.
 
-## 13. Questions ouvertes pour Gautier
+## 13. Questions encore ouvertes
 
-1. **L'univers** (La Veille, Le Tissage, La Foire des Dieux oubliés) : il faut maintenant une raison d'histoire pour la bannière de guilde, les Échos et les boss. Laquelle ?
-2. **Le nom du jeu.**
-3. **La récompense « changement de classe » des boss** : garder (et rouvrir « classe fixe ») ou remplacer (Évolution parmi cinq, second Destin) ?
-4. **Les saisons** : durée, et ce qui se remet à zéro (Tour qui grandit, territoires, donjons, classements).
-5. **La guilde** : taille, création, rôles, chat en jeu (avec modération) ou pas de chat.
-6. **La monnaie** : une seule, ou une seconde pour la reforge ?
-7. **Les Faveurs de la Tour, les paliers tous les 5 étages, la Tour qui grandit** : d'accord tels quels ?
-8. **Le PvP synchrone à 2 humains + 4 Échos** et **les amicaux illimités** : d'accord ?
-9. **La navigation du § 11** : d'accord dans les grandes lignes ?
+1. **L'univers et le nom** : à décider ensemble, plus tard (nécessaires pour l'histoire des bannières, des Échos et des boss, et pour les noms des 120 classes).
+2. **La guerre de guilde (§ 9.3), les types de territoire (§ 9.2), le Comptoir à prix fixes (§ 10.2), les ligues par puissance (§ 7)** : décidés par Claude Code à la demande de Gautier, à confirmer à la lecture.
+3. **Le niveau de la seconde Évolution** (60 ?) et ce qu'il advient du niveau au-delà de 90.
+4. **Qui reçoit le grimoire** dans le trio vainqueur : tirage visible, ou une règle (celui qui a exploré le plus, celui qui n'en a pas) ?
