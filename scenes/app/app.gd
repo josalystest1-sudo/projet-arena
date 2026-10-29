@@ -13,6 +13,9 @@
 ## Les évolutions (GDD V2, § 3 ; PR 8.1) : au niveau 30, le perso peut évoluer (engine/evolution.gd) ; sa classe devient
 ## l'évolution, sa roue repart à zéro, un point par niveau de 31 à 60 ; la graine, les Échos (adaptés au rôle) et la
 ## lignée (les records, paliers et Faveurs de la Tour sont ceux de la classe de base) restent.
+## Le serveur (phase 5, PR 5.1 ; scenes/net/serveur.gd) : un compte anonyme par appareil, un pseudo, et la fiche du
+## perso publiée à chaque changement (classe, graine, niveau, nœuds allumés, équipement) ; simulé tant que
+## data/serveur.json n'a pas d'adresse.
 ## Affichage et navigation seulement : toute la règle vit dans res://engine.
 class_name ArenaApp
 extends Control
@@ -46,6 +49,9 @@ const SCREENS := {
 var data: Donnees
 var profile: PlayerProfile
 var sfx: Sfx
+## Le lien au serveur (simulé ou Supabase) ; `publication` : ce qu'a donné la dernière publication (vide avant).
+var serveur: Serveur
+var publication := ""
 var rng := RandomNumberGenerator.new()
 
 # Le perso du joueur (un seul par compte, GDD) et ses deux Échos, gardés sur l'appareil.
@@ -88,11 +94,14 @@ func _ready() -> void:
 	sfx = Sfx.new()
 	add_child(sfx)
 	sfx.muted = profile.muted
+	serveur = Serveur.creer(data, profile)
+	add_child(serveur)
 	theme = UiKit.make_theme()
 	_build_layout()
 	if charger_perso():
 		reclamer_revenu()
 		show_screen("ville")
+		publier_perso()
 	else:
 		show_screen("creation")
 
@@ -242,6 +251,48 @@ func _regenerer() -> void:
 func sauver_perso() -> void:
 	profile.duo = {"version": 3, "classe": player_class, "graine": graine, "allumage": Array(allumage), "echos": echos_choisis.duplicate(true)}
 	profile.save()
+	publier_perso()
+
+
+# ---------------------------------------------------------------------------
+# Le serveur : le compte, le pseudo, la fiche publiée
+# ---------------------------------------------------------------------------
+
+## Ton pseudo (tiré avec la graine du perso la première fois ; modifiable au profil).
+func pseudo() -> String:
+	if str(profile.serveur.get("pseudo", "")) == "":
+		profile.serveur["pseudo"] = Serveur.pseudo_defaut(graine, data)
+	return str(profile.serveur["pseudo"])
+
+
+## Changer de pseudo (2 à 16 caractères) ; la fiche est republiée. Faux s'il ne convient pas.
+func changer_pseudo(nouveau: String) -> bool:
+	if not Serveur.pseudo_valide(nouveau):
+		return false
+	profile.serveur["pseudo"] = nouveau.strip_edges()
+	profile.save()
+	publier_perso()
+	return true
+
+
+## La fiche publique du perso : ce que les autres joueurs en verront (sans l'identifiant : le serveur le pose).
+func fiche_publique() -> Dictionary:
+	return {"id": "", "pseudo": pseudo(), "classe": player_class, "role": str(data.classe(player_class)["role"]), "graine": str(graine),
+		"niveau": profile.level, "allumage": Array(allumage), "equipement": objets_portes().duplicate(true)}
+
+
+## Publier la fiche (après connexion s'il le faut). Sans attendre : le résultat arrive dans `publication`.
+func publier_perso() -> void:
+	if not has_perso() or serveur == null:
+		return
+	_publier_perso_async()
+
+
+func _publier_perso_async() -> void:
+	if not serveur.est_connecte() and not await serveur.connecter():
+		publication = "hors ligne : " + serveur.erreur
+		return
+	publication = "publié" if await serveur.publier(fiche_publique()) else "non publié : " + serveur.erreur
 
 
 ## Création du personnage : sa classe et sa graine, et deux Échos proposés par le jeu.
@@ -336,6 +387,8 @@ func gain_xp(amount: int) -> Dictionary:
 	var result := profile.gain_xp(amount, niveau_max())
 	_regenerer()
 	profile.save()
+	if int(result["levels"]) > 0:
+		publier_perso()
 	return result
 
 

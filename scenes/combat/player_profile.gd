@@ -43,6 +43,8 @@ var donjons: Dictionary = {}
 var monnaie_or: int = 0
 var etal_jour: String = ""
 var etal_achetes: Array = []
+## Le serveur (scenes/net/serveur.gd) : {compte, jeton, rafraichir, pseudo, fiche (la dernière fiche publiée)}.
+var serveur: Dictionary = {}
 ## Les monstres déjà croisés à la Tour (identifiant -> true), pour le bestiaire.
 var monsters_seen: Dictionary = {}
 ## Les bulles d'aide du combat déjà lues (identifiant -> true) : chacune ne s'affiche qu'une fois.
@@ -80,6 +82,7 @@ static func load_profile() -> PlayerProfile:
 		profile.monnaie_or = int(cfg.get_value("comptoir", "or", 0))
 		profile.etal_jour = str(cfg.get_value("comptoir", "etal_jour", ""))
 		profile.etal_achetes = cfg.get_value("comptoir", "etal_achetes", [])
+		profile.serveur = cfg.get_value("serveur", "etat", {})
 		profile.monsters_seen = cfg.get_value("tour", "monstres", {})
 		profile.tips_seen = cfg.get_value("aide", "vues", {})
 		profile.level = int(cfg.get_value("progression", "niveau", 1))
@@ -110,6 +113,7 @@ func save() -> void:
 	cfg.set_value("comptoir", "or", monnaie_or)
 	cfg.set_value("comptoir", "etal_jour", etal_jour)
 	cfg.set_value("comptoir", "etal_achetes", etal_achetes)
+	cfg.set_value("serveur", "etat", serveur)
 	cfg.set_value("tour", "monstres", monsters_seen)
 	cfg.set_value("aide", "vues", tips_seen)
 	cfg.set_value("progression", "niveau", level)

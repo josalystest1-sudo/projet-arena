@@ -11,6 +11,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	column.add_child(UiKit.label("Ton profil", 30, UiKit.GOLD))
 	column.add_child(UiKit.rangee_trio(app, 6.0))
 	var profile := app.profile
+	_carte_compte(column)
 	var games := profile.wins + profile.losses
 	var duel := UiKit.card(column, 4)
 	duel.add_child(UiKit.label("Duels", 20, UiKit.GOLD, false))
@@ -51,4 +52,49 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	for dj in app.data.donjons["donjons"]:
 		var carte := app.carte_donjon(str(dj["id"]))
 		donjons.add_child(UiKit.label("%s : boss vaincu %d fois · %d chemin%s explor%s · %d secret%s" % [dj["nom"], int(carte.get("boss", 0)), carte.get("explorees", []).size(), "s" if carte.get("explorees", []).size() > 1 else "", "és" if carte.get("explorees", []).size() > 1 else "é", carte.get("secrets", []).size(), "s" if carte.get("secrets", []).size() > 1 else ""], 15, Color.WHITE, false))
-	column.add_child(UiKit.label("Classements, saisons et profils des autres joueurs arriveront avec le serveur (étape 5).", 14, Color(0.6, 0.62, 0.7)))
+	column.add_child(UiKit.label("Classements, saisons, amis et guilde arriveront avec la suite du serveur.", 14, Color(0.6, 0.62, 0.7)))
+
+
+## Ton compte (phase 5, PR 5.1) : ton pseudo (modifiable), le serveur (simulé ou en ligne), ta fiche publiée, et les
+## autres joueurs du serveur (ceux de ton niveau).
+func _carte_compte(column: VBoxContainer) -> void:
+	var carte := UiKit.card(column, 4)
+	carte.add_child(UiKit.label("Ton compte", 20, UiKit.GOLD, false))
+	var ligne := HBoxContainer.new()
+	ligne.add_theme_constant_override("separation", 8)
+	carte.add_child(ligne)
+	var champ := LineEdit.new()
+	champ.text = app.pseudo()
+	champ.max_length = 16
+	champ.placeholder_text = "Ton pseudo"
+	champ.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	champ.custom_minimum_size = Vector2(0, 48)
+	ligne.add_child(champ)
+	var retour := UiKit.label("", 14, UiKit.SOFT, false)
+	ligne.add_child(UiKit.button("Changer", func():
+		app.sfx.play("clic")
+		if app.changer_pseudo(champ.text):
+			retour.text = "Pseudo changé : %s." % app.pseudo()
+			champ.text = app.pseudo()
+		else:
+			retour.text = "Un pseudo fait de 2 à 16 caractères.", 48, 16))
+	carte.add_child(retour)
+	var s := app.serveur
+	carte.add_child(UiKit.label("Serveur %s · compte %s" % [s.nom_mode(), ("connecté" if s.est_connecte() else "pas encore connecté")], 15, Color.WHITE, false))
+	var fiche: Dictionary = app.profile.serveur.get("fiche", {})
+	if fiche.is_empty():
+		carte.add_child(UiKit.label("Ta fiche n'est pas encore publiée%s." % ((" (" + app.publication + ")") if app.publication != "" else ""), 14, UiKit.SOFT, false))
+	else:
+		carte.add_child(UiKit.label("Ta fiche est publiée : %s, %s, niveau %d (le %s)." % [fiche["pseudo"], app.data.classe(str(fiche["classe"]))["nom"], int(fiche["niveau"]), str(fiche.get("mis_a_jour", "")).replace("T", " à ")], 14, UiKit.SOFT, false))
+	var autres: Array = []
+	for role in Trio.ROLES:
+		autres.append_array(await s.personnages(role, app.profile.level, 2))
+	if not is_inside_tree():
+		return
+	if autres.is_empty():
+		carte.add_child(UiKit.label("Aucun autre joueur pour l'instant%s." % ((" (" + s.erreur + ")") if s.erreur != "" else ""), 14, UiKit.SOFT, false))
+		return
+	carte.add_child(UiKit.label("Autour de ton niveau, sur le serveur (%d personnages publiés) :" % s.nombre_personnages(), 15, Color.WHITE, false))
+	for f in autres:
+		carte.add_child(UiKit.label("%s · %s · niveau %d" % [f["pseudo"], app.class_label(str(f["classe"])), int(f["niveau"])], 14, UiKit.SOFT, false))
+	carte.add_child(UiKit.label("Ils pourront rejoindre ton trio à la prochaine étape (les vrais Échos).", 13, UiKit.SOFT, false))
