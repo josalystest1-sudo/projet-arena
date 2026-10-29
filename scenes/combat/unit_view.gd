@@ -1,8 +1,8 @@
 ## Un personnage dans l'arène du combat V2 (docs/SPEC-COMBAT-V2.md, section 12.2) : son sprite (de face s'il est
 ## ennemi, tourné vers l'adversaire s'il est allié) et sa plaque : la barre de PV (rouge côté ennemi, teal côté allié),
 ## puis ses menaces (un allié seulement : l'adversaire est caché) et ses états en pastilles (3 de chaque au plus, « +n »
-## au-delà). Un ennemi dont la Clé est prête a une lueur violette qui pulse, et une pastille « Clé » en tête des
-## autres. Anneau doré en pointillé : la
+## au-delà). Un ennemi dont la Clé est prête a un halo violet qui pulse, une étiquette « CLÉ PRÊTE » au-dessus de
+## lui et une pastille « Clé » en tête des autres. Anneau doré en pointillé : la
 ## cible ennemie choisie ; teal : la cible alliée. Toucher : le choisir pour cible ; appui long : sa fiche. Toucher
 ## (ou appui long sur) une pastille : ce qu'elle fait. Affichage seulement.
 class_name UnitView
@@ -20,6 +20,8 @@ const OR := Color("e3b85f")
 const TEAL := Color("5cc8b8")
 const ROUGE := Color("d35b5b")
 const VIOLET := Color("c9a0ff")
+## Le violet vif du halo « Clé prête » : il doit ressortir sur le fond sombre de l'arène.
+const VIOLET_VIF := Color("e2c6ff")
 const TEXTE := Color("efe9d9")
 const SURFACE := Color("1c1a28")
 const BORD := Color("3a3650")
@@ -134,16 +136,29 @@ func _draw() -> void:
 	draw_set_transform(Vector2(rs.get_center().x, rs.end.y - 2.0), 0.0, Vector2(1.0, 0.25))
 	draw_circle(Vector2.ZERO, rs.size.x * 0.32, Color(0, 0, 0, 0.35))
 	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	var pouls := 0.5 + 0.5 * sin(_t * 5.0)
 	if cle_prete and not ko:
-		var pouls := 0.5 + 0.5 * sin(_t * 5.0)
-		draw_circle(rs.get_center(), rs.size.x * 0.48, Color(VIOLET, 0.10 + 0.12 * pouls))
-		draw_arc(rs.get_center(), rs.size.x * (0.46 + 0.03 * pouls), 0.0, TAU, 40, Color(VIOLET, 0.55 + 0.35 * pouls), 3.0)
+		# Le halo : un disque violet, un anneau vif et une onde qui s'éloigne.
+		draw_circle(rs.get_center(), rs.size.x * 0.54, Color(VIOLET, 0.28 + 0.22 * pouls))
+		draw_arc(rs.get_center(), rs.size.x * 0.54, 0.0, TAU, 48, VIOLET_VIF, 4.0)
+		var onde := fmod(_t * 0.8, 1.0)
+		draw_arc(rs.get_center(), rs.size.x * (0.56 + 0.22 * onde), 0.0, TAU, 48, Color(VIOLET_VIF, 0.8 * (1.0 - onde)), 3.0)
 	if cible_ennemie or cible_alliee:
 		_anneau(rs.get_center(), rs.size.x * 0.56, OR if cible_ennemie else TEAL)
 	var teinte := TEAL if allie else ROUGE
 	PixelSprites.draw(self, sprite, rs.position + Vector2(dx, souffle + (rs.size.y * 0.35 if ko else 0.0)), pixel, teinte, not allie, ko)
 	if _flash > 0.0:
 		draw_rect(rs, Color(1, 1, 1, 0.45 * _flash))
+	if cle_prete and not ko:
+		# L'étiquette au-dessus de la tête.
+		var texte_cle := "CLÉ PRÊTE"
+		var l := police.get_string_size(texte_cle, HORIZONTAL_ALIGNMENT_LEFT, -1, 15).x + 18.0
+		var r := Rect2(rs.get_center().x - l / 2.0, rs.position.y - 26.0 - 2.0 * pouls, l, 24.0)
+		var style := StyleBoxFlat.new()
+		style.bg_color = VIOLET_VIF
+		style.set_corner_radius_all(12)
+		draw_style_box(style, r)
+		draw_string(police, Vector2(r.position.x, r.position.y + 17.0), texte_cle, HORIZONTAL_ALIGNMENT_CENTER, l, 15, Color("0f0e17"))
 	# La plaque : PV.
 	var y := rs.end.y + 4.0
 	var largeur := minf(size.x - 8.0, maxf(rs.size.x, 110.0))
