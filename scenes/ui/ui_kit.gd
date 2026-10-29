@@ -160,9 +160,24 @@ static func voie_resume(parent: Node, destin: Destin, voie: int, accent: Color =
 	parent.add_child(label(" · ".join(noms), 15, Color.WHITE, false))
 
 
-## Comment joue l'acolyte (section 10) : en premier, sans ordre, toujours le même choix dans la même situation.
-static func acolyte_rules_card(parent: Node, acolyte_name: String) -> void:
+## Le trio du joueur en portraits : un Écho, toi au milieu, l'autre Écho.
+static func rangee_trio(app: ArenaApp, pixel: float) -> HBoxContainer:
+	var rangee := HBoxContainer.new()
+	rangee.alignment = BoxContainer.ALIGNMENT_CENTER
+	rangee.add_theme_constant_override("separation", 8)
+	var noms := app.noms_trio()
+	var trio := app.trio()
+	for i in [1, 0, 2]:
+		var d: Destin = trio[i]
+		var p := PortraitView.make(d.classe_id, str(noms["a%d" % (i + 1)]), app.class_label(d.classe_id), pixel)
+		p.title_color = GOLD if i == 0 else ACOLYTE_BLUE
+		rangee.add_child(p)
+	return rangee
+
+
+## Comment jouent les Échos (section 10) : avant le joueur, sans ordre, toujours le même choix dans la même situation.
+static func echo_rules_card(parent: Node) -> void:
 	var how := card(parent, 4)
-	how.add_child(label("Comment joue %s" % acolyte_name, 20, ACOLYTE_BLUE, false))
-	how.add_child(label("Il choisit en premier, et tu vois son choix avant de jouer le tien. Tu ne lui donnes aucun ordre.", 16, Color.WHITE, false))
+	how.add_child(label("Comment jouent tes Échos", 20, ACOLYTE_BLUE, false))
+	how.add_child(label("Ils annoncent leur coup avant toi, l'un après l'autre (le second connaît le premier) : tu joues en le sachant. Tu ne leur donnes aucun ordre.", 16, Color.WHITE, false))
 	how.add_child(label("À chaque tour, il joue l'action qui rapporte le plus : frapper, soigner, protéger, ou couper une menace adverse. Dans la même situation, il fait toujours la même chose.", 15, SOFT, false))

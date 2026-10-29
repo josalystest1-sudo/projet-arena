@@ -1,4 +1,4 @@
-## La Vitrine, l'écran d'accueil (GDD) : le duo en grand, animé, et deux boutons dominants : Combattre, La Tour.
+## La Vitrine, l'écran d'accueil (GDD) : le trio en grand, animé, et deux boutons dominants : Combattre, La Tour.
 extends Control
 
 var app: ArenaApp
@@ -17,17 +17,8 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	gear.pressed.connect(func(): app.show_screen("settings"))
 	top.add_child(gear)
 
-	# Le duo, en grand.
-	var duo := HBoxContainer.new()
-	duo.alignment = BoxContainer.ALIGNMENT_CENTER
-	duo.add_theme_constant_override("separation", 16)
-	column.add_child(duo)
-	var me := PortraitView.make(app.player_class, "Toi", app.class_label(app.player_class), 11.0)
-	me.title_color = UiKit.GOLD
-	var aco := PortraitView.make(app.acolyte_class(), app.acolyte_name, app.class_label(app.acolyte_class()), 11.0)
-	aco.title_color = UiKit.ACOLYTE_BLUE
-	duo.add_child(me)
-	duo.add_child(aco)
+	# Le trio, en grand : toi au milieu, tes deux Échos de part et d'autre.
+	column.add_child(UiKit.rangee_trio(app, 7.5))
 
 	var profile := app.profile
 	var record := int(profile.tower_records.get(app.player_class, 0))
@@ -42,12 +33,13 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 
 	column.add_child(UiKit.spacer(6))
 	column.add_child(UiKit.main_button("Combattre", _fight, 92))
-	column.add_child(UiKit.label("Duel en duo : toi et %s contre un autre duo." % app.acolyte_name, 15, UiKit.SOFT))
+	var noms := app.noms_trio()
+	column.add_child(UiKit.label("Duel en trio : toi, %s et %s contre un autre trio." % [noms["a2"], noms["a3"]], 15, UiKit.SOFT))
 	var tower := UiKit.main_button("La Tour", func(): app.show_screen("tower"), 78)
 	column.add_child(tower)
-	column.add_child(UiKit.label("Grimpe les étages avec ton acolyte. Bats ton record.", 15, UiKit.SOFT))
+	column.add_child(UiKit.label("Grimpe les étages avec tes deux Échos. Bats ton record.", 15, UiKit.SOFT))
 
 
 func _fight() -> void:
 	app.sfx.play("clic")
-	app.show_screen("versus")
+	app.show_screen("trio", {"mode": "duel"})

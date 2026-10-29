@@ -44,13 +44,18 @@ static func graine_echo(graine_joueur: int, role: String) -> int:
 static func echos(classe_joueur: String, graine_joueur: int, niveau: int, donnees: Donnees = null) -> Array[Destin]:
 	var d := donnees if donnees != null else Donnees.defaut()
 	var out: Array[Destin] = []
-	var rng := RandomNumberGenerator.new()
 	for role in roles_des_echos(classe_joueur, d):
-		var graine := graine_echo(graine_joueur, role)
-		var classes := classes_du_role(role, d)
-		rng.seed = graine
-		out.append(Generateur.echo(classes[rng.randi_range(0, classes.size() - 1)], graine, niveau, d))
+		out.append(echo(role, graine_echo(graine_joueur, role), niveau, d))
 	return out
+
+
+## Un Écho généré d'un rôle : une classe de ce rôle tirée avec sa graine, sa roue au niveau donné.
+static func echo(role: String, graine: int, niveau: int, donnees: Donnees = null) -> Destin:
+	var d := donnees if donnees != null else Donnees.defaut()
+	var classes := classes_du_role(role, d)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = graine
+	return Generateur.echo(classes[rng.randi_range(0, classes.size() - 1)], graine, niveau, d)
 
 
 ## Le camp d'un joueur : lui, puis ses deux Échos générés.

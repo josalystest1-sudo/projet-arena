@@ -1,6 +1,7 @@
-## La fin d'un combat (maquette « Victory Result Screen ») : le duo, le résultat, ce qu'il rapporte (XP, série,
-## Synergies), le tracé des deux joueurs sur leur roue, et la suite (rejouer, retour). À la Tour : l'étage franchi et les
-## monstres du suivant, ou l'étage où le duo est tombé. Affichage seulement : le résultat vient du moteur.
+## La fin d'un combat (maquette « Victory Result Screen ») : le trio, le résultat, ce qu'il rapporte (XP, série,
+## Synergies), la part de chacun des trois, le tracé des deux joueurs sur leur roue (celui de l'adversaire : ce qu'on
+## découvre de lui une fois le combat fini), et la suite (rejouer, retour). À la Tour : l'étage franchi et les monstres
+## du suivant, ou l'étage où le trio est tombé. Affichage seulement : le résultat vient du moteur.
 extends Control
 
 const OR := Color("e3b85f")
@@ -19,15 +20,17 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	var tour: Tour = options.get("tour", null)
 	var column := UiKit.scroll_column(self, 12)
 	var gagne := e.vainqueur == "a" or (tour != null and tour.abandonne(e))
-	# Le duo, en grand.
-	var duo := HBoxContainer.new()
-	duo.alignment = BoxContainer.ALIGNMENT_CENTER
-	duo.add_theme_constant_override("separation", 16)
-	column.add_child(duo)
-	for id in ["a1", "a2"]:
-		var p := PortraitView.make(str(e.fiche(id)["sprite"]), str(noms.get(id, e.fiche(id)["nom"])), "", 9.0)
+	# Le trio, en grand.
+	var trio := HBoxContainer.new()
+	trio.alignment = BoxContainer.ALIGNMENT_CENTER
+	trio.add_theme_constant_override("separation", 8)
+	column.add_child(trio)
+	for id in ["a2", "a1", "a3"]:
+		if not e.statique.has(id):
+			continue
+		var p := PortraitView.make(str(e.fiche(id)["sprite"]), str(noms.get(id, e.fiche(id)["nom"])), "", 7.0)
 		p.title_color = OR if id == "a1" else UiKit.ACOLYTE_BLUE
-		duo.add_child(p)
+		trio.add_child(p)
 	var cartes := HBoxContainer.new()
 	cartes.add_theme_constant_override("separation", 8)
 	if tour == null:
@@ -61,6 +64,16 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 			var suite := UiKit.card(column, 4)
 			suite.add_child(UiKit.label("Étage %d" % tour.etage, 20, OR, false))
 			suite.add_child(UiKit.label(", ".join(noms_m), 17, Color.WHITE, false))
+	# La part de chacun des trois : ce qu'il a infligé, soigné, protégé.
+	var parts: Dictionary = options.get("parts", {})
+	if not parts.is_empty():
+		var carte := UiKit.card(column, 2)
+		carte.add_child(UiKit.label("La part de chacun", 17, ATTENUE, false))
+		for id in ["a1", "a2", "a3"]:
+			if not parts.has(id):
+				continue
+			var x: Dictionary = parts[id]
+			carte.add_child(UiKit.label("%s : %d dégâts · %d soins · %d protégés" % [noms.get(id, e.fiche(id)["nom"]), x["degats"], x["soins"], x["protections"]], 16, OR if id == "a1" else UiKit.ACOLYTE_BLUE, false))
 	# Le tracé des deux joueurs sur leur roue.
 	var traces: Dictionary = options.get("trace", {})
 	for id in ["a1", "b1"]:
