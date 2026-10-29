@@ -1,0 +1,233 @@
+{
+  "id": "necromant",
+  "nom": "Nécromant",
+  "genre": "m",
+  "role": "degats",
+  "base": "invocateur",
+  "rang": 1,
+  "pv": 720,
+  "k": 0.8,
+  "description": "L'Invocateur qui relève les morts : squelettes, peste et âmes volées.",
+  "moyeu": {
+    "nom": "Toucher glacé",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "squelettes",
+      "nom": "Voie des Squelettes",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Squelette",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 14.29, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Garde d'os",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 20, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Armée d'os",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 24.18, "tours": 4, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 40, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Chevalier de la mort",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 42.86, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "peste",
+      "nom": "Voie de la Peste",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Contagion",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "poison", "par_tour": 11.43, "tours": 5, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Pourriture",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 20, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Nuée de mouches",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 24.18, "tours": 4, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 40, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Peste noire",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 40, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ames",
+      "nom": "Voie des Âmes",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Siphon d'âme",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 43, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 30, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Vol de vie",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Pacte sombre",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 30, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Moisson d'âmes",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 130, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 50, "tours": 2, "cible": "soi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "terreur",
+      "nom": "Voie de la Terreur",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Frisson",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Effroi",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Cauchemar",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Mort apparente",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ombre",
+      "nom": "Voie de l'Ombre",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Voile d'ombre",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Éclair noir",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Vague d'ombre",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Nuit éternelle",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 106.92, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "familier", "par_tour": 25, "tours": 4, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    }
+  ]
+}

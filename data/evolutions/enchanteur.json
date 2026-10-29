@@ -1,0 +1,227 @@
+{
+  "id": "enchanteur",
+  "nom": "Enchanteur",
+  "genre": "m",
+  "role": "soutien",
+  "base": "mage",
+  "rang": 1,
+  "pv": 760,
+  "k": 0.9,
+  "description": "Le Mage qui enchante les siens et maudit les autres : bénédictions, soins arcaniques, sommeils. Il change de rôle : Soutien.",
+  "moyeu": {
+    "nom": "Étincelle",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "benedictions",
+      "nom": "Voie des Bénédictions",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Bénédiction",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Faveur arcanique",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 29.91, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Écran de mana",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grande bénédiction",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "barriere", "valeur": 138.46, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "soin_arcanique",
+      "nom": "Voie du Soin arcanique",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Lueur arcanique",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Flux de vie",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 111.11, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Onde de vie",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 119.66, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Renouveau",
+          "genre": "m",
+          "effets": [
+            {"type": "purge", "cible": "duo"},
+            {"type": "soin", "valeur": 111.11, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "malediction",
+      "nom": "Voie de la Malédiction",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Malédiction",
+          "genre": "f",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 35, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Faiblesse",
+          "genre": "f",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 38.46, "tours": 2, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Entropie",
+          "genre": "f",
+          "effets": [
+            {"type": "dissipe", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 45, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grande malédiction",
+          "genre": "f",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 35.96, "tours": 2, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sommeil",
+      "nom": "Voie du Sommeil",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Torpeur",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 12.5, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Sommeil",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 10, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Oubli",
+          "genre": "m",
+          "effets": [
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Léthargie",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "silencie", "tours": 2, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 10, "tours": 2, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trait",
+      "nom": "Voie du Trait",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Trait de force",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Trait perçant",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Trait enchanté",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Trait ultime",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "id": "protecteur",
+  "nom": "Protecteur",
+  "genre": "m",
+  "role": "front",
+  "base": "diplomate",
+  "rang": 1,
+  "pv": 1040,
+  "k": 0.95,
+  "description": "Le Diplomate devenu garde du corps : il s'interpose, escorte et met aux fers. Il change de rôle : Front.",
+  "moyeu": {
+    "nom": "Bouclier",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "garde_rapprochee",
+      "nom": "Voie de la Garde rapprochée",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Garde",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Interposition",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 85.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Cordon",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "barriere", "valeur": 125.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Rempart inébranlable",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 138.57, "cible": "soi"},
+            {"type": "soin", "valeur": 90, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "escorte",
+      "nom": "Voie de l'Escorte",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Couverture",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Protection",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 142.86, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Escorte",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Convoi",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 188.46, "cible": "duo"},
+            {"type": "soin", "valeur": 50, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "matraque",
+      "nom": "Voie de la Matraque",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Coup de matraque",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Coup assené",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Balayage",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Coup d'arrêt",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "arrestation",
+      "nom": "Voie de l'Arrestation",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Immobilisation",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Menottes",
+          "genre": "fp",
+          "effets": [
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 40, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Plaquage",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Mise aux fers",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "devouement",
+      "nom": "Voie du Dévouement",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Premiers soins",
+          "genre": "mp",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Armure lourde",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 142.86, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Résilience",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 105, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Sacrifice",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 144.44, "cible": "soi"},
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}
