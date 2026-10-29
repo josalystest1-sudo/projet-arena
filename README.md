@@ -27,45 +27,16 @@ Le projet est entièrement développé avec Claude Code.
 ```
 godot --headless --path . --import
 godot --headless --path . --script res://tests/run_tests.gd
-godot --headless --path . --script res://tools/simulate.gd -- 1000
-godot --headless --path . --script res://tools/simulate_tour.gd -- 500
+godot --headless --path . --script res://tools/budget.gd          # chaque nœud dans ±6 % de son budget (aussi en CI)
 ```
 
-Équilibrage (taux de victoire de chaque classe, compétence, passif, Synergie, composition et kit, fourchette 48–52 %) :
+Équilibrage du combat V2 (`docs/SPEC-COMBAT-V2.md`, section 11) : des combats IA contre IA au niveau 30, la matrice des classes, les trois routes, l'usage des voies, la longueur des combats et la Tour, puis les six critères ; chaque passe ajoute son rapport en français à `docs/EQUILIBRAGE-V2.md`.
 
 ```
-godot --headless --path . --script res://tools/equilibrage.gd -- 20000 1 /tmp/equilibrage.csv
-python3 tools/equilibrage.py /tmp/equilibrage.csv
-python3 tools/regleur.py 8 16000   # règle les chiffres de data/ par passes successives (4 processus Godot)
+GODOT=chemin/vers/godot PROCESSUS=24 python tools/regleur.py mesure --matrice 1000 --routes 1000 --tour 1000   # une mesure
+GODOT=chemin/vers/godot PROCESSUS=24 python tools/regleur.py passes 6 --matrice 1500 --routes 40 --tour 1000   # des passes de réglage
 ```
 
-Pour tester une Synergie précise (un duo donné contre des duos au hasard, avec puis sans elle) : `godot --headless --path . --script res://tools/essai_synergie.gd -- 1500 golem_priere invocateur 0 0 0 0 pretre 1 0 0 0` (classe puis index de la basique, de la moyenne, de la forte et du passif, pour le joueur puis l'acolyte).
+`tools/equilibrage_lib.gd` contient la simulation, les critères et le rapport ; `tools/equilibrage.gd` les lance en ligne de commande (un travailleur, ou le rapport) ; `tools/regleur.py` lance les travailleurs en parallèle ; `tools/regleur_boutons.py` touche les boutons de la section 11.3 et garde son état dans `tools/regleur_etat.json`.
 
-Pour savoir où va le temps du simulateur (tirage des duos, IA, résolution) : `godot --headless --path . --script res://tools/profil.gd -- 200`.
-
-Le même réglage sur les machines de GitHub, en parallèle et gratuitement : onglet Actions → « Réglage de l'équilibrage (simulation sur GitHub) » → « Run workflow » (passes, combats par passe, machines, branche de départ). À la fin, la branche `reglage-<numéro>` porte les données réglées et le résumé du run donne le rapport. La Tour a son propre bouton, « Réglage de la Tour (simulation sur GitHub) » (passes, montées par passe, machines, branche) : il règle la menace des monstres et la difficulté des étages, et publie la branche `reglage-tour-<numéro>`.
-
-Le Destin (valeurs des nœuds, étape 4) : les mêmes combats avec un niveau (`alea` : les deux duos au même niveau tiré entre 1 et 30, points de Destin placés au hasard ; ou un niveau fixe), puis le régleur des valeurs de `data/destin_nodes.json` :
-
-```
-godot --headless --path . --script res://tools/equilibrage.gd -- 20000 1 /tmp/destin.csv alea
-python3 tools/equilibrage.py /tmp/destin.csv        # sections « Nœuds du Destin pris »
-python3 tools/regleur_destin.py 4 8000               # 4 passes (4 processus Godot) : valeurs côté joueur, force dans le mini-Destin côté acolyte, puis recalibrage de best_value
-godot --headless --path . --script res://tools/calibrer_destin.gd -- 120   # la valeur naturelle des arbres neufs
-```
-
-La Tour (menace de chaque monstre, puis difficulté de chaque étage) :
-
-```
-godot --headless --path . --script res://tools/simulate_tour.gd -- 1000 1 /tmp/etages.csv
-python3 tools/menace.py /tmp/etages.csv [--ecrire]   # menace réelle des monstres (--ecrire : la règle dans data/bestiaire.json)
-python3 tools/regleur_tour.py 3 2000                 # chaque étage vers son taux de chute cible (data/tower.json)
-```
-
-Voir le jeu au format téléphone et prendre des captures (Node et Playwright, après l'export web) :
-
-```
-godot --headless --path . --export-release "Web" build/web/index.html
-(cd build/web && python3 -m http.server 8765) &
-OUT=/tmp/captures Q="?graine=7" node tools/navigateur.js '[{"wait":1000},{"shot":"accueil"},{"tap":[270,700]},{"swipe":[270,800,300]},{"shot":"apres"}]'
-```
+Voir un écran sans téléphone : `godot --path . --script res://tools/capture.gd -- <dossier> '<étapes JSON>'` (mode d'emploi en tête du fichier : créer un perso, monter de niveau, allumer un nœud, lancer un duel ou une montée, toucher, appui long, captures).

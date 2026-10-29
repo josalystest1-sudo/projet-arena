@@ -3,8 +3,8 @@
   "nom": "Invocateur",
   "genre": "m",
   "role": "degats",
-  "pv": 900,
-  "k": 1.0,
+  "pv": 356,
+  "k": 0.9748,
   "acolyte": "pugiliste",
   "moyeu": {
     "nom": "Griffe",
@@ -24,9 +24,10 @@
           "nom": "Loup",
           "genre": "m",
           "effets": [
-            {"type": "dot", "sous_type": "familier", "par_tour": 12, "tours": 4, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 36, "cible": "un_ennemi"}
-          ]
+            {"type": "dot", "sous_type": "familier", "par_tour": 11.36, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 34.08, "cible": "un_ennemi"}
+          ],
+          "budget_override": 65.9
         },
         {
           "rang": 2,
@@ -51,9 +52,10 @@
           "nom": "Béhémoth",
           "genre": "m",
           "effets": [
-            {"type": "dot", "sous_type": "familier", "par_tour": 45, "tours": 5, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 72, "cible": "un_ennemi"}
-          ]
+            {"type": "dot", "sous_type": "familier", "par_tour": 49.61, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 79.38, "cible": "un_ennemi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -67,33 +69,37 @@
           "nom": "Esprit gardien",
           "genre": "m",
           "effets": [
-            {"type": "gardien", "par_tour": 27, "tours": 4, "cible": "un_allie"}
-          ]
+            {"type": "gardien", "par_tour": 29.62, "tours": 4, "cible": "un_allie"}
+          ],
+          "budget_override": 77.0
         },
         {
           "rang": 2,
           "nom": "Totem de vie",
           "genre": "m",
           "effets": [
-            {"type": "gardien", "par_tour": 30, "tours": 4, "cible": "duo"}
-          ]
+            {"type": "gardien", "par_tour": 32.54, "tours": 4, "cible": "duo"}
+          ],
+          "budget_override": 110.0
         },
         {
           "rang": 3,
           "nom": "Carapace",
           "genre": "f",
           "effets": [
-            {"type": "barriere", "valeur": 154, "cible": "duo"}
-          ]
+            {"type": "barriere", "valeur": 169.23, "cible": "duo"}
+          ],
+          "budget_override": 154.0
         },
         {
           "rang": 4,
           "nom": "Grand gardien",
           "genre": "m",
           "effets": [
-            {"type": "gardien", "par_tour": 40, "tours": 5, "cible": "duo"},
-            {"type": "barriere", "valeur": 67, "cible": "duo"}
-          ]
+            {"type": "gardien", "par_tour": 44.01, "tours": 5, "cible": "duo"},
+            {"type": "barriere", "valeur": 73.71, "cible": "duo"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -134,9 +140,10 @@
           "genre": "f",
           "effets": [
             {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
-            {"type": "dot", "sous_type": "saignement", "par_tour": 25, "tours": 4, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 40, "cible": "un_ennemi"}
-          ]
+            {"type": "dot", "sous_type": "saignement", "par_tour": 30.23, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 48.37, "cible": "un_ennemi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -150,8 +157,9 @@
           "nom": "Flammèche",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 65.9, "cible": "un_ennemi"}
+          ],
+          "budget_override": 65.9
         },
         {
           "rang": 2,
@@ -175,8 +183,9 @@
           "nom": "Titan",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 253.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     },
@@ -190,36 +199,40 @@
           "nom": "Pacte",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 40, "cible": "un_ennemi"},
-            {"type": "soin", "valeur": 33, "cible": "soi"}
-          ]
+            {"type": "degats", "valeur": 44.19, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 36.46, "cible": "soi"}
+          ],
+          "budget_override": 77.0
         },
         {
           "rang": 2,
           "nom": "Sacrifice",
           "genre": "m",
           "effets": [
-            {"type": "soin", "valeur": 111, "cible": "soi"}
-          ]
+            {"type": "soin", "valeur": 122.22, "cible": "soi"}
+          ],
+          "budget_override": 110.0
         },
         {
           "rang": 3,
           "nom": "Lien vital",
           "genre": "m",
           "effets": [
-            {"type": "soin", "valeur": 60, "cible": "duo"},
-            {"type": "barriere", "valeur": 100, "cible": "soi"}
-          ]
+            {"type": "soin", "valeur": 65.91, "cible": "duo"},
+            {"type": "barriere", "valeur": 109.84, "cible": "soi"}
+          ],
+          "budget_override": 154.0
         },
         {
           "rang": 4,
           "nom": "Communion",
           "genre": "f",
           "effets": [
-            {"type": "soin", "valeur": 100, "cible": "duo"},
-            {"type": "renfort", "pourcent": 30, "tours": 2, "cible": "duo"},
-            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
-          ]
+            {"type": "soin", "valeur": 110.0, "cible": "duo"},
+            {"type": "renfort", "pourcent": 33.0, "tours": 2, "cible": "duo"},
+            {"type": "degats", "valeur": 38.5, "cible": "un_ennemi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     }

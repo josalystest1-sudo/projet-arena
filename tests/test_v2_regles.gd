@@ -252,11 +252,15 @@ func test_28_double_ko() -> void:
 		assert_true(bool(e.perso("a1")["ko"]) and bool(e.perso("b1")["ko"]), "les deux KO")
 
 
-# 29. Mort subite au tour 12 : ×1,15 ; les soins ne bougent pas ; pas de mort subite à la Tour.
+# 29. Mort subite (spécification : au tour 12, ×1,15) ; les soins ne bougent pas ; pas de mort subite à la Tour.
 func test_29_mort_subite() -> void:
 	var a1 := essai([[[deg(100)]]])
 	var a2 := essai([[[soin(100)]]])
-	for cas in [[11, "pvp", 100], [12, "pvp", 115], [13, "pvp", 130], [12, "tour", 100]]:
+	# Les chiffres de data/rules.json (la spécification : tour 12, pas de 0,15 ; le réglage peut les changer).
+	var debut := int(donnees.regles["mort_subite_tour"])
+	var pas := float(donnees.regles["mort_subite_pas"])
+	var cas_liste := [[debut - 1, "pvp", 100], [debut, "pvp", Regles.plancher(100.0 * (1.0 + pas))], [debut + 1, "pvp", Regles.plancher(100.0 * (1.0 + 2.0 * pas))], [debut, "tour", 100]]
+	for cas in cas_liste:
 		var e := combat([a1, a2], [essai(), essai()], 1, cas[1])
 		e.tour = cas[0]
 		e.perso("a1")["pv"] = 500
@@ -264,7 +268,8 @@ func test_29_mort_subite() -> void:
 		e = tour(e, {"a1": jouer(e, "a1", 0, "b1"), "a2": jouer(e, "a2", 0, "", "a1")})
 		assert_eq(_degats_de(e, "a1"), [cas[2]], "dégâts au tour %d (%s)" % [cas[0], cas[1]])
 		assert_eq(int(e.perso("a1")["pv"]), 600, "soin intact au tour %d (%s)" % [cas[0], cas[1]])
-		assert_eq(evenements(e, "tick", "b2")[0]["valeur"], int(cas[2] / 10), "DoT au tour %d (%s)" % [cas[0], cas[1]])
+		var ms := 1.0 if cas[1] == "tour" or cas[0] < debut else 1.0 + pas * float(cas[0] - debut + 1)
+		assert_eq(evenements(e, "tick", "b2")[0]["valeur"], Regles.plancher(10.0 * ms), "DoT au tour %d (%s)" % [cas[0], cas[1]])
 
 
 # 30. M(niveau) multiplie les PV et les valeurs, pas les durées.
@@ -277,8 +282,8 @@ func test_30_niveau() -> void:
 	assert_eq(int(s["valeur"]), 11, "DoT × 1,1")
 	assert_eq(int(s["fin"]) - int(s["debut"]) + 1, 3, "durée inchangée")
 	var e30 := combat([destin("guerrier")], [destin("mage")], 30)
-	assert_eq(int(e30.fiche("a1")["pv_max"]), 3430, "Guerrier au niveau 30 : 1400 × 2,45")
-	assert_eq(int(e30.fiche("b1")["pv_max"]), 2205, "Mage au niveau 30 : 900 × 2,45")
+	assert_eq(int(e30.fiche("a1")["pv_max"]), Regles.plancher(float(donnees.classe("guerrier")["pv"]) * 2.45), "Guerrier au niveau 30 : PV × 2,45")
+	assert_eq(int(e30.fiche("b1")["pv_max"]), Regles.plancher(float(donnees.classe("mage")["pv"]) * 2.45), "Mage au niveau 30 : PV × 2,45")
 
 
 # 31. Éclats : +5 % (É1, É3), +3 % de PV (É2, É4), +10 % sur la Clé (É5).

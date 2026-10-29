@@ -3,8 +3,8 @@
   "nom": "Guerrier",
   "genre": "m",
   "role": "front",
-  "pv": 1400,
-  "k": 0.85,
+  "pv": 554,
+  "k": 0.8256,
   "acolyte": "pretre",
   "moyeu": {
     "nom": "Taillade",

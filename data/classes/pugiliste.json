@@ -3,8 +3,8 @@
   "nom": "Pugiliste",
   "genre": "m",
   "role": "front",
-  "pv": 1200,
-  "k": 0.9,
+  "pv": 474,
+  "k": 0.9736,
   "acolyte": "barde",
   "moyeu": {
     "nom": "Direct",
@@ -24,8 +24,9 @@
           "nom": "Crochet",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 63.9, "cible": "un_ennemi"}
+          ],
+          "budget_override": 63.9
         },
         {
           "rang": 2,
@@ -64,8 +65,9 @@
           "nom": "Souffle",
           "genre": "m",
           "effets": [
-            {"type": "soin", "valeur": 78, "cible": "soi"}
-          ]
+            {"type": "soin", "valeur": 71.0, "cible": "soi"}
+          ],
+          "budget_override": 63.9
         },
         {
           "rang": 2,
@@ -106,8 +108,9 @@
           "genre": "f",
           "effets": [
             {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 28.9, "cible": "un_ennemi"}
+          ],
+          "budget_override": 63.9
         },
         {
           "rang": 2,
@@ -149,8 +152,9 @@
           "nom": "Balayage",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 54, "cible": "tous_les_ennemis"}
-          ]
+            {"type": "degats", "valeur": 49.15, "cible": "tous_les_ennemis"}
+          ],
+          "budget_override": 63.9
         },
         {
           "rang": 2,
@@ -190,36 +194,40 @@
           "genre": "m",
           "effets": [
             {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 37.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 77.0
         },
         {
           "rang": 2,
           "nom": "Garde",
           "genre": "f",
           "effets": [
-            {"type": "barriere", "valeur": 86, "cible": "soi"},
+            {"type": "barriere", "valeur": 100.0, "cible": "soi"},
             {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"}
-          ]
+          ],
+          "budget_override": 110.0
         },
         {
           "rang": 3,
           "nom": "Contre",
           "genre": "m",
           "effets": [
-            {"type": "barriere", "valeur": 100, "cible": "soi"},
-            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
-          ]
+            {"type": "barriere", "valeur": 110.0, "cible": "soi"},
+            {"type": "degats", "valeur": 77.0, "cible": "un_ennemi"}
+          ],
+          "budget_override": 154.0
         },
         {
           "rang": 4,
           "nom": "Mur de chair",
           "genre": "m",
           "effets": [
-            {"type": "barriere", "valeur": 200, "cible": "soi"},
+            {"type": "barriere", "valeur": 225.84, "cible": "soi"},
             {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"},
-            {"type": "degats", "valeur": 38, "cible": "un_ennemi"}
-          ]
+            {"type": "degats", "valeur": 42.91, "cible": "un_ennemi"}
+          ],
+          "budget_override": 253.0
         }
       ]
     }
