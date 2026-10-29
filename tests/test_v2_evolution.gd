@@ -4,30 +4,42 @@
 extends "res://tests/test_case.gd"
 
 
-# Trente évolutions, trois par classe de base (une de chaque rôle), chacune une roue entière, dans le budget.
+# Soixante évolutions : trente de rang 1 (trois par classe de base, une de chaque rôle) et trente de rang 2 (une par
+# évolution de rang 1, du même rôle), chacune une roue entière, dans le budget.
 func test_donnees_des_evolutions() -> void:
 	assert_eq(donnees.erreurs, [] as Array[String], "aucune erreur de données")
-	assert_eq(donnees.ordre_evolutions.size(), 30, "trente évolutions")
+	assert_eq(donnees.ordre_evolutions.size(), 60, "soixante évolutions")
+	var par_rang := {1: 0, 2: 0}
+	var enfants := {}
 	var bases := {}
 	var roles := {}
 	var roles_par_base := {}
 	for id in donnees.ordre_evolutions:
 		var ev := donnees.classe(id)
 		assert_eq(str(ev["id"]), id, id + " : identifiant")
-		assert_true(donnees.ordre_classes.has(str(ev["base"])), id + " : une classe de base connue")
-		bases[str(ev["base"])] = true
-		roles[str(ev["role"])] = true
-		roles_par_base[str(ev["base"]) + "|" + str(ev["role"])] = true
-		assert_eq(int(ev["rang"]), 1, id + " : rang 1")
+		var rang := int(ev["rang"])
+		par_rang[rang] = int(par_rang.get(rang, 0)) + 1
+		if rang == 1:
+			assert_true(donnees.ordre_classes.has(str(ev["base"])), id + " : une classe de base connue")
+			bases[str(ev["base"])] = true
+			roles[str(ev["role"])] = true
+			roles_par_base[str(ev["base"]) + "|" + str(ev["role"])] = true
+		else:
+			assert_eq(Evolution.rang(str(ev["base"]), donnees), 1, id + " : son parent est de rang 1")
+			assert_eq(str(ev["role"]), str(donnees.classe(str(ev["base"]))["role"]), id + " : le rôle de son parent")
+			assert_true(donnees.ordre_classes.has(Evolution.base(id, donnees)), id + " : une lignée connue")
+			enfants[str(ev["base"])] = int(enfants.get(str(ev["base"]), 0)) + 1
 		assert_eq(ev["voies"].size(), 5, id + " : 5 voies")
 		for voie in ev["voies"]:
 			assert_eq(voie["noeuds"].size(), 4, "%s %s : 4 nœuds" % [id, voie["id"]])
 		assert_true(str(ev["description"]) != "", id + " : une description")
-		assert_eq(Evolution.rang(id, donnees), 1, id + " : rang lu")
-		assert_eq(Evolution.base(id, donnees), str(ev["base"]), id + " : base lue")
+		assert_eq(Evolution.rang(id, donnees), rang, id + " : rang lu")
+		assert_eq(Evolution.parent(id, donnees), str(ev["base"]), id + " : parent lu")
 	assert_eq(bases.size(), 10, "chaque classe de base a ses évolutions")
 	assert_eq(roles.size(), 3, "les trois rôles parmi les évolutions")
 	assert_eq(roles_par_base.size(), 30, "chaque classe a une évolution de chaque rôle")
+	assert_eq(par_rang, {1: 30, 2: 30}, "trente de chaque rang")
+	assert_eq(enfants.size(), 30, "chaque évolution de rang 1 a son évolution de rang 2")
 	assert_eq(Budget.fautes(donnees), [] as Array[Dictionary], "tous les nœuds des évolutions dans leur budget")
 	for classe in donnees.ordre_classes:
 		assert_eq(Evolution.evolutions_de(classe, donnees).size(), 3, classe + " : trois évolutions")
@@ -48,22 +60,35 @@ func test_points_et_niveaux() -> void:
 	assert_eq(Evolution.points(60, 1, donnees), 30, "évolué au niveau 60 : 30 points")
 	assert_eq(Evolution.niveau_max(0, donnees), 30, "plafond de la classe de base")
 	assert_eq(Evolution.niveau_max(1, donnees), 60, "plafond du rang 1")
-	assert_eq(Evolution.rang_max(donnees), 1, "seul le rang 1 existe")
+	assert_eq(Evolution.rang_max(donnees), 2, "deux rangs existent")
+	assert_eq(Evolution.niveau_max(2, donnees), 90, "plafond du rang 2")
+	assert_eq(Evolution.points(61, 2, donnees), 1, "rang 2 au niveau 61 : 1 point")
 	assert_eq(Evolution.rang_du_niveau(30, donnees), 0, "niveau 30 : classe de base")
 	assert_eq(Evolution.rang_du_niveau(31, donnees), 1, "niveau 31 : évolué")
 	assert_eq(Evolution.rang_du_niveau(60, donnees), 1, "niveau 60 : évolué")
-	assert_eq(Evolution.rang_du_niveau(90, donnees), 1, "niveau 90 : borné par ce qui existe")
+	assert_eq(Evolution.rang_du_niveau(61, donnees), 2, "niveau 61 : rang 2")
+	assert_eq(Evolution.rang_du_niveau(90, donnees), 2, "niveau 90 : rang 2")
+	assert_eq(Evolution.rang_du_niveau(120, donnees), 2, "niveau 120 : borné par ce qui existe")
 	assert_false(Evolution.peut_evoluer("guerrier", 29, donnees), "pas avant le niveau 30")
 	assert_true(Evolution.peut_evoluer("guerrier", 30, donnees), "au niveau 30")
-	assert_false(Evolution.peut_evoluer("champion", 60, donnees), "le rang 2 n'existe pas encore")
+	assert_false(Evolution.peut_evoluer("champion", 59, donnees), "pas avant le niveau 60")
+	assert_true(Evolution.peut_evoluer("champion", 60, donnees), "au niveau 60, le rang 2")
+	assert_false(Evolution.peut_evoluer("parangon", 90, donnees), "le rang 3 n'existe pas")
+	assert_eq(Evolution.evolutions_de("champion", donnees), ["parangon"] as Array[String], "l'évolution du Champion")
+	assert_eq(Evolution.base("parangon", donnees), "guerrier", "la lignée du Parangon")
+	assert_eq(Evolution.parent("parangon", donnees), "champion", "son parent")
 	assert_eq(Evolution.classe_au_niveau("guerrier", 30, 5, donnees), "guerrier", "jusqu'à 30 : la classe de base")
 	assert_true(Evolution.classe_au_niveau("guerrier", 31, 5, donnees) in Evolution.evolutions_de("guerrier", donnees), "au-delà : une de ses évolutions")
+	var deux := Evolution.classe_au_niveau("guerrier", 65, 5, donnees)
+	assert_eq(Evolution.rang(deux, donnees), 2, "au niveau 65 : un rang 2")
+	assert_eq(Evolution.base(deux, donnees), "guerrier", "de la lignée du Guerrier")
+	assert_eq(Evolution.classe_au_niveau("champion", 65, 5, donnees), "parangon", "un Champion au niveau 65 : Parangon")
 	var tirees := {}
 	for graine in range(1, 31):
 		tirees[Evolution.tirer("guerrier", graine, donnees)] = true
 	assert_eq(tirees.size(), 3, "les trois évolutions sont tirées selon la graine")
 	assert_eq(Evolution.classe_au_niveau("champion", 12, 5, donnees), "champion", "une évolution reste une évolution")
-	assert_eq(Evolution.tirer("champion", 5, donnees), "champion", "sans évolution : elle-même")
+	assert_eq(Evolution.tirer("parangon", 5, donnees), "parangon", "sans évolution : elle-même")
 
 
 # Un Destin évolué : rang 1, le sprite de sa lignée, PV et k multipliés par le saut de puissance ; à roue vide au
@@ -94,6 +119,13 @@ func test_destin_evolue() -> void:
 	# Un rôle changé : le Paladin est Front, le Berserker Dégâts.
 	assert_eq(Generateur.generer("paladin", 1, 30, Generateur.PAR_DEFAUT, donnees).role, "front", "le Paladin est Front")
 	assert_eq(Generateur.generer("berserker", 1, 30, Generateur.PAR_DEFAUT, donnees).role, "degats", "le Berserker est Dégâts")
+	# Le rang 2 : deux sauts de puissance, le sprite de la lignée.
+	var deux := Generateur.generer("parangon", 7, 60, Generateur.PAR_DEFAUT, donnees)
+	assert_eq(deux.rang, 2, "rang 2")
+	assert_eq(deux.sprite, "guerrier", "le sprite de la lignée")
+	assert_eq(deux.pv_base, roundi(1120.0 * p_pv * p_pv), "PV × puissance²")
+	assert_eq(_allumes(deux), 0, "niveau 60 : roue vide")
+	assert_eq(_allumes(Generateur.generer("parangon", 7, 90, Generateur.PAR_DEFAUT, donnees)), 30, "niveau 90 : 30 points")
 	# Sérialisation : le rang survit.
 	var copie := Destin.depuis_dict(evo.vers_dict())
 	assert_eq(copie.rang, 1, "le rang est sauvegardé")
@@ -132,6 +164,12 @@ func test_echos_et_adversaires_evolues() -> void:
 	var roles_paladin := Trio.roles_des_echos("paladin", donnees)
 	assert_eq(roles_paladin, ["degats", "soutien"] as Array[String], "le Paladin est servi comme un Front")
 	assert_eq(Trio.classes_du_role("front", donnees, 1).size(), 10, "dix évolutions Front (une par classe)")
+	assert_eq(Trio.classes_du_role("front", donnees, 2).size(), 10, "dix évolutions Front de rang 2")
+	for x in Trio.echos("parangon", 3, 65, donnees):
+		assert_eq(x.rang, 2, "%s : au niveau 65, des Échos de rang 2" % x.classe_id)
+	var haut := Arene.adversaire(75, 9, donnees)
+	assert_eq(Evolution.rang(str(haut["classe"]), donnees), 2, "un adversaire de rang 2 au niveau 75")
+	assert_true(int(Arene.adversaire(90, 9, donnees)["niveau"]) <= 90, "jamais au-delà du niveau 90")
 	assert_eq(Trio.classes_du_role("front", donnees), ["guerrier", "pugiliste"] as Array[String], "les Fronts de base ne changent pas")
 	# L'Arène : un adversaire au-delà du niveau 30 est une évolution ; en dessous, une classe de base.
 	var evolues := 0
@@ -156,28 +194,30 @@ func test_echos_et_adversaires_evolues() -> void:
 	assert_true(frontiere.has(0) and frontiere.has(1), "au niveau 30, des deux côtés de la frontière")
 
 
-# Le garde-fou de Gautier : un évolué à roue vide (niveau 30, zéro point) bat un non-évolué de niveau 29 (29 points),
-# pour chacune des trente évolutions, sur deux graines et dans les deux sens : presque toujours en 1 contre 1, le plus
-# souvent en trio (ses Échos sont alors des classes de base, comme ceux d'en face). Le réglage fin est pour la phase 9.
+# Le garde-fou de Gautier : un évolué à roue vide (au niveau de son évolution, 30 ou 60, zéro point) bat son parent un
+# niveau en dessous (29 ou 59 points), pour chacune des soixante évolutions, sur deux graines et dans les deux sens :
+# presque toujours en 1 contre 1, le plus souvent en trio (les Échos des deux camps sont du rang du parent). Le réglage
+# fin est pour la phase 9.
 func test_evolue_vide_bat_niveau_29() -> void:
 	var solo := [0, 0]
 	var trio := [0, 0]
 	for evo in donnees.ordre_evolutions:
-		var classe := Evolution.base(evo, donnees)
+		var classe := Evolution.parent(evo, donnees)
+		var nv := Evolution.niveau_max(Evolution.rang(evo, donnees) - 1, donnees)
 		for graine in [11, 12]:
 			for evo_en_premier in [true, false]:
-				var a := Generateur.generer(evo, graine, 30, Generateur.PAR_DEFAUT, donnees)
-				var b := Generateur.generer(classe, graine + 1000, 29, Generateur.PAR_DEFAUT, donnees)
-				solo[0] += 1 if _gagne([a], [b], evo_en_premier) else 0
+				var a := Generateur.generer(evo, graine, nv, Generateur.PAR_DEFAUT, donnees)
+				var b := Generateur.generer(classe, graine + 1000, nv - 1, Generateur.PAR_DEFAUT, donnees)
+				solo[0] += 1 if _gagne([a], [b], evo_en_premier, nv) else 0
 				solo[1] += 1
-				trio[0] += 1 if _gagne(Trio.camp(a, 30, donnees), Trio.camp(b, 29, donnees), evo_en_premier) else 0
+				trio[0] += 1 if _gagne(Trio.camp(a, nv, donnees), Trio.camp(b, nv - 1, donnees), evo_en_premier, nv) else 0
 				trio[1] += 1
 	assert_true(float(solo[0]) / float(solo[1]) >= 0.9, "en 1 contre 1, l'évolué à roue vide gagne au moins 9 fois sur 10 (%d sur %d)" % [solo[0], solo[1]])
 	assert_true(float(trio[0]) / float(trio[1]) >= 0.6, "en trio, l'évolué à roue vide gagne au moins 6 fois sur 10 (%d sur %d)" % [trio[0], trio[1]])
 
 
-func _gagne(camp_evo: Array, camp_base: Array, evo_en_premier: bool) -> bool:
-	var e := Regles.nouveau_combat(camp_evo if evo_en_premier else camp_base, camp_base if evo_en_premier else camp_evo, 30, "pvp", donnees)
+func _gagne(camp_evo: Array, camp_base: Array, evo_en_premier: bool, niveau: int) -> bool:
+	var e := Regles.nouveau_combat(camp_evo if evo_en_premier else camp_base, camp_base if evo_en_premier else camp_evo, niveau, "pvp", donnees)
 	while not e.fini and e.tour <= 100:
 		e = Regles.resoudre_tour(e, IA.declarer(e, []))
 	return e.fini and e.vainqueur == ("a" if evo_en_premier else "b")

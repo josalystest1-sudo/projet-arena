@@ -1,0 +1,225 @@
+{
+  "id": "sage_du_souffle",
+  "nom": "Sage du souffle",
+  "genre": "m",
+  "role": "soutien",
+  "base": "maitre_du_souffle",
+  "rang": 2,
+  "pv": 800,
+  "k": 0.95,
+  "description": "Le Maître du souffle devenu sage : son souffle relève les morts, sa pression endort les vivants.",
+  "moyeu": {
+    "nom": "Chiquenaude",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "souffle_sacre",
+      "nom": "Voie du Souffle sacré",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Souffle sacré",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Souffle de vie",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 111.11, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grande respiration",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 119.66, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Souffle du monde",
+          "genre": "m",
+          "effets": [
+            {"type": "purge", "cible": "duo"},
+            {"type": "soin", "valeur": 111.11, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "equilibre",
+      "nom": "Voie de l'Équilibre parfait",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Centre",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Flux parfait",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 29.91, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Écorce sacrée",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Harmonie parfaite",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "barriere", "valeur": 138.46, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pression_sacree",
+      "nom": "Voie de la Pression sacrée",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Point du sage",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 12.5, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Nerf du sage",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 10, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Transe du sage",
+          "genre": "f",
+          "effets": [
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grand sommeil",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "silencie", "tours": 2, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 10, "tours": 2, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cercle",
+      "nom": "Voie du Cercle",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Garde du sage",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Bouclier du sage",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 142.86, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grand cercle",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Rempart du sage",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 188.46, "cible": "duo"},
+            {"type": "soin", "valeur": 50, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "frappe_sacree",
+      "nom": "Voie de la Frappe sacrée",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Coup du sage",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Double coup du sage",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Coup de l'éveillé",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Coup ultime",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

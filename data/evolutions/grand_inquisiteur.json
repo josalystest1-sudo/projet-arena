@@ -1,0 +1,231 @@
+{
+  "id": "grand_inquisiteur",
+  "nom": "Grand inquisiteur",
+  "genre": "m",
+  "role": "degats",
+  "base": "inquisiteur",
+  "rang": 2,
+  "pv": 740,
+  "k": 0.9,
+  "description": "L'Inquisiteur devenu tribunal : bûchers, chaînes et lumière qui brûle les yeux.",
+  "moyeu": {
+    "nom": "Fouet du grand inquisiteur",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "grand_chatiment",
+      "nom": "Voie du Grand châtiment",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Châtiment suprême",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Jugement suprême",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Colère suprême",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 15, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Verdict suprême",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_bucher",
+      "nom": "Voie du Grand bûcher",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Étincelle du tribunal",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 16.67, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Flamme du tribunal",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "brulure", "par_tour": 25, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Bûcher du tribunal",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 76.19, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 15, "tours": 3, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Autodafé",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 146, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 30, "tours": 4, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_question",
+      "nom": "Voie de la Grande question",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Entrave du tribunal",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Bâillon du tribunal",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Chaînes du tribunal",
+          "genre": "fp",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Sentence du tribunal",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "dissipe", "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_zele",
+      "nom": "Voie du Grand zèle",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Ferveur du tribunal",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 43, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 30, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Conviction du tribunal",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Exaltation du tribunal",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 30, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Martyre du tribunal",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 130, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 50, "tours": 2, "cible": "soi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lumiere_aveuglante",
+      "nom": "Voie de la Lumière aveuglante",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Rayon du tribunal",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 53.85, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Éclat du tribunal",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 76.92, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grand aveuglement",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 27.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Soleil du tribunal",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 146.92, "cible": "tous_les_ennemis"},
+            {"type": "affaiblissement", "pourcent": 15, "tours": 2, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    }
+  ]
+}

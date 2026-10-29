@@ -121,7 +121,8 @@ var textes: Dictionary = {}
 ## (data/classes.json : celui de la section 9, et des écrans).
 var classes: Dictionary = {}
 var ordre_classes: Array[String] = []
-## L'ordre des évolutions (data/evolutions.json) ; chacune est aussi dans `classes`, avec `base` et `rang`.
+## L'ordre des évolutions (data/evolutions.json : le rang 1 puis le rang 2) ; chacune est aussi dans `classes`, avec
+## `base` (son parent) et `rang`.
 var ordre_evolutions: Array[String] = []
 ## Le bestiaire de la Tour (section 10.4) : familles, rangs, monstres (une classe, des voies, un multiplicateur de PV).
 var bestiaire: Dictionary = {}
@@ -235,10 +236,14 @@ func valider() -> void:
 	for id in ordre_evolutions:
 		erreurs.append_array(valider_classe(classes[id], id))
 		var ev: Dictionary = classes[id]
-		if not ordre_classes.has(str(ev.get("base", ""))):
-			erreurs.append("évolution %s : classe de base inconnue « %s »" % [id, ev.get("base", "")])
-		if int(ev.get("rang", 0)) != 1:
-			erreurs.append("évolution %s : seul le rang 1 existe pour l'instant" % id)
+		var rang := int(ev.get("rang", 0))
+		var parent: Dictionary = classes.get(str(ev.get("base", "")), {})
+		if parent.is_empty():
+			erreurs.append("évolution %s : parent inconnu « %s »" % [id, ev.get("base", "")])
+		elif rang < 1 or rang > 2:
+			erreurs.append("évolution %s : rang %d (1 ou 2 attendu)" % [id, rang])
+		elif int(parent.get("rang", 0)) != rang - 1:
+			erreurs.append("évolution %s : son parent « %s » devrait être de rang %d" % [id, ev.get("base", ""), rang - 1])
 		if str(ev.get("description", "")) == "":
 			erreurs.append("évolution %s : description vide" % id)
 	_cles(tour, CLES_TOUR, CLES_TOUR, "tour.json")

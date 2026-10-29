@@ -1,0 +1,230 @@
+{
+  "id": "porte_etendard",
+  "nom": "Porte-étendard",
+  "genre": "m",
+  "role": "front",
+  "base": "heraut",
+  "rang": 2,
+  "pv": 1000,
+  "k": 0.9,
+  "description": "Le Héraut qui porte l'étendard au cœur de la mêlée : tant qu'il tient, personne ne recule.",
+  "moyeu": {
+    "nom": "Trompette du porte-étendard",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "grande_fanfare",
+      "nom": "Voie de la Grande fanfare",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Appel du porte-étendard",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Sonnerie du porte-étendard",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 85.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grande sonnerie de guerre",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "barriere", "valeur": 125.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Charge de l'étendard",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 138.57, "cible": "soi"},
+            {"type": "soin", "valeur": 90, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_etendard",
+      "nom": "Voie du Grand étendard",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Grand étendard",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Ralliement de l'étendard",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 29.91, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Bannière d'acier",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Étendard de la victoire",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "barriere", "valeur": 138.46, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_cuirasse",
+      "nom": "Voie de la Grande cuirasse",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Cuirasse de l'étendard",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Repos du porte-étendard",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 111.11, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Résistance de l'étendard",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 105, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Dernier mot de l'étendard",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 144.44, "cible": "soi"},
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_marche",
+      "nom": "Voie de la Grande marche",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Pas de l'étendard",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Marche de l'étendard",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Piétinement de l'étendard",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Charge du porte-étendard",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_proclamation",
+      "nom": "Voie de la Grande proclamation",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Sommation de l'étendard",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Interdiction de l'étendard",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Édit de l'étendard",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Loi de l'étendard",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

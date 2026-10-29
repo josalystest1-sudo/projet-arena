@@ -1,0 +1,225 @@
+{
+  "id": "roi_de_guerre",
+  "nom": "Roi de guerre",
+  "genre": "m",
+  "role": "soutien",
+  "base": "seigneur_de_guerre",
+  "rang": 2,
+  "pv": 880,
+  "k": 0.95,
+  "description": "Le Seigneur de guerre couronné : ses ordres valent des armées.",
+  "moyeu": {
+    "nom": "Décret",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "couronne",
+      "nom": "Voie de la Couronne",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Couronne",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Appel du roi",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 29.91, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Garde royale",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Sacre",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "barriere", "valeur": 138.46, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "intendance",
+      "nom": "Voie de l'Intendance",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Ravitaillement",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Médecins du roi",
+          "genre": "mp",
+          "effets": [
+            {"type": "soin", "valeur": 111.11, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Hôpital de campagne",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 119.66, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Renfort royal",
+          "genre": "m",
+          "effets": [
+            {"type": "purge", "cible": "duo"},
+            {"type": "soin", "valeur": 111.11, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "edit",
+      "nom": "Voie de l'Édit",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Sommation royale",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 15, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Édit de silence",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 27.5, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Terreur royale",
+          "genre": "f",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 31.35, "tours": 2, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Bannissement",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 25, "tours": 2, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "citadelle",
+      "nom": "Voie de la Citadelle",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Mur du roi",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Tour de garde",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 142.86, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Remparts",
+          "genre": "mp",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Forteresse royale",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 142.86, "cible": "duo"},
+            {"type": "purge", "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ost",
+      "nom": "Voie de l'Ost",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Charge royale",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Lance du roi",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Percée royale",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 140, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Coup du roi",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 170, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

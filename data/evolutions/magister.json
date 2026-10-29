@@ -1,0 +1,230 @@
+{
+  "id": "magister",
+  "nom": "Magister",
+  "genre": "m",
+  "role": "degats",
+  "base": "archimage",
+  "rang": 2,
+  "pv": 720,
+  "k": 0.8287,
+  "description": "L'Archimage qui écrit les lois de la magie : météores, glaciers et foudre à volonté.",
+  "moyeu": {
+    "nom": "Trait du magister",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "pluie_meteores",
+      "nom": "Voie de la Pluie de météores",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Braise du magister",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 16.67, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grande comète",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Pluie de feu",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 65.69, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 20, "tours": 3, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grand météore",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 146, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 30, "tours": 4, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "glacier",
+      "nom": "Voie du Glacier",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Pic de glace",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Tombeau de glace",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grande avalanche",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 72.69, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Glaciation",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 96.92, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "foudre_noire",
+      "nom": "Voie de la Foudre noire",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Étincelle noire",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Fulgurance noire",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grand orage",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Colère du ciel",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grandes_runes",
+      "nom": "Voie des Grandes runes",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Rune du magister",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Rune de mutisme",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Rune de sanctuaire",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Rune de bannissement",
+          "genre": "f",
+          "effets": [
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "etat", "nom": "silencie", "tours": 2, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "neant",
+      "nom": "Voie du Néant",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Absorption du néant",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 43, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 30, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Siphon du néant",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Puissance du néant",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 30, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Néant",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 130, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 50, "tours": 2, "cible": "soi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

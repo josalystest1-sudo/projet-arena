@@ -1,0 +1,229 @@
+{
+  "id": "ravageur",
+  "nom": "Ravageur",
+  "genre": "m",
+  "role": "degats",
+  "base": "berserker",
+  "rang": 2,
+  "pv": 800,
+  "k": 1.0,
+  "description": "Le Berserker qui ne connaît plus la fatigue : une tempête de haches et de sang.",
+  "moyeu": {
+    "nom": "Coup du ravageur",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "fureur_noire",
+      "nom": "Voie de la Fureur noire",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Coup noir",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Frénésie noire",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Ravage",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Fureur sans fin",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 150, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "hemorragie",
+      "nom": "Voie de l'Hémorragie",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Morsure du ravageur",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 19.05, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Lacération profonde",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "saignement", "par_tour": 23.21, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Carnage noir",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 76.19, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 15, "tours": 3, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Mer de sang",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "saignement", "par_tour": 42.86, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "fracas",
+      "nom": "Voie du Fracas",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Coup de boutoir noir",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grand fracas",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 40, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Coup à la tempe",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Pulvérisation",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "increvable",
+      "nom": "Voie de l'Increvable",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Cri du ravageur",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Peau de fer",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 142.86, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Rage de vivre",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 95, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Dernier rugissement",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 144.44, "cible": "soi"},
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cataclysme",
+      "nom": "Voie du Cataclysme",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Balayage noir",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 53.85, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Tourbillon noir",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 76.92, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Ouragan noir",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Fin du monde",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 141.92, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    }
+  ]
+}

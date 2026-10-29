@@ -1,0 +1,230 @@
+{
+  "id": "chantre_de_guerre",
+  "nom": "Chantre de guerre",
+  "genre": "m",
+  "role": "degats",
+  "base": "skalde",
+  "rang": 2,
+  "pv": 740,
+  "k": 0.95,
+  "description": "Le Skalde dont les chants décident des batailles : sagas sanglantes et railleries mortelles.",
+  "moyeu": {
+    "nom": "Cri du chantre",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "grand_chant",
+      "nom": "Voie du Grand chant de guerre",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Cri de guerre du chantre",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Chant de bataille du chantre",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Chant de gloire du chantre",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Chant de mort du chantre",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_saga",
+      "nom": "Voie de la Grande saga",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Vers du chantre",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 19.05, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Strophe du chantre",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "saignement", "par_tour": 25, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Épopée du chantre",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 76.19, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 15, "tours": 3, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Saga du chantre",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 146, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 30, "tours": 4, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_tonnerre",
+      "nom": "Voie du Grand tonnerre",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Note grave du chantre",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 53.85, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Accord du chantre",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 76.92, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Vacarme du chantre",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Fracas du chantre",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 141.92, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_raillerie",
+      "nom": "Voie de la Grande raillerie",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Moquerie du chantre",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Insulte du chantre",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 40, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Humiliation du chantre",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Mot de la fin du chantre",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_fureur",
+      "nom": "Voie de la Grande fureur",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Transe du chantre",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 43, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 30, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Ivresse du chantre",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Rage du chantre",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 30, "tours": 2, "cible": "soi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Berserk du chantre",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 130, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 50, "tours": 2, "cible": "soi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

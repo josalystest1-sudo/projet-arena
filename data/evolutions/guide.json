@@ -1,0 +1,225 @@
+{
+  "id": "guide",
+  "nom": "Guide",
+  "genre": "m",
+  "role": "soutien",
+  "base": "eclaireur",
+  "rang": 2,
+  "pv": 760,
+  "k": 0.95,
+  "description": "L'Éclaireur qui connaît tous les chemins : il mène le trio là où rien ne peut l'atteindre.",
+  "moyeu": {
+    "nom": "Caillou du guide",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "grands_signaux",
+      "nom": "Voie des Grands signaux",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Signal du guide",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grand rassemblement",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 29.91, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Abri du guide",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Signal de la victoire",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "barriere", "valeur": 138.46, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grandes_herbes",
+      "nom": "Voie des Grandes herbes",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Cataplasme du guide",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Infusion du guide",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 111.11, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Soins du grand camp",
+          "genre": "mp",
+          "effets": [
+            {"type": "soin", "valeur": 119.66, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Remède de la forêt",
+          "genre": "m",
+          "effets": [
+            {"type": "purge", "cible": "duo"},
+            {"type": "soin", "valeur": 111.11, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grands_pieges",
+      "nom": "Voie des Grands pièges",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Collet du guide",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 17.5, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Fosse du guide",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 10, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grande fumée",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "affaiblissement", "pourcent": 13.85, "tours": 2, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Piège du guide",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 25, "tours": 2, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_camouflage",
+      "nom": "Voie du Grand camouflage",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Cape du guide",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Cachette du guide",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 142.86, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grand camp caché",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Repli du guide",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 142.86, "cible": "duo"},
+            {"type": "purge", "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tir_guide",
+      "nom": "Voie du Tir du guide",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Tir rapide du guide",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Tir ajusté du guide",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Tir du grand éclaireur",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Tir parfait du guide",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

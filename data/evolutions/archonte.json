@@ -1,0 +1,233 @@
+{
+  "id": "archonte",
+  "nom": "Archonte",
+  "genre": "m",
+  "role": "front",
+  "base": "mage_de_bataille",
+  "rang": 2,
+  "pv": 1000,
+  "k": 0.85,
+  "description": "Le Mage de bataille devenu forteresse : les sorts rebondissent sur lui.",
+  "moyeu": {
+    "nom": "Sceptre",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "bastion",
+      "nom": "Voie du Bastion arcanique",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Égide de l'archonte",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Provocation de l'archonte",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 85.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Rempart de l'archonte",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "barriere", "valeur": 125.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Citadelle arcanique",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 138.57, "cible": "soi"},
+            {"type": "soin", "valeur": 90, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lame_solaire",
+      "nom": "Voie de la Lame solaire",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Lame solaire",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 16.67, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Fer blanc",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "brulure", "par_tour": 25, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Vague solaire",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 76.19, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 15, "tours": 3, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Supernova",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 146, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 30, "tours": 4, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "impact",
+      "nom": "Voie de l'Impact",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Choc de l'archonte",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grand impact",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Onde de l'archonte",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Cataclysme arcanique",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "entraves",
+      "nom": "Voie des Entraves",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Chaîne de l'archonte",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Entrave totale",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Chaînes du monde",
+          "genre": "fp",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 72.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Geôle arcanique",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 75, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vitalite",
+      "nom": "Voie de la Vitalité arcanique",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Absorption de l'archonte",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 43, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 30, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grand drain",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
+            {"type": "soin", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Peau d'archonte",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 148.57, "cible": "soi"},
+            {"type": "soin", "valeur": 40, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Immortel",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 144.44, "cible": "soi"},
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

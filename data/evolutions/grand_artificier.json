@@ -1,0 +1,230 @@
+{
+  "id": "grand_artificier",
+  "nom": "Grand artificier",
+  "genre": "m",
+  "role": "degats",
+  "base": "artificier",
+  "rang": 2,
+  "pv": 720,
+  "k": 0.9,
+  "description": "L'Artificier qui fait sauter les montagnes : bombes, feu et gaz à l'échelle d'une armée.",
+  "moyeu": {
+    "nom": "Grand pétard",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "grandes_bombes",
+      "nom": "Voie des Grandes bombes",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Grande bombe",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grande grenade",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grande fragmentation",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Bombe du grand artificier",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_feu",
+      "nom": "Voie du Grand feu grégeois",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Grande fiole enflammée",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 16.67, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grand napalm",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "brulure", "par_tour": 25, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grand mur de feu",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 76.19, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 15, "tours": 3, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grande tempête de feu",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 146, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 30, "tours": 4, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grands_gaz",
+      "nom": "Voie des Grands gaz",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Grand gaz irritant",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grand gaz paralysant",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grand gaz aveuglant",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Gaz du grand artificier",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_acide",
+      "nom": "Voie du Grand acide",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Grande fiole acide",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "poison", "par_tour": 11.43, "tours": 5, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grand acide",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 20, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grande pluie acide",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 24.18, "tours": 4, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 40, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grande dissolution",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 40, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grandes_fusees",
+      "nom": "Voie des Grandes fusées",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Grand pare-éclats",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Grande fusée",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grande salve",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grand feu d'artifice",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 106.92, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "brulure", "par_tour": 25, "tours": 4, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    }
+  ]
+}

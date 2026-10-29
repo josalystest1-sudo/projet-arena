@@ -50,7 +50,7 @@ static func de_base(donnees: Donnees, p_classe_id: String, nb_voies: int = 5, to
 	# Une évolution se dessine comme sa classe de base (les sprites viendront à la phase 10) et porte le saut de
 	# puissance du GDD (×1 pour une classe de base : rien ne change).
 	d.rang = int(cls.get("rang", 0))
-	d.sprite = str(cls.get("base", p_classe_id))
+	d.sprite = Evolution.base(p_classe_id, donnees)
 	d.role = str(cls["role"])
 	d.pv_base = roundi(float(cls["pv"]) * Evolution.puissance_pv(d.rang, donnees))
 	d.k = float(cls["k"]) * Evolution.puissance_valeurs(d.rang, donnees)

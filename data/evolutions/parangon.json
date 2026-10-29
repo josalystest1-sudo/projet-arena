@@ -1,0 +1,228 @@
+{
+  "id": "parangon",
+  "nom": "Parangon",
+  "genre": "m",
+  "role": "front",
+  "base": "champion",
+  "rang": 2,
+  "pv": 1120,
+  "k": 0.8328,
+  "description": "Le Champion devenu légende : un rempart que rien ne fait reculer, une lame que tout le monde suit.",
+  "moyeu": {
+    "nom": "Coup du parangon",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "legende",
+      "nom": "Voie de la Légende",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Frappe légendaire",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Assaut du parangon",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 65, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Gloire éternelle",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Apothéose",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oriflamme",
+      "nom": "Voie de l'Oriflamme",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Oriflamme",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Cri du parangon",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 20, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 41.03, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Serment des braves",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Ost légendaire",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "barriere", "valeur": 138.46, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "egide",
+      "nom": "Voie de l'Égide",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Grande parade",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Défi du parangon",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 85.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Mur légendaire",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "barriere", "valeur": 125.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Indomptable",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 151.43, "cible": "soi"},
+            {"type": "soin", "valeur": 80, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "acier",
+      "nom": "Voie de l'Acier",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Taille d'acier",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Estoc d'acier",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Tourbillon d'acier",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Jugement d'acier",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plaies",
+      "nom": "Voie des Plaies",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Plaie ouverte",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 19.05, "tours": 3, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Plaie profonde",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "saignement", "par_tour": 25, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Brise-armure",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Plaie fatale",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 86, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 30, "tours": 4, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

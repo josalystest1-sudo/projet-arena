@@ -1,0 +1,228 @@
+{
+  "id": "croise",
+  "nom": "Croisé",
+  "genre": "m",
+  "role": "front",
+  "base": "paladin",
+  "rang": 2,
+  "pv": 1040,
+  "k": 0.86,
+  "description": "Le Paladin parti en croisade : il protège, il frappe, et il ne tombe jamais.",
+  "moyeu": {
+    "nom": "Marteau du croisé",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "croisade",
+      "nom": "Voie de la Croisade",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Frappe du croisé",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Châtiment du croisé",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Lumière du croisé",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 15, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Jugement du croisé",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_bouclier",
+      "nom": "Voie du Grand bouclier sacré",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Égide du croisé",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Défi du croisé",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 85.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Rempart du croisé",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 125.71, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Forteresse du croisé",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 138.57, "cible": "soi"},
+            {"type": "soin", "valeur": 90, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_serment",
+      "nom": "Voie du Grand serment",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Serment du croisé",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Serment de la vie",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 111.11, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Serment du grand gardien",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Serment de la croisade",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 188.46, "cible": "duo"},
+            {"type": "soin", "valeur": 50, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_lumiere_croise",
+      "nom": "Voie de la Grande lumière",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Lueur du croisé",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Prière du croisé",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 72.22, "cible": "soi"},
+            {"type": "barriere", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Bénédiction du croisé",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 119.66, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Résurrection du croisé",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 141.03, "cible": "duo"},
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_justice",
+      "nom": "Voie de la Grande justice",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Entrave du croisé",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Silence du croisé",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Désarmement du croisé",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Sentence du croisé",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"},
+            {"type": "dissipe", "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

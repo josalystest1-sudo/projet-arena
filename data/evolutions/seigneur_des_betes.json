@@ -1,0 +1,232 @@
+{
+  "id": "seigneur_des_betes",
+  "nom": "Seigneur des bêtes",
+  "genre": "m",
+  "role": "front",
+  "base": "maitre_des_betes",
+  "rang": 2,
+  "pv": 1000,
+  "k": 0.8,
+  "description": "Le Maître des bêtes que les bêtes suivent au bout du monde : l'ours, la meute, les totems, et lui devant.",
+  "moyeu": {
+    "nom": "Griffe du seigneur",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "grand_ours",
+      "nom": "Voie du Grand ours",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Patte du grand ours",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Rugissement du seigneur",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Étreinte du grand ours",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 105, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Fureur du grand ours",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 136, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 60, "cible": "soi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_carapace",
+      "nom": "Voie de la Grande carapace",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Peau du seigneur",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Cuir du seigneur",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 85.71, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grande mue",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 108.89, "cible": "soi"},
+            {"type": "barriere", "valeur": 60, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Béhémoth",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 212.86, "cible": "soi"},
+            {"type": "soin", "valeur": 90, "cible": "soi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grande_meute_fidele",
+      "nom": "Voie de la Grande meute",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Loup du seigneur",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 14.29, "tours": 4, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Chiens du seigneur",
+          "genre": "mp",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 20, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grande horde",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 24.18, "tours": 4, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 40, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grand alpha",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "familier", "par_tour": 42.86, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grands_totems",
+      "nom": "Voie des Grands totems",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Totem du grand ours",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 26.92, "tours": 4, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Totem de la grande vie",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 29.59, "tours": 4, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Totem de la montagne",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Totem du seigneur",
+          "genre": "m",
+          "effets": [
+            {"type": "gardien", "par_tour": 39.36, "tours": 5, "cible": "duo"},
+            {"type": "barriere", "valeur": 70, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_dompteur",
+      "nom": "Voie du Grand dompteur",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Fouet du seigneur",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Muselière du seigneur",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Cage du seigneur",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Joug du seigneur",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}
