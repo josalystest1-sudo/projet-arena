@@ -65,5 +65,26 @@ func selectionner(id: String) -> bool:
 	return true
 
 
+func adversaires(niveau: int, n: int) -> Array:
+	return Serveur.plus_proches(joueurs, niveau, n)
+
+
+## Le classement simulé : des points tirés pour chaque joueur avec sa graine et la saison (de 0 à 10 + 8 × niveau), et
+## ta fiche si elle est publiée pour cette saison.
+func classement(saison: int, n: int) -> Array:
+	var fiches: Array = []
+	for f in joueurs:
+		var copie: Dictionary = f.duplicate()
+		var rng := RandomNumberGenerator.new()
+		rng.seed = int(str(f["graine"])) * 31 + saison
+		copie["points"] = rng.randi_range(0, 10 + 8 * int(f["niveau"]))
+		copie["saison"] = saison
+		fiches.append(copie)
+	var mienne: Dictionary = profile.serveur.get("fiche", {})
+	if not mienne.is_empty() and int(mienne.get("saison", -1)) == saison:
+		fiches.append(mienne)
+	return Serveur.par_points(fiches, n)
+
+
 func nombre_personnages() -> int:
 	return joueurs.size() + (1 if profile.serveur.has("fiche") else 0)

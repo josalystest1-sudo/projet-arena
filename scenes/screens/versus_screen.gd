@@ -14,7 +14,7 @@ var classe := false
 func setup(p_app: ArenaApp, p_options: Dictionary) -> void:
 	app = p_app
 	classe = bool(p_options.get("classe", false))
-	options = app.duel_classe() if classe else app.duel_contre_ia()
+	options = (await app.duel_classe()) if classe else app.duel_contre_ia()
 	if options.is_empty():
 		# Plus de combat classé aujourd'hui : retour à l'Arène.
 		app.show_screen("arene")
@@ -52,7 +52,10 @@ func _face_a_face(column: VBoxContainer, cherche: Label) -> void:
 		if camp[1]:
 			var adv: Dictionary = options.get("adversaire", {})
 			if classe:
-				column.add_child(UiKit.label("Combat classé · %s, niveau %d%s · trio généré en attendant le serveur" % [adv.get("nom", "?"), int(adv.get("niveau", e.niveau)), " · équipé" if str(adv.get("equipement", "")) != "" else ""], 14, UiKit.SOFT))
+				if bool(adv.get("reel", false)):
+					column.add_child(UiKit.label("Combat classé · %s, niveau %d, %d points · personnage d'un autre joueur, ses Échos générés%s" % [adv.get("nom", "?"), int(adv.get("niveau", e.niveau)), int(adv.get("points", 0)), " · équipé" if str(adv.get("equipement", "")) != "" else ""], 14, UiKit.SOFT))
+				else:
+					column.add_child(UiKit.label("Combat classé · %s, niveau %d%s · trio généré (personne autour de ton niveau)" % [adv.get("nom", "?"), int(adv.get("niveau", e.niveau)), " · équipé" if str(adv.get("equipement", "")) != "" else ""], 14, UiKit.SOFT))
 			else:
 				column.add_child(UiKit.label("Amical · trio IA · niveau %d" % e.niveau, 15, UiKit.SOFT))
 			column.add_child(UiKit.label("contre", 20, Color.WHITE))

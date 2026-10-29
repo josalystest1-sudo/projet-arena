@@ -287,7 +287,8 @@ func changer_pseudo(nouveau: String) -> bool:
 ## La fiche publique du perso : ce que les autres joueurs en verront (sans l'identifiant : le serveur le pose).
 func fiche_publique() -> Dictionary:
 	return {"id": "", "pseudo": pseudo(), "classe": player_class, "role": str(data.classe(player_class)["role"]), "graine": str(graine),
-		"niveau": profile.level, "allumage": Array(allumage), "equipement": objets_portes().duplicate(true)}
+		"niveau": profile.level, "allumage": Array(allumage), "equipement": objets_portes().duplicate(true),
+		"points": int(_arene()["points"]), "saison": int(_arene()["saison"])}
 
 
 ## Publier la fiche (après connexion s'il le faut). Sans attendre : le résultat arrive dans `publication`.
@@ -760,13 +761,25 @@ func etat_arene() -> Dictionary:
 		"coffre": Arene.rarete_coffre(int(a["victoires_semaine"]), data), "coffre_reclame": bool(a["coffre_reclame"])}
 
 
-## Un combat classé : un adversaire généré à ton niveau (classe, graine, niveau, nom, équipement), contre ton trio.
-## Vide s'il ne reste plus de combat classé aujourd'hui.
+## Un combat classé : le personnage d'un autre joueur autour de ton niveau (le serveur ; ses Échos sont générés à son
+## niveau), ou, s'il n'y en a pas, un adversaire généré (classe, graine, niveau, nom, équipement), contre ton trio.
+## À lire avec `await`. Vide s'il ne reste plus de combat classé aujourd'hui.
 func duel_classe() -> Dictionary:
 	if int(etat_arene()["restants"]) <= 0:
 		return {}
-	var adv := Arene.adversaire(profile.level, _nouvelle_graine(), data)
-	var ennemis := Arene.trio_adverse(adv, data)
+	var adv: Dictionary
+	var ennemis: Array[Destin]
+	var fiches: Array = await serveur.adversaires(profile.level, 5)
+	if fiches.is_empty():
+		adv = Arene.adversaire(profile.level, _nouvelle_graine(), data)
+		ennemis = Arene.trio_adverse(adv, data)
+	else:
+		var f: Dictionary = fiches[rng.randi_range(0, fiches.size() - 1)]
+		adv = {"classe": str(f["classe"]), "graine": int(str(f["graine"])), "niveau": int(f["niveau"]), "nom": str(f["pseudo"]),
+			"equipement": "porté" if not f["equipement"].is_empty() else "", "reel": true, "points": int(f.get("points", 0))}
+		var joueur := Serveur.destin_de(f, data)
+		joueur.echo = false
+		ennemis = Trio.camp(joueur, int(f["niveau"]), data)
 	var e := Regles.nouveau_combat(trio(), ennemis, profile.level, "pvp", data)
 	var noms := noms_trio()
 	noms["b1"] = str(adv["nom"])
@@ -885,6 +898,7 @@ func fin_duel(gagne: bool, classe: bool = false) -> Dictionary:
 	var eclats := Equipement.eclats_duel(gagne, data)
 	profile.eclats += eclats
 	var r := gain_xp(xp)
+	publier_perso()
 	return {"xp": xp, "niveaux": int(r["levels"]), "eclats": eclats, "classe": true, "points": int(a["points"]), "points_avant": avant}
 
 

@@ -12,8 +12,12 @@ create table if not exists public.personnages (
   niveau integer not null default 1,
   allumage jsonb not null default '[]'::jsonb,
   equipement jsonb not null default '[]'::jsonb,
+  points integer not null default 0,
+  saison integer not null default 0,
   mis_a_jour timestamptz not null default now()
 );
+
+create index if not exists personnages_saison_points on public.personnages (saison, points desc);
 
 create index if not exists personnages_role_niveau on public.personnages (role, niveau);
 

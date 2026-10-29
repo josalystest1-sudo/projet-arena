@@ -7,7 +7,7 @@
 ## - ServeurSupabase (scenes/net/serveur_supabase.gd) : le vrai serveur, par requêtes HTTP (docs/serveur/GUIDE-SUPABASE.md).
 ## Toutes les méthodes se lisent avec `await` : la version simulée répond tout de suite, la vraie attend le réseau.
 ## Une fiche : {id, pseudo, classe, role, graine (texte : au-delà de 2^53 un nombre JSON perd sa précision), niveau,
-## allumage (liste de nœuds), equipement (objets portés), mis_a_jour}.
+## allumage (liste de nœuds), equipement (objets portés), mis_a_jour ; et, pour l'Arène, points et saison}.
 class_name Serveur
 extends Node
 
@@ -69,6 +69,18 @@ func selectionner(_id: String) -> bool:
 	return true
 
 
+## Les fiches des autres joueurs, de tous rôles, les plus proches du niveau donné, n au plus : les adversaires
+## possibles d'un combat classé (GDD V2, § 7).
+func adversaires(_niveau: int, _n: int) -> Array:
+	return []
+
+
+## Le classement d'une saison de l'Arène : les fiches aux points les plus hauts (pseudo, classe, niveau, points), n au
+## plus, la tienne comprise si elle est publiée.
+func classement(_saison: int, _n: int) -> Array:
+	return []
+
+
 ## Le nombre de fiches publiées (la tienne comprise).
 func nombre_personnages() -> int:
 	return 0
@@ -95,6 +107,16 @@ static func destin_de(fiche: Dictionary, d: Donnees) -> Destin:
 	destin.echo = true
 	destin.mods = Equipement.mods(fiche.get("equipement", []), d)
 	return destin
+
+
+## Les fiches par points décroissants (puis niveau décroissant), n au plus.
+static func par_points(fiches: Array, n: int) -> Array:
+	var copie := fiches.duplicate()
+	copie.sort_custom(func(a, b):
+		if int(a.get("points", 0)) != int(b.get("points", 0)):
+			return int(a.get("points", 0)) > int(b.get("points", 0))
+		return int(a["niveau"]) > int(b["niveau"]))
+	return copie.slice(0, n)
 
 
 ## Les fiches les plus proches d'un niveau (écart de niveau croissant, puis l'ordre donné), n au plus.

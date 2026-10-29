@@ -1,7 +1,7 @@
-## L'Arène (docs/GDD_V2.md, § 7 ; docs/PLAN.md, PR 5.3, jouée hors ligne) : tes points et ta ligue, la saison, les
-## combats classés qu'il te reste aujourd'hui, le coffre de la semaine, « Combat classé » et « Amical ». Les adversaires
-## sont des trios générés en attendant le serveur, et c'est écrit. Affichage seulement : les règles sont dans
-## engine/arene.gd et l'état dans le profil (ArenaApp).
+## L'Arène (docs/GDD_V2.md, § 7 ; docs/PLAN.md, PR 5.3) : tes points et ta ligue, la saison, le classement de la saison
+## (le serveur), les combats classés qu'il te reste aujourd'hui, le coffre de la semaine, « Combat classé » et
+## « Amical ». Les adversaires sont les personnages des autres joueurs (leurs Échos générés), à défaut un trio généré.
+## Affichage seulement : les règles sont dans engine/arene.gd et l'état dans le profil (ArenaApp).
 extends Control
 
 var app: ArenaApp
@@ -12,12 +12,13 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	var a := app.etat_arene()
 	var column := UiKit.scroll_column(self, 12)
 	column.add_child(UiKit.label("L'Arène", 34, UiKit.GOLD))
-	column.add_child(UiKit.label("Des duels en trio contre d'autres joueurs. En attendant le serveur, ce sont des trios générés, à ton niveau.", 15, UiKit.SOFT))
+	column.add_child(UiKit.label("Des duels en trio contre les personnages des autres joueurs, autour de ton niveau (leurs Échos sont générés).", 15, UiKit.SOFT))
 	var classement := UiKit.card(column, 4)
 	classement.add_child(UiKit.label("Ton classement", 20, UiKit.GOLD, false))
 	classement.add_child(UiKit.label("%d points · ligue des %s" % [int(a["points"]), Arene.nom_ligue(str(a["ligue"]), app.data)], 22, Color.WHITE, false))
 	classement.add_child(UiKit.label("Saison %d, jusqu'au %s. À la fin de la saison, les points repartent de zéro." % [int(a["saison"]) + 1, _date_lisible(str(a["fin_saison"]))], 14, UiKit.SOFT, false))
 	classement.add_child(UiKit.label("Gagné : +%d · perdu : −%d. Ta ligue suit le rang de ta classe : Aspirants, puis Élus une fois évolué (Ascendants : rang 2 et grimoires)." % [int(app.data.objets_arene["points_gagne"]), int(app.data.objets_arene["points_perdu"])], 14, UiKit.SOFT, false))
+	_carte_classement(column, int(a["saison"]), int(a["points"]))
 	var restants := int(a["restants"])
 	column.add_child(UiKit.main_button("Combat classé (%d restant%s aujourd'hui)" % [restants, "s" if restants > 1 else ""] if restants > 0 else "Plus de combat classé aujourd'hui", _classe, 84))
 	(column.get_child(column.get_child_count() - 1) as Button).disabled = restants <= 0
@@ -38,6 +39,32 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		app.sfx.play("clic")
 		app.show_screen("trio", {"mode": "duel"}), 60))
 	column.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 52))
+
+
+## Le classement de la saison (le serveur) : les dix premiers, et ta place.
+func _carte_classement(column: VBoxContainer, saison: int, mes_points: int) -> void:
+	var carte := UiKit.card(column, 3)
+	carte.add_child(UiKit.label("Classement de la saison", 20, UiKit.GOLD, false))
+	var fiches: Array = await app.serveur.classement(saison, 10)
+	if not is_inside_tree():
+		return
+	if fiches.is_empty():
+		carte.add_child(UiKit.label("Personne de classé pour l'instant%s." % ((" (" + app.serveur.erreur + ")") if app.serveur.erreur != "" else ""), 14, UiKit.SOFT, false))
+		return
+	var moi := app.serveur.compte_id
+	var ma_place := 0
+	for i in range(fiches.size()):
+		var f: Dictionary = fiches[i]
+		var a_moi := str(f.get("id", "")) == moi and moi != ""
+		if a_moi:
+			ma_place = i + 1
+		carte.add_child(UiKit.label("%d. %s · %s · %d points" % [i + 1, "toi" if a_moi else f["pseudo"], app.class_label(str(f["classe"])), int(f.get("points", 0))], 14, UiKit.GOLD if a_moi else Color.WHITE, false))
+	if ma_place == 0:
+		var devant := 0
+		for f in fiches:
+			if int(f.get("points", 0)) > mes_points:
+				devant += 1
+		carte.add_child(UiKit.label("Toi : %d points%s." % [mes_points, (", au-delà des dix premiers" if devant >= 10 else ", %de place si ta fiche était publiée" % (devant + 1))], 14, UiKit.SOFT, false))
 
 
 func _classe() -> void:

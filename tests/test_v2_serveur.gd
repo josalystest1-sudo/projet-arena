@@ -89,3 +89,29 @@ func test_chemins_supabase() -> void:
 	assert_true("&id=neq.abc" in chemin and "limit=12" in chemin, "sans ma fiche, quatre fois plus de lignes que demandé")
 	assert_false("neq" in ServeurSupabase.chemin_personnages("personnages", "front", 1, 3, ""), "sans compte, pas de filtre")
 	assert_true("niveau=gte.1&" in ServeurSupabase.chemin_personnages("personnages", "front", 1, 3, ""), "jamais sous le niveau 1")
+
+
+# Les adversaires de l'Arène (tous rôles, autour du niveau) et le classement simulé (points décroissants, ma fiche
+# comprise pour la saison en cours).
+func test_adversaires_et_classement() -> void:
+	var profile := _profil()
+	var s := _simule(profile)
+	var adv := await s.adversaires(20, 5)
+	assert_eq(adv.size(), 5, "cinq adversaires")
+	for i in range(1, adv.size()):
+		assert_true(absi(int(adv[i - 1]["niveau"]) - 20) <= absi(int(adv[i]["niveau"]) - 20), "les plus proches du niveau 20 d'abord")
+	var c := await s.classement(3, 10)
+	assert_eq(c.size(), 10, "les dix premiers")
+	for i in range(1, c.size()):
+		assert_true(int(c[i - 1]["points"]) >= int(c[i]["points"]), "points décroissants")
+	assert_eq(JSON.stringify(await s.classement(3, 10)), JSON.stringify(c), "le même classement à chaque lecture")
+	assert_ne(JSON.stringify(await s.classement(4, 10)), JSON.stringify(c), "une autre saison, d'autres points")
+	await s.connecter()
+	var fiche := {"id": "", "pseudo": "Moi", "classe": "mage", "role": "degats", "graine": "12", "niveau": 20, "allumage": [], "equipement": [], "points": 100000, "saison": 3}
+	assert_true(await s.publier(fiche), "ma fiche publiée avec mes points")
+	var avec_moi := await s.classement(3, 10)
+	assert_eq(str(avec_moi[0]["pseudo"]), "Moi", "avec 100 000 points, je suis premier")
+	assert_eq((await s.classement(4, 10)).filter(func(f): return str(f["pseudo"]) == "Moi").size(), 0, "pas dans une autre saison")
+	assert_eq(ServeurSupabase.chemin_classement("personnages", 3, 10), "/rest/v1/personnages?select=*&saison=eq.3&order=points.desc,niveau.desc&limit=10", "le chemin du classement")
+	assert_true("niveau=gte.10&niveau=lte.30" in ServeurSupabase.chemin_adversaires("personnages", 20, 5, "abc") and "id=neq.abc" in ServeurSupabase.chemin_adversaires("personnages", 20, 5, "abc"), "le chemin des adversaires")
+	s.free()
