@@ -12,7 +12,9 @@
 ## Aucune règle ici : tout passe par res://engine.
 extends RefCounted
 
-const NIVEAU := 30
+## Le niveau des Destins simulés : 30 par défaut (la spécification) ; un autre niveau pour la courbe « niveau → étage »
+## de la Tour (phase 9).
+static var niveau := 30
 ## Les graines du camp B : décalées, pour qu'un miroir (une classe contre elle-même) n'oppose pas deux Destins identiques.
 const DECALAGE_B := 500000
 ## Au-delà, un combat est compté « non fini » (le test 50 exige qu'il n'y en ait aucun).
@@ -22,9 +24,10 @@ const TOURS_MAX := 100
 const MEDIANE_MIN := 18
 const MEDIANE_MAX := 22
 const LONGUEUR_LIMITE := 30
-## La Tour : les montées s'arrêtent à l'étage 21 (on sait alors que l'étage 20 est atteint). Un étage n'a pas de limite
-## de tours ; le simulateur l'arrête au bout de 300 tours (plafond technique, compté comme une chute).
-const ETAGE_MAX := 21
+## La Tour : les montées s'arrêtent à l'étage etage_max (21 par défaut : on sait alors que l'étage 20 est atteint ; plus
+## haut pour la courbe de la phase 9). Un étage n'a pas de limite de tours ; le simulateur l'arrête au bout de 300 tours
+## (plafond technique, compté comme une chute).
+static var etage_max := 21
 const TOURS_MAX_TOUR := 300
 const ROUTES := ["ruee", "eventail", "reactive"]
 const NOMS_ROUTES := {"ruee": "Ruée", "eventail": "Éventail", "reactive": "Réactive"}
@@ -45,19 +48,19 @@ static var equipement := ""
 
 ## Le camp d'un joueur de cette classe : [joueur, acolyte] (duo) ou [joueur, Écho, Écho] (trio), équipé si demandé.
 static func destins(d: Donnees, classe: String, graine: int, memoire: Dictionary, format: String = "duo") -> Array:
-	var cle := "%s|%s|%d|%s" % [format, classe, graine, equipement]
+	var cle := "%s|%s|%d|%s|%d" % [format, classe, graine, equipement, niveau]
 	if not memoire.has(cle):
 		if memoire.size() >= 4000:
 			memoire.clear()
-		var joueur := Generateur.generer(classe, graine, NIVEAU, Generateur.PAR_DEFAUT, d)
+		var joueur := Generateur.generer(classe, graine, niveau, Generateur.PAR_DEFAUT, d)
 		var camp: Array
 		if format == "trio":
-			camp = Trio.camp(joueur, NIVEAU, d)
+			camp = Trio.camp(joueur, niveau, d)
 		else:
-			camp = [joueur, Generateur.acolyte(classe, graine, NIVEAU, d)]
+			camp = [joueur, Generateur.acolyte(classe, graine, niveau, d)]
 		if equipement != "":
 			for i in range(camp.size()):
-				camp[i].mods = Equipement.mods(Equipement.jeu(NIVEAU, equipement, graine * 7 + i, d), d)
+				camp[i].mods = Equipement.mods(Equipement.jeu(niveau, equipement, graine * 7 + i, d), d)
 		memoire[cle] = camp
 	return memoire[cle]
 
@@ -70,7 +73,7 @@ static func destins(d: Donnees, classe: String, graine: int, memoire: Dictionary
 static func duel(d: Donnees, classe_a: String, classe_b: String, graine: int, a_en_premier: bool, route: String, memoire: Dictionary, format: String = "duo", ab: bool = false) -> Dictionary:
 	var da := destins(d, classe_a, graine, memoire, format)
 	var db := destins(d, classe_b, graine + DECALAGE_B, memoire, format)
-	var e := Regles.nouveau_combat(da if a_en_premier else db, db if a_en_premier else da, NIVEAU, "pvp", d)
+	var e := Regles.nouveau_combat(da if a_en_premier else db, db if a_en_premier else da, niveau, "pvp", d)
 	var ids_a: Array = []
 	var ids_b: Array = []
 	for id in e.ordre:
@@ -289,8 +292,8 @@ static func action_route(e: EtatCombat, id: String, route: String, etat_route: D
 
 ## L'étage atteint par l'IA standard (s'arrête à ETAGE_MAX).
 static func montee(d: Donnees, classe: String, graine: int, memoire: Dictionary, format: String = "duo") -> int:
-	var t := Tour.commencer_camp(destins(d, classe, graine, memoire, format), NIVEAU, graine, d)
-	while not t.fini and t.etage < ETAGE_MAX:
+	var t := Tour.commencer_camp(destins(d, classe, graine, memoire, format), niveau, graine, d)
+	while not t.fini and t.etage < etage_max:
 		var e := t.combat()
 		while not e.fini and e.tour <= TOURS_MAX_TOUR:
 			e = Regles.resoudre_tour(e, IA.declarer(e))

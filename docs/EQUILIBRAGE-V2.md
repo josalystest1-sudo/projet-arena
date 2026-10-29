@@ -6881,3 +6881,21 @@ Les règles de bon sens (`engine/ia.gd`, `docs/JOURNAL-COMBAT-V2.md`) mesurées 
 ### Boutons touchés, et pourquoi
 
 Aucun (mesure seule).
+
+
+## La courbe « niveau et équipement → étage » (30 octobre, nuit ; contrôle, pas un réglage)
+
+Le simulateur sait maintenant monter la Tour à tout niveau (`niveau=`), équipé ou non (`equipement=`), jusqu'à un étage choisi (`etage_max=`). Trios générés, allumage par défaut, IA de bon sens, 8 montées par classe (80 par ligne), montées arrêtées à l'étage 41, graines 9090 à 9097. L'étage atteint = celui où le trio est tombé. Un jeu épique : les cinq objets épiques du niveau du trio, tirés avec sa graine (PR #60 : environ +46 % de puissance).
+
+| Configuration | Étage médian (toutes classes) | Par classe (Guerrier / Mage / Voleur / Archer / Prêtre / Alchimiste / Invocateur / Barde / Diplomate / Pugiliste) |
+| --- | --- | --- |
+| Niveau 1, nu | 5 | 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 |
+| Niveau 1, jeu épique | 6 | 6 / 6 / 7 / 6 / 7 / 5 / 6 / 6 / 7 / 7 |
+| Niveau 10, nu | 11 | 11 / 12 / 11 / 11 / 12 / 11 / 11 / 11 / 11 / 11 |
+| Niveau 10, jeu épique | 13 | 13 / 12 / 13 / 13 / 14 / 12 / 13 / 11 / 13 / 14 |
+| Niveau 20, nu | 18 | 19 / 18 / 18 / 18 / 20 / 18 / 19 / 15 / 18 / 19 |
+| Niveau 20, jeu épique | 20 | 23 / 20 / 19 / 20 / 20 / 20 / 20 / 19 / 21 / 23 |
+| Niveau 30, nu | 23 | 26 / 25 / 21 / 23 / 23 / 23 / 24 / 23 / 23 / 27 |
+| Niveau 30, jeu épique | 27 | 27 / 27 / 26 / 27 / 27 / 27 / 28 / 26 / 28 / 28 |
+
+Lecture : la Tour suit le niveau presque un pour un (niveau 10 → étage 11, niveau 20 → étage 18, niveau 30 → étage 23), et un jeu épique vaut de 1 à 4 étages de plus. La cible du plan (étage 3 au niveau 1, le Gardien 5 vers les niveaux 8 à 10, l'étage 10 vers 25 à 30) est loin : la Tour est bien plus facile que prévu. À régler à la phase 9 (`data/tour.json` : `niveau_par_etage`, `somme_*`), avec les Faveurs et l'équipement dans la balance.
