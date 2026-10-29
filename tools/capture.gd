@@ -3,7 +3,7 @@
 ## (user://capture_profil.cfg, effacé au départ) : le vrai profil n'est jamais touché.
 ##   godot --path . --script res://tools/capture.gd -- <dossier> '<étapes JSON>'
 ## Étapes : {"creer":"guerrier"} (nouveau perso, graine fixe 7), {"niveau":12} (niveau du perso), {"allumer":"v1.n2"},
-## {"ecran":"destin"}, {"duel":1} (un duel amical contre un trio IA), {"classe":1} (un combat classé de l'Arène), {"donjon":"terrier"} (une descente, aux portes ; ["terrier","vague"] : la première vague jouée, puis la fin), {"montee":1} (une montée de la Tour), {"fin":1} (un duel amical joué par l'IA, puis l'écran de fin ; {"fin":"classe"} : un combat classé), {"ouvrir":["versus",{"classe":true}]} (un écran avec ses options), {"gardien":5} (l'étage 5 d'une montée joué par l'IA, puis l'écran de fin : la Faveur du Gardien), {"sac":3} (trois objets dans le sac et 100 Éclats, pour la Forge), {"compter":["duels",2]} (un compteur des objectifs du jour), {"echangeable":1} (un objet échangeable dans le sac), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
+## {"ecran":"destin"}, {"duel":1} (un duel amical contre un trio IA), {"classe":1} (un combat classé de l'Arène), {"donjon":"terrier"} (une descente, aux portes ; ["terrier","vague"] : la première vague jouée, puis la fin ; ["terrier","boss"] : le boss verrouillé jusqu'à la limite, puis la fin), {"montee":1} (une montée de la Tour), {"fin":1} (un duel amical joué par l'IA, puis l'écran de fin ; {"fin":"classe"} : un combat classé), {"ouvrir":["versus",{"classe":true}]} (un écran avec ses options), {"gardien":5} (l'étage 5 d'une montée joué par l'IA, puis l'écran de fin : la Faveur du Gardien), {"sac":3} (trois objets dans le sac et 100 Éclats, pour la Forge), {"compter":["duels",2]} (un compteur des objectifs du jour), {"echangeable":1} (un objet échangeable dans le sac), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
 ## (Sans --headless : il faut une fenêtre pour dessiner.)
 extends SceneTree
 
@@ -44,7 +44,22 @@ func _initialize() -> void:
 			var id: String = str(quoi[0]) if quoi is Array else str(quoi)
 			app.profile.eclats += 100
 			app.commencer_donjon(id)
-			if quoi is Array and quoi.size() > 1:
+			if quoi is Array and quoi.size() > 1 and str(quoi[1]) == "boss":
+				# Le combat du boss, verrouillé à son premier palier, jusqu'à la limite de tours : l'écran de fin dit ce qui a manqué.
+				var dj: Donjon = app.donjon_en_cours
+				var route := Donjon.route_boss(dj.id, dj.chasse, app.data)
+				for k in range(route.size()):
+					dj.choisir(Donjon.ordre_portes(dj.graine_joueur, dj.id, dj.chemin, app.data).find(route[k]))
+					dj.phase = "portes"
+				dj.phase = "combat"
+				dj.finale = true
+				var e: EtatCombat = dj.combat()
+				e.perso("b1")["pv"] = 1
+				dj.apres_tour(e)
+				e.tour = int(app.data.boss["tours_max"]) + 1
+				dj.apres_tour(e)
+				app.show_screen("fin", {"etat": e, "donjon": dj, "noms": app.noms_trio(), "trace": {}, "synergies": [], "parts": {}})
+			elif quoi is Array and quoi.size() > 1:
 				var dj: Donjon = app.donjon_en_cours
 				dj.choisir(0)
 				var e: EtatCombat = dj.combat()

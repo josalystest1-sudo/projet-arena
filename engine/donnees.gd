@@ -82,6 +82,10 @@ const CLES_RECOMPENSE_DONJON := ["rarete", "fragments", "eclats"]
 ## du Marché, l'étal du jour (raretés vendues et leur prix en Éclats).
 const CLES_COMPTOIR := ["plancher", "niveau_pente", "qualite_base", "marche", "etal"]
 const CLES_ETAL := ["raretes", "prix"]
+## Le boss à paliers (data/boss.json, GDD V2 § 8.5) : la limite de tours, les solutions connues (identifiant -> texte), et
+## par boss ses paliers (fraction de PV, solution, texte du verrou, ce qui a manqué).
+const CLES_BOSS := ["tours_max", "solutions", "boss"]
+const CLES_PALIER := ["pv", "solution", "texte", "manque"]
 const CLES_OBJECTIF := ["id", "texte", "compteur", "cible", "xp", "eclats"]
 const CLES_BATIMENT := ["id", "nom", "texte", "ecran", "options", "x", "y", "dispo", "forme"]
 const CLES_BATIMENT_OBLIGATOIRES := ["id", "nom", "texte", "ecran", "x", "y", "dispo"]
@@ -119,6 +123,8 @@ var objets_arene: Dictionary = {}
 var donjons: Dictionary = {}
 ## Le Comptoir (data/comptoir.json, GDD V2 § 10.2).
 var comptoir: Dictionary = {}
+## Le boss à paliers (data/boss.json, GDD V2 § 8.5).
+var boss: Dictionary = {}
 ## Ce qui ne va pas dans les données : une ligne par problème (vide si tout est connu et cohérent).
 var erreurs: Array[String] = []
 ## Une mémoire de calculs qui ne dépendent que des données (les formes de chaque nœud, pour le générateur).
@@ -152,6 +158,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.objets_arene = _lire(dossier + "arene.json", donnees.erreurs)
 	donnees.donjons = _lire(dossier + "donjons.json", donnees.erreurs)
 	donnees.comptoir = _lire(dossier + "comptoir.json", donnees.erreurs)
+	donnees.boss = _lire(dossier + "boss.json", donnees.erreurs)
 	donnees.valider()
 	return donnees
 
@@ -237,6 +244,33 @@ func valider() -> void:
 			erreurs.append(ou + " : pv_mult hors de 0,5 à 1,5")
 	_valider_donjons()
 	_valider_comptoir()
+	_valider_boss()
+
+
+## Le boss à paliers (data/boss.json) : clés connues, une limite de tours, chaque boss un Gardien du bestiaire, des
+## paliers décroissants entre 0 et 1 avec une solution connue.
+func _valider_boss() -> void:
+	_cles(boss, CLES_BOSS, CLES_BOSS, "boss.json")
+	if not boss is Dictionary or not boss.get("boss") is Dictionary:
+		return
+	if int(boss.get("tours_max", 0)) < 10:
+		erreurs.append("boss.json : une limite d'au moins 10 tours attendue")
+	var monstres: Dictionary = bestiaire.get("monstres", {})
+	for id in boss["boss"]:
+		var ou := "boss.json " + str(id)
+		if not monstres.has(str(id)) or str(monstres[str(id)].get("rang", "")) != "gardien":
+			erreurs.append(ou + " : pas un Gardien du bestiaire")
+		_cles(boss["boss"][id], ["paliers"], ["paliers"], ou)
+		var precedent := 1.0
+		for p in boss["boss"][id].get("paliers", []):
+			_cles(p, CLES_PALIER, CLES_PALIER, ou + " palier")
+			if not p is Dictionary:
+				continue
+			if float(p.get("pv", 0.0)) <= 0.0 or float(p.get("pv", 0.0)) >= precedent:
+				erreurs.append(ou + " : paliers attendus décroissants, entre 0 et 1")
+			precedent = float(p.get("pv", 0.0))
+			if not boss.get("solutions", {}).has(str(p.get("solution", ""))):
+				erreurs.append(ou + " : solution inconnue « %s »" % p.get("solution", ""))
 
 
 ## Le Comptoir (data/comptoir.json) : clés connues, un plancher et un multiple de Marché par rareté connue, une pente et

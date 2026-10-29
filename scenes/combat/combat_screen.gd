@@ -42,8 +42,9 @@ const PLACES_MONSTRES := {
 var app: ArenaApp
 var e: EtatCombat
 var tour: Tour = null
-## Une descente de donjon (une vague, l'élite ou le boss), ou null.
+## Une descente de donjon (une vague, l'élite ou le boss), ou null ; et le dernier message du boss à paliers.
 var donjon: Donjon = null
+var message_boss := ""
 var noms := {}
 ## Un combat classé de l'Arène (ses points en jeu) ou un amical.
 var classe := false
@@ -238,6 +239,9 @@ func _debut_tour() -> void:
 	chrono = float(e.regles["chrono_s"]) if tour == null else -1.0
 	_dernier_tic = 0
 	_maj()
+	if message_boss != "":
+		aide.text = message_boss
+		message_boss = ""
 	if Regles.actions_legales(e, "a1").is_empty():
 		# KO ou Étourdi : les Échos jouent seuls, le tour part tout seul.
 		aide.text = "Tu ne peux pas jouer ce tour-ci : tes Échos jouent seuls." if e.vivant("a1") else "Tu es KO : tes Échos continuent seuls."
@@ -288,6 +292,7 @@ func _maj() -> void:
 		v.menaces = []
 		# L'adversaire est caché : pas de menaces, seulement la lueur quand sa Clé est prête.
 		v.cle_prete = e.camp(id) == "b" and phase == "choix" and _cle_prete(id)
+		v.verrou = donjon != null and id == "b1" and donjon.verrou >= 0
 		for m in Regles.menaces(e, id) if e.camp(id) == "a" else []:
 			var n := e.noeud(id, int(m["voie"]), int(m["rang"]))
 			var pic := Texte.picto(n["effets"][0])
@@ -890,6 +895,8 @@ func _resoudre() -> void:
 	bandeau.maj("", "", "")
 	var avant := e
 	e = Regles.resoudre_tour(e, declarations)
+	if donjon != null:
+		message_boss = str(donjon.apres_tour(e)["message"])
 	for id in trace:
 		var a: Dictionary = e.actions_jouees.get(id, {})
 		if not a.is_empty() and (tour == null or id == "a1"):
