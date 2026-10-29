@@ -1,4 +1,4 @@
-## Vérifie le budget de chaque nœud des dix classes (docs/SPEC-COMBAT-V2.md, section 7.4) : son coût, calculé avec
+## Vérifie le budget de chaque nœud des dix classes et de leurs évolutions (docs/SPEC-COMBAT-V2.md, section 7.4) : son coût, calculé avec
 ## la grille 7.2, doit tomber dans ±6 % du budget de son rang (ou de son budget_override). Lancé par la CI.
 ##   godot --headless --path . --script res://tools/budget.gd [-- --tout]
 ## Code de sortie 1, avec la liste des nœuds fautifs, si un seul nœud sort de son budget ou si une donnée est inconnue.
@@ -11,7 +11,7 @@ func _initialize() -> void:
 	for erreur in donnees.erreurs:
 		print("  DONNÉE   " + erreur)
 	if "--tout" in OS.get_cmdline_user_args():
-		for id in donnees.ordre_classes:
+		for id in donnees.ordre_classes + donnees.ordre_evolutions:
 			var cls: Dictionary = donnees.classes[id]
 			print("%s (moyeu %s : %.2f)" % [cls["nom"], cls["moyeu"]["nom"], Budget.cout(donnees.regles, cls["moyeu"])])
 			for voie in cls["voies"]:
@@ -21,7 +21,7 @@ func _initialize() -> void:
 				print("  %-22s %s" % [voie["nom"], " · ".join(cases)])
 	var fautes := Budget.fautes(donnees)
 	var total := 0
-	for id in donnees.ordre_classes:
+	for id in donnees.ordre_classes + donnees.ordre_evolutions:
 		total += 1
 		for voie in donnees.classes[id].get("voies", []):
 			total += voie.get("noeuds", []).size()

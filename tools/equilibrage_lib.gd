@@ -52,7 +52,7 @@ static func destins(d: Donnees, classe: String, graine: int, memoire: Dictionary
 	if not memoire.has(cle):
 		if memoire.size() >= 4000:
 			memoire.clear()
-		var joueur := Generateur.generer(classe, graine, niveau, Generateur.PAR_DEFAUT, d)
+		var joueur := Generateur.generer(Evolution.classe_au_niveau(classe, niveau, graine, d), graine, niveau, Generateur.PAR_DEFAUT, d)
 		var camp: Array
 		if format == "trio":
 			camp = Trio.camp(joueur, niveau, d)

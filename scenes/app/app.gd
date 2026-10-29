@@ -10,6 +10,9 @@
 ## L'équipement (GDD V2, § 10 ; PR 3.2) : les objets portés et le sac vivent dans le profil ; les bonus des objets portés
 ## entrent dans la roue du joueur (`Destin.mods`) à chaque régénération ; le butin tombe à la fin des étages de la Tour ;
 ## les Éclats (monnaie liée) viennent des duels, des étages et du revenu passif, et paient la reforge.
+## Les évolutions (GDD V2, § 3 ; PR 8.1) : au niveau 30, le perso peut évoluer (engine/evolution.gd) ; sa classe devient
+## l'évolution, sa roue repart à zéro, un point par niveau de 31 à 60 ; la graine, les Échos (adaptés au rôle) et la
+## lignée (les records, paliers et Faveurs de la Tour sont ceux de la classe de base) restent.
 ## Affichage et navigation seulement : toute la règle vit dans res://engine.
 class_name ArenaApp
 extends Control
@@ -274,9 +277,48 @@ func reroll_player() -> void:
 	sauver_perso()
 
 
-## Les points de Destin qui restent à placer : un par niveau.
+## Les points de Destin qui restent à placer : un par niveau au-dessus du plancher du rang (engine/evolution.gd).
 func destin_points_left() -> int:
-	return maxi(0, profile.level - allumage.size())
+	return maxi(0, Evolution.points(profile.level, rang_perso(), data) - allumage.size())
+
+
+## Le rang de la classe du perso : 0 (classe de base) ou 1 (évolution).
+func rang_perso() -> int:
+	return Evolution.rang(player_class, data)
+
+
+## La lignée du perso : sa classe de base (elle porte les records, les paliers et les Faveurs de la Tour).
+func lignee() -> String:
+	return Evolution.base(player_class, data)
+
+
+## Le niveau le plus haut du perso : 30 pour une classe de base (l'XP attend alors l'évolution), 60 pour une évolution.
+func niveau_max() -> int:
+	return Evolution.niveau_max(rang_perso(), data)
+
+
+## Le perso peut-il évoluer maintenant (au niveau 30, classe de base) ?
+func peut_evoluer() -> bool:
+	return Evolution.peut_evoluer(player_class, profile.level, data)
+
+
+## Les évolutions possibles de sa classe (une pour l'instant).
+func evolutions_possibles() -> Array[String]:
+	return Evolution.evolutions_de(player_class, data)
+
+
+## Évoluer : la classe devient l'évolution, nouvelle roue (même graine), zéro point ; les Échos sont complétés selon le
+## nouveau rôle. Faux si ce n'est pas possible.
+func evoluer(evolution_id: String) -> bool:
+	if not peut_evoluer() or not evolution_id in evolutions_possibles():
+		return false
+	player_class = evolution_id
+	allumage.clear()
+	profile.xp = 0
+	_completer_echos()
+	_regenerer()
+	sauver_perso()
+	return true
 
 
 ## Allume un nœud ou un éclat (« v2.n3 », « v1.e1 ») s'il reste un point et que la règle d'allumage le permet.
@@ -291,7 +333,7 @@ func allumer(cle: String) -> bool:
 
 ## De l'XP après un combat ; les Échos sont toujours au niveau du joueur. Renvoie {levels, level}.
 func gain_xp(amount: int) -> Dictionary:
-	var result := profile.gain_xp(amount)
+	var result := profile.gain_xp(amount, niveau_max())
 	_regenerer()
 	profile.save()
 	return result
@@ -633,7 +675,7 @@ func _arene() -> Dictionary:
 func etat_arene() -> Dictionary:
 	var a := _arene()
 	var aujourd_hui := Time.get_date_string_from_system()
-	return {"points": int(a["points"]), "ligue": Arene.ligue(0), "saison": int(a["saison"]), "fin_saison": Arene.fin_de_saison(aujourd_hui, data),
+	return {"points": int(a["points"]), "ligue": Arene.ligue(rang_perso()), "saison": int(a["saison"]), "fin_saison": Arene.fin_de_saison(aujourd_hui, data),
 		"restants": maxi(0, int(data.objets_arene["combats_par_jour"]) - int(a["combats_jour"])), "victoires_semaine": int(a["victoires_semaine"]),
 		"coffre": Arene.rarete_coffre(int(a["victoires_semaine"]), data), "coffre_reclame": bool(a["coffre_reclame"])}
 
@@ -683,22 +725,22 @@ func commencer_tour(depart: int = 0) -> Dictionary:
 
 ## L'étage d'où ta classe reprend la Tour (après le dernier Gardien franchi).
 func palier() -> int:
-	return maxi(1, int(profile.tower_paliers.get(player_class, 1)))
+	return maxi(1, int(profile.tower_paliers.get(lignee(), 1)))
 
 
 ## Les Faveurs de la Tour de ta classe (identifiant -> nombre de cumuls).
 func faveurs() -> Dictionary:
 	var out := {}
-	for id in profile.tower_faveurs.get(player_class, {}):
-		if data.faveurs.has(str(id)) and int(profile.tower_faveurs[player_class][id]) > 0:
-			out[str(id)] = int(profile.tower_faveurs[player_class][id])
+	for id in profile.tower_faveurs.get(lignee(), {}):
+		if data.faveurs.has(str(id)) and int(profile.tower_faveurs[lignee()][id]) > 0:
+			out[str(id)] = int(profile.tower_faveurs[lignee()][id])
 	return out
 
 
 ## L'XP d'un étage franchi : 40 la première fois, 20 pour un étage déjà franchi (une montée rejouée depuis un palier) ;
 ## +10 % par Faveur de Savoir.
 func xp_etage(n: int) -> int:
-	var base := 40 if n >= int(profile.tower_records.get(player_class, 0)) else 20
+	var base := 40 if n >= int(profile.tower_records.get(lignee(), 0)) else 20
 	return Regles.plancher(float(base) * (1.0 + Tour.valeur_faveur("savoir", int(faveurs().get("savoir", 0)), data)))
 
 
@@ -712,11 +754,11 @@ func etage_franchi(t: Tour) -> Dictionary:
 	var g := int(data.tour["gardien_tous_les"])
 	var gardien := g > 0 and franchi % g == 0
 	var faveur := Tour.gardien_premiere_fois(franchi, palier(), g)
-	var premier := franchi >= int(profile.tower_records.get(player_class, 0))
-	if t.atteint > int(profile.tower_records.get(player_class, 0)):
-		profile.tower_records[player_class] = t.atteint
+	var premier := franchi >= int(profile.tower_records.get(lignee(), 0))
+	if t.atteint > int(profile.tower_records.get(lignee(), 0)):
+		profile.tower_records[lignee()] = t.atteint
 	if gardien and not faveur:
-		profile.tower_paliers[player_class] = maxi(palier(), Tour.palier_apres(franchi, g))
+		profile.tower_paliers[lignee()] = maxi(palier(), Tour.palier_apres(franchi, g))
 	var butin := t.butin(franchi, premier)
 	if not butin.is_empty():
 		profile.sac.append(butin)
@@ -735,10 +777,10 @@ func etage_franchi(t: Tour) -> Dictionary:
 func choisir_faveur(id: String, t: Tour) -> void:
 	if not data.faveurs.has(id):
 		return
-	var acquises: Dictionary = profile.tower_faveurs.get(player_class, {})
+	var acquises: Dictionary = profile.tower_faveurs.get(lignee(), {})
 	acquises[id] = int(acquises.get(id, 0)) + 1
-	profile.tower_faveurs[player_class] = acquises
-	profile.tower_paliers[player_class] = maxi(palier(), Tour.palier_apres(t.etage - 1, int(data.tour["gardien_tous_les"])))
+	profile.tower_faveurs[lignee()] = acquises
+	profile.tower_paliers[lignee()] = maxi(palier(), Tour.palier_apres(t.etage - 1, int(data.tour["gardien_tous_les"])))
 	profile.save()
 	t.faveurs = faveurs()
 
@@ -769,9 +811,9 @@ func fin_duel(gagne: bool, classe: bool = false) -> Dictionary:
 ## La fin d'une montée : le record de la classe (l'étage atteint) et son palier (l'étage qui suit le dernier Gardien
 ## franchi). Renvoie {xp} (l'XP des étages est donnée au fil de la montée).
 func fin_tour(t: Tour) -> Dictionary:
-	if t.atteint > int(profile.tower_records.get(player_class, 0)):
-		profile.tower_records[player_class] = t.atteint
-	profile.tower_paliers[player_class] = maxi(palier(), Tour.palier_apres(t.atteint - 1, int(data.tour["gardien_tous_les"])))
+	if t.atteint > int(profile.tower_records.get(lignee(), 0)):
+		profile.tower_records[lignee()] = t.atteint
+	profile.tower_paliers[lignee()] = maxi(palier(), Tour.palier_apres(t.atteint - 1, int(data.tour["gardien_tous_les"])))
 	profile.save()
 	return {"xp": 40 * maxi(0, t.atteint - t.depart)}
 

@@ -1,0 +1,228 @@
+{
+  "id": "paladin",
+  "nom": "Paladin",
+  "genre": "m",
+  "role": "front",
+  "base": "pretre",
+  "rang": 1,
+  "pv": 1040,
+  "k": 0.86,
+  "description": "Le Prêtre qui a pris le marteau et le bouclier : il protège de son corps et frappe au nom de la foi. Il change de rôle : Front.",
+  "moyeu": {
+    "nom": "Marteau sacré",
+    "genre": "m",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "foi",
+      "nom": "Voie de la Foi",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Frappe sacrée",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Châtiment du paladin",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Lumière vengeresse",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 110, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 15, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Jugement dernier",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "bouclier_sacre",
+      "nom": "Voie du Bouclier sacré",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Égide du paladin",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Défi sacré",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "un_ennemi"},
+            {"type": "barriere", "valeur": 85.71, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Rempart de lumière",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 125.71, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Forteresse",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 138.57, "cible": "soi"},
+            {"type": "soin", "valeur": 90, "cible": "soi"},
+            {"type": "etat", "nom": "provoque", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "serment",
+      "nom": "Voie du Serment",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Serment de protection",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Serment de vie",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 111.11, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Serment du gardien",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Serment éternel",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 188.46, "cible": "duo"},
+            {"type": "soin", "valeur": 50, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lumiere",
+      "nom": "Voie de la Lumière",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Lueur du paladin",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Prière de fer",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 72.22, "cible": "soi"},
+            {"type": "barriere", "valeur": 50, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Bénédiction du paladin",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 119.66, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Résurrection",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 141.03, "cible": "duo"},
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "justice",
+      "nom": "Voie de la Justice",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Entrave sacrée",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Silence divin",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Désarmement",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Sentence",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"},
+            {"type": "dissipe", "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

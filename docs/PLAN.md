@@ -137,6 +137,8 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 
 Évolutions de rang 1 (30 classes) et de rang 2 (90) — une évolution peut changer le rôle de sa classe (GDD V2, § 3) —, classes de grimoire (rares, épiques, légendaires : leurs propres voies, ligue Ascendants) ; PvP synchrone à 6 humains (file par rôle, repli à 2 humains + 4 Échos).
 
+**PR 8.1** (**faite**, PR #69) Le mécanisme et une évolution par classe : `data/evolutions.json` et `data/evolutions/<id>.json`, `engine/evolution.gd` (rang, lignée, points d'un rang, plafond de niveau, saut de puissance, évolution d'une classe au-delà du niveau 30), « Évoluer » sur l'écran du Destin au niveau 30, Échos et adversaires évolués, ligue Élus à l'Arène, `tools/mesure_evolution.gd`. **PR 8.2** Les deux autres évolutions de chaque classe (le choix parmi trois) et leurs sprites provisoires. **PR 8.3** Le rang 2 (niveau 60) et les grimoires.
+
 ### Phase 9 — L'équilibrage global
 
 Tout ensemble, avec le simulateur et les régleurs existants : les classes et les rôles en trio (PR 1.5 d'origine), les Soutiens à égalité, la courbe « niveau → étage » de la Tour (PR 2.2 d'origine), les lignes d'équipement (PR 3.3 d'origine), les Faveurs, les bonus de guilde et de territoire, les évolutions et les grimoires. Ce qu'il faut mesurer : la liste ci-dessous.

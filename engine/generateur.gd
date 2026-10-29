@@ -16,14 +16,17 @@ const PERSISTANTE_TOURS := 3
 ## Le DoT d'une forme Persistante, selon la classe (l'Archer : Saignement sur sa voie de la Précision, Brûlure ailleurs).
 const DOT_PERSISTANTE := {"guerrier": "saignement", "voleur": "saignement", "pugiliste": "saignement",
 	"diplomate": "saignement", "mage": "brulure", "archer": "brulure", "alchimiste": "poison", "invocateur": "familier",
-	"pretre": "saignement", "barde": "saignement"}
+	"pretre": "saignement", "barde": "saignement",
+	"champion": "saignement", "berserker": "saignement", "archimage": "brulure", "assassin": "saignement", "rodeur": "brulure",
+	"maitre_des_betes": "familier", "paladin": "saignement", "apothicaire": "poison", "virtuose": "saignement", "ambassadeur": "saignement"}
 const MONO := ["un_ennemi", "un_allie", "soi"]
 const MULTI := ["tous_les_ennemis", "duo"]
 
 
-## Le Destin d'un joueur : 5 voies, formes tirées avec la graine, N1 allumés d'office, puis `niveau` points placés
-## (PAR_DEFAUT : l'allumage par défaut ; sinon la liste des nœuds allumés par le joueur, dans l'ordre, ex. « v2.n2 »,
-## « v1.e1 »).
+## Le Destin d'un joueur : 5 voies, formes tirées avec la graine, N1 allumés d'office, puis un point par niveau
+## au-dessus du plancher de son rang (engine/evolution.gd : `niveau` points pour une classe de base, niveau − 30 pour
+## une évolution) (PAR_DEFAUT : l'allumage par défaut ; sinon la liste des nœuds allumés par le joueur, dans l'ordre,
+## ex. « v2.n2 », « v1.e1 »).
 static func generer(classe_id: String, graine: int, niveau: int, allumage: Array[String] = PAR_DEFAUT, donnees: Donnees = null) -> Destin:
 	return _generer(classe_id, graine, niveau, allumage, [], false, donnees)
 
@@ -83,10 +86,11 @@ static func _generer(classe_id: String, graine: int, niveau: int, allumage: Arra
 			var forme_noeud: Dictionary = formes[rng.randi_range(0, formes.size() - 1)].duplicate(true)
 			forme_noeud["allume"] = r == 0
 			voie["noeuds"][r] = forme_noeud
+	var points := Evolution.points(niveau, destin.rang, d)
 	var liste := allumage
 	if allumage == PAR_DEFAUT:
-		liste = allumage_defaut(destin.voies.size(), niveau, est_acolyte)
-	allumer(destin, liste, niveau)
+		liste = allumage_defaut(destin.voies.size(), points, est_acolyte)
+	allumer(destin, liste, points)
 	return destin
 
 

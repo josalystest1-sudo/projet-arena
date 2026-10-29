@@ -47,7 +47,9 @@ var etal_achetes: Array = []
 var monsters_seen: Dictionary = {}
 ## Les bulles d'aide du combat déjà lues (identifiant -> true) : chacune ne s'affiche qu'une fois.
 var tips_seen: Dictionary = {}
-## Le niveau (1 à 30 : un point de Destin par niveau) et l'XP vers le niveau suivant (au prototype, une courbe rapide).
+## Le niveau (1 à 30 pour une classe de base, 31 à 60 pour une évolution : un point de Destin par niveau) et l'XP vers
+## le niveau suivant (au prototype, une courbe rapide). Le plafond dépend du rang du perso (engine/evolution.gd) : l'app
+## le passe à gain_xp ; au plafond de la classe de base, l'XP attend l'évolution.
 var level: int = 1
 var xp: int = 0
 const MAX_LEVEL := 30
@@ -122,15 +124,15 @@ static func xp_to_next(from_level: int) -> int:
 
 
 ## Ajoute de l'XP ; renvoie {levels: niveaux gagnés, level: le niveau atteint}.
-func gain_xp(amount: int) -> Dictionary:
+func gain_xp(amount: int, max_level: int = MAX_LEVEL) -> Dictionary:
 	var gained := 0
-	if level < MAX_LEVEL:
+	if level < max_level:
 		xp += amount
-		while level < MAX_LEVEL and xp >= xp_to_next(level):
+		while level < max_level and xp >= xp_to_next(level):
 			xp -= xp_to_next(level)
 			level += 1
 			gained += 1
-		if level >= MAX_LEVEL:
+		if level >= max_level:
 			xp = 0
 	return {"levels": gained, "level": level}
 

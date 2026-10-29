@@ -475,7 +475,8 @@ const SPRITES := {
 
 ## Dessine le sprite d'une classe sur un CanvasItem, en haut à gauche de « origin ».
 static func draw(canvas: CanvasItem, class_id: String, origin: Vector2, pixel: float, team_color: Color, flip: bool = false, grey: bool = false) -> void:
-	var rows: Array = SPRITES.get(class_id, SPRITES["guerrier"])
+	# Une évolution n'a pas encore de sprite (phase 10) : celui de sa classe de base.
+	var rows: Array = SPRITES.get(class_id, SPRITES.get(str(Donnees.defaut().classe(class_id).get("base", "")), SPRITES["guerrier"]))
 	var dark := team_color.darkened(0.35)
 	for y in range(rows.size()):
 		var row: String = rows[y]

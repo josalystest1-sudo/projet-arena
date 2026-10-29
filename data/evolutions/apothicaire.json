@@ -1,0 +1,233 @@
+{
+  "id": "apothicaire",
+  "nom": "Apothicaire",
+  "genre": "m",
+  "role": "soutien",
+  "base": "alchimiste",
+  "rang": 1,
+  "pv": 760,
+  "k": 0.9368,
+  "description": "L'Alchimiste devenu guérisseur : remèdes, antidotes, stimulants, et une fiole de toxine pour les mauvais jours.",
+  "moyeu": {
+    "nom": "Fiole d'apothicaire",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "remede",
+      "nom": "Voie du Remède",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Onguent",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Remède",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 111.11, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Vapeurs de vie",
+          "genre": "fp",
+          "effets": [
+            {"type": "soin", "valeur": 119.66, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Élixir de vie",
+          "genre": "m",
+          "effets": [
+            {"type": "purge", "cible": "duo"},
+            {"type": "soin", "valeur": 111.11, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "antidote",
+      "nom": "Voie de l'Antidote",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Antidote",
+          "genre": "m",
+          "effets": [
+            {"type": "purge", "cible": "un_allie"},
+            {"type": "soin", "valeur": 22.22, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Contre-poison",
+          "genre": "m",
+          "effets": [
+            {"type": "dissipe", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 25, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Grande purge",
+          "genre": "f",
+          "effets": [
+            {"type": "purge", "cible": "duo"},
+            {"type": "soin", "valeur": 34.19, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Renaissance",
+          "genre": "f",
+          "effets": [
+            {"type": "purge", "cible": "duo"},
+            {"type": "renfort", "pourcent": 30, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 44.44, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stimulant",
+      "nom": "Voie du Stimulant",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Vigueur",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Élan",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 29.91, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Peau d'écorce",
+          "genre": "f",
+          "effets": [
+            {"type": "barriere", "valeur": 153.85, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Apothéose chimique",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "duo"},
+            {"type": "barriere", "valeur": 138.46, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "vapeurs",
+      "nom": "Voie des Vapeurs",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Vapeur aveuglante",
+          "genre": "f",
+          "budget_override": 77,
+          "effets": [
+            {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Vapeur soporifique",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 10, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Nuage de sommeil",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "affaiblissement", "pourcent": 13.85, "tours": 2, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Nuage mortel",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 25, "tours": 2, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "toxine",
+      "nom": "Voie de la Toxine",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Fiole acide",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "poison", "par_tour": 11.43, "tours": 5, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Acide fort",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 20, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Pluie acide",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 24.18, "tours": 4, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 40, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Dissolution totale",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 40, "tours": 5, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

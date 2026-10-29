@@ -1,0 +1,227 @@
+{
+  "id": "virtuose",
+  "nom": "Virtuose",
+  "genre": "m",
+  "role": "soutien",
+  "base": "barde",
+  "rang": 1,
+  "pv": 760,
+  "k": 0.9718,
+  "description": "Le Barde qui remplit les salles : symphonies pour les siens, élégies pour les autres, et un grand solo.",
+  "moyeu": {
+    "nom": "Note du virtuose",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "symphonie",
+      "nom": "Voie de la Symphonie",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Prélude",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Allegro",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 38.46, "tours": 2, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Crescendo du virtuose",
+          "genre": "m",
+          "effets": [
+            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "un_allie"},
+            {"type": "soin", "valeur": 66.67, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Symphonie",
+          "genre": "f",
+          "effets": [
+            {"type": "renfort", "pourcent": 50, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 85.47, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "elegie",
+      "nom": "Voie de l'Élégie",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Élégie",
+          "genre": "f",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 35, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Thrène",
+          "genre": "m",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 38.46, "tours": 2, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Discorde",
+          "genre": "f",
+          "effets": [
+            {"type": "dissipe", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 45, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Requiem du virtuose",
+          "genre": "m",
+          "effets": [
+            {"type": "affaiblissement", "pourcent": 35.96, "tours": 2, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "berceuse_profonde",
+      "nom": "Voie de la Berceuse profonde",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Murmure",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 12.5, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Sommeil profond",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 10, "tours": 2, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Transe",
+          "genre": "f",
+          "effets": [
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Silence absolu",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "silencie", "tours": 2, "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 10, "tours": 2, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cantate",
+      "nom": "Voie de la Cantate",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Cantate",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 77.78, "cible": "un_allie"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Aria",
+          "genre": "f",
+          "effets": [
+            {"type": "soin", "valeur": 85.47, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Hymne de vie",
+          "genre": "m",
+          "effets": [
+            {"type": "soin", "valeur": 119.66, "cible": "duo"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Chant de l'aube",
+          "genre": "m",
+          "effets": [
+            {"type": "purge", "cible": "duo"},
+            {"type": "soin", "valeur": 111.11, "cible": "duo"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "grand_solo",
+      "nom": "Voie du Grand solo",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Note aiguë",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Accord brisé",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Solo endiablé",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"},
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Grand finale",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    }
+  ]
+}

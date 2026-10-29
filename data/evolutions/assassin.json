@@ -1,0 +1,229 @@
+{
+  "id": "assassin",
+  "nom": "Assassin",
+  "genre": "m",
+  "role": "degats",
+  "base": "voleur",
+  "rang": 1,
+  "pv": 730,
+  "k": 0.75,
+  "description": "Le Voleur devenu tueur : venins lents, coups dans le dos et danse des lames.",
+  "moyeu": {
+    "nom": "Lame cachée",
+    "genre": "f",
+    "effets": [
+      {"type": "degats", "valeur": 55, "cible": "un_ennemi"}
+    ]
+  },
+  "voies": [
+    {
+      "id": "execution",
+      "nom": "Voie de l'Exécution",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Coup fatal",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Lame silencieuse",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Égorgement",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 95, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Mise à mort",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 230, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "venin",
+      "nom": "Voie du Venin",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Lame vénéneuse",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"},
+            {"type": "dot", "sous_type": "poison", "par_tour": 11.43, "tours": 5, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Venin lent",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 20, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 30, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Brume toxique",
+          "genre": "f",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 24.18, "tours": 4, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 40, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Venin mortel",
+          "genre": "m",
+          "effets": [
+            {"type": "dot", "sous_type": "poison", "par_tour": 40, "tours": 5, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 90, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ombre",
+      "nom": "Voie de l'Ombre",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Pas de l'ombre",
+          "genre": "m",
+          "effets": [
+            {"type": "barriere", "valeur": 100, "cible": "soi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Disparition",
+          "genre": "f",
+          "effets": [
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 40, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Embuscade",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 80, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Nuit noire",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "tous_les_ennemis"},
+            {"type": "degats", "valeur": 96.92, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trahison",
+      "nom": "Voie de la Trahison",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Coup bas",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "enracine", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 35, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Poignard dans le dos",
+          "genre": "m",
+          "effets": [
+            {"type": "degats", "valeur": 40, "cible": "un_ennemi"},
+            {"type": "etat", "nom": "desarme", "tours": 1, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Perfidie",
+          "genre": "f",
+          "effets": [
+            {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Coup du traître",
+          "genre": "m",
+          "effets": [
+            {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
+            {"type": "egare", "cible": "un_ennemi"},
+            {"type": "degats", "valeur": 50, "cible": "un_ennemi"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "danse",
+      "nom": "Voie de la Danse des lames",
+      "acolyte": false,
+      "noeuds": [
+        {
+          "rang": 1,
+          "nom": "Pirouette",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 53.85, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 2,
+          "nom": "Lames jumelles",
+          "genre": "fp",
+          "effets": [
+            {"type": "degats", "valeur": 76.92, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 3,
+          "nom": "Valse mortelle",
+          "genre": "f",
+          "effets": [
+            {"type": "degats", "valeur": 107.69, "cible": "tous_les_ennemis"}
+          ]
+        },
+        {
+          "rang": 4,
+          "nom": "Mille morts",
+          "genre": "fp",
+          "effets": [
+            {"type": "degats", "valeur": 106.92, "cible": "tous_les_ennemis"},
+            {"type": "dot", "sous_type": "saignement", "par_tour": 25, "tours": 4, "cible": "tous_les_ennemis"}
+          ]
+        }
+      ]
+    }
+  ]
+}

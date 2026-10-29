@@ -17,7 +17,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	classement.add_child(UiKit.label("Ton classement", 20, UiKit.GOLD, false))
 	classement.add_child(UiKit.label("%d points · ligue des %s" % [int(a["points"]), Arene.nom_ligue(str(a["ligue"]), app.data)], 22, Color.WHITE, false))
 	classement.add_child(UiKit.label("Saison %d, jusqu'au %s. À la fin de la saison, les points repartent de zéro." % [int(a["saison"]) + 1, _date_lisible(str(a["fin_saison"]))], 14, UiKit.SOFT, false))
-	classement.add_child(UiKit.label("Gagné : +%d · perdu : −%d. Les ligues Élus et Ascendants viendront avec les évolutions." % [int(app.data.objets_arene["points_gagne"]), int(app.data.objets_arene["points_perdu"])], 14, UiKit.SOFT, false))
+	classement.add_child(UiKit.label("Gagné : +%d · perdu : −%d. Ta ligue suit le rang de ta classe : Aspirants, puis Élus une fois évolué (Ascendants : rang 2 et grimoires)." % [int(app.data.objets_arene["points_gagne"]), int(app.data.objets_arene["points_perdu"])], 14, UiKit.SOFT, false))
 	var restants := int(a["restants"])
 	column.add_child(UiKit.main_button("Combat classé (%d restant%s aujourd'hui)" % [restants, "s" if restants > 1 else ""] if restants > 0 else "Plus de combat classé aujourd'hui", _classe, 84))
 	(column.get_child(column.get_child_count() - 1) as Button).disabled = restants <= 0

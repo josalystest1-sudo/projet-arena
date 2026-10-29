@@ -63,7 +63,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 			column.add_child(UiKit.label("Tombé à l'étage %d" % tour.atteint, 34, ROUGE))
 			app.sfx.play("defaite")
 			column.add_child(cartes)
-			_carte(cartes, "Étage atteint", str(tour.atteint), "record %s : %d" % [app.data.classe(app.player_class)["nom"], int(app.profile.tower_records.get(app.player_class, 0))])
+			_carte(cartes, "Étage atteint", str(tour.atteint), "record %s : %d" % [app.data.classe(app.lignee())["nom"], int(app.profile.tower_records.get(app.lignee(), 0))])
 			_carte(cartes, "Reprise", "étage %d" % app.palier(), "tous tes PV")
 		else:
 			# L'XP d'abord (elle dépend du record d'avant), puis le record et le palier, mis à jour dès maintenant.

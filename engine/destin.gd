@@ -14,6 +14,8 @@ const ECLAT_PV := [0.0, 0.03, 0.0, 0.03, 0.0]
 const ECLAT_VALEURS_CLE := [0.0, 0.0, 0.0, 0.0, 0.10]
 
 var classe_id := ""
+## Le rang de la classe (engine/evolution.gd) : 0 pour une classe de base, 1 pour une évolution.
+var rang := 0
 ## Le nom affiché : celui de la classe, ou d'un monstre de la Tour.
 var nom := ""
 ## Le dessin : celui de la classe, ou celui du monstre (son identifiant dans le bestiaire).
@@ -45,10 +47,13 @@ static func de_base(donnees: Donnees, p_classe_id: String, nb_voies: int = 5, to
 	var d := Destin.new()
 	d.classe_id = p_classe_id
 	d.nom = str(cls["nom"])
-	d.sprite = p_classe_id
+	# Une évolution se dessine comme sa classe de base (les sprites viendront à la phase 10) et porte le saut de
+	# puissance du GDD (×1 pour une classe de base : rien ne change).
+	d.rang = int(cls.get("rang", 0))
+	d.sprite = str(cls.get("base", p_classe_id))
 	d.role = str(cls["role"])
-	d.pv_base = int(cls["pv"])
-	d.k = float(cls["k"])
+	d.pv_base = roundi(float(cls["pv"]) * Evolution.puissance_pv(d.rang, donnees))
+	d.k = float(cls["k"]) * Evolution.puissance_valeurs(d.rang, donnees)
 	d.acolyte = nb_voies == 3
 	d.moyeu = cls["moyeu"].duplicate(true)
 	d.moyeu["rang"] = 0
@@ -91,13 +96,14 @@ func bonus_pv() -> float:
 
 
 func vers_dict() -> Dictionary:
-	return {"classe_id": classe_id, "nom": nom, "sprite": sprite, "role": role, "graine": graine, "acolyte": acolyte, "echo": echo, "pv_base": pv_base,
+	return {"classe_id": classe_id, "rang": rang, "nom": nom, "sprite": sprite, "role": role, "graine": graine, "acolyte": acolyte, "echo": echo, "pv_base": pv_base,
 		"pv_mult": pv_mult, "k": k, "moyeu": moyeu.duplicate(true), "voies": voies.duplicate(true), "mods": mods.duplicate(true)}
 
 
 static func depuis_dict(dico: Dictionary) -> Destin:
 	var d := Destin.new()
 	d.classe_id = str(dico["classe_id"])
+	d.rang = int(dico.get("rang", 0))
 	d.nom = str(dico["nom"])
 	d.sprite = str(dico.get("sprite", dico["classe_id"]))
 	d.role = str(dico["role"])

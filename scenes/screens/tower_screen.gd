@@ -10,8 +10,8 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	app = p_app
 	var column := UiKit.scroll_column(self, 12)
 	column.add_child(UiKit.label("La Tour", 34, UiKit.GOLD))
-	var cls_nom := str(app.data.classe(app.player_class)["nom"])
-	var record := int(app.profile.tower_records.get(app.player_class, 0))
+	var cls_nom := str(app.data.classe(app.lignee())["nom"])
+	var record := int(app.profile.tower_records.get(app.lignee(), 0))
 	column.add_child(UiKit.label("Ton record (%s) : %s" % [cls_nom, "étage %d" % record if record > 0 else "pas encore de montée"], 20, Color.WHITE))
 	var palier := app.palier()
 	var regles := UiKit.card(column, 4)
