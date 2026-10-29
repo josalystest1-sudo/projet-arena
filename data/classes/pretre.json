@@ -153,8 +153,7 @@
           "genre": "m",
           "effets": [
             {"type": "dissipe", "cible": "un_ennemi"},
-            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 5, "cible": "un_ennemi"}
+            {"type": "etat", "nom": "silencie", "tours": 1, "cible": "un_ennemi"}
           ]
         },
         {
@@ -188,8 +187,7 @@
           "nom": "Ferveur",
           "genre": "f",
           "effets": [
-            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "soi"},
-            {"type": "degats", "valeur": 20, "cible": "un_ennemi"}
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
           ]
         },
         {
@@ -197,8 +195,8 @@
           "nom": "Zèle",
           "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 55, "cible": "un_ennemi"},
-            {"type": "soin", "valeur": 50, "cible": "soi"}
+            {"type": "renfort", "pourcent": 25, "tours": 2, "cible": "un_allie"},
+            {"type": "soin", "valeur": 55.56, "cible": "un_allie"}
           ]
         },
         {
@@ -206,8 +204,8 @@
           "nom": "Martyre",
           "genre": "m",
           "effets": [
-            {"type": "barriere", "valeur": 100, "cible": "soi"},
-            {"type": "degats", "valeur": 70, "cible": "un_ennemi"}
+            {"type": "barriere", "valeur": 100, "cible": "un_allie"},
+            {"type": "renfort", "pourcent": 35, "tours": 2, "cible": "un_allie"}
           ]
         },
         {
@@ -215,9 +213,8 @@
           "nom": "Transcendance",
           "genre": "f",
           "effets": [
-            {"type": "soin", "valeur": 100, "cible": "soi"},
-            {"type": "renfort", "pourcent": 40, "tours": 2, "cible": "soi"},
-            {"type": "degats", "valeur": 60, "cible": "un_ennemi"}
+            {"type": "renfort", "pourcent": 50, "tours": 2, "cible": "duo"},
+            {"type": "soin", "valeur": 85.47, "cible": "duo"}
           ]
         }
       ]

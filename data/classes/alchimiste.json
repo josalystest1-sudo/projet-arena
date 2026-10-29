@@ -120,7 +120,7 @@
           "genre": "m",
           "effets": [
             {"type": "etat", "nom": "gele", "tours": 1, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 30.0, "cible": "un_ennemi"}
+            {"type": "affaiblissement", "pourcent": 15, "tours": 2, "cible": "un_ennemi"}
           ],
           "budget_override": 110.0
         },
@@ -130,7 +130,7 @@
           "genre": "f",
           "effets": [
             {"type": "etat", "nom": "aveugle", "tours": 1, "cible": "tous_les_ennemis"},
-            {"type": "degats", "valeur": 38.46, "cible": "tous_les_ennemis"}
+            {"type": "affaiblissement", "pourcent": 19.23, "tours": 2, "cible": "tous_les_ennemis"}
           ],
           "budget_override": 154.0
         },
@@ -141,7 +141,7 @@
           "effets": [
             {"type": "etat", "nom": "etourdi", "tours": 1, "cible": "un_ennemi"},
             {"type": "affaiblissement", "pourcent": 36.27, "tours": 2, "cible": "un_ennemi"},
-            {"type": "degats", "valeur": 60.45, "cible": "un_ennemi"}
+            {"type": "egare", "cible": "un_ennemi"}
           ],
           "budget_override": 253.0
         }
@@ -191,42 +191,45 @@
       ]
     },
     {
-      "id": "nitro",
-      "nom": "Voie de la Nitro",
+      "id": "corrosion",
+      "nom": "Voie de la Corrosion",
       "acolyte": false,
       "noeuds": [
         {
           "rang": 1,
-          "nom": "Nitro",
-          "genre": "f",
+          "nom": "Solvant",
+          "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 63.0, "cible": "un_ennemi"}
+            {"type": "affaiblissement", "pourcent": 31.5, "tours": 2, "cible": "un_ennemi"}
           ],
           "budget_override": 63.0
         },
         {
           "rang": 2,
-          "nom": "Bombe",
-          "genre": "f",
+          "nom": "Dissolvant",
+          "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 100, "cible": "un_ennemi"}
+            {"type": "dissipe", "cible": "un_ennemi"},
+            {"type": "affaiblissement", "pourcent": 25, "tours": 2, "cible": "un_ennemi"}
           ]
         },
         {
           "rang": 3,
-          "nom": "Grenade",
+          "nom": "Corrosion",
           "genre": "f",
           "effets": [
-            {"type": "degats", "valeur": 108, "cible": "tous_les_ennemis"}
+            {"type": "dissipe", "cible": "tous_les_ennemis"},
+            {"type": "affaiblissement", "pourcent": 28.85, "tours": 2, "cible": "tous_les_ennemis"}
           ]
         },
         {
           "rang": 4,
-          "nom": "Explosion",
-          "genre": "f",
+          "nom": "Effondrement",
+          "genre": "m",
           "effets": [
-            {"type": "degats", "valeur": 120, "cible": "tous_les_ennemis"},
-            {"type": "egare", "cible": "tous_les_ennemis"}
+            {"type": "dissipe", "cible": "tous_les_ennemis"},
+            {"type": "egare", "cible": "tous_les_ennemis"},
+            {"type": "affaiblissement", "pourcent": 33.46, "tours": 2, "cible": "tous_les_ennemis"}
           ]
         }
       ]

@@ -43,7 +43,7 @@ Modifiées le 29 octobre :
 - **Changer de classe** (Évolution ou grimoire) **garde le niveau et donne un tout nouveau Destin** de la nouvelle classe. **[Décidé]** Le nouveau Destin reçoit aussitôt autant de points à placer que le niveau le permet (30 au plus), pour que le joueur reconstruise son arbre ; les points suivants viennent des niveaux suivants. **[Proposé]**
 - **Le niveau continue** au-delà de 30 : 1–30 pour la classe de base, 31–60 pour le rang 1, 61–90 pour le rang 2 ; un grimoire se joue au niveau où on l'a reçu. **[Proposé]**
 - **Une Évolution peut changer le rôle.** **[Décidé le 29 octobre au soir]** Chaque classe peut avoir des évolutions de plusieurs rôles : un Prêtre peut avoir une ou plusieurs évolutions Front, Dégâts ou Soutien, et de même pour toutes les classes. L'Invocateur reste une classe de Dégâts (comme dans le combat V2) ; une ou plusieurs de ses évolutions pourront le faire passer Front. Le rôle d'une classe évoluée est celui de ses données, et c'est lui qui place le personnage dans le trio.
-- **Le geste de classe** : chaque classe a un geste constant quel que soit son Destin (ses deux basiques partagent un élément propre ; une forte est toujours une forte). Les conditions de boss ne parlent que de gestes, de paliers ou de rôles. **[Décidé]** Les classes évoluées et de grimoire ont aussi leur geste.
+- **Le geste de classe** : chaque classe a un geste constant quel que soit son Destin (ses deux basiques partagent un élément propre ; une forte est toujours une forte). Les conditions de boss ne parlent que de gestes, de paliers ou de rôles. **[Décidé]** Les classes évoluées et de grimoire ont aussi leur geste. Dans le combat V2, **le geste d'une classe est son moyeu** (son action de base, la même pour tous ses personnages : la Lueur du Prêtre, la Fiole de l'Alchimiste…), et un « palier » est un rang de nœud (ouverture, préparation, Clé). **[Proposé]**
 
 ## 4. Le combat
 
@@ -69,9 +69,9 @@ Modifiées le 29 octobre :
 ### 4.4 Les Soutiens
 
 - **Un Soutien n'a pas besoin de faire des dégâts** : sa valeur, c'est les PV du trio (rendus, non perdus, ou coups ennemis en moins). **[Décidé]**
-- **Chaque compétence de Soutien a un effet utile même quand personne n'est blessé.** Replis pour celles qui ne l'ont pas : Résurrection → si personne n'est KO, le prochain coup mortel sur l'allié le laisse à 1 PV (une fois) ; Purification → s'il n'y a rien à retirer, immunité contre le prochain état négatif ; Catalyseur → sans recharge en cours chez l'allié, il le rend Vif. **[Proposé]**
+- **Le soin en trop est perdu, mais un Soutien a toujours une ou deux actions utiles quand toute l'équipe a ses PV** (renforcer, affaiblir, étourdir, protéger, brûler, frapper…). **[Décidé le 29 octobre au soir]** Un test le vérifie pour chaque Soutien, à tous les niveaux. (Les replis proposés pour l'ancien combat, Résurrection, Purification, Catalyseur, n'ont plus d'objet.)
 - **Quatre façons d'être Soutien, qui se valent** : le Prêtre répare, l'Alchimiste dure, le Barde accélère, le Diplomate interdit. Le simulateur règle leurs chiffres jusqu'à ce que tout trio, quel que soit son Soutien, aille aussi loin et gagne autant. **[Décidé]**
-- Au plus une compétence qui frappe dans la réserve de six d'un Soutien ; un Destin sans aucune n'est pas un handicap. **[Proposé]** L'IA du Soutien : soigner si besoin, sinon renforcer ou affaiblir, jamais « sinon frapper ».
+- **Les Soutiens presque sans dégâts : une seule voie de dégâts par Soutien.** **[Décidé le 29 octobre au soir]** Prêtre : le Châtiment ; Alchimiste : l'Acide ; Barde : le Solo ; Diplomate : le Duel. Leurs autres voies ne frappent plus : leurs dégâts sont devenus des effets de soutien de même valeur (affaiblissement, renfort, contrôles, barrières) ; la voie de la Nitro de l'Alchimiste est devenue la voie de la Corrosion (affaiblir, dissiper, égarer), la Ferveur du Prêtre renforce un allié au lieu de lui-même. Le moyeu (le geste de la classe) ne change pas. L'IA reste celle du score : un soin à PV pleins ne vaut rien, elle joue autre chose.
 
 ### 4.5 L'IA (une seule : Échos, adversaires, monstres, simulateur)
 
