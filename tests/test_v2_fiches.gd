@@ -82,7 +82,7 @@ func test_44_pour_l_empecher() -> void:
 	assert_false("Gel" in noms, "le Gelé de la voie 3 est éteint : absent")
 	var fiche := Texte.fiche(e, "b1", 0, 4, "a1")
 	assert_true(fiche.has("pour_l_empecher"), "la fiche d'un nœud ennemi a « Pour l'empêcher »")
-	assert_eq(fiche["echeance"], donnees.textes["fiche"]["jouable_prochain_tour"], "échéance 1 d'un ennemi : jouable au prochain tour")
+	assert_eq(fiche["echeance"], donnees.textes["fiche"]["jouable_ce_tour"], "un nœud ennemi légal ce tour-ci : il peut le jouer ce tour-ci")
 	var a_soi := Texte.fiche(e, "a1", 0, 1, "a1")
 	assert_false(a_soi.has("pour_l_empecher"), "pas de « Pour l'empêcher » pour un nœud à soi")
 	assert_eq(a_soi["echeance"], donnees.textes["fiche"]["jouable_maintenant"], "à soi et légal : jouable maintenant")
@@ -92,3 +92,37 @@ func test_44_pour_l_empecher() -> void:
 	var vide := duel_essai(essai([[[deg(10)]]]), essai([[[deg(10)]]]), essai([_quatre()]))
 	vide.perso("b1")["jalons"][0] = 3
 	assert_true(Texte.pour_l_empecher(vide, "b1", 0, 4, "a1").is_empty(), "aucune réponse en main")
+
+
+# Les Synergies possibles (l'écran les montre en doré) : celles que synergies() déclencherait, avec la bonne cible.
+func test_synergies_possibles() -> void:
+	# Le joueur frappe (voie 1) ou gèle (voie 2) ; l'acolyte a annoncé un gel sur b2.
+	var e := duel_essai(essai([[[deg(100)]], [[etat("gele", 1)]]]), essai([[[etat("gele", 1)]]]))
+	var annonce := jouer(e, "a2", 0, "b2")
+	var possibles := Regles.synergies_possibles(e, "a1", annonce)
+	var vues: Array = []
+	for o in possibles:
+		vues.append([o["action"]["source"], int(o["action"]["voie"]), str(o["action"]["cible_ennemie"]), o["noms"]])
+		var e1 := tour(e, {"a1": o["action"], "a2": annonce})
+		assert_eq(evenements(e1, "synergie").size(), 1, "chaque Synergie possible se déclenche vraiment")
+	assert_true(["voie", 0, "b2", ["Brisure"]] in vues, "frapper b2, gelé par l'acolyte : Brisure (%s)" % str(vues))
+	for v in vues:
+		assert_eq(v[2], "b2", "seulement sur la cible de l'acolyte")
+		assert_ne(v[1], 1, "deux gels ne font pas de Synergie")
+	assert_true(Regles.synergies_possibles(e, "a1", {}).is_empty(), "sans annonce : rien")
+
+
+# La fiche d'un état posé et l'explication d'une Synergie, en clair.
+func test_fiche_etat_et_synergie() -> void:
+	var e := duel_essai()
+	poser(e, "b1", "saignement", 3, 12.0, "a2")
+	var f := Texte.fiche_etat(e, "b1", "saignement", {"a2": "Cèdre"})
+	assert_eq(f["nom"], donnees.etats["saignement"]["nom"], "son nom")
+	assert_eq(f["valeur"], "12 par tour", "sa valeur par tour")
+	assert_true(str(f["sous_titre"]).contains("3 tours"), "les tours restants (%s)" % f["sous_titre"])
+	assert_true(str(f["source"]).contains("Cèdre"), "qui l'a posé (%s)" % f["source"])
+	poser(e, "a1", "renfort", 2, 0.25, "a2")
+	assert_eq(Texte.fiche_etat(e, "a1", "renfort")["valeur"], "+25 %", "un Renfort en pourcentage")
+	var s := Texte.synergie("Brisure")
+	assert_true(str(s["effet"]).contains("1,25"), "Brisure : le chiffre des règles (%s)" % s["effet"])
+	assert_ne(str(s["regle"]), "", "et sa règle")

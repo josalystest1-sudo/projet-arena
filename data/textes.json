@@ -63,6 +63,7 @@
     "cle": "{voie} · Clé",
     "moyeu": "Moyeu",
     "jouable_maintenant": "Jouable maintenant",
+    "jouable_ce_tour": "Peut le jouer ce tour-ci",
     "jouable_prochain_tour": "Jouable au prochain tour",
     "jouable_dans": "Jouable dans {n} tours",
     "eteint_encore": "Éteint encore {n} tours",
@@ -87,5 +88,17 @@
       "dissipe": {"pictogramme": "rayon_barre", "couleur": "#e08a4f"}
     },
     "cibles": {"un_ennemi": "silhouette", "tous_les_ennemis": "deux_silhouettes", "soi": "silhouette_cerclee", "un_allie": "silhouette_coeur", "duo": "deux_silhouettes"}
+  },
+  "synergies": {
+    "Brisure": {"regle": "contrôle (Étourdi, Gelé, Aveuglé...) + dégâts sur le même ennemi", "effet": "dégâts ×{x}"},
+    "Embrasement": {"regle": "deux DoT (Saignement, Brûlure, Poison) sur le même ennemi", "effet": "les deux durent +{n} tour"},
+    "Bastion": {"regle": "barrière + soin sur le même allié", "effet": "barrière ×{x}"},
+    "Harmonie": {"regle": "Renfort sur un allié + dégâts", "effet": "le Renfort dure +{n} tour"}
+  },
+  "etat_fiche": {
+    "sur": "Sur {nom} · encore {n} tour{s}",
+    "pose_par": "Posé par {nom}",
+    "par_tour": "{n} par tour",
+    "pourcent": "{signe}{n} %"
   }
 }
