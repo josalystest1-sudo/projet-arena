@@ -1,0 +1,281 @@
+## L'équipement (docs/GDD_V2.md, § 10.1 ; docs/PLAN.md, PR 3.1) : un objet est un paquet de modificateurs dans la langue
+## du Destin ; il n'a de valeur que pour un Destin. Cinq emplacements (Arme, Armure, Anneau, Amulette, Talisman), quatre
+## raretés (commun 1 ligne, rare 2, épique 3, légendaire 4), des bases aux noms fixes (data/items.json), chacune avec
+## sa réserve de lignes possibles. Les huit lignes (décision de Gautier du 29 octobre) : PV max, Force (toutes les
+## valeurs), Dégâts, Soins, Barrières, Poisons et brûlures (DoT), Clés, Ouvertures (moyeu et N1). Une ligne a une
+## fourchette connue, affichée, qui grandit avec le niveau de l'objet et sa rareté ; ses chiffres sont tirés à la
+## trouvaille (graine fournie), et la qualité en % dit où le tirage est tombé dans ses fourchettes. Des plafonds par
+## ligne, sur le total des cinq objets, pour qu'aucune ligne ne fasse un personnage à elle seule.
+## Un objet : {base, rarete, niveau, lignes: [{stat, valeur (en %)}], qualite (0 à 100), lie, reforges}.
+## Lié ou échangeable : un objet est échangeable seulement s'il vient d'un premier passage ; il devient lié dès
+## qu'on l'équipe, et le reste. La reforge retire une ligne contre des Éclats, à coût croissant.
+## Les bonus d'un équipement entrent dans un combat par `Destin.mods` (engine/destin.gd), lus une fois à la création
+## du combat (engine/regles.gd) : les PV max et le multiplicateur de classe, puis chaque valeur selon son type.
+## Module pur : le hasard vient de la graine fournie.
+class_name Equipement
+extends RefCounted
+
+## Les huit lignes, dans l'ordre d'affichage.
+const STATS := ["pv", "force", "degats", "soins", "barrieres", "dot", "cle", "ouverture"]
+## La ligne qui s'applique à un type d'effet (engine/regles.gd, valeur).
+const STAT_PAR_TYPE := {"degats": "degats", "soin": "soins", "gardien": "soins", "barriere": "barrieres", "dot": "dot"}
+
+
+# --- Les fourchettes ------------------------------------------------------------
+
+## L'échelle du niveau d'un objet : plancher au niveau 1, 1 au niveau plein (30) et au-delà (data/items.json).
+static func echelle_niveau(niveau: int, d: Donnees) -> float:
+	var plancher := float(d.objets["niveau"]["plancher"])
+	var plein := float(d.objets["niveau"]["plein"])
+	if plein <= 1.0:
+		return 1.0
+	return plancher + (1.0 - plancher) * (minf(float(maxi(1, niveau)), plein) - 1.0) / (plein - 1.0)
+
+
+## La fourchette d'une ligne (en %, à 0,1 près) pour un objet de cette rareté et de ce niveau : celle des données
+## (rareté commune au niveau plein) × l'échelle de la rareté × celle du niveau. [min, max].
+static func fourchette(stat: String, rarete: String, niveau: int, d: Donnees) -> Array:
+	var f: Array = d.objets["lignes"][stat]["fourchette"]
+	var echelle := float(d.objets["raretes"][rarete]["echelle"]) * echelle_niveau(niveau, d)
+	return [_dixieme(float(f[0]) * echelle), _dixieme(float(f[1]) * echelle)]
+
+
+## Le nombre de lignes d'un objet : celui de sa rareté, au plus la réserve de sa base.
+static func nb_lignes(base_id: String, rarete: String, d: Donnees) -> int:
+	return mini(int(d.objets["raretes"][rarete]["lignes"]), d.objets["bases"][base_id]["lignes"].size())
+
+
+static func _dixieme(x: float) -> float:
+	return roundf(x * 10.0) / 10.0
+
+
+# --- Le tirage ----------------------------------------------------------------------
+
+## Un objet trouvé : ses lignes tirées dans la réserve de sa base (toutes différentes), chaque chiffre dans sa
+## fourchette, avec la graine. Échangeable ou lié selon sa provenance.
+static func tirer(base_id: String, rarete: String, niveau: int, graine: int, d: Donnees, lie: bool = true) -> Dictionary:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = graine
+	var reserve: Array = d.objets["bases"][base_id]["lignes"].duplicate()
+	var objet := {"base": base_id, "rarete": rarete, "niveau": maxi(1, niveau), "lignes": [], "qualite": 0, "lie": lie, "reforges": 0}
+	for i in range(nb_lignes(base_id, rarete, d)):
+		var stat: String = reserve.pop_at(rng.randi_range(0, reserve.size() - 1))
+		objet["lignes"].append(_ligne(stat, rarete, objet["niveau"], rng, d))
+	objet["qualite"] = qualite(objet, d)
+	return objet
+
+
+## Une ligne tirée : son chiffre entre les bornes de sa fourchette.
+static func _ligne(stat: String, rarete: String, niveau: int, rng: RandomNumberGenerator, d: Donnees) -> Dictionary:
+	var f := fourchette(stat, rarete, niveau, d)
+	return {"stat": stat, "valeur": _dixieme(rng.randf_range(float(f[0]), float(f[1])))}
+
+
+## La qualité d'un objet (0 à 100) : où ses chiffres sont tombés dans leurs fourchettes, en moyenne.
+static func qualite(objet: Dictionary, d: Donnees) -> int:
+	if objet["lignes"].is_empty():
+		return 0
+	var somme := 0.0
+	for l in objet["lignes"]:
+		var f := fourchette(str(l["stat"]), str(objet["rarete"]), int(objet["niveau"]), d)
+		somme += clampf((float(l["valeur"]) - float(f[0])) / maxf(0.0001, float(f[1]) - float(f[0])), 0.0, 1.0)
+	return roundi(100.0 * somme / float(objet["lignes"].size()))
+
+
+## Un jeu complet : un objet de cette rareté et de ce niveau par emplacement (sa base tirée parmi celles de
+## l'emplacement), avec la graine. Pour le simulateur et les essais.
+static func jeu(niveau: int, rarete: String, graine: int, d: Donnees) -> Array:
+	var out: Array = []
+	var rng := RandomNumberGenerator.new()
+	rng.seed = graine ^ 0x7A3B9C1D
+	var i := 0
+	for emplacement in d.objets["emplacements"]:
+		var bases := bases_de(str(emplacement), d)
+		var base: String = bases[rng.randi_range(0, bases.size() - 1)]
+		out.append(tirer(base, rarete, niveau, graine + i, d))
+		i += 1
+	return out
+
+
+## Les bases d'un emplacement, dans l'ordre des données.
+static func bases_de(emplacement: String, d: Donnees) -> Array[String]:
+	var out: Array[String] = []
+	for id in d.objets["bases"]:
+		if str(d.objets["bases"][id]["emplacement"]) == emplacement:
+			out.append(str(id))
+	return out
+
+
+## L'emplacement d'un objet.
+static func emplacement(objet: Dictionary, d: Donnees) -> String:
+	return str(d.objets["bases"][objet["base"]]["emplacement"])
+
+
+# --- Le butin --------------------------------------------------------------------------
+
+## Le butin d'une source (« etage » ou « gardien », data/items.json) à ce niveau : sa rareté tirée selon les poids de la
+## source, sa base parmi toutes ; échangeable seulement au premier passage ; un étage rejoué n'en lâche qu'une fois sur
+## deux (vide alors). Un Gardien en lâche toujours.
+static func butin(source: String, niveau: int, premier_passage: bool, graine: int, d: Donnees) -> Dictionary:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = graine ^ 0x2F6E1B35
+	if not premier_passage and source != "gardien" and rng.randf_range(0.0, 1.0) >= float(d.objets["butin"]["rejoue"]):
+		return {}
+	var poids: Dictionary = d.objets["butin"][source]
+	var total := 0.0
+	for r in poids:
+		total += float(poids[r])
+	var tirage := rng.randf_range(0.0, 1.0) * total
+	var rarete := ""
+	var raretes: Array = poids.keys()
+	raretes.sort()
+	for r in raretes:
+		rarete = str(r)
+		tirage -= float(poids[r])
+		if tirage < 0.0:
+			break
+	var bases: Array = d.objets["bases"].keys()
+	bases.sort()
+	var base: String = bases[rng.randi_range(0, bases.size() - 1)]
+	return tirer(base, rarete, niveau, rng.randi_range(0, 0x7FFFFFFF), d, not premier_passage)
+
+
+# --- Les bonus ----------------------------------------------------------------------------
+
+## Aucun bonus : chaque ligne à zéro.
+static func mods_vides() -> Dictionary:
+	var out := {}
+	for s in STATS:
+		out[s] = 0.0
+	return out
+
+
+## Les bonus d'un ensemble d'objets (ceux qu'on porte) : la somme de leurs lignes, en fraction, chacune sous son plafond.
+static func mods(objets: Array, d: Donnees) -> Dictionary:
+	var out := mods_vides()
+	for o in objets:
+		for l in o["lignes"]:
+			out[str(l["stat"])] = float(out[str(l["stat"])]) + float(l["valeur"]) / 100.0
+	for s in STATS:
+		out[s] = minf(float(out[s]), float(d.objets["lignes"][s]["plafond"]) / 100.0)
+	return out
+
+
+## Vrai si un jeu de bonus n'apporte rien.
+static func sans_bonus(p_mods: Dictionary) -> bool:
+	for s in p_mods:
+		if float(p_mods[s]) > 0.0:
+			return false
+	return true
+
+
+## Le bonus d'un équipement sur une valeur d'un nœud, selon le type de l'effet (dégâts, soin, gardien, barrière, DoT)
+## et le rang du nœud (0 ou 1 : Ouvertures ; 4 : Clés). Rien pour un type inconnu hors des Clés et des Ouvertures.
+static func bonus(p_mods: Dictionary, rang: int, type: String) -> float:
+	if p_mods.is_empty():
+		return 0.0
+	var b := 0.0
+	if STAT_PAR_TYPE.has(type):
+		b += float(p_mods.get(STAT_PAR_TYPE[type], 0.0))
+	if rang == 4:
+		b += float(p_mods.get("cle", 0.0))
+	elif rang <= 1:
+		b += float(p_mods.get("ouverture", 0.0))
+	return b
+
+
+# --- Équiper, reforger ----------------------------------------------------------------------
+
+## L'objet une fois équipé : lié, pour toujours.
+static func equiper(objet: Dictionary) -> Dictionary:
+	var o := objet.duplicate(true)
+	o["lie"] = true
+	return o
+
+
+## Le coût en Éclats de la prochaine reforge d'un objet : croissant avec le nombre de reforges déjà faites.
+static func cout_reforge(objet: Dictionary, d: Donnees) -> int:
+	var r: Dictionary = d.objets["reforge"]
+	return roundi(float(r["cout"]) * (1.0 + float(r["pente"]) * float(int(objet.get("reforges", 0)))))
+
+
+## La reforge d'une ligne : elle est retirée avec la graine (une autre ligne de la réserve de la base, que l'objet n'a
+## pas déjà, ou la même si la réserve est épuisée ; un chiffre dans sa fourchette). Les autres lignes ne bougent pas ;
+## l'objet reste lié ou échangeable comme il était. Un index hors de l'objet : l'objet tel quel.
+static func reforger(objet: Dictionary, index: int, graine: int, d: Donnees) -> Dictionary:
+	var o := objet.duplicate(true)
+	if index < 0 or index >= o["lignes"].size():
+		return o
+	var rng := RandomNumberGenerator.new()
+	rng.seed = graine
+	var prises: Array = []
+	for i in range(o["lignes"].size()):
+		if i != index:
+			prises.append(o["lignes"][i]["stat"])
+	var reserve: Array = d.objets["bases"][o["base"]]["lignes"].filter(func(s): return not s in prises)
+	var stat: String = reserve[rng.randi_range(0, reserve.size() - 1)]
+	o["lignes"][index] = _ligne(stat, str(o["rarete"]), int(o["niveau"]), rng, d)
+	o["reforges"] = int(o.get("reforges", 0)) + 1
+	o["qualite"] = qualite(o, d)
+	return o
+
+
+# --- Textes et contrôle ------------------------------------------------------------------------
+
+## « Épée épique », « Cotte de mailles commune ».
+static func nom(objet: Dictionary, d: Donnees) -> String:
+	var base: Dictionary = d.objets["bases"][objet["base"]]
+	var genre := "f" if str(base["genre"]) == "f" else "m"
+	return "%s %s" % [base["nom"], d.objets["raretes"][objet["rarete"]]["nom"][genre]]
+
+
+## Un chiffre en % à la française : « 5,3 ».
+static func chiffre(v: float) -> String:
+	var t := "%.1f" % v
+	if t.ends_with(".0"):
+		t = t.substr(0, t.length() - 2)
+	return t.replace(".", ",")
+
+
+## « +5,3 % de dégâts directs ».
+static func texte_ligne(ligne: Dictionary, d: Donnees) -> String:
+	return str(d.objets["lignes"][ligne["stat"]]["texte"]).replace("{v}", chiffre(float(ligne["valeur"])))
+
+
+## « [4,2 – 7,8] » : la fourchette d'une ligne, telle qu'elle est affichée.
+static func texte_fourchette(stat: String, objet: Dictionary, d: Donnees) -> String:
+	var f := fourchette(stat, str(objet["rarete"]), int(objet["niveau"]), d)
+	return "[%s – %s]" % [chiffre(float(f[0])), chiffre(float(f[1]))]
+
+
+## La fiche d'un objet, prête à afficher : nom, emplacement, rareté, niveau, lignes (texte et fourchette), qualité,
+## lié ou échangeable, coût de la prochaine reforge.
+static func fiche(objet: Dictionary, d: Donnees) -> Dictionary:
+	var lignes: Array = []
+	for l in objet["lignes"]:
+		lignes.append({"stat": l["stat"], "nom": d.objets["lignes"][l["stat"]]["nom"], "texte": texte_ligne(l, d),
+			"fourchette": texte_fourchette(str(l["stat"]), objet, d), "valeur": float(l["valeur"])})
+	return {"nom": nom(objet, d), "emplacement": d.objets["emplacements"][emplacement(objet, d)]["nom"],
+		"rarete": d.objets["raretes"][objet["rarete"]]["nom"]["m"], "rang": int(d.objets["raretes"][objet["rarete"]]["rang"]),
+		"niveau": int(objet["niveau"]), "lignes": lignes, "qualite": int(objet["qualite"]), "lie": bool(objet["lie"]),
+		"reforge": cout_reforge(objet, d)}
+
+
+## Un objet est-il conforme aux données : base et rareté connues, lignes de sa réserve, toutes différentes, chacune dans
+## sa fourchette ?
+static func valide(objet: Dictionary, d: Donnees) -> bool:
+	for cle in ["base", "rarete", "niveau", "lignes", "qualite", "lie", "reforges"]:
+		if not objet.has(cle):
+			return false
+	if not d.objets["bases"].has(objet["base"]) or not d.objets["raretes"].has(objet["rarete"]):
+		return false
+	var reserve: Array = d.objets["bases"][objet["base"]]["lignes"]
+	var vues: Array = []
+	for l in objet["lignes"]:
+		if not l is Dictionary or not reserve.has(l.get("stat", "")) or vues.has(l["stat"]):
+			return false
+		vues.append(l["stat"])
+		var f := fourchette(str(l["stat"]), str(objet["rarete"]), int(objet["niveau"]), d)
+		if float(l["valeur"]) < float(f[0]) - 0.0001 or float(l["valeur"]) > float(f[1]) + 0.0001:
+			return false
+	return objet["lignes"].size() <= nb_lignes(str(objet["base"]), str(objet["rarete"]), d)

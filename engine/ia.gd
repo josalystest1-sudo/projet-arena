@@ -246,7 +246,7 @@ static func _forces(e: EtatCombat, id: String) -> float:
 
 ## Les dégâts directs d'un effet (arrondis comme à la résolution).
 static func _montant_degats(e: EtatCombat, id: String, voie: int, rang: int, ef: Dictionary, forces: float) -> int:
-	var montant := Regles.valeur(e, id, voie, rang, float(ef["valeur"])) * forces * Regles.mort_subite(e)
+	var montant := Regles.valeur(e, id, voie, rang, float(ef["valeur"]), "degats") * forces * Regles.mort_subite(e)
 	if e.a_etat(id, "desarme"):
 		montant *= Regles.DESARME
 	return Regles.plancher(montant)
@@ -349,7 +349,7 @@ static func score(e: EtatCombat, a: Dictionary, allies: Array[Dictionary] = [], 
 			"dot":
 				# Les ticks sont multipliés par la mort subite (section 5.5), comme les dégâts directs : sans ça, deux
 				# soutiens dont les seuls dégâts sont des DoT se purgeaient l'un l'autre sans fin.
-				var total := float(Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["par_tour"])) * forces * Regles.mort_subite(e)) * int(ef["tours"]))
+				var total := float(Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["par_tour"]), "dot") * forces * Regles.mort_subite(e)) * int(ef["tours"]))
 				for t in touches:
 					offensive += minf(total * DOT_POIDS, float(e.perso(t)["pv"])) / m_niveau
 			"etat":
@@ -377,7 +377,7 @@ static func score(e: EtatCombat, a: Dictionary, allies: Array[Dictionary] = [], 
 					if int(e.perso(t)["barriere"]) >= DISSIPE_BARRIERE_MIN or e.perso(t)["etats"].has("renfort"):
 						offensive += DISSIPE_VALEUR
 			"soin":
-				var soin := Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["valeur"])) * forces)
+				var soin := Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["valeur"]), "soin") * forces)
 				for t in touches:
 					var s := soin
 					if e.a_etat(t, "poison"):
@@ -386,11 +386,11 @@ static func score(e: EtatCombat, a: Dictionary, allies: Array[Dictionary] = [], 
 					defensive += effectif / m_niveau
 					perdu += (float(s) - effectif) / m_niveau
 			"gardien":
-				var total := float(Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["par_tour"])) * forces) * int(ef["tours"]))
+				var total := float(Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["par_tour"]), "gardien") * forces) * int(ef["tours"]))
 				for t in touches:
 					defensive += minf(total * GARDIEN_POIDS / m_niveau, float(int(e.fiche(t)["pv_max"]) - int(e.perso(t)["pv"])) / m_niveau + GARDIEN_MARGE)
 			"barriere":
-				var b := Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["valeur"])) * forces)
+				var b := Regles.plancher(Regles.valeur(e, id, voie, rang, float(ef["valeur"]), "barriere") * forces)
 				var potentiels := degats_potentiels(e, id, memoire)
 				for t in touches:
 					if bon_sens:

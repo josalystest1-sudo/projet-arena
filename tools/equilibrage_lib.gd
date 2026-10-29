@@ -35,21 +35,30 @@ const NOMS_ROLES := {"front": "Front", "degats": "Dégâts", "soutien": "Soutien
 const ERREURS := ["coup_perdu", "soin_perdu", "barriere_inutile", "cle_gaspillee", "achevement_rate"]
 const NOMS_ERREURS := {"coup_perdu": "Coup perdu", "soin_perdu": "Soin perdu", "barriere_inutile": "Barrière inutile",
 	"cle_gaspillee": "Clé gaspillée", "achevement_rate": "Achèvement raté"}
+## L'équipement des camps simulés (docs/PLAN.md, PR 3.1) : "" (aucun), ou une rareté (« commun », « rare », « epique »,
+## « legendaire ») : chaque membre d'un camp porte alors un jeu complet de cette rareté, au niveau 30, tiré avec sa
+## graine (engine/equipement.gd, jeu). Les monstres de la Tour n'en portent jamais.
+static var equipement := ""
 
 
 # --- Les Destins, gardés en mémoire (un même Destin sert dans plusieurs cases) ---------------
 
-## Le camp d'un joueur de cette classe : [joueur, acolyte] (duo) ou [joueur, Écho, Écho] (trio).
+## Le camp d'un joueur de cette classe : [joueur, acolyte] (duo) ou [joueur, Écho, Écho] (trio), équipé si demandé.
 static func destins(d: Donnees, classe: String, graine: int, memoire: Dictionary, format: String = "duo") -> Array:
-	var cle := "%s|%s|%d" % [format, classe, graine]
+	var cle := "%s|%s|%d|%s" % [format, classe, graine, equipement]
 	if not memoire.has(cle):
 		if memoire.size() >= 4000:
 			memoire.clear()
 		var joueur := Generateur.generer(classe, graine, NIVEAU, Generateur.PAR_DEFAUT, d)
+		var camp: Array
 		if format == "trio":
-			memoire[cle] = Trio.camp(joueur, NIVEAU, d)
+			camp = Trio.camp(joueur, NIVEAU, d)
 		else:
-			memoire[cle] = [joueur, Generateur.acolyte(classe, graine, NIVEAU, d)]
+			camp = [joueur, Generateur.acolyte(classe, graine, NIVEAU, d)]
+		if equipement != "":
+			for i in range(camp.size()):
+				camp[i].mods = Equipement.mods(Equipement.jeu(NIVEAU, equipement, graine * 7 + i, d), d)
+		memoire[cle] = camp
 	return memoire[cle]
 
 

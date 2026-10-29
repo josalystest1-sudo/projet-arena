@@ -31,6 +31,10 @@ var k := 1.0
 var moyeu: Dictionary = {}
 ## Les voies : { id, nom, noeuds: [4 nœuds { rang, nom, genre, effets, forme, allume, ... }], eclats: [5 booléens] }.
 var voies: Array = []
+## Les bonus de l'équipement porté (engine/equipement.gd, `Equipement.mods`) : ligne -> fraction (« pv », « force »,
+## « degats », « soins », « barrieres », « dot », « cle », « ouverture »). Vide : aucun équipement. Lus une fois à la
+## création d'un combat (engine/regles.gd), jamais pendant.
+var mods: Dictionary = {}
 
 
 ## Le Destin « de base » d'une classe : chaque nœud dans sa forme Base, tel qu'écrit dans la section 9, sans éclat.
@@ -88,7 +92,7 @@ func bonus_pv() -> float:
 
 func vers_dict() -> Dictionary:
 	return {"classe_id": classe_id, "nom": nom, "sprite": sprite, "role": role, "graine": graine, "acolyte": acolyte, "echo": echo, "pv_base": pv_base,
-		"pv_mult": pv_mult, "k": k, "moyeu": moyeu.duplicate(true), "voies": voies.duplicate(true)}
+		"pv_mult": pv_mult, "k": k, "moyeu": moyeu.duplicate(true), "voies": voies.duplicate(true), "mods": mods.duplicate(true)}
 
 
 static func depuis_dict(dico: Dictionary) -> Destin:
@@ -105,4 +109,6 @@ static func depuis_dict(dico: Dictionary) -> Destin:
 	d.k = float(dico["k"])
 	d.moyeu = dico["moyeu"].duplicate(true)
 	d.voies = dico["voies"].duplicate(true)
+	for s in dico.get("mods", {}):
+		d.mods[str(s)] = float(dico["mods"][s])
 	return d

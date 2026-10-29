@@ -1,6 +1,6 @@
 # Projet Arena — avancement
 
-Mis à jour le **29 octobre 2026** (PR #59). `main` = la PR #59 fusionnée et publiée (les Faveurs de la Tour). À lire avec `CLAUDE.md`. Le plan complet, PR par PR, est dans `docs/PLAN.md` (phases 1 à 10) ; l'historique de toutes les PR et des retours de Gautier dans `docs/SUIVI.md`.
+Mis à jour le **29 octobre 2026** (PR #60). `main` = la PR #60 fusionnée et publiée (l'équipement : données et moteur). À lire avec `CLAUDE.md`. Le plan complet, PR par PR, est dans `docs/PLAN.md` (phases 1 à 10) ; l'historique de toutes les PR et des retours de Gautier dans `docs/SUIVI.md`.
 
 Jeu publié (mis à jour à chaque fusion sur `main`) : https://josalystest1-sudo.github.io/projet-arena/ — ajouter `?graine=7` pour des tirages reproductibles.
 
@@ -8,7 +8,7 @@ Jeu publié (mis à jour à chaque fusion sur `main`) : https://josalystest1-sud
 
 ## 1. Terminé et qui fonctionne
 
-Vérifié après la PR #59 : **81 tests passent**, le budget des **210 nœuds** est tenu (`tools/budget.gd`), la CI est verte, le jeu publié se charge (y compris un profil d'avant le trio, qui reçoit ses Échos) et se joue au format téléphone (vérifié dans le navigateur intégré en 375 × 812).
+Vérifié après la PR #60 : **89 tests passent**, le budget des **210 nœuds** est tenu (`tools/budget.gd`), la CI est verte, le jeu publié se charge (y compris un profil d'avant le trio, qui reçoit ses Échos) et se joue au format téléphone (vérifié dans le navigateur intégré en 375 × 812).
 
 ### Le combat V2 (PR #34 à #47, 28 et 29 octobre)
 
@@ -32,24 +32,31 @@ Vérifié après la PR #59 : **81 tests passent**, le budget des **210 nœuds** 
 | #55 (PR 1.3) | **Les Soutiens presque sans dégâts** : une seule voie de dégâts chacun ; 31 nœuds convertis en effets de soutien de même coût ; la voie de la Nitro de l'Alchimiste est devenue la voie de la Corrosion (Solvant, Dissolvant, Corrosion, Effondrement) ; la Ferveur du Prêtre renforce un allié. Test : deux actions utiles à PV pleins pour chaque Soutien, aux niveaux 1, 10, 30. |
 | #56 (PR 1.4) | **Le jeu se joue en trio** : deux Échos proposés par le jeu (graine + nom par rôle, gardés dans le profil, version 3), écran « Ton trio » (onglet Trio ; avant chaque duel et chaque montée ; « Un autre Écho »), arène à 3 contre 3 et 1 à 6 monstres, annonces des deux Échos, part de chacun en fin de combat, création qui enchaîne sur l'étage 1 de la Tour. Acolyte, écran de rencontre et onglet Acolyte retirés. Le jeu joue avec l'IA de bon sens. |
 | #57 (PR 2.1) | **La Tour infinie** : monstres au niveau de l'étage (1 + 2,5 par étage) quel que soit le niveau du trio, jusqu'à 6 monstres, somme des PV plafonnée à 3 ; paliers après chaque Gardien (reprise à l'étage 6, 11, 16… avec tous ses PV, par classe, dans le profil) ; « Reprendre » et « Rejouer depuis un palier plus bas » ; un étage déjà franchi rapporte 20 XP au lieu de 40 ; plus d'abandon des monstres au tour 48 ; soins des monstres × 0,75 à chaque usage. Contrôle (40 montées par niveau) : niveau 1 → étage 5 en médiane, niveau 10 → 11, niveau 20 → 18, niveau 30 → 24, de 8 à 13 tours par étage. |
-
 | #59 (PR 2.2) | **Les Faveurs de la Tour** : six Faveurs cumulables (`data/faveurs.json` : Vigueur +4 % de PV max, Puissance +4 % de force, Répit +5 points de PV rendus entre deux étages, Égide une barrière de 8 % au début de chaque étage, Effroi les monstres affaiblis de 10 % pendant 2 tours (50 % au plus), Savoir +10 % d'XP) ; chaque Gardien vaincu pour la première fois avec la classe en propose trois (tirées avec la graine de l'étage), une au choix dans l'écran de fin ; gardées par classe dans le profil, valables seulement dans la Tour, listées dans l'écran de la Tour. Le record et le palier sont enregistrés dès l'étage franchi. Étape `{"gardien": n}` de l'outil de capture. |
+| #60 (PR 3.1) | **L'équipement, données et moteur** (décisions de Gautier : +50 % de puissance pour un joueur équipé, noms de fantasy classique, huit lignes par effet) : `data/items.json` (5 emplacements, 14 bases avec leur réserve de 4 lignes, 8 lignes avec fourchette et plafond, 4 raretés, échelle du niveau, butin par source, reforge) ; `engine/equipement.gd` (tirage à graine, qualité en %, jeu complet, butin lié ou échangeable, bonus plafonnés, équiper = lier, reforge d'une ligne à coût croissant, textes et fiche) ; `Destin.mods` lu une fois à la création d'un combat (PV max, Force) et dans chaque valeur selon le type de l'effet et le rang (Clés, Ouvertures) ; sans équipement, le combat est le même au bit près (simulation à graine fixe vérifiée, duo et trio). Le simulateur équipe les camps (dernier argument : une rareté). **Rien ne change encore à l'écran** : la Forge et le butin sont la PR 3.2. |
 
-Phase 1 du plan terminée (la PR 1.5, le réglage du trio, est reportée à la phase 9). **Phase 2 terminée** (PR 2.1 et 2.2 ; le revenu passif de la 2.2 est reporté à la PR 3.2 ; le réglage « niveau → étage » à la phase 9).
+Phase 1 du plan terminée (la PR 1.5, le réglage du trio, est reportée à la phase 9). **Phase 2 terminée** (PR 2.1 et 2.2 ; le revenu passif de la 2.2 est reporté à la PR 3.2 ; le réglage « niveau → étage » à la phase 9). **Phase 3 en cours** : PR 3.1 faite (#60), PR 3.2 à faire.
 
 ---
 
-## 2. En cours : phase 3, l'équipement (PR 3.1)
+## 2. En cours : phase 3, la Forge et le butin (PR 3.2)
 
-**État exact : rien de codé, aucune branche créée.** La PR 3.1 (données et moteur de l'équipement) est la prochaine du plan (`docs/PLAN.md`, phase 3). Avant de la commencer, **demander à Gautier** (questions prévues au § 4 du plan) : l'écart de puissance voulu entre un joueur équipé et un joueur sans équipement à son niveau (le plan propose +30 à +50 %), et les noms des objets (fantasy classique). Si la réponse tarde, avancer avec +40 % et des noms génériques, et le noter dans `docs/JOURNAL-COMBAT-V2.md`.
+**État exact : rien de codé pour la 3.2, aucune branche créée.** Le moteur de l'équipement est fait (PR #60, voir le tableau ci-dessus) ; il reste à le mettre à l'écran et dans la boucle de jeu, selon `docs/PLAN.md` (PR 3.2) et le GDD V2 (§ 10) :
 
-À savoir pour l'équipement : les fichiers cités par le plan (`engine/combat_unit.gd`, `apply_mods`) sont ceux de l'ancien moteur. Dans le combat V2, les bonus d'un perso passent par `Destin.bonus_valeurs` / `bonus_pv` (les éclats) et par le multiplicateur de classe `k` ; les Faveurs de la Tour (PR 2.2) montrent la façon la plus simple d'ajouter un bonus : modifier `statique[id]` (`pv_max`, `k`) juste après `Regles.nouveau_combat`, jamais pendant le combat. L'équipement devra s'additionner au Destin de la même façon, en duel comme à la Tour.
+- **Le profil** (`scenes/combat/player_profile.gd`) : l'inventaire (le sac : une liste d'objets, dictionnaires `Equipement`), les cinq objets portés (par emplacement), les Éclats (monnaie liée). Monter la version du perso (`duo`, version 4) ou ajouter une section `[forge]` ; un profil d'avant doit se charger sans rien perdre.
+- **Le butin** : à la fin de chaque étage franchi (`ArenaApp.etage_franchi`), `Equipement.butin("etage" ou "gardien", niveau de l'étage, premier passage, graine de l'étage)` ; premier passage = l'étage dépasse le record de la classe ; un objet échangeable vient d'un premier passage, lié sinon. L'écran de fin le montre (carte « Butin », avec sa fiche). Un étage franchi donne aussi des Éclats (chiffre à choisir, par exemple 10 + 2 par étage ; moitié si rejoué).
+- **La Forge** (`scenes/screens/forge_screen.gd`, onglet à la place de « Destin » ou sous l'Accueil ; la barre du bas a cinq onglets, en ajouter un sixième la serre : voir si « Destin » et « Forge » tiennent dans un même écran « Maison » comme le prévoit la ville, phase 4) : les cinq emplacements avec l'objet porté, le sac, la fiche d'un objet (`Equipement.fiche` : lignes avec leur fourchette entre crochets, qualité, lié ou échangeable), la **comparaison** avec l'objet porté (les bonus totaux avant et après : `Equipement.mods` des deux jeux ; et pour une ligne typée, un exemple « Boule de feu : 54 au lieu de 48 » = `Regles.valeur` sur un combat d'essai), équiper (`Equipement.equiper` : l'objet devient lié), recycler (des Éclats selon la rareté), reforger une ligne (`Equipement.reforger`, coût `Equipement.cout_reforge`, payé en Éclats).
+- **En combat** : `ArenaApp._regenerer` pose `destin.mods = Equipement.mods(objets portés)` sur la roue du joueur (les Échos n'ont pas d'équipement avant le serveur) ; en duel comme à la Tour. Les fiches des nœuds (`Texte.ligne_en_combat`, `Texte.fiche`) n'affichent pas encore les lignes typées (Dégâts, Soins, Barrières, DoT, Clés, Ouvertures) : elles multiplient toutes les valeurs d'un nœud par un même facteur ; les faire passer par `Regles.valeur` avec le type de chaque effet, ou calculer le facteur par effet.
+- **Le revenu passif** (reporté ici par Gautier) : des Éclats (et un peu d'XP) par jour selon le record de la Tour, plafonnés, réclamés à l'ouverture du jeu (date du dernier passage dans le profil).
+- **Gautier teste** : trouver un objet à la Tour, le comparer, l'équiper, le reforger ; sentir l'écart à la Tour.
+
+Chiffres choisis à la main, sans réglage (phase 9).
 
 ---
 
 ## 3. Ce qui reste à faire (dans l'ordre de `docs/PLAN.md`)
 
-1. **Phase 3, l'équipement** (en cours, ci-dessus) : PR 3.1 données (`data/items.json` : bases, raretés, lignes et fourchettes, plafonds, butin par source) et moteur (`engine/equipment.gd` : tirage d'un objet à graine, `mods`, lié / échangeable, reforge ; l'équipement doit s'additionner au Destin comme les éclats ou le `k`) ; PR 3.2 la Forge (inventaire 5 emplacements, fiche, comparaison, équiper, recycler, reforger), le butin de la Tour (premier passage : échangeable ; rejoué : lié), **les Éclats et le revenu passif** (reporté ici). La PR 3.3 (réglage des lignes) va à la phase 9.
+1. **Phase 3, l'équipement** (en cours, ci-dessus) : ~~PR 3.1 données et moteur~~ (PR #60) ; PR 3.2 la Forge (inventaire 5 emplacements, fiche, comparaison, équiper, recycler, reforger), le butin de la Tour (premier passage : échangeable ; rejoué : lié), **les Éclats et le revenu passif** (reporté ici). La PR 3.3 (réglage des lignes) va à la phase 9.
 2. **Phase 4, la ville** : `data/ville.json` (bâtiments, positions, écran ouvert), écran ville en portrait, barre du bas réduite (Ville, Chat grisé, Profil), objectifs du jour.
 3. **Phase 5, le serveur** (Nakama + PostgreSQL, prévu depuis le début) : comptes, vrais Échos (amis, guilde, proposés ; 3 aides par jour ; récompenses de sélection), PvP asynchrone classé (5 par jour, saisons de 3 mois), chat, Marché et Comptoir, classements. **À demander à Gautier avant de commencer** : l'hébergement du serveur (un service payant ou gratuit, un compte à créer), la durée de saison, les plafonds d'or et d'Éclats.
 4. **Phase 6** : guildes (rôles, chat, bannière, Influence), carte du monde, donjons à routes secrètes et portes sans nom, boss unique au serveur, grimoires de classe.
@@ -70,6 +77,7 @@ Questions déjà prévues pour Gautier, au bon moment (`docs/PLAN.md`, § 4) : p
 - **Les Soutiens** ont perdu leurs dégâts (PR #55) : dans la même mesure en trio, Prêtre 44 %, Alchimiste 44 %, Barde 45 %, Diplomate 54 % ; en duo, l'Alchimiste était tombé à 24 %.
 - **La Tour** est plus facile que la cible du plan (niveau 1 → étage 5 au lieu de 3 ; niveau 30 → étage 24).
 - Les coûts des états dans `data/rules.json` et les `k` des classes sont ceux du réglage du duo (PR #47).
+- **L'équipement** (PR #60) : chiffres de départ à la main. Estimation sur 2 000 jeux épiques tirés au niveau 30 : PV max +15 %, Force +7 %, lignes de valeurs +10 à +15 %, soit une puissance d'environ ×1,46 (Gautier veut +50 %) ; un jeu légendaire ≈ ×1,72, rare ≈ ×1,26, commun ≈ ×1,11. À la Tour (10 montées par classe, niveau 30, trio généré, montées arrêtées à l'étage 21) : nu, l'étage 20 dans 70 à 100 % des montées selon la classe ; en épique, 100 % partout (mesure saturée, détail dans `docs/JOURNAL-COMBAT-V2.md`). À régler à la phase 9 (fourchettes, échelles des raretés, plafonds).
 
 ### IA
 
@@ -84,6 +92,8 @@ Questions déjà prévues pour Gautier, au bon moment (`docs/PLAN.md`, § 4) : p
 - Le signal « CLÉ PRÊTE » n'apparaît pas à bas niveau : les adversaires n'ont pas de Clé allumée avant le niveau 7 (acolyte) ou 11 (perso).
 - L'outil « Gagner un niveau » (Paramètres) ouvre l'écran du Destin à chaque niveau.
 - Une Faveur du Gardien se choisit dans l'écran de fin ; si le jeu est fermé à cet écran avant le choix, le palier n'a pas avancé : le Gardien se rejoue et la propose encore (voulu). Les Faveurs n'ont pas été mesurées (phase 9).
+- **L'équipement n'est pas encore à l'écran** (PR 3.2) : rien à voir dans le jeu publié après la PR #60. Les fiches des nœuds (`Texte`) ne montrent pas les lignes typées d'un équipement (Dégâts, Soins, Barrières, DoT, Clés, Ouvertures) : à faire en 3.2 avec la comparaison de la Forge.
+- Pas de trait légendaire sur les objets (le GDD en propose un par objet légendaire, pris dans `docs/MECANIQUES.md`) : à voir avec les donjons (phase 6), d'où viendront les légendaires.
 - L'étape `{"fin":1}` de `tools/capture.gd` ne passe pas la part de chacun : la carte « La part de chacun » n'apparaît pas sur cette capture (elle apparaît en vrai combat).
 - Les noms des Échos viennent d'une liste fixe de 12 (`ArenaApp.ECHO_NAMES`).
 
