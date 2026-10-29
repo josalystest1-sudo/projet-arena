@@ -1,61 +1,48 @@
 ## Avant un duel : la recherche d'un adversaire, puis le face-à-face des deux duos (GDD : « File d'attente »).
-## En attendant les vrais joueurs (étape 5), l'adversaire est un duo piloté par l'IA, et c'est écrit.
+## En attendant les vrais joueurs (étape 5 de la feuille de route), l'adversaire est un duo piloté par l'IA, de ton
+## niveau, et c'est écrit.
 extends Control
 
 const ENEMY_NAMES := ["Ombre", "Brume", "Cendre", "Givre", "Ronce", "Écume", "Nox", "Bise"]
 
 var app: ArenaApp
-var enemy: Array = []
-var _started := false
+var options := {}
 
 
 func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	app = p_app
-	enemy = app.random_enemy_duo()
-	var first := app.rng.randi_range(0, ENEMY_NAMES.size() - 1)
-	enemy[0]["name"] = ENEMY_NAMES[first]
-	enemy[1]["name"] = ENEMY_NAMES[(first + app.rng.randi_range(1, ENEMY_NAMES.size() - 1)) % ENEMY_NAMES.size()]
+	options = app.duel_contre_ia()
+	var premier := app.rng.randi_range(0, ENEMY_NAMES.size() - 1)
+	options["noms"]["b1"] = ENEMY_NAMES[premier]
+	options["noms"]["b2"] = ENEMY_NAMES[(premier + app.rng.randi_range(1, ENEMY_NAMES.size() - 1)) % ENEMY_NAMES.size()]
 	var column := UiKit.scroll_column(self, 10)
-	var searching := UiKit.label("Recherche d'un adversaire…", 24, UiKit.SOFT)
+	var cherche := UiKit.label("Recherche d'un adversaire...", 24, UiKit.SOFT)
 	column.add_child(UiKit.spacer(40))
-	column.add_child(searching)
+	column.add_child(cherche)
 	var tween := create_tween()
 	tween.tween_interval(0.9)
-	tween.tween_callback(func(): _show_versus(column, searching))
+	tween.tween_callback(func(): _face_a_face(column, cherche))
 
 
-func _show_versus(column: VBoxContainer, searching: Label) -> void:
-	searching.text = "Adversaire trouvé"
-	searching.add_theme_color_override("font_color", UiKit.GOLD)
+func _face_a_face(column: VBoxContainer, cherche: Label) -> void:
+	cherche.text = "Adversaire trouvé"
+	cherche.add_theme_color_override("font_color", UiKit.GOLD)
 	app.sfx.play("forte", 1.1, -6.0)
-	var enemies := HBoxContainer.new()
-	enemies.alignment = BoxContainer.ALIGNMENT_CENTER
-	enemies.add_theme_constant_override("separation", 12)
-	column.add_child(enemies)
-	for member in enemy:
-		var view := PortraitView.make(member["class_id"], str(member["name"]), app.class_label(member["class_id"]), 8.0, true)
-		enemies.add_child(view)
-		view.appear()
-	column.add_child(UiKit.label("Duo IA (en attendant les vrais joueurs)", 14, Color(0.6, 0.62, 0.7)))
-	column.add_child(UiKit.label("contre", 22, Color.WHITE))
-	var allies := HBoxContainer.new()
-	allies.alignment = BoxContainer.ALIGNMENT_CENTER
-	allies.add_theme_constant_override("separation", 12)
-	column.add_child(allies)
-	var me := PortraitView.make(app.player_class, "Toi", app.class_label(app.player_class), 8.0)
-	me.title_color = UiKit.GOLD
-	var aco := PortraitView.make(app.acolyte["class_id"], app.acolyte_name, app.class_label(app.acolyte["class_id"]), 8.0)
-	aco.title_color = UiKit.ACOLYTE_BLUE
-	allies.add_child(aco)
-	allies.add_child(me)
-	column.add_child(UiKit.main_button("Au combat !", _start))
-	var tween := create_tween()
-	tween.tween_interval(2.5)
-	tween.tween_callback(_start)
-
-
-func _start() -> void:
-	if _started:
-		return
-	_started = true
-	app.show_screen("combat", {"mode": "pvp", "enemy": enemy})
+	var e: EtatCombat = options["etat"]
+	var noms: Dictionary = options["noms"]
+	for camp in [["b1", "b2", true], ["a1", "a2", false]]:
+		var rangee := HBoxContainer.new()
+		rangee.alignment = BoxContainer.ALIGNMENT_CENTER
+		rangee.add_theme_constant_override("separation", 16)
+		column.add_child(rangee)
+		for id in [camp[0], camp[1]]:
+			var classe := str(e.fiche(id)["classe"])
+			var p := PortraitView.make(classe, str(noms[id]), app.class_label(classe), 8.0, camp[2])
+			p.title_color = UiKit.RED if camp[2] else (UiKit.GOLD if id == "a1" else UiKit.ACOLYTE_BLUE)
+			p.appear()
+			rangee.add_child(p)
+		if camp[2]:
+			column.add_child(UiKit.label("Duo IA · niveau %d" % e.niveau, 15, UiKit.SOFT))
+			column.add_child(UiKit.label("contre", 20, Color.WHITE))
+	column.add_child(UiKit.main_button("Combattre", func(): app.show_screen("combat", options)))
+	column.add_child(UiKit.button("Retour", func(): app.show_screen("home"), 52))

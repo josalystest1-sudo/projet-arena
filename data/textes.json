@@ -67,6 +67,7 @@
     "jouable_dans": "Jouable dans {n} tours",
     "eteint_encore": "Éteint encore {n} tours",
     "eteint_encore_1": "Éteint encore 1 tour",
+    "depasse": "Déjà joué : la voie est plus loin",
     "pour_l_empecher": "Pour l'empêcher",
     "aucune_reponse": "Aucune réponse en main ce tour",
     "apres": "Après",

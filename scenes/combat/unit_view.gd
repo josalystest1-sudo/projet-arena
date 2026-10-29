@@ -1,316 +1,214 @@
-## Affichage d'un personnage en combat : sprite animé, nom, PV, recharges, états, Intention, prévision, textes flottants.
-## Ne contient aucune règle : il lit l'état du moteur et les événements qu'on lui transmet.
+## Un personnage dans l'arène du combat V2 (docs/SPEC-COMBAT-V2.md, section 12.2) : son sprite (de face s'il est
+## ennemi, tourné vers l'adversaire s'il est allié) et sa plaque : la barre de PV (rouge côté ennemi, teal côté allié),
+## puis ses menaces et ses états en pastilles (3 de chaque au plus, « +n » au-delà). Anneau doré en pointillé : la
+## cible ennemie choisie ; teal : la cible alliée. Toucher : le choisir pour cible ; appui long : sa fiche (ou celle de
+## la menace touchée). Affichage seulement.
 class_name UnitView
 extends Control
 
-signal tapped(unit_id: String)
+signal touche(id: String)
+signal appui_long(id: String)
+signal appui_menace(id: String, index: int, ancre: Vector2)
 
-const ALLY_COLOR := Color("3d8bfd")
-const ENEMY_COLOR := Color("e5484d")
-const SPRITE_PIXEL := 6.0
-const BUBBLE_HEIGHT := 34.0
+const APPUI_LONG := 0.25
+const PASTILLE := 26.0
+const OR := Color("e3b85f")
+const TEAL := Color("5cc8b8")
+const ROUGE := Color("d35b5b")
+const VIOLET := Color("c9a0ff")
+const TEXTE := Color("efe9d9")
+const SURFACE := Color("1c1a28")
+const BORD := Color("3a3650")
 
-var unit_id: String = ""
-var class_id: String = ""
-var display_name: String = ""
-## Ligne sous le nom : la classe (et « acolyte » pour l'acolyte).
-var subtitle: String = ""
-var team: int = 0
-var is_player: bool = false
-var is_acolyte: bool = false
-var max_hp: int = 1
-var shown_hp: float = 1.0
-var target_hp: int = 1
-var ghost_hp: float = 1.0
-var barrier: int = 0
-## La créature de l'Invocateur : {name, hp, max_hp} ({} s'il n'en a pas).
-var creature: Dictionary = {}
-var alive: bool = true
-var status_tags: Array = []
-## Intention affichée au-dessus du perso : texte de compétence (vide = rien).
-var intent_text: String = ""
-var intent_alpha: float = 0.55
-## Petite étoile dorée dans la bulle : l'acolyte garde sa forte un tour pour une Synergie avec le joueur.
-var intent_star: bool = false
-## Badge au-dessus d'un ennemi quand sa forte est prête (anticipation).
-var threat_text: String = ""
-## Prévision affichée quand le joueur vise ce perso : {text, color}.
-var preview_text: String = ""
-var preview_color: Color = Color.WHITE
-var targetable: bool = false
-var selected_target: bool = false
-## Cible qui déclencherait une Synergie avec l'annonce de l'acolyte.
-var synergy_mark: bool = false
-## Aura dorée derrière le perso : 1 = une Synergie est possible avec lui, 2 = elle est prête (ou se déclenche).
-var aura: int = 0
-## Recharges visibles : {"moyenne": n, "forte": n} ; 0 = prête, -1 = déjà utilisée (une fois par combat).
-var cooldowns: Dictionary = {}
-## Petit effet quand l'acolyte annonce ou révise son coup.
-var announce_pop: float = 0.0
-var order_badge: int = 0
-var lunge: float = 0.0
-var flash: float = 0.0
-var shake: float = 0.0
-var ko_angle: float = 0.0
-## Taille d'un pixel du sprite : plus petit quand 4 monstres se partagent la rangée, plus grand pour un Gardien seul.
-var pixel: float = SPRITE_PIXEL
-## Taille du nom (plus petite en rangée de 4).
-var name_size: int = 16
-var _floaters: Array = []
-var _time: float = 0.0
-var _phase: float = 0.0
+var id := ""
+var allie := true
+var pixel := 8.0
+var sprite := ""
+var nom := ""
+var pv := 0
+var pv_max := 1
+var barriere := 0
+var ko := false
+## Les menaces ({pictogramme, couleur, cible, echeance, barre}) et les états ({pictogramme, couleur, tours}).
+var menaces: Array = []
+var etats: Array = []
+var cible_ennemie := false
+var cible_alliee := false
+var _t := 0.0
+var _phase := 0.0
+var _appui := -1.0
+var _appui_pos := Vector2.ZERO
+var _appui_long_fait := false
+var _flash := 0.0
+var _secousse := 0.0
+## Des nombres qui montent et s'effacent : [texte, couleur, âge].
+var _flottants: Array = []
 
 
-func setup(unit: CombatUnit) -> void:
-	unit_id = unit.id
-	class_id = unit.class_id
-	display_name = unit.display_name
-	team = unit.team
-	is_player = unit.is_player
-	is_acolyte = unit.is_acolyte
-	max_hp = unit.max_hp
-	shown_hp = unit.hp
-	ghost_hp = unit.hp
-	target_hp = unit.hp
-	_phase = float(unit.slot) * 1.7 + float(unit.team) * 0.9
-	custom_minimum_size = Vector2(160, 236)
-	mouse_filter = Control.MOUSE_FILTER_STOP
+static func make(p_id: String, p_sprite: String, p_nom: String, p_pixel: float, p_allie: bool) -> UnitView:
+	var v := UnitView.new()
+	v.id = p_id
+	v.sprite = p_sprite
+	v.nom = p_nom
+	v.pixel = p_pixel
+	v.allie = p_allie
+	v._phase = float(p_id.hash() % 100) * 0.07
+	var cote := p_pixel * PixelSprites.GRID
+	v.custom_minimum_size = Vector2(maxf(cote, 3.0 * PASTILLE + 20.0), cote + 22.0 + PASTILLE + 8.0)
+	v.size = v.custom_minimum_size
+	v.mouse_filter = Control.MOUSE_FILTER_STOP
+	return v
 
 
-## « compact » : 4 monstres dans la rangée (le téléphone fait 540 de large) ; « big » : un Gardien seul.
-func set_size_mode(mode: String) -> void:
-	match mode:
-		"compact":
-			pixel = 5.0
-			name_size = 13
-			custom_minimum_size = Vector2(126, 220)
-		"big":
-			pixel = 8.0
-			custom_minimum_size = Vector2(200, 268)
-		_:
-			pixel = SPRITE_PIXEL
-			name_size = 16
-			custom_minimum_size = Vector2(160, 236)
+## La place du sprite (en haut, centré) et celle de la plaque, dans la vue.
+func rect_sprite() -> Rect2:
+	var cote := pixel * PixelSprites.GRID
+	return Rect2(Vector2((size.x - cote) / 2.0, 0.0), Vector2(cote, cote))
 
 
-func sync(unit: CombatUnit, data: CombatData) -> void:
-	set_hp(unit.hp)
-	barrier = unit.barrier_amount()
-	creature = {"name": unit.creature["name"], "hp": int(unit.creature["hp"]), "max_hp": int(unit.creature["max_hp"])} if unit.has_creature() else {}
-	status_tags = []
-	for status in unit.statuses:
-		status_tags.append({"id": status["id"], "name": data.status_name(status["id"]), "negative": data.is_negative_status(status["id"]), "turns": status.get("turns", 0)})
-	queue_redraw()
+## Le centre du sprite, dans les coordonnées du parent (pour les traits d'annonce).
+func centre() -> Vector2:
+	return position + rect_sprite().get_center()
 
 
-func set_hp(hp: int) -> void:
-	var was_alive := alive
-	target_hp = hp
-	alive = hp > 0
-	if was_alive and not alive:
-		var tween := create_tween()
-		tween.tween_property(self, "ko_angle", 1.0, 0.35).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
-	elif alive and not was_alive:
-		ko_angle = 0.0
-		ghost_hp = hp
-		shown_hp = hp
+func flash() -> void:
+	_flash = 1.0
 
 
-## Texte flottant. « big » pour les gros coups, les Synergies, les KO.
-func float_text(text: String, color: Color, big: bool = false) -> void:
-	_floaters.append({"text": text, "color": color, "t": 0.0, "offset": randf_range(-20.0, 20.0), "size": 40 if big else 27})
+func secouer() -> void:
+	_secousse = 1.0
 
 
-func do_lunge() -> void:
-	var tween := create_tween()
-	tween.tween_property(self, "lunge", 1.0, 0.1).set_ease(Tween.EASE_OUT)
-	tween.tween_property(self, "lunge", 0.0, 0.2)
-
-
-func do_announce() -> void:
-	announce_pop = 1.0
-
-
-func do_hurt(strength: float = 1.0) -> void:
-	flash = 1.0
-	shake = maxf(shake, 7.0 * strength)
-
-
-## Point d'ancrage des traits d'Intention (centre du sprite), en coordonnées globales.
-func anchor_global() -> Vector2:
-	# Par la transformation complète : l'écran de combat peut être mis à l'échelle pour tenir sur un petit téléphone.
-	return get_global_transform() * Vector2(size.x / 2.0, BUBBLE_HEIGHT + pixel * PixelSprites.GRID / 2.0 + 4.0)
+func flottant(texte: String, couleur: Color) -> void:
+	_flottants.append([texte, couleur, 0.0 - 0.18 * float(_flottants.size())])
 
 
 func _process(delta: float) -> void:
-	_time += delta
-	# Les PV descendent vite ; la « trace » claire suit plus lentement pour montrer le coup reçu.
-	shown_hp = move_toward(shown_hp, target_hp, maxf(absf(shown_hp - target_hp), 30.0) * delta * 6.0)
-	if ghost_hp < shown_hp:
-		ghost_hp = shown_hp
-	else:
-		ghost_hp = move_toward(ghost_hp, shown_hp, maxf(absf(ghost_hp - shown_hp), 20.0) * delta * 1.5)
-	flash = maxf(flash - delta * 5.0, 0.0)
-	announce_pop = maxf(announce_pop - delta * 3.0, 0.0)
-	shake = maxf(shake - delta * 30.0, 0.0)
-	for floater in _floaters:
-		floater["t"] += delta
-	_floaters = _floaters.filter(func(f): return f["t"] < 1.2)
+	_t += delta
+	_flash = maxf(0.0, _flash - delta * 3.0)
+	_secousse = maxf(0.0, _secousse - delta * 4.0)
+	for f in _flottants:
+		f[2] += delta
+	_flottants = _flottants.filter(func(f): return f[2] < 1.4)
+	if _appui >= 0.0 and not _appui_long_fait and _t - _appui >= APPUI_LONG:
+		_appui_long_fait = true
+		var index := _menace_sous(_appui_pos)
+		if index >= 0:
+			appui_menace.emit(id, index, global_position + _rect_pastille(index).get_center())
+		else:
+			appui_long.emit(id)
 	queue_redraw()
 
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		tapped.emit(unit_id)
-		accept_event()
+	if not event is InputEventMouseButton or event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if event.pressed:
+		_appui = _t
+		_appui_pos = event.position
+		_appui_long_fait = false
+	else:
+		if _appui >= 0.0 and not _appui_long_fait:
+			touche.emit(id)
+		_appui = -1.0
+	accept_event()
 
 
 func _draw() -> void:
-	var font := ThemeDB.fallback_font
-	var team_color := ALLY_COLOR if team == 0 else ENEMY_COLOR
-	var w := size.x
-	var sprite_size := pixel * PixelSprites.GRID
-	var dir := -1.0 if team == 0 else 1.0
-	var bob: float = 0.0 if not alive else round(sin(_time * 2.6 + _phase) * 1.5) * 2.0
-	var jitter: Vector2 = Vector2(randf_range(-shake, shake), 0.0) if shake > 0.0 else Vector2.ZERO
-	var sprite_origin := Vector2((w - sprite_size) / 2.0, BUBBLE_HEIGHT + 4.0 + bob) + Vector2(0, dir * 22.0 * lunge) + jitter
-
-	# Halo de cible possible / choisie.
-	var halo := Rect2(Vector2(6, BUBBLE_HEIGHT), Vector2(w - 12, sprite_size + 10))
-	if targetable:
-		var pulse := 0.35 + 0.3 * sin(_time * 7.0)
-		draw_rect(halo, Color(1, 1, 0.4, pulse) if alive else Color(0.6, 1, 0.6, pulse), false, 3.0)
-	if selected_target:
-		draw_rect(halo.grow(2), Color(1, 0.85, 0.2), false, 4.0)
-	if synergy_mark and alive:
-		var glow := 0.5 + 0.5 * sin(_time * 9.0)
-		draw_rect(halo.grow(5), Color(1, 0.85, 0.2, 0.35 + 0.5 * glow), false, 3.0)
-		_draw_star(Vector2(w / 2.0, BUBBLE_HEIGHT + 2), 11.0, Color(1, 0.85, 0.2, 0.7 + 0.3 * glow))
-
-	# Aura dorée d'une Synergie : derrière le sprite, elle pulse plus vite quand la Synergie est prête.
-	if aura > 0 and alive:
-		var beat := 0.5 + 0.5 * sin(_time * (9.0 if aura == 2 else 4.5))
-		var center := Vector2(w / 2.0, BUBBLE_HEIGHT + sprite_size / 2.0 + 4.0)
-		var radius := sprite_size * 0.62 + 6.0 * beat
-		for ring in range(4):
-			draw_circle(center, radius - ring * 7.0, Color(1.0, 0.82, 0.2, (0.10 if aura == 1 else 0.16) + 0.06 * beat))
-		draw_arc(center, radius, 0.0, TAU, 48, Color(1.0, 0.85, 0.2, 0.55 + 0.4 * beat), 3.0 if aura == 1 else 5.0, true)
-
-	# Ombre au sol et sprite (couché s'il est KO).
-	var feet := Vector2(w / 2.0, BUBBLE_HEIGHT + sprite_size + 2)
-	draw_circle(feet, pixel * 5.0 - 3.0 * bob / 2.0, Color(0, 0, 0, 0.25))
-	if ko_angle > 0.0:
-		var angle := -dir * ko_angle * PI / 2.0 * 0.92
-		draw_set_transform(feet, angle, Vector2.ONE)
-		PixelSprites.draw(self, class_id, sprite_origin - feet, pixel, team_color, team == 1, true)
-		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
-	else:
-		PixelSprites.draw(self, class_id, sprite_origin, pixel, team_color, team == 1, false)
-		if flash > 0.0:
-			draw_rect(Rect2(sprite_origin, Vector2(sprite_size, sprite_size)), Color(1, 1, 1, flash * 0.7))
-	if not alive:
-		_draw_centered(font, "KO", Vector2(w / 2.0, BUBBLE_HEIGHT + sprite_size / 2.0 + 10), 34, Color(1, 0.3, 0.3))
-
-	# Intention (bulle translucide), ou menace d'un ennemi dont la forte est prête.
-	if intent_text != "":
-		var bubble := Rect2(Vector2(4, 0), Vector2(w - 8, BUBBLE_HEIGHT - 4)).grow(4.0 * announce_pop)
-		draw_rect(bubble, Color(0.08, 0.1, 0.18, intent_alpha))
-		draw_rect(bubble, Color(team_color, intent_alpha + 0.2).lerp(Color(1, 1, 1), announce_pop), false, 2.0 + 2.0 * announce_pop)
-		_draw_centered(font, intent_text, Vector2(w / 2.0, 22), 17, Color(1, 1, 1, minf(intent_alpha + 0.35, 1.0)))
-		if intent_star:
-			_draw_star(bubble.position + Vector2(bubble.size.x - 10, 10), 8.0, Color(1, 0.85, 0.2))
-	elif threat_text != "" and alive:
-		var pulse_t := 0.55 + 0.3 * sin(_time * 5.0)
-		var tag := Rect2(Vector2(18, 2), Vector2(w - 36, BUBBLE_HEIGHT - 8))
-		draw_rect(tag, Color(0.6, 0.05, 0.1, pulse_t))
-		_draw_centered(font, threat_text, Vector2(w / 2.0, 21), 15, Color.WHITE)
-
-	# Pastille d'ordre de passage pendant la résolution.
-	if order_badge > 0:
-		draw_circle(Vector2(18, BUBBLE_HEIGHT + 16), 14.0, Color(0.1, 0.1, 0.1, 0.85))
-		_draw_centered(font, str(order_badge), Vector2(18, BUBBLE_HEIGHT + 23), 18, Color.WHITE)
-
-	# Recharges de la moyenne et de la forte, sur le côté du sprite : on sait quand la forte revient.
-	if alive and not cooldowns.is_empty():
-		var chip_y := BUBBLE_HEIGHT + 30.0
-		for tier in ["moyenne", "forte"]:
-			var left := int(cooldowns.get(tier, 0))
-			var chip := Rect2(Vector2(w - 34, chip_y), Vector2(30, 22))
-			var ready := left == 0
-			draw_rect(chip, Color("2fbf71", 0.85) if ready else Color(0.1, 0.1, 0.14, 0.85))
-			draw_rect(chip, Color(1, 0.85, 0.2) if ready and tier == "forte" else Color(0, 0, 0, 0.6), false, 1.5)
-			var label := ("M" if tier == "moyenne" else "F") + ("" if ready else ("×" if left < 0 else str(left)))
-			_draw_centered(font, label, chip.position + Vector2(15, 16), 14, Color.WHITE if ready else Color(0.75, 0.75, 0.8))
-			chip_y += 26.0
-
-	# Prévision du coup quand le joueur vise ce perso.
-	if preview_text != "" and targetable:
-		var text_w := font.get_string_size(preview_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20).x + 14
-		var box := Rect2(Vector2(w - text_w - 4, BUBBLE_HEIGHT + 4), Vector2(text_w, 28))
-		draw_rect(box, Color(0.05, 0.05, 0.08, 0.85))
-		draw_rect(box, preview_color, false, 2.0)
-		draw_string(font, box.position + Vector2(7, 21), preview_text, HORIZONTAL_ALIGNMENT_LEFT, -1, 20, preview_color)
-
-	# Nom et PV.
-	var y := BUBBLE_HEIGHT + sprite_size + 14
-	var name_text := display_name if subtitle == "" else "%s · %s" % [display_name, subtitle]
-	_draw_centered(font, name_text, Vector2(w / 2.0, y + 14), name_size, Color(1, 0.9, 0.4) if is_player else (Color("9ad1ff") if is_acolyte and team == 0 else Color.WHITE))
-	var bar := Rect2(Vector2(10, y + 22), Vector2(w - 20, 14))
-	draw_rect(bar, Color(0.15, 0.15, 0.2))
-	var ratio := clampf(shown_hp / float(max_hp), 0.0, 1.0)
-	var ghost_ratio := clampf(ghost_hp / float(max_hp), 0.0, 1.0)
-	draw_rect(Rect2(bar.position, Vector2(bar.size.x * ghost_ratio, bar.size.y)), Color(1, 0.95, 0.85, 0.8))
-	var hp_color := Color("2fbf71") if ratio > 0.5 else (Color("f2c14e") if ratio > 0.25 else Color("e5484d"))
-	draw_rect(Rect2(bar.position, Vector2(bar.size.x * ratio, bar.size.y)), hp_color)
-	if barrier > 0:
-		var barrier_ratio := clampf(float(barrier) / float(max_hp), 0.0, 1.0)
-		draw_rect(Rect2(bar.position + Vector2(0, -5), Vector2(bar.size.x * barrier_ratio, 5)), Color("9ad1ff"))
-	draw_rect(bar, Color(0, 0, 0), false, 1.0)
-	_draw_centered(font, "%d / %d" % [int(round(shown_hp)), max_hp], Vector2(w / 2.0, y + 52), 15, Color(0.85, 0.85, 0.9))
-
-	# La créature de l'Invocateur : son nom et ses PV, sous ceux du perso.
-	var tags_y := y + 58
-	if not creature.is_empty() and alive:
-		var small := Rect2(Vector2(14, y + 58), Vector2(w - 28, 9))
-		var creature_ratio := clampf(float(creature["hp"]) / float(maxi(int(creature["max_hp"]), 1)), 0.0, 1.0)
-		draw_rect(small, Color(0.15, 0.15, 0.2))
-		draw_rect(Rect2(small.position, Vector2(small.size.x * creature_ratio, small.size.y)), Color("b197fc"))
-		draw_rect(small, Color(0, 0, 0), false, 1.0)
-		_draw_centered(font, "%s %d / %d" % [creature["name"], int(creature["hp"]), int(creature["max_hp"])], Vector2(w / 2.0, y + 80), 12, Color("d0bfff"))
-		tags_y = y + 86
-
-	# États.
-	var x := 8.0
-	for tag_info in status_tags:
-		var label := "%s %d" % [tag_info["name"], int(tag_info["turns"])] if int(tag_info["turns"]) > 0 else str(tag_info["name"])
-		var text_w := font.get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13).x + 8
-		if x + text_w > w:
-			break
-		var color := Color("e5484d") if tag_info["negative"] else Color("2fbf71")
-		draw_rect(Rect2(Vector2(x, tags_y), Vector2(text_w, 18)), Color(color, 0.35))
-		draw_string(font, Vector2(x + 4, tags_y + 14), label, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color.WHITE)
-		x += text_w + 4
-
-	# Textes flottants (dégâts, soins, Bloqué...), avec un petit effet de « pop ».
-	for floater in _floaters:
-		var t: float = floater["t"]
-		var alpha := clampf(1.5 - t * 1.3, 0.0, 1.0)
-		var pop := 1.0 + 0.5 * clampf(1.0 - t * 6.0, 0.0, 1.0)
-		var font_size := int(float(floater["size"]) * pop)
-		var pos := Vector2(w / 2.0 + float(floater["offset"]), BUBBLE_HEIGHT + 44 - t * 46.0)
-		_draw_centered(font, floater["text"], pos + Vector2(2, 2), font_size, Color(0, 0, 0, alpha))
-		_draw_centered(font, floater["text"], pos, font_size, Color(floater["color"], alpha))
+	var police := ThemeDB.fallback_font
+	var rs := rect_sprite()
+	var dx := sin(_t * 40.0) * 6.0 * _secousse
+	var souffle := 0.0 if ko else roundf(sin(_t * 2.2 + _phase) * 1.2) * 2.0
+	# Ombre au sol.
+	draw_set_transform(Vector2(rs.get_center().x, rs.end.y - 2.0), 0.0, Vector2(1.0, 0.25))
+	draw_circle(Vector2.ZERO, rs.size.x * 0.32, Color(0, 0, 0, 0.35))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
+	if cible_ennemie or cible_alliee:
+		_anneau(rs.get_center(), rs.size.x * 0.56, OR if cible_ennemie else TEAL)
+	var teinte := TEAL if allie else ROUGE
+	PixelSprites.draw(self, sprite, rs.position + Vector2(dx, souffle + (rs.size.y * 0.35 if ko else 0.0)), pixel, teinte, not allie, ko)
+	if _flash > 0.0:
+		draw_rect(rs, Color(1, 1, 1, 0.45 * _flash))
+	# La plaque : PV.
+	var y := rs.end.y + 4.0
+	var largeur := minf(size.x - 8.0, maxf(rs.size.x, 110.0))
+	var x0 := (size.x - largeur) / 2.0
+	draw_rect(Rect2(x0, y, largeur, 8.0), Color("0f0e17"))
+	var part := clampf(float(pv) / float(maxi(1, pv_max)), 0.0, 1.0)
+	draw_rect(Rect2(x0, y, largeur * part, 8.0), teinte if not ko else BORD)
+	if barriere > 0:
+		var bp := clampf(float(barriere) / float(maxi(1, pv_max)), 0.0, 1.0)
+		draw_rect(Rect2(x0, y - 3.0, largeur * bp, 3.0), Color("9bd3ca"))
+	var texte_pv := "KO" if ko else "%d" % pv
+	var largeur_pv := police.get_string_size(texte_pv, HORIZONTAL_ALIGNMENT_LEFT, -1, 14).x
+	# Le nom tient à côté des PV : la police rapetisse pour un nom long (« Loup gris » sous un petit monstre).
+	var place := largeur - largeur_pv - 6.0
+	var taille_nom := 14
+	while taille_nom > 10 and police.get_string_size(nom, HORIZONTAL_ALIGNMENT_LEFT, -1, taille_nom).x > place:
+		taille_nom -= 1
+	draw_string(police, Vector2(x0, y + 22.0), nom, HORIZONTAL_ALIGNMENT_LEFT, place, taille_nom, TEXTE)
+	draw_string(police, Vector2(x0, y + 22.0), texte_pv, HORIZONTAL_ALIGNMENT_RIGHT, largeur, 14, Color("aaa49b"))
+	# Les pastilles : menaces, puis états.
+	var n := mini(menaces.size(), 3) + mini(etats.size(), 3) + (1 if menaces.size() > 3 or etats.size() > 3 else 0)
+	for i in range(n):
+		var r := _rect_pastille(i)
+		var p := _pastille(i)
+		var bord: Color = p.get("bord", BORD)
+		draw_rect(r, SURFACE)
+		if p.get("halo", false):
+			draw_rect(r.grow(2.0 + sin(_t * 6.0) * 1.0), Color(bord, 0.35), false, 2.0)
+		draw_rect(r, bord, false, 1.5)
+		if p.has("pictogramme"):
+			Picto.dessiner(self, str(p["pictogramme"]), r.position + Vector2(r.size.y * 0.5, r.size.y * 0.5), r.size.y * 0.66, Color(str(p["couleur"])))
+		if p.has("cible"):
+			Picto.dessiner(self, str(p["cible"]), r.position + Vector2(r.size.y * 1.15, r.size.y * 0.55), r.size.y * 0.45, Color("aaa49b"))
+		draw_string(police, Vector2(r.end.x - 13.0, r.position.y + r.size.y * 0.72), str(p.get("texte", "")), HORIZONTAL_ALIGNMENT_LEFT, -1, 14, TEXTE)
+		if p.get("barre", false):
+			draw_line(r.position + Vector2(3, r.size.y - 3), r.end - Vector2(3, r.size.y - 3), ROUGE, 2.0)
+	# Les nombres qui montent.
+	for f in _flottants:
+		if f[2] < 0.0:
+			continue
+		var a := 1.0 - clampf(f[2] / 1.4, 0.0, 1.0)
+		var pos := rs.get_center() + Vector2(-20.0, -rs.size.y * 0.3 - f[2] * 40.0)
+		draw_string(police, pos + Vector2(2, 2), str(f[0]), HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(0, 0, 0, a))
+		draw_string(police, pos, str(f[0]), HORIZONTAL_ALIGNMENT_LEFT, -1, 24, Color(f[1], a))
 
 
-func _draw_star(center: Vector2, radius: float, color: Color) -> void:
-	var points := PackedVector2Array()
-	for i in range(10):
-		var r := radius if i % 2 == 0 else radius * 0.45
-		var angle := -PI / 2.0 + float(i) * PI / 5.0
-		points.append(center + Vector2(cos(angle), sin(angle)) * r)
-	draw_colored_polygon(points, color)
+func _pastille(i: int) -> Dictionary:
+	var nm := mini(menaces.size(), 3)
+	if i < nm:
+		var m: Dictionary = menaces[i]
+		return {"pictogramme": m["pictogramme"], "couleur": m["couleur"], "cible": m["cible"], "texte": str(m["echeance"]),
+			"bord": VIOLET if allie else ROUGE, "halo": int(m["echeance"]) == 1 and not m["barre"], "barre": m["barre"]}
+	var j := i - nm
+	if j < mini(etats.size(), 3):
+		var s: Dictionary = etats[j]
+		return {"pictogramme": s["pictogramme"], "couleur": s["couleur"], "texte": str(s["tours"]), "bord": BORD}
+	return {"texte": "+%d" % (maxi(0, menaces.size() - 3) + maxi(0, etats.size() - 3)), "bord": BORD}
 
 
-func _draw_centered(font: Font, text: String, center: Vector2, font_size: int, color: Color) -> void:
-	var text_w := font.get_string_size(text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x
-	draw_string(font, Vector2(center.x - text_w / 2.0, center.y), text, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, color)
+func _rect_pastille(i: int) -> Rect2:
+	var rs := rect_sprite()
+	var y := rs.end.y + 30.0
+	var largeur := PASTILLE * 1.9
+	var n := mini(menaces.size(), 3) + mini(etats.size(), 3) + (1 if menaces.size() > 3 or etats.size() > 3 else 0)
+	var total := float(n) * (largeur + 4.0) - 4.0
+	var x0 := (size.x - total) / 2.0
+	return Rect2(x0 + float(i) * (largeur + 4.0), y, largeur, PASTILLE)
+
+
+func _menace_sous(pos: Vector2) -> int:
+	for i in range(mini(menaces.size(), 3)):
+		if _rect_pastille(i).grow(4.0).has_point(pos):
+			return i
+	return -1
+
+
+func _anneau(c: Vector2, r: float, col: Color) -> void:
+	var segments := 24
+	for i in range(segments):
+		if i % 2 == 1:
+			continue
+		var a0 := TAU * float(i) / float(segments) + _t * 0.6
+		draw_arc(c, r, a0, a0 + TAU / float(segments), 4, col, 2.5)

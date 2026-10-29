@@ -165,6 +165,104 @@ static func fiche_destin(destin: Destin, voie: int, rang: int, niveau: int, donn
 	return out
 
 
+## La fiche d'un nœud en combat (section 12.4), vue par un perso (point_de_vue, ex. « a1 ») : nom, classe · voie ·
+## rang, pictogrammes, ligne chiffrée (niveau, multiplicateur de classe, éclats), phrase, détail des états, l'échéance ;
+## pour un nœud ennemi, « Pour l'empêcher » (les réponses que le joueur ou son acolyte a en main ce tour-ci) ; pour un
+## nœud à soi, « Après » et l'éclat de la Clé. rang 0 : le moyeu.
+static func fiche(e: EtatCombat, id: String, voie: int, rang: int, point_de_vue: String, donnees: Donnees = null) -> Dictionary:
+	var d := donnees if donnees != null else Donnees.defaut()
+	var txt: Dictionary = d.textes["fiche"]
+	var statique := e.fiche(id)
+	var noeud := e.noeud(id, voie, rang)
+	var bonus := 0.0 if rang == 0 else float(statique["bonus"][voie][rang - 1])
+	var valeurs := Regles.multiplicateur_niveau(e) * float(statique["k"]) * (1.0 + bonus)
+	var classe := d.classe(str(statique["classe"]))
+	var sous_titre := str(txt["moyeu"])
+	if rang > 0:
+		sous_titre = str(txt["cle"] if rang == 4 else txt["rang"]).format({"voie": statique["voies"][voie]["nom"], "rang": rang})
+	var out := {"nom": nom(noeud, d), "sous_titre": "%s · %s" % [classe.get("nom", statique["nom"]), sous_titre],
+		"pictos": pictos(noeud, valeurs, 1.0 + bonus, d), "ligne": ligne(noeud, valeurs, 1.0 + bonus, d), "phrase": phrase(noeud, d),
+		"etats": _details_etats(noeud, d), "apres": "", "eclat": "", "echeance": ""}
+	var a_soi := e.camp(id) == e.camp(point_de_vue)
+	out["echeance"] = echeance_texte(e, id, voie, rang, a_soi, d)
+	if a_soi:
+		if rang == 4:
+			out["apres"] = str(txt["cle_remet"])
+			var eclat := float(statique["bonus"][voie][3]) - float(statique["bonus"][voie][2])
+			if eclat > 0.0001:
+				out["eclat"] = str(txt["eclat_cle"]).format({"pourcent": roundi(eclat * 100.0)})
+		elif rang > 0:
+			out["apres"] = "%s : %s" % [txt["apres"], nom(e.noeud(id, voie, rang + 1), d)]
+	else:
+		out["pour_l_empecher"] = pour_l_empecher(e, id, voie, rang, point_de_vue)
+	return out
+
+
+## « Jouable maintenant » (à soi, légal ce tour-ci), « Jouable au prochain tour », « Jouable dans 2 tours »,
+## « Éteint encore 2 tours », ou, pour un nœud que le jalon a déjà dépassé, « Déjà joué : la voie est plus loin ».
+static func echeance_texte(e: EtatCombat, id: String, voie: int, rang: int, a_soi: bool, d: Donnees) -> String:
+	var txt: Dictionary = d.textes["fiche"]
+	if rang == 0:
+		return str(txt["jouable_maintenant"]) if a_soi else ""
+	var p := e.perso(id)
+	if rang <= int(p["jalons"][voie]):
+		return str(txt["depasse"])
+	if a_soi:
+		for a in Regles.actions_legales(e, id):
+			if a["source"] == "voie" and int(a["voie"]) == voie and int(a["rang"]) == rang:
+				return str(txt["jouable_maintenant"])
+	var restant := int(p["spent_until"][voie][rang - 1]) - e.tour
+	if restant > 0 and restant >= rang - int(p["jalons"][voie]):
+		return str(txt["eteint_encore_1"]) if restant == 1 else str(txt["eteint_encore"]).format({"n": restant})
+	var ech := Regles.echeance(e, id, voie, rang)
+	return str(txt["jouable_prochain_tour"]) if ech <= 1 else str(txt["jouable_dans"]).format({"n": ech})
+
+
+## « Pour l'empêcher » (section 12.4) : les nœuds légaux ce tour-ci du perso qui regarde et de son acolyte qui
+## annuleraient ou retarderaient ce nœud ennemi : Étourdi ; Gelé (sauf contre le moyeu) ; Silencié (contre une Clé) ;
+## Égaré (sauf contre le moyeu) ; Enraciné (si le nœud n'est pas sur la dernière voie de l'ennemi) ; une barrière ou un
+## soin s'il fait des dégâts. Chacun : {nom, pictogramme, couleur}, sans doublon.
+static func pour_l_empecher(e: EtatCombat, id: String, voie: int, rang: int, point_de_vue: String) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var vus := {}
+	var noeud := e.noeud(id, voie, rang)
+	var blesse := false
+	for ef in noeud["effets"]:
+		blesse = blesse or ef["type"] in ["degats", "dot"]
+	var derniere := int(e.perso(id)["last_voie"])
+	for m in e.allies_vivants(point_de_vue):
+		for a in Regles.actions_legales(e, m):
+			var n := Regles.noeud_de(e, a)
+			var reponse := {}
+			for ef in n["effets"]:
+				var touche_ennemi: bool = ef["cible"] in ["un_ennemi", "tous_les_ennemis"]
+				var ok := false
+				match str(ef["type"]):
+					"etat":
+						match str(ef["nom"]):
+							"etourdi":
+								ok = touche_ennemi
+							"gele":
+								ok = touche_ennemi and rang > 0
+							"silencie":
+								ok = touche_ennemi and rang == 4
+							"enracine":
+								ok = touche_ennemi and rang > 0 and (derniere < 0 or voie != derniere)
+					"egare":
+						ok = touche_ennemi and rang > 0
+					"barriere", "soin":
+						ok = blesse
+				if ok:
+					reponse = picto(ef)
+					break
+			var nom_reponse := nom(n)
+			if not reponse.is_empty() and not vus.has(nom_reponse):
+				vus[nom_reponse] = true
+				reponse["nom"] = nom_reponse
+				out.append(reponse)
+	return out
+
+
 ## Pour chaque état qu'un nœud pose, sa ligne fixe : « Enraciné : ne peut pas changer de voie ».
 static func _details_etats(noeud: Dictionary, d: Donnees) -> Array[String]:
 	var out: Array[String] = []

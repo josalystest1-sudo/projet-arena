@@ -1,5 +1,5 @@
-## La Tour (GDD, écran « La Tour ») : comment elle marche, ton record, les records de chaque classe, le bestiaire,
-## et on monte.
+## La Tour (GDD) : les règles en clair, ton record et ceux de chaque classe, le bestiaire, et le bouton pour monter.
+## Les étages se suivent tant que le duo tient ; les monstres sont plus forts à chaque étage.
 extends Control
 
 var app: ArenaApp
@@ -8,30 +8,25 @@ var app: ArenaApp
 func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	app = p_app
 	var column := UiKit.scroll_column(self, 12)
-	var floors := int(app.data.tower.get("floors", []).size())
-	column.add_child(UiKit.label("La Tour", 36, UiKit.GOLD))
+	column.add_child(UiKit.label("La Tour", 34, UiKit.GOLD))
+	var cls_nom := str(app.data.classe(app.player_class)["nom"])
 	var record := int(app.profile.tower_records.get(app.player_class, 0))
-	var cls_name := app.data.class_name_of(app.player_class)
-	column.add_child(UiKit.label("Ton record de %s : %s" % [cls_name, "étage %d sur %d" % [record, floors] if record > 0 else "aucun pour l'instant"], 22))
-	column.add_child(UiKit.main_button("Commencer la montée", _climb))
-	column.add_child(UiKit.button("Bestiaire : les monstres de la Tour", func(): app.show_screen("bestiaire"), 56))
-	var rules := UiKit.card(column, 6)
-	rules.add_child(UiKit.label("Comment ça marche", 20, UiKit.GOLD, false))
-	for line in [
-		"%d étages de monstres, de plus en plus forts : de 1 à 4 par étage, d'une même famille. Aux étages 5 et 10, un Gardien." % floors,
-		"Entre deux étages, tu gardes tes PV et tes recharges : seuls %d %% de tes PV te sont rendus (un acolyte tombé revient avec autant)." % int(round(float(app.data.tower.get("heal_between_floors", 0.2)) * 100.0)),
-		"Pas de mort subite. Au tour %d, les ennemis s'épuisent : ils ne soignent plus. Au tour %d, ils abandonnent." % [int(app.data.tower.get("exhaustion_turn", 12)), int(app.data.tower.get("turn_limit", 24))],
-		"Les monstres suivent ton niveau : ton Destin ne rend pas la Tour plus facile, ton record vaut à tout niveau.",
-		"La montée s'arrête quand ton duo tombe. Ton record est gardé pour ta classe.",
-	]:
-		rules.add_child(UiKit.label("• " + line, 16, UiKit.SOFT, false))
-	var records := UiKit.card(column, 4)
-	records.add_child(UiKit.label("Tes records par classe", 20, UiKit.GOLD, false))
-	for class_id in app.data.class_ids:
+	column.add_child(UiKit.label("Ton record (%s) : %s" % [cls_nom, "étage %d" % record if record > 0 else "pas encore de montée"], 20, Color.WHITE))
+	var regles := UiKit.card(column, 4)
+	regles.add_child(UiKit.label("Les règles", 20, UiKit.GOLD, false))
+	for ligne in ["Ton duo grimpe les étages, contre 1 à 4 monstres à chaque étage. Plus tu montes, plus ils sont forts.",
+			"Entre deux étages, chacun récupère 20 % de ses PV. Ton acolyte, s'il est tombé, revient avec 20 %.",
+			"Pas de mort subite : la montée s'arrête quand ton duo tombe. L'étage atteint est ton record, classé par classe."]:
+		regles.add_child(UiKit.label(ligne, 16, UiKit.SOFT, false))
+	column.add_child(UiKit.main_button("Monter", _monter, 84))
+	column.add_child(UiKit.button("Le bestiaire", func(): app.show_screen("bestiaire"), 52))
+	var records := UiKit.card(column, 2)
+	records.add_child(UiKit.label("Records par classe", 18, UiKit.GOLD, false))
+	for class_id in app.data.ordre_classes:
 		var value := int(app.profile.tower_records.get(class_id, 0))
-		records.add_child(UiKit.label("%s : %s" % [app.data.class_name_of(class_id), "étage %d" % value if value > 0 else "—"], 17, Color.WHITE, false))
+		records.add_child(UiKit.label("%s : %s" % [app.data.classe(class_id)["nom"], "étage %d" % value if value > 0 else "—"], 16, Color.WHITE, false))
 
 
-func _climb() -> void:
+func _monter() -> void:
 	app.sfx.play("clic")
-	app.show_screen("combat", {"mode": "tour"})
+	app.show_screen("combat", app.commencer_tour())
