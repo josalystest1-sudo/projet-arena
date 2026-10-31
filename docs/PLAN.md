@@ -139,6 +139,8 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 
 **PR 8.1** (**faite**, PR #69) Le mécanisme et une évolution par classe : `data/evolutions.json` et `data/evolutions/<id>.json`, `engine/evolution.gd` (rang, lignée, points d'un rang, plafond de niveau, saut de puissance, évolution d'une classe au-delà du niveau 30), « Évoluer » sur l'écran du Destin au niveau 30, Échos et adversaires évolués, ligue Élus à l'Arène, `tools/mesure_evolution.gd`. **PR 8.2** (**faite**, PR #70) Les deux autres évolutions de chaque classe (une de chaque rôle par classe), le choix parmi trois sur l'écran du Destin, l'étoile dorée des évolués. **PR 8.3** (**faite** pour le rang 2, PR #75 puis #76 : évolution au niveau 60, plafond 90, quatre-vingt-dix évolutions de rang 2, trois par évolution de rang 1, une de chaque rôle, deux étoiles) Le rang 2 (niveau 60) et les grimoires (**à faire** : classes rares, épiques, légendaires lâchées par les boss de donjon, ligue Ascendants).
 
+**Phase 6, les guildes** : **PR 6.5** (**faite**, PR #84) les guildes avec le serveur simulé (création, bannière, rôles, Influence, effets) ; les territoires, la carte du monde et les guerres viennent ensuite (phase 7).
+
 ### Phase 9 — L'équilibrage global (après les graphismes, décision de Gautier du 31 octobre)
 
 **Ne commence qu'une fois les graphismes faits (phase 10).** Le 31 octobre, les PR 9.2 et 9.3 avaient été commencées trop tôt : les passes des classes ont été arrêtées sans rien garder, la Tour à murs (un design de Gautier, PR 9.3) attend sur la branche `tour-murs`.

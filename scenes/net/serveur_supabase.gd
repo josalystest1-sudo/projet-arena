@@ -207,6 +207,114 @@ func nombre_personnages() -> int:
 	return int(profile.serveur.get("nombre", 0))
 
 
+# --- Les guildes : la table « guildes » (docs/serveur/supabase.sql), la guilde entière dans sa ligne (membres compris) ;
+# jamais essayé contre un vrai projet. Chaque changement relit la ligne, applique la règle (engine/guilde.gd) et la
+# réécrit : deux membres qui agissent en même temps peuvent s'écraser (prototype). ------------------------------------
+
+func _lire_guildes(chemin: String) -> Array:
+	if not est_connecte() and not await connecter():
+		return []
+	var r := await _requete_connectee(HTTPClient.METHOD_GET, chemin)
+	var out: Array = []
+	if int(r["code"]) == 200 and r["corps"] is Array:
+		for g in r["corps"]:
+			if g is Dictionary and Guilde.guilde_valide(g, donnees):
+				out.append(g)
+	return out
+
+
+func _ecrire_guilde(g: Dictionary) -> Dictionary:
+	var corps := {"id": g["id"], "nom": g["nom"], "banniere": g["banniere"], "influence": int(g["influence"]), "influence_totale": int(g["influence_totale"]),
+		"effets": g["effets"], "membres": g["membres"], "cree": str(g["cree"]), "chef": str(Guilde.chef(g).get("id", ""))}
+	var r := await _requete_connectee(HTTPClient.METHOD_POST, "/rest/v1/guildes", corps, "resolution=merge-duplicates,return=minimal")
+	if int(r["code"]) in [200, 201, 204]:
+		profile.serveur["guilde_id"] = str(g["id"])
+		profile.save()
+		return g
+	erreur = "guilde refusée (%s)" % _texte_erreur(r)
+	return {}
+
+
+func guildes(n: int) -> Array:
+	var out: Array = []
+	for g in await _lire_guildes("/rest/v1/guildes?select=*&order=influence_totale.desc&limit=%d" % n):
+		out.append(Serveur.resume_guilde(g, donnees))
+	return out
+
+
+func ma_guilde() -> Dictionary:
+	var id := str(profile.serveur.get("guilde_id", ""))
+	if id == "":
+		return {}
+	var liste := await _lire_guildes("/rest/v1/guildes?select=*&id=eq.%s" % id)
+	if liste.is_empty() or Guilde.membre(liste[0], compte_id).is_empty():
+		profile.serveur.erase("guilde_id")
+		profile.save()
+		return {}
+	return liste[0]
+
+
+func creer_guilde(nom: String, banniere: Dictionary, fiche: Dictionary) -> Dictionary:
+	if not (await ma_guilde()).is_empty() or not Guilde.nom_valide(nom, donnees) or not Guilde.banniere_valide(banniere, donnees):
+		return {}
+	return await _ecrire_guilde(Guilde.nouvelle("g-%s-%d" % [compte_id, Time.get_unix_time_from_system()], nom, banniere, fiche, Time.get_date_string_from_system(), donnees))
+
+
+func rejoindre_guilde(id: String, fiche: Dictionary) -> Dictionary:
+	if not (await ma_guilde()).is_empty():
+		return {}
+	var liste := await _lire_guildes("/rest/v1/guildes?select=*&id=eq.%s" % id)
+	if liste.is_empty():
+		return {}
+	var avec := Guilde.ajouter(liste[0], fiche, Time.get_date_string_from_system(), donnees)
+	if avec["membres"].size() == liste[0]["membres"].size():
+		return {}
+	return await _ecrire_guilde(avec)
+
+
+func _changer(nouvelle: Dictionary, ancienne: Dictionary) -> Dictionary:
+	if ancienne.is_empty() or nouvelle == ancienne:
+		return {}
+	if nouvelle.is_empty():
+		await _requete_connectee(HTTPClient.METHOD_DELETE, "/rest/v1/guildes?id=eq.%s" % ancienne["id"])
+		profile.serveur.erase("guilde_id")
+		profile.save()
+		return {}
+	var ecrite := await _ecrire_guilde(nouvelle)
+	if Guilde.membre(nouvelle, compte_id).is_empty():
+		profile.serveur.erase("guilde_id")
+		profile.save()
+	return ecrite
+
+
+func quitter_guilde() -> bool:
+	var g := await ma_guilde()
+	if g.is_empty():
+		return false
+	await _changer(Guilde.retirer(g, compte_id), g)
+	return true
+
+
+func influence_guilde(gain: int) -> bool:
+	var g := await ma_guilde()
+	return not g.is_empty() and gain > 0 and not (await _changer(Guilde.gagner(g, gain), g)).is_empty()
+
+
+func acheter_effet(effet: String) -> Dictionary:
+	var g := await ma_guilde()
+	return await _changer(Guilde.acheter(g, compte_id, effet, donnees), g)
+
+
+func role_guilde(membre: String, role: String) -> Dictionary:
+	var g := await ma_guilde()
+	return await _changer(Guilde.changer_role(g, compte_id, membre, role, donnees), g)
+
+
+func exclure_guilde(membre: String) -> Dictionary:
+	var g := await ma_guilde()
+	return await _changer(Guilde.exclure(g, compte_id, membre), g)
+
+
 ## Une requête avec le jeton ; si le serveur dit que le jeton a expiré (401), on se reconnecte et on réessaie une fois.
 func _requete_connectee(methode: HTTPClient.Method, chemin: String, corps: Variant = null, prefer: String = "") -> Dictionary:
 	var r := await _requete(methode, chemin, corps, true, prefer)

@@ -151,10 +151,11 @@ static func emplacement(objet: Dictionary, d: Donnees) -> String:
 ## les poids de la source, sa base parmi toutes ; échangeable seulement au premier passage ; un étage ordinaire rejoué
 ## n'en lâche qu'une fois sur deux (vide alors). Un Gardien en lâche toujours (épique) ; un grand Gardien, parfois un
 ## légendaire (GDD V2, § 10.1 ; les murs de la Tour, décision de Gautier du 31 octobre).
-static func butin(source: String, niveau: int, premier_passage: bool, graine: int, d: Donnees) -> Dictionary:
+## bonus_rejoue : des points de chance en plus sur un étage rejoué (la Chasse de guilde, engine/guilde.gd).
+static func butin(source: String, niveau: int, premier_passage: bool, graine: int, d: Donnees, bonus_rejoue: float = 0.0) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = graine ^ 0x2F6E1B35
-	if not premier_passage and source == "etage" and rng.randf_range(0.0, 1.0) >= float(d.objets["butin"]["rejoue"]):
+	if not premier_passage and source == "etage" and rng.randf_range(0.0, 1.0) >= float(d.objets["butin"]["rejoue"]) + bonus_rejoue:
 		return {}
 	var poids: Dictionary = d.objets["butin"][source]
 	var total := 0.0

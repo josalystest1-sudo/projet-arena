@@ -94,6 +94,32 @@ create policy "mouvements lus par les connectes" on public.mouvements for select
 drop policy if exists "chacun note ses mouvements" on public.mouvements;
 create policy "chacun note ses mouvements" on public.mouvements for insert to authenticated with check (auth.uid() = compte);
 
+-- Les guildes (engine/guilde.gd) : la guilde entière dans sa ligne (bannière, effets, membres). Prototype : tout
+-- connecté peut la lire ; seul son chef la crée ; ses membres la modifient (le jeu applique les règles avant d'écrire).
+create table if not exists public.guildes (
+  id text primary key,
+  nom text not null,
+  banniere jsonb not null,
+  chef uuid not null references auth.users (id) on delete cascade,
+  influence integer not null default 0,
+  influence_totale integer not null default 0,
+  effets jsonb not null default '{}'::jsonb,
+  membres jsonb not null default '[]'::jsonb,
+  cree text not null,
+  mis_a_jour timestamptz not null default now()
+);
+create unique index if not exists guildes_nom on public.guildes (lower(nom));
+alter table public.guildes enable row level security;
+drop policy if exists "guildes lues par les connectes" on public.guildes;
+create policy "guildes lues par les connectes" on public.guildes for select to authenticated using (true);
+drop policy if exists "le chef fonde sa guilde" on public.guildes;
+create policy "le chef fonde sa guilde" on public.guildes for insert to authenticated with check (auth.uid() = chef);
+drop policy if exists "les membres modifient leur guilde" on public.guildes;
+create policy "les membres modifient leur guilde" on public.guildes for update to authenticated
+  using (membres @> jsonb_build_array(jsonb_build_object('id', auth.uid()::text)) or chef = auth.uid());
+drop policy if exists "le chef dissout sa guilde" on public.guildes;
+create policy "le chef dissout sa guilde" on public.guildes for delete to authenticated using (chef = auth.uid());
+
 drop trigger if exists personnages_mis_a_jour on public.personnages;
 create trigger personnages_mis_a_jour
   before update on public.personnages

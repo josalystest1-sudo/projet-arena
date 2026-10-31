@@ -171,6 +171,109 @@ func nombre_personnages() -> int:
 	return joueurs.size() + (1 if profile.serveur.has("fiche") else 0)
 
 
+# --- Les guildes : ta guilde vit dans le profil ; les autres sont celles du monde simulé (engine/guilde.gd). ------------
+
+func _guildes_du_monde() -> Array:
+	return Guilde.guildes_simulees(joueurs, Time.get_date_string_from_system(), donnees)
+
+
+func guildes(n: int) -> Array:
+	var out: Array = []
+	var mienne: Dictionary = profile.serveur.get("guilde", {})
+	for g in _guildes_du_monde():
+		if not mienne.is_empty() and str(g["id"]) == str(mienne["id"]):
+			continue
+		out.append(Serveur.resume_guilde(g, donnees))
+	if not mienne.is_empty():
+		out.push_front(Serveur.resume_guilde(mienne, donnees))
+	return out.slice(0, n)
+
+
+## Ta guilde ; ses membres simulés apportent leur Influence pour chaque jour passé depuis la dernière lecture.
+func ma_guilde() -> Dictionary:
+	var g: Dictionary = profile.serveur.get("guilde", {})
+	if g.is_empty():
+		return {}
+	var jour := Time.get_date_string_from_system()
+	var dernier := str(g.get("dernier_jour", jour))
+	var n_jours := Arene.jours(jour) - Arene.jours(dernier)
+	if n_jours > 0:
+		g = Guilde.gagner(g, Guilde.influence_simulee(g, jour, n_jours, donnees))
+	g["dernier_jour"] = jour
+	profile.serveur["guilde"] = g
+	profile.save()
+	return g.duplicate(true)
+
+
+func _garder_guilde(g: Dictionary) -> Dictionary:
+	if g.is_empty() or Guilde.membre(g, compte_id).is_empty():
+		profile.serveur.erase("guilde")
+	else:
+		g["dernier_jour"] = Time.get_date_string_from_system()
+		profile.serveur["guilde"] = g
+	profile.save()
+	return g.duplicate(true) if profile.serveur.has("guilde") else {}
+
+
+func creer_guilde(nom: String, banniere: Dictionary, fiche: Dictionary) -> Dictionary:
+	if not est_connecte() or profile.serveur.has("guilde") or not Guilde.nom_valide(nom, donnees) or not Guilde.banniere_valide(banniere, donnees):
+		erreur = "guilde refusée"
+		return {}
+	for g in _guildes_du_monde():
+		if str(g["nom"]).to_lower() == nom.strip_edges().to_lower():
+			erreur = "ce nom est déjà pris"
+			return {}
+	var jour := Time.get_date_string_from_system()
+	return _garder_guilde(Guilde.nouvelle("g-%s-%d" % [compte_id, Time.get_unix_time_from_system()], nom, banniere, fiche, jour, donnees))
+
+
+func rejoindre_guilde(id: String, fiche: Dictionary) -> Dictionary:
+	if not est_connecte() or profile.serveur.has("guilde"):
+		return {}
+	for g in _guildes_du_monde():
+		if str(g["id"]) == id:
+			var avec := Guilde.ajouter(g, fiche, Time.get_date_string_from_system(), donnees)
+			if avec.get("membres", []).size() == g["membres"].size():
+				erreur = "plus de place"
+				return {}
+			return _garder_guilde(avec)
+	return {}
+
+
+func quitter_guilde() -> bool:
+	var g: Dictionary = profile.serveur.get("guilde", {})
+	if g.is_empty():
+		return false
+	_garder_guilde(Guilde.retirer(g, compte_id))
+	return true
+
+
+func influence_guilde(gain: int) -> bool:
+	var g: Dictionary = profile.serveur.get("guilde", {})
+	if g.is_empty() or gain <= 0:
+		return false
+	_garder_guilde(Guilde.gagner(g, gain))
+	return true
+
+
+func acheter_effet(effet: String) -> Dictionary:
+	var g: Dictionary = profile.serveur.get("guilde", {})
+	var apres := Guilde.acheter(g, compte_id, effet, donnees)
+	return {} if g.is_empty() or apres == g else _garder_guilde(apres)
+
+
+func role_guilde(membre: String, role: String) -> Dictionary:
+	var g: Dictionary = profile.serveur.get("guilde", {})
+	var apres := Guilde.changer_role(g, compte_id, membre, role, donnees)
+	return {} if g.is_empty() or apres == g else _garder_guilde(apres)
+
+
+func exclure_guilde(membre: String) -> Dictionary:
+	var g: Dictionary = profile.serveur.get("guilde", {})
+	var apres := Guilde.exclure(g, compte_id, membre)
+	return {} if g.is_empty() or apres == g else _garder_guilde(apres)
+
+
 ## L'économie : tes mouvements dans le profil (les 400 derniers) ; le bilan d'une semaine, les tiens plus ceux du
 ## monde simulé (engine/economie.gd, monde_simule).
 func mouvement(m: Dictionary) -> bool:

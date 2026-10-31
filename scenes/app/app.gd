@@ -45,6 +45,7 @@ const SCREENS := {
 	"versus": preload("res://scenes/screens/versus_screen.gd"),
 	"combat": preload("res://scenes/combat/combat_screen.gd"),
 	"fin": preload("res://scenes/screens/fin_screen.gd"),
+	"guilde": preload("res://scenes/screens/guilde_screen.gd"),
 }
 
 var data: Donnees
@@ -52,6 +53,8 @@ var profile: PlayerProfile
 var sfx: Sfx
 ## Le lien au serveur (simulé ou Supabase) ; `publication` : ce qu'a donné la dernière publication (vide avant).
 var serveur: Serveur
+## Ta guilde, telle que lue au serveur la dernière fois (engine/guilde.gd) ; vide sans guilde.
+var guilde: Dictionary = {}
 var publication := ""
 var rng := RandomNumberGenerator.new()
 
@@ -308,6 +311,7 @@ func _publier_perso_async() -> void:
 		profile.serveur["compte_jour"] = Time.get_date_string_from_system()
 		profile.save()
 	publication = "publié" if await serveur.publier(fiche_publique()) else "non publié : " + serveur.erreur
+	await ma_guilde()
 
 
 ## Création du personnage : sa classe et sa graine, et deux Échos proposés par le jeu.
@@ -416,8 +420,9 @@ func allumer(cle: String) -> bool:
 
 
 ## De l'XP après un combat ; les Échos sont toujours au niveau du joueur. Renvoie {levels, level}.
+## Le Savoir de guilde ajoute sa part à toute XP gagnée.
 func gain_xp(amount: int) -> Dictionary:
-	var result := profile.gain_xp(amount, niveau_max())
+	var result := profile.gain_xp(Regles.plancher(float(amount) * (1.0 + Guilde.bonus(guilde, "xp", data))), niveau_max())
 	_regenerer()
 	profile.save()
 	if int(result["levels"]) > 0:
@@ -496,7 +501,7 @@ func reforger(ou: String, cle: Variant, ligne: int) -> bool:
 	var objet := objet_a(ou, cle)
 	if objet.is_empty() or ligne < 0 or ligne >= objet["lignes"].size():
 		return false
-	var cout := Equipement.cout_reforge(objet, data)
+	var cout := cout_reforge(objet)
 	if profile.eclats < cout:
 		return false
 	var neuf := Equipement.reforger(objet, ligne, _nouvelle_graine(), data)
@@ -533,6 +538,8 @@ func compter(compteur: String, n: int = 1) -> void:
 	_jour_objectifs()
 	profile.compteurs[compteur] = int(profile.compteurs.get(compteur, 0)) + n
 	profile.save()
+	if INFLUENCE_PAR_COMPTEUR.has(compteur):
+		influence(str(INFLUENCE_PAR_COMPTEUR[compteur]), n)
 
 
 ## Ce qu'un combat fini compte : les Clés jouées par le joueur (son tracé) et les Synergies de son camp.
@@ -995,7 +1002,7 @@ func etage_franchi(t: Tour) -> Dictionary:
 		profile.tower_records[lignee()] = t.atteint
 	if gardien and not faveur:
 		profile.tower_paliers[lignee()] = maxi(palier(), Tour.palier_apres(franchi, g))
-	var butin := t.butin(franchi, premier)
+	var butin := t.butin(franchi, premier, Guilde.bonus(guilde, "butin", data))
 	if not butin.is_empty():
 		profile.sac.append(butin)
 	var eclats := Equipement.eclats_etage(franchi, premier, data)
@@ -1053,6 +1060,92 @@ func fin_tour(t: Tour) -> Dictionary:
 	profile.tower_paliers[lignee()] = maxi(palier(), Tour.palier_apres(t.atteint - 1, int(data.tour["gardien_tous_les"])))
 	profile.save()
 	return {"xp": 40 * maxi(0, t.atteint - t.depart)}
+
+
+# ---------------------------------------------------------------------------
+# La guilde (engine/guilde.gd ; sur le serveur)
+# ---------------------------------------------------------------------------
+
+## Ce que l'activité comptée apporte en Influence à la guilde (compteur des objectifs -> activité de guilde).
+const INFLUENCE_PAR_COMPTEUR := {"duels": "duel", "duels_gagnes": "duel_gagne", "etages": "etage", "gardiens": "gardien"}
+
+
+## Ta fiche de membre : ce que la guilde garde de toi.
+func fiche_membre() -> Dictionary:
+	return {"id": serveur.compte_id, "pseudo": pseudo(), "classe": player_class, "niveau": profile.level}
+
+
+## Ta guilde, relue au serveur (vide sans guilde).
+func ma_guilde() -> Dictionary:
+	if not serveur.est_connecte():
+		return guilde
+	guilde = await serveur.ma_guilde()
+	return guilde
+
+
+func creer_guilde(nom: String, banniere: Dictionary) -> bool:
+	if not Guilde.nom_valide(nom, data) or not Guilde.banniere_valide(banniere, data) or not serveur.est_connecte():
+		return false
+	var g: Dictionary = await serveur.creer_guilde(nom, banniere, fiche_membre())
+	if g.is_empty():
+		return false
+	guilde = g
+	return true
+
+
+func rejoindre_guilde(id: String) -> bool:
+	if not serveur.est_connecte():
+		return false
+	var g: Dictionary = await serveur.rejoindre_guilde(id, fiche_membre())
+	if g.is_empty():
+		return false
+	guilde = g
+	return true
+
+
+func quitter_guilde() -> bool:
+	var ok: bool = await serveur.quitter_guilde()
+	if ok:
+		guilde = {}
+	return ok
+
+
+## De l'Influence pour ta guilde, d'après une activité (sans attendre le serveur).
+func influence(activite: String, n: int = 1) -> void:
+	var gain := Guilde.influence_de(activite, n, data)
+	if guilde.is_empty() or gain <= 0:
+		return
+	guilde = Guilde.gagner(guilde, gain)
+	serveur.influence_guilde(gain)
+
+
+func acheter_effet_guilde(effet: String) -> bool:
+	var g: Dictionary = await serveur.acheter_effet(effet)
+	if g.is_empty():
+		return false
+	guilde = g
+	return true
+
+
+func role_guilde(membre: String, role: String) -> bool:
+	var g: Dictionary = await serveur.role_guilde(membre, role)
+	if g.is_empty():
+		return false
+	guilde = g
+	return true
+
+
+func exclure_guilde(membre: String) -> bool:
+	var g: Dictionary = await serveur.exclure_guilde(membre)
+	if g.is_empty():
+		return false
+	guilde = g
+	return true
+
+
+## Le coût d'une reforge pour toi : celui de l'objet, moins la Forge de guilde.
+func cout_reforge(objet: Dictionary) -> int:
+	return maxi(1, Regles.plancher(float(Equipement.cout_reforge(objet, data)) * (1.0 - Guilde.bonus(guilde, "reforge", data))))
 
 
 func class_label(class_id: String) -> String:

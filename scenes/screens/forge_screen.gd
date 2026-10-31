@@ -100,7 +100,7 @@ func _fiche(ou: String, cle: Variant) -> void:
 	var lignes := UiKit.card(column, 6)
 	lignes.add_child(UiKit.label("Ses lignes", 20, UiKit.GOLD, false))
 	lignes.add_child(UiKit.label("Entre crochets : ce que cette ligne peut valoir sur un objet de ce niveau et de cette rareté.", 14, ATTENUE, false))
-	var cout := int(f["reforge"])
+	var cout := app.cout_reforge(objet)
 	for i in range(f["lignes"].size()):
 		var l: Dictionary = f["lignes"][i]
 		lignes.add_child(UiKit.label("%s  %s" % [l["texte"], l["fourchette"]], 17, Color.WHITE, false))

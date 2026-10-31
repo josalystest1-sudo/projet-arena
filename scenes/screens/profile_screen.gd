@@ -52,7 +52,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	for dj in app.data.donjons["donjons"]:
 		var carte := app.carte_donjon(str(dj["id"]))
 		donjons.add_child(UiKit.label("%s : boss vaincu %d fois · %d chemin%s explor%s · %d secret%s" % [dj["nom"], int(carte.get("boss", 0)), carte.get("explorees", []).size(), "s" if carte.get("explorees", []).size() > 1 else "", "és" if carte.get("explorees", []).size() > 1 else "é", carte.get("secrets", []).size(), "s" if carte.get("secrets", []).size() > 1 else ""], 15, Color.WHITE, false))
-	column.add_child(UiKit.label("Classements, saisons, amis et guilde arriveront avec la suite du serveur.", 14, Color(0.6, 0.62, 0.7)))
+	column.add_child(UiKit.label("Amis et chat arriveront avec la suite du serveur.", 14, Color(0.6, 0.62, 0.7)))
 
 
 ## Ton compte (phase 5, PR 5.1) : ton pseudo (modifiable), le serveur (simulé ou en ligne), ta fiche publiée, et les
