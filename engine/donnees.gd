@@ -156,6 +156,8 @@ var objectifs: Dictionary = {}
 var objets_arene: Dictionary = {}
 ## Les donjons (data/donjons.json, GDD V2 § 8).
 var donjons: Dictionary = {}
+## La carte du monde (data/carte.json, engine/carte.gd).
+var carte: Dictionary = {}
 ## Le Comptoir (data/comptoir.json, GDD V2 § 10.2).
 var comptoir: Dictionary = {}
 ## Les guildes (data/guildes.json).
@@ -201,6 +203,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.objectifs = _lire(dossier + "objectifs.json", donnees.erreurs)
 	donnees.objets_arene = _lire(dossier + "arene.json", donnees.erreurs)
 	donnees.donjons = _lire(dossier + "donjons.json", donnees.erreurs)
+	donnees.carte = _lire(dossier + "carte.json", donnees.erreurs)
 	donnees.comptoir = _lire(dossier + "comptoir.json", donnees.erreurs)
 	donnees.guildes = _lire(dossier + "guildes.json", donnees.erreurs)
 	donnees.boss = _lire(dossier + "boss.json", donnees.erreurs)
@@ -316,6 +319,7 @@ func valider() -> void:
 		if float(m.get("pv_mult", 0.0)) < 0.5 or float(m.get("pv_mult", 0.0)) > 1.5:
 			erreurs.append(ou + " : pv_mult hors de 0,5 à 1,5")
 	_valider_donjons()
+	_valider_carte()
 	_valider_comptoir()
 	_valider_guildes()
 	_valider_boss()
@@ -598,6 +602,48 @@ func _valider_arene() -> void:
 ## Les donjons (data/donjons.json) : clés connues, chiffres cohérents, chaque donjon sur une famille du bestiaire avec un
 ## Gardien du bestiaire pour boss et une tranche de niveau ; les récompenses sur des raretés connues. (Appelée après le
 ## bestiaire et l'équipement.)
+## La carte du monde (data/carte.json) : des types connus, des régions avec un donjon du jeu, des territoires aux
+## identifiants uniques et au type connu, des liens entre territoires existants.
+const CLES_CARTE := ["types", "donjon", "neutre_apres_jours", "regions", "simule"]
+const CLES_CARTE_TYPE := ["nom", "texte", "valeur"]
+const CLES_CARTE_REGION := ["id", "nom", "niveau_min", "niveau_max", "donjon", "territoires", "liens"]
+const CLES_CARTE_TERRITOIRE := ["id", "nom", "type", "x", "y", "des"]
+
+
+func _valider_carte() -> void:
+	_cles(carte, CLES_CARTE, CLES_CARTE, "carte.json")
+	if not carte is Dictionary or not carte.get("regions", []) is Array:
+		return
+	for t in carte.get("types", {}):
+		_cles(carte["types"][t], CLES_CARTE_TYPE, CLES_CARTE_TYPE, "carte.json type " + str(t))
+	var ids: Array = []
+	var donjons_connus: Array = []
+	for dj in donjons.get("donjons", []):
+		donjons_connus.append(str(dj.get("id", "")))
+	for r in carte["regions"]:
+		var ou := "carte.json région " + str(r.get("id", "?"))
+		_cles(r, CLES_CARTE_REGION, CLES_CARTE_REGION, ou)
+		if not r is Dictionary:
+			continue
+		if not str(r.get("donjon", "")) in donjons_connus:
+			erreurs.append(ou + " : donjon inconnu")
+		for t in r.get("territoires", []):
+			_cles(t, CLES_CARTE_TERRITOIRE, CLES_CARTE_TERRITOIRE, ou + " territoire " + str(t.get("id", "?")))
+			if not t is Dictionary:
+				continue
+			if ids.has(str(t["id"])):
+				erreurs.append(ou + " : territoire en double « %s »" % t["id"])
+			ids.append(str(t["id"]))
+			if not carte["types"].has(str(t.get("type", ""))):
+				erreurs.append(ou + " : type inconnu « %s »" % t.get("type", ""))
+	for r in carte["regions"]:
+		if not r is Dictionary:
+			continue
+		for lien in r.get("liens", []):
+			if not lien is Array or lien.size() != 2 or not ids.has(str(lien[0])) or not ids.has(str(lien[1])):
+				erreurs.append("carte.json région %s : lien vers un territoire inconnu (%s)" % [r.get("id", "?"), str(lien)])
+
+
 func _valider_donjons() -> void:
 	_cles(donjons, CLES_DONJONS, CLES_DONJONS, "donjons.json")
 	if not donjons is Dictionary or not donjons.get("donjons") is Array:

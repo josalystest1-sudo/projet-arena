@@ -1,0 +1,59 @@
+{
+  "types": {
+    "mine": {"nom": "Mine", "texte": "{v} Influence par jour pour la guilde qui la tient", "valeur": 20},
+    "sanctuaire": {"nom": "Sanctuaire", "texte": "{v} XP par jour à chaque membre de la guilde qui le tient", "valeur": 15},
+    "marche": {"nom": "Marché", "texte": "la reforge coûte {v} % de moins aux membres de la guilde qui le tient", "valeur": 10},
+    "relais": {"nom": "Relais", "texte": "{v} aide d'Écho de plus par jour (avec le chat)", "valeur": 1},
+    "bastion": {"nom": "Bastion", "texte": "les territoires voisins de la guilde qui le tient se défendent {v} % mieux", "valeur": 25}
+  },
+  "donjon": {"part_entree": 0.1, "route_par_jour": 1},
+  "neutre_apres_jours": 7,
+  "regions": [
+    {
+      "id": "basses_terres", "nom": "Les Basses Terres", "niveau_min": 1, "niveau_max": 10, "donjon": "terrier",
+      "territoires": [
+        {"id": "clairiere", "nom": "La Clairière", "type": "sanctuaire", "x": 0.18, "y": 0.1, "des": 0},
+        {"id": "gue", "nom": "Le Gué", "type": "relais", "x": 0.5, "y": 0.07, "des": 0},
+        {"id": "carriere", "nom": "La Carrière", "type": "mine", "x": 0.82, "y": 0.1, "des": 0},
+        {"id": "hameau", "nom": "Le Hameau", "type": "marche", "x": 0.34, "y": 0.2, "des": 0},
+        {"id": "tour_de_guet", "nom": "La Tour de guet", "type": "bastion", "x": 0.66, "y": 0.2, "des": 0},
+        {"id": "marais", "nom": "Le Marais", "type": "mine", "x": 0.12, "y": 0.28, "des": 3},
+        {"id": "verger", "nom": "Le Verger", "type": "sanctuaire", "x": 0.5, "y": 0.3, "des": 5},
+        {"id": "dunes", "nom": "Les Dunes", "type": "relais", "x": 0.88, "y": 0.28, "des": 8}
+      ],
+      "liens": [["clairiere", "gue"], ["gue", "carriere"], ["clairiere", "hameau"], ["gue", "hameau"], ["gue", "tour_de_guet"], ["carriere", "tour_de_guet"],
+        ["hameau", "tour_de_guet"], ["hameau", "marais"], ["hameau", "verger"], ["tour_de_guet", "verger"], ["tour_de_guet", "dunes"]]
+    },
+    {
+      "id": "marches", "nom": "Les Marches", "niveau_min": 11, "niveau_max": 20, "donjon": "crypte",
+      "territoires": [
+        {"id": "col", "nom": "Le Col", "type": "bastion", "x": 0.2, "y": 0.42, "des": 0},
+        {"id": "necropole", "nom": "La Nécropole", "type": "mine", "x": 0.5, "y": 0.4, "des": 0},
+        {"id": "ermitage", "nom": "L'Ermitage", "type": "sanctuaire", "x": 0.8, "y": 0.42, "des": 0},
+        {"id": "foire", "nom": "La Foire", "type": "marche", "x": 0.35, "y": 0.53, "des": 0},
+        {"id": "pont", "nom": "Le Pont", "type": "relais", "x": 0.65, "y": 0.53, "des": 0},
+        {"id": "mine_grise", "nom": "La Mine grise", "type": "mine", "x": 0.12, "y": 0.6, "des": 3},
+        {"id": "chapelle", "nom": "La Chapelle", "type": "sanctuaire", "x": 0.5, "y": 0.63, "des": 5},
+        {"id": "falaise", "nom": "La Falaise", "type": "bastion", "x": 0.88, "y": 0.6, "des": 8}
+      ],
+      "liens": [["col", "necropole"], ["necropole", "ermitage"], ["col", "foire"], ["necropole", "foire"], ["necropole", "pont"], ["ermitage", "pont"],
+        ["foire", "pont"], ["foire", "mine_grise"], ["foire", "chapelle"], ["pont", "chapelle"], ["pont", "falaise"], ["verger", "necropole"]]
+    },
+    {
+      "id": "hauts_plateaux", "nom": "Les Hauts Plateaux", "niveau_min": 21, "niveau_max": 90, "donjon": "fournaise",
+      "territoires": [
+        {"id": "cratere", "nom": "Le Cratère", "type": "mine", "x": 0.2, "y": 0.74, "des": 0},
+        {"id": "citadelle", "nom": "La Citadelle", "type": "bastion", "x": 0.5, "y": 0.72, "des": 0},
+        {"id": "observatoire", "nom": "L'Observatoire", "type": "sanctuaire", "x": 0.8, "y": 0.74, "des": 0},
+        {"id": "comptoir_haut", "nom": "Le Haut Comptoir", "type": "marche", "x": 0.35, "y": 0.85, "des": 0},
+        {"id": "aire", "nom": "L'Aire", "type": "relais", "x": 0.65, "y": 0.85, "des": 0},
+        {"id": "glacier", "nom": "Le Glacier", "type": "mine", "x": 0.12, "y": 0.93, "des": 3},
+        {"id": "temple", "nom": "Le Temple", "type": "sanctuaire", "x": 0.5, "y": 0.95, "des": 5},
+        {"id": "pic", "nom": "Le Pic", "type": "bastion", "x": 0.88, "y": 0.93, "des": 8}
+      ],
+      "liens": [["cratere", "citadelle"], ["citadelle", "observatoire"], ["cratere", "comptoir_haut"], ["citadelle", "comptoir_haut"], ["citadelle", "aire"],
+        ["observatoire", "aire"], ["comptoir_haut", "aire"], ["comptoir_haut", "glacier"], ["comptoir_haut", "temple"], ["aire", "temple"], ["aire", "pic"], ["chapelle", "citadelle"]]
+    }
+  ],
+  "simule": {"graine": 777, "territoires_par_guilde": [1, 3]}
+}

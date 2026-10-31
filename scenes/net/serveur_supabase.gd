@@ -211,6 +211,24 @@ func nombre_personnages() -> int:
 # jamais essayé contre un vrai projet. Chaque changement relit la ligne, applique la règle (engine/guilde.gd) et la
 # réécrit : deux membres qui agissent en même temps peuvent s'écraser (prototype). ------------------------------------
 
+## La carte : la table « territoires » (docs/serveur/supabase.sql), une ligne par territoire tenu et par saison ; jamais
+## essayé contre un vrai projet.
+func territoires(saison: int) -> Dictionary:
+	var out := {}
+	if not est_connecte() and not await connecter():
+		return out
+	var r := await _requete_connectee(HTTPClient.METHOD_GET, "/rest/v1/territoires?select=*&saison=eq.%d" % saison)
+	if int(r["code"]) == 200 and r["corps"] is Array:
+		for ligne in r["corps"]:
+			if ligne is Dictionary and ligne.has("territoire"):
+				out[str(ligne["territoire"])] = {"guilde": str(ligne.get("guilde", "")), "nom": str(ligne.get("nom", "")), "banniere": ligne.get("banniere", {}), "depuis": str(ligne.get("depuis", ""))}
+	return out
+
+
+func nombre_guildes() -> int:
+	return (await _lire_guildes("/rest/v1/guildes?select=*&limit=1000")).size()
+
+
 func _lire_guildes(chemin: String) -> Array:
 	if not est_connecte() and not await connecter():
 		return []

@@ -46,6 +46,7 @@ const SCREENS := {
 	"combat": preload("res://scenes/combat/combat_screen.gd"),
 	"fin": preload("res://scenes/screens/fin_screen.gd"),
 	"guilde": preload("res://scenes/screens/guilde_screen.gd"),
+	"carte": preload("res://scenes/screens/carte_screen.gd"),
 }
 
 var data: Donnees
@@ -55,6 +56,9 @@ var sfx: Sfx
 var serveur: Serveur
 ## Ta guilde, telle que lue au serveur la dernière fois (engine/guilde.gd) ; vide sans guilde.
 var guilde: Dictionary = {}
+## La carte du monde (engine/carte.gd) : qui tient quoi, telle que lue la dernière fois, et le nombre de guildes.
+var carte_etat: Dictionary = {}
+var nb_guildes: int = 0
 var publication := ""
 var rng := RandomNumberGenerator.new()
 
@@ -594,6 +598,12 @@ func commencer_donjon(id: String) -> bool:
 	if def.is_empty() or profile.eclats < int(def["entree"]):
 		return false
 	profile.eclats -= int(def["entree"])
+	# Une part de l'entrée va à la guilde qui tient le territoire du donjon cette semaine (la tienne : en Influence).
+	var ou := Carte.territoire_du_donjon(id, Arene.semaine(jour()), nb_guildes, data)
+	if ou != "" and not guilde.is_empty() and str(carte_etat.get(ou, {}).get("guilde", "")) == str(guilde["id"]):
+		var part := Carte.part_entree(int(def["entree"]), data)
+		guilde = Guilde.gagner(guilde, part)
+		serveur.influence_guilde(part)
 	var carte := carte_donjon(id)
 	donjon_en_cours = Donjon.commencer(id, trio(), profile.level, graine, int(carte["chasse"]), data)
 	profile.save()
@@ -1174,6 +1184,31 @@ func banniere_guilde(b: Dictionary) -> bool:
 
 func inviter_guilde(fiche: Dictionary) -> bool:
 	return _garder(await serveur.inviter_guilde({"id": str(fiche["id"]), "pseudo": str(fiche.get("pseudo", "")), "classe": str(fiche.get("classe", "")), "niveau": int(fiche.get("niveau", 1))}))
+
+
+# ---------------------------------------------------------------------------
+# La carte du monde (engine/carte.gd ; qui tient quoi sur le serveur)
+# ---------------------------------------------------------------------------
+
+## Qui tient quoi cette saison, relu au serveur (et gardé), avec le nombre de guildes.
+func carte_territoires() -> Dictionary:
+	if not serveur.est_connecte():
+		return carte_etat
+	nb_guildes = await serveur.nombre_guildes()
+	carte_etat = await serveur.territoires(Arene.saison(jour(), data))
+	return carte_etat
+
+
+## Où les donjons apparaissent cette semaine ({territoire -> donjon}).
+func donjons_de_la_semaine() -> Dictionary:
+	return Carte.donjons_de_la_semaine(Arene.semaine(jour()), nb_guildes, data)
+
+
+## Les territoires que tient ta guilde (vide sans guilde).
+func territoires_de_ma_guilde() -> Array[String]:
+	if guilde.is_empty():
+		return [] as Array[String]
+	return Carte.tenus_par(carte_etat, str(guilde["id"]))
 
 
 ## Ai-je ce pouvoir dans ma guilde ?

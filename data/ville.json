@@ -2,7 +2,7 @@
   "batiments": [
     {"id": "tour", "nom": "La Tour", "texte": "Grimpe, bats ton record", "ecran": "tower", "x": 0.5, "y": 0.1, "dispo": true, "forme": "tour"},
     {"id": "arene", "nom": "L'Arène", "texte": "Classé et amical", "ecran": "arene", "x": 0.2, "y": 0.32, "dispo": true, "forme": "arene"},
-    {"id": "donjon", "nom": "Le Donjon", "texte": "Des routes, un boss", "ecran": "donjon", "x": 0.8, "y": 0.32, "dispo": true, "forme": "donjon"},
+    {"id": "donjon", "nom": "La Carte", "texte": "Donjons et territoires", "ecran": "carte", "x": 0.8, "y": 0.32, "dispo": true, "forme": "donjon"},
     {"id": "maison", "nom": "La Maison", "texte": "Ton Destin", "ecran": "destin", "x": 0.5, "y": 0.5, "dispo": true, "forme": "maison"},
     {"id": "forge", "nom": "La Forge", "texte": "Ton équipement", "ecran": "forge", "x": 0.2, "y": 0.62, "dispo": true, "forme": "forge"},
     {"id": "guilde", "nom": "La Guilde", "texte": "Ensemble", "ecran": "guilde", "x": 0.8, "y": 0.62, "dispo": true, "forme": "guilde"},

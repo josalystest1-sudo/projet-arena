@@ -123,6 +123,21 @@ create policy "les membres modifient leur guilde" on public.guildes for update t
 drop policy if exists "le chef dissout sa guilde" on public.guildes;
 create policy "le chef dissout sa guilde" on public.guildes for delete to authenticated using (chef = auth.uid());
 
+-- La carte du monde (engine/carte.gd) : qui tient quel territoire, par saison. Tout connecté lit ; les guerres (à venir)
+-- écriront ici.
+create table if not exists public.territoires (
+  saison integer not null,
+  territoire text not null,
+  guilde text not null references public.guildes (id) on delete cascade,
+  nom text not null default '',
+  banniere jsonb not null default '{}'::jsonb,
+  depuis text not null default '',
+  primary key (saison, territoire)
+);
+alter table public.territoires enable row level security;
+drop policy if exists "territoires lus par les connectes" on public.territoires;
+create policy "territoires lus par les connectes" on public.territoires for select to authenticated using (true);
+
 drop trigger if exists personnages_mis_a_jour on public.personnages;
 create trigger personnages_mis_a_jour
   before update on public.personnages
