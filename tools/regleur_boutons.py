@@ -4,9 +4,9 @@ l'ordre, avec les décisions de Gautier du 28 octobre (docs/JOURNAL-COMBAT-V2.md
     toutes les classes montent ou baissent ensemble, la mort subite reste au tour fixé dans data/rules.json ; chaque
     classe garde ensuite son propre bouton de PV à ±10 % ;
   - la route Éventail doit seulement ne pas dépasser 55 % ;
-  - la Tour a sa propre difficulté : la force totale des monstres monte avec les étages (data/tour.json : départ,
-    pente, et un facteur par classe), réglée pour que chaque classe atteigne l'étage 10 une fois sur deux et
-    l'étage 20 dans 5 à 10 % des montées.
+  - la Tour n'est plus réglée ici (phase 9 : elle est absolue, sa courbe se règle avec tools/regleur_tour.py).
+Depuis la phase 9, les passes se font en trio (tools/regleur.py --format) : le k d'une classe change le trio qu'elle
+mène et ceux où elle est l'Écho d'une autre, comme l'acolyte du duo ; le Jacobien s'en charge.
 Chaque passe ajoute son rapport à docs/EQUILIBRAGE-V2.md. Lancé par tools/regleur.py passes <nombre>.
 """
 import json
@@ -347,7 +347,6 @@ def appliquer(resume, etat):
     """Les boutons, dans l'ordre ; rend la liste des changements, en clair."""
     boutons = []
     regles = regleur.lire(os.path.join(DATA, "rules.json"))
-    tour = regleur.lire(os.path.join(DATA, "tour.json"))
     ordre = regleur.lire(os.path.join(DATA, "classes.json"))
     stats = resume["classes"]
     classes = {c: lire_classe(c) for c in ordre}
@@ -423,43 +422,6 @@ def appliquer(resume, etat):
         propre = etat["pv_classe"].get(c, 1.0)
         classes[c]["pv"] = int(round(PV_SPEC[c] * etat["pv_global"] * propre))
         ecrire_classe(c, classes[c])
-
-    # La Tour (décision de Gautier : une difficulté propre) : départ et pente pour toutes les classes, puis un
-    # facteur par classe.
-    e10 = [stats[c]["etage10"] for c in ordre if stats[c]["montees"] > 0]
-    e20 = [stats[c]["etage20"] for c in ordre if stats[c]["montees"] > 0]
-    if e10:
-        m10 = sum(e10) / len(e10)
-        m20 = sum(e20) / len(e20)
-        ancien = (tour["somme_depart"], tour["somme_pente"])
-        if abs(m10 - 0.5) > 0.03:
-            pas = max(-0.25, min(0.25, amorti(etat, "tour:depart", m10 - 0.5, 1.2)))
-            tour["somme_depart"] = round(max(0.05, tour["somme_depart"] * (1 + pas)), 4)
-        if abs(m20 - 0.075) > 0.015:
-            pas = max(-0.25, min(0.25, amorti(etat, "tour:pente", m20 - 0.075, 3.0)))
-            tour["somme_pente"] = round(max(0.01, tour["somme_pente"] * (1 + pas)), 4)
-        if (tour["somme_depart"], tour["somme_pente"]) != ancien:
-            boutons.append("Tour : force des monstres au départ %s → %s, en plus par étage %s → %s (étage 10 atteint dans %s des montées, étage 20 dans %s)"
-                           % (("%.3f" % ancien[0]).replace(".", ","), ("%.3f" % tour["somme_depart"]).replace(".", ","), ("%.3f" % ancien[1]).replace(".", ","),
-                              ("%.3f" % tour["somme_pente"]).replace(".", ","), pc(m10), pc(m20)))
-        tour.setdefault("classes_pente", {})
-        for c in ordre:
-            if stats[c]["montees"] == 0:
-                continue
-            ecart20 = stats[c]["etage20"] - 0.075
-            if abs(ecart20) > 0.02:
-                pas = max(-0.15, min(0.15, amorti(etat, "tourpente:" + c, ecart20, 2.0)))
-                ancien_p = tour["classes_pente"].get(c, 1.0)
-                tour["classes_pente"][c] = round(min(3.0, max(0.3, ancien_p * (1 + pas))), 4)
-                boutons.append("Tour, %s : pente des monstres %s → %s (étage 20 dans %s des montées)" % (classes[c]["nom"], ("%.3f" % ancien_p).replace(".", ","), ("%.3f" % tour["classes_pente"][c]).replace(".", ","), pc(stats[c]["etage20"])))
-            ecart = stats[c]["etage10"] - m10
-            if abs(ecart) < 0.02:
-                continue
-            pas = max(-0.15, min(0.15, amorti(etat, "tour:" + c, ecart, 0.8)))
-            ancien_f = tour["classes"].get(c, 1.0)
-            tour["classes"][c] = round(min(2.0, max(0.5, ancien_f * (1 + pas))), 4)
-            boutons.append("Tour, %s : facteur des monstres %s → %s (étage 10 dans %s des montées)" % (classes[c]["nom"], ("%.3f" % ancien_f).replace(".", ","), ("%.3f" % tour["classes"][c]).replace(".", ","), pc(stats[c]["etage10"])))
-        ecrire_json("tour.json", tour)
     return boutons
 
 
@@ -468,11 +430,11 @@ def score(resume):
     ecart = 0.0
     for c in resume["classes"].values():
         ecart += max(0.0, abs(c["taux"] - 0.5) - 0.03) * 4
-        ecart += max(0.0, c["etage10"] - 0.6) + max(0.0, 0.4 - c["etage10"]) + max(0.0, c["etage20"] - 0.1) + max(0.0, 0.05 - c["etage20"])
     for x in resume["cases"]:
         ecart += max(0.0, abs(x["taux"] - 0.5) - 0.10)
     ecart += max(0, abs(resume["mediane"] - MEDIANE_CIBLE) - 2) * 0.5
-    return sum(1 for c in resume["criteres"] if not c["ok"]) + ecart
+    # Le critère 6 (la Tour) ne compte pas : la Tour est absolue et se règle à part (tools/regleur_tour.py).
+    return sum(1 for c in resume["criteres"] if not c["ok"] and not c["titre"].startswith("6.")) + ecart
 
 
 def sauver_donnees(dossier):
@@ -492,7 +454,8 @@ def passes(nombre, args):
             ecrire_etat(etat)
         titre = "Passe %d (graines à partir de %d)" % (etat.get("passes", 0) + 1, graine)
         resume, texte = regleur.mesurer(args.matrice, args.routes, args.tour, graine, titre)
-        tenus = sum(1 for c in resume["criteres"] if c["ok"])
+        # Le critère 6 (la Tour) ne compte pas dans les passes des classes (voir score).
+        tenus = sum(1 for c in resume["criteres"] if c["ok"] or c["titre"].startswith("6."))
         # Une copie des données mesurées à chaque passe, et de la meilleure, pour pouvoir y revenir.
         sauver_donnees(os.path.join(copies, "passe-%d" % (etat.get("passes", 0) + 1)))
         s = score(resume)

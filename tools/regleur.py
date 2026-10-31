@@ -13,9 +13,13 @@ Une passe : une mesure, puis les boutons de la section 11.3, dans cet ordre et s
   5. les règles globales (mort subite, extinction, refroidissement), seulement si les quatre premiers ne suffisent pas.
 Chaque passe ajoute son rapport en français à docs/EQUILIBRAGE-V2.md.
 
+Depuis la phase 9 (docs/PLAN.md), le format est le trio (le joueur et ses deux Échos générés, le jeu publié) ; « --format duo »
+garde l'ancien format. La Tour n'est plus réglée ici (elle est absolue depuis la PR #57 : sa courbe « niveau → étage » se règle
+avec tools/regleur_tour.py) ; « --tour n » mesure seulement les montées (étage atteint, jusqu'à --etage-max).
+
 Usage :
-  python tools/regleur.py mesure [--matrice 1000] [--routes 1000] [--tour 1000] [--graine 1] [--titre "…"]
-  python tools/regleur.py passes <nombre> [--matrice 300] [--routes 200] [--tour 200]
+  python tools/regleur.py mesure [--matrice 1000] [--routes 1000] [--tour 1000] [--graine 1] [--titre "…"] [--format trio] [--niveau 30] [--etage-max 21]
+  python tools/regleur.py passes <nombre> [--matrice 300] [--routes 200] [--tour 0]
 Variables : GODOT (le programme Godot), PROCESSUS (24 par défaut).
 """
 import argparse
@@ -30,7 +34,11 @@ from concurrent.futures import ThreadPoolExecutor
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "data")
-GODOT = os.environ.get("GODOT", os.path.expanduser("~/godot/godot"))
+GODOT = os.environ.get("GODOT", next((p for p in [os.path.expanduser("~/godot/godot_console.exe"), os.path.expanduser("~/godot/godot")] if os.path.exists(p)),
+                                     os.path.expanduser("~/godot/godot")))
+## Le format et les réglages des travailleurs (tools/equilibrage.gd) : posés par main() depuis la ligne de commande.
+FORMAT = "trio"
+REGLAGES = []
 PROCESSUS = int(os.environ.get("PROCESSUS", "24"))
 RAPPORT = os.path.join(ROOT, "docs", "EQUILIBRAGE-V2.md")
 
@@ -62,7 +70,7 @@ def mesurer(n_matrice, n_routes, n_tour, graine0, titre, boutons=None, dossier=N
     def lancer(travail):
         mesure, p, n = travail
         sortie = os.path.join(parts, "%s-%02d.json" % (mesure, p))
-        r = godot("simuler", mesure, str(p), str(PROCESSUS), str(n), str(graine0), sortie)
+        r = godot("simuler", mesure, str(p), str(PROCESSUS), str(n), str(graine0), sortie, FORMAT, "bon_sens", *REGLAGES)
         if r.returncode != 0 or not os.path.exists(sortie):
             raise RuntimeError("travailleur %s %d : %s" % (mesure, p, r.stdout + r.stderr))
         return sortie
@@ -100,7 +108,13 @@ def main():
     parser.add_argument("--graine", type=int, default=1)
     parser.add_argument("--titre", default="Mesure")
     parser.add_argument("--rapport", action="store_true", help="ajouter le rapport à docs/EQUILIBRAGE-V2.md")
+    parser.add_argument("--format", choices=["duo", "trio"], default="trio")
+    parser.add_argument("--niveau", type=int, default=30, help="le niveau des Destins simulés")
+    parser.add_argument("--etage-max", type=int, default=21, help="l'étage où les montées s'arrêtent")
     args = parser.parse_args()
+    global FORMAT, REGLAGES
+    FORMAT = args.format
+    REGLAGES = ["niveau=%d" % args.niveau, "etage_max=%d" % args.etage_max]
     if args.action == "mesure":
         resume, texte = mesurer(args.matrice, args.routes, args.tour, args.graine, args.titre)
         print(texte)

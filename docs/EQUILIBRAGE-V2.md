@@ -6899,3 +6899,60 @@ Le simulateur sait maintenant monter la Tour à tout niveau (`niveau=`), équip�
 | Niveau 30, jeu épique | 27 | 27 / 27 / 26 / 27 / 27 / 27 / 28 / 26 / 28 / 28 |
 
 Lecture : la Tour suit le niveau presque un pour un (niveau 10 → étage 11, niveau 20 → étage 18, niveau 30 → étage 23), et un jeu épique vaut de 1 à 4 étages de plus. La cible du plan (étage 3 au niveau 1, le Gardien 5 vers les niveaux 8 à 10, l'étage 10 vers 25 à 30) est loin : la Tour est bien plus facile que prévu. À régler à la phase 9 (`data/tour.json` : `niveau_par_etage`, `somme_*`), avec les Faveurs et l'équipement dans la balance.
+
+## Phase 9, mesure de départ en trio (niveau 30, nu, 31 octobre)
+
+Le début de la phase 9 (docs/PLAN.md) : l'état du jeu publié, tel quel, avant tout réglage. Le trio (le joueur et ses deux Échos générés) au niveau 30, sans équipement, IA de bon sens : 100 duels par case (10 000), les routes sur 50 graines, 24 montées par classe arrêtées à l'étage 41, graines à partir de 20 000. Cinq classes sont loin de 50 % (le Voleur à 39,7 %, le Barde à 42,5 %, l'Alchimiste à 43,1 %, le Diplomate à 55,7 %, le Pugiliste à 57,9 %), la médiane est de 16 tours (la cible est 20), la voie 4 du Voleur n'est presque pas jouée, et le critère 6 (la Tour relative) est caduc : la Tour absolue aura sa propre cible (PR 9.3, les murs). Ce rapport est le point de comparaison des passes à venir.
+
+**0 critères tenus sur 6.** 10000 combats de duel (médiane 16 tours), 0 combats non finis.
+
+### Les six critères (section 11.2)
+
+- ❌ **1. Chaque classe entre 47 % et 53 % de victoires** : guerrier 47,0 %, voleur 39,7 %, alchimiste 43,1 %, invocateur 44,7 %, barde 42,5 %, diplomate 55,7 %, pugiliste 57,9 %
+- ❌ **2. Aucune case de la matrice hors de 40 % – 60 %** : guerrier contre diplomate 35,0 %, voleur contre mage 32,0 %, voleur contre archer 29,0 %, voleur contre pretre 39,0 %, voleur contre diplomate 33,0 %, pretre contre voleur 61,0 %, pretre contre diplomate 33,0 %, alchimiste contre pretre 35,0 %, alchimiste contre diplomate 32,0 %, invocateur contre pugiliste 39,0 %, barde contre alchimiste 38,0 %, barde contre barde 34,0 %, barde contre diplomate 30,0 %, diplomate contre pretre 61,0 %, pugiliste contre guerrier 70,0 %, pugiliste contre voleur 63,0 %, pugiliste contre alchimiste 62,0 %, pugiliste contre invocateur 61,0 %
+- ❌ **3. La route Réactive entre 40 % et 55 % (Ruée et Éventail : des repères, sans seuil)** : voleur Réactive 39,7 %, diplomate Réactive 55,7 %, pugiliste Réactive 57,9 %
+- ❌ **4. Chaque voie jouée dans 15 % des combats au moins, une Clé dans 60 %** : voleur voie 4 14,9 %
+- ❌ **5. Longueur : médiane de 18 à 22 tours, 95 % finis avant le tour 30** : médiane 16 tours
+- ❌ **6. Tour : étage 10 dans 40 à 60 % des montées, étage 20 dans 5 à 10 %, à 5 points près entre classes** : guerrier étage 10 100,0 %, guerrier étage 20 75,0 %, mage étage 10 100,0 %, mage étage 20 58,3 %, voleur étage 10 100,0 %, voleur étage 20 58,3 %, archer étage 10 100,0 %, archer étage 20 54,2 %, pretre étage 10 100,0 %, pretre étage 20 83,3 %, alchimiste étage 10 100,0 %, alchimiste étage 20 66,7 %, invocateur étage 10 100,0 %, invocateur étage 20 62,5 %, barde étage 10 100,0 %, barde étage 20 70,8 %, diplomate étage 10 100,0 %, diplomate étage 20 75,0 %, pugiliste étage 10 100,0 %, pugiliste étage 20 83,3 %, écart entre classes : étage 10 de 100,0 % à 100,0 %, étage 20 de 54,2 % à 83,3 %
+
+### La matrice des classes (taux de victoire de la ligne contre la colonne)
+
+| | Guer | Mage | Vole | Arch | Prêt | Alch | Invo | Bard | Dipl | Pugi | **Moyenne** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 49 | 43 | 59 | 41 | 48 | 46 | 53 | 46 | 35 | 50 | **47,0 %** |
+| Mage | 53 | 45 | 55 | 41 | 41 | 53 | 55 | 49 | 43 | 46 | **48,1 %** |
+| Voleur | 46 | 32 | 47 | 29 | 39 | 43 | 45 | 41 | 33 | 42 | **39,7 %** |
+| Archer | 58 | 49 | 54 | 50 | 44 | 50 | 60 | 50 | 42 | 51 | **50,8 %** |
+| Prêtre | 52 | 51 | 61 | 43 | 47 | 53 | 54 | 51 | 33 | 51 | **49,6 %** |
+| Alchimiste | 46 | 42 | 48 | 41 | 35 | 46 | 54 | 41 | 32 | 46 | **43,1 %** |
+| Invocateur | 45 | 42 | 49 | 44 | 42 | 47 | 53 | 45 | 41 | 39 | **44,7 %** |
+| Barde | 51 | 41 | 50 | 41 | 40 | 38 | 53 | 34 | 30 | 47 | **42,5 %** |
+| Diplomate | 60 | 56 | 60 | 51 | 61 | 54 | 60 | 58 | 43 | 54 | **55,7 %** |
+| Pugiliste | 70 | 54 | 63 | 55 | 55 | 62 | 61 | 58 | 47 | 54 | **57,9 %** |
+
+### Les trois routes, l'usage des voies et la Tour, par classe
+
+| Classe | Ruée | Éventail | Réactive | Voie 1 | Voie 2 | Voie 3 | Voie 4 | Voie 5 | Clé | Tour : étage 10 | étage 20 | étage moyen |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Guerrier | 36,6 % | 13,2 % | 47,0 % | 43,3 % | 22,3 % | 37,7 % | 93,0 % | 58,5 % | 98,0 % | 100,0 % | 75,0 % | 24,7 |
+| Mage | 52,8 % | 24,2 % | 48,1 % | 28,9 % | 54,6 % | 53,4 % | 16,4 % | 34,8 % | 85,6 % | 100,0 % | 58,3 % | 21,0 |
+| Voleur | 39,8 % | 20,4 % | 39,7 % | 34,5 % | 23,9 % | 38,1 % | 14,9 % | 71,6 % | 85,7 % | 100,0 % | 58,3 % | 20,8 |
+| Archer | 45,0 % | 25,6 % | 50,8 % | 37,3 % | 61,1 % | 49,0 % | 28,4 % | 18,0 % | 84,6 % | 100,0 % | 54,2 % | 21,3 |
+| Prêtre | 34,0 % | 17,2 % | 49,6 % | 31,2 % | 66,3 % | 18,2 % | 66,4 % | 79,7 % | 92,3 % | 100,0 % | 83,3 % | 24,5 |
+| Alchimiste | 42,6 % | 14,8 % | 43,1 % | 59,3 % | 24,5 % | 36,1 % | 40,7 % | 49,0 % | 90,4 % | 100,0 % | 66,7 % | 21,3 |
+| Invocateur | 38,0 % | 16,8 % | 44,7 % | 36,2 % | 32,8 % | 52,9 % | 46,7 % | 50,1 % | 88,7 % | 100,0 % | 62,5 % | 21,8 |
+| Barde | 45,6 % | 25,6 % | 42,5 % | 52,4 % | 54,0 % | 59,4 % | 26,3 % | 38,4 % | 90,0 % | 100,0 % | 70,8 % | 22,7 |
+| Diplomate | 40,6 % | 22,2 % | 55,7 % | 39,8 % | 30,7 % | 71,1 % | 60,6 % | 86,4 % | 94,5 % | 100,0 % | 75,0 % | 23,4 |
+| Pugiliste | 32,6 % | 14,0 % | 57,9 % | 26,9 % | 42,5 % | 53,0 % | 94,4 % | 46,1 % | 97,1 % | 100,0 % | 83,3 % | 25,5 |
+
+### Les erreurs de l'IA (pour 100 actions de chaque rôle)
+
+| Rôle | Actions | Coup perdu | Soin perdu | Barrière inutile | Clé gaspillée | Achèvement raté |
+| --- | --- | --- | --- | --- | --- | --- |
+| Front | 303116 | 2,4 | 0,1 | 4,0 | 2,7 | 1,4 |
+| Dégâts | 201412 | 2,9 | 0,4 | 2,0 | 2,0 | 0,8 |
+| Soutien | 244192 | 0,9 | 0,5 | 2,2 | 0,6 | 2,4 |
+
+### Boutons touchés, et pourquoi
+
+Aucun (mesure seule).

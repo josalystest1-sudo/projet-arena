@@ -36,7 +36,7 @@ const CLES_EFFETS := {
 const CLES_REGLES := ["extinction", "refroidissement", "mort_subite_tour", "mort_subite_pas", "chrono_s", "niveau_pente",
 	"multi_cible", "tolerance_budget", "budgets", "couts", "couts_multi", "tour_soins_usure", "evolution"]
 ## Les évolutions (data/rules.json, GDD V2 § 3) : le nombre de niveaux d'un rang, le saut de puissance (PV et valeurs).
-const CLES_EVOLUTION_REGLES := ["niveau", "puissance_pv", "puissance_valeurs"]
+const CLES_EVOLUTION_REGLES := ["niveau", "puissance_pv", "puissance_valeurs", "rang_max"]
 const CLES_BUDGETS := ["moyeu", "1", "2", "3", "4"]
 const CLES_COUTS := ["degats", "soin", "barriere", "dot", "gardien", "renfort", "affaiblissement", "etourdi", "gele",
 	"aveugle", "desarme", "egare", "silencie", "provoque", "enracine", "purge", "dissipe"]

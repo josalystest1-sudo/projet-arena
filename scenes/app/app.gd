@@ -387,7 +387,7 @@ func peut_evoluer() -> bool:
 
 ## Les évolutions possibles de sa classe (une pour l'instant).
 func evolutions_possibles() -> Array[String]:
-	return Evolution.evolutions_de(player_class, data)
+	return Evolution.evolutions_jouables(player_class, data)
 
 
 ## Évoluer : la classe devient l'évolution, nouvelle roue (même graine), zéro point ; les Échos sont complétés selon le
