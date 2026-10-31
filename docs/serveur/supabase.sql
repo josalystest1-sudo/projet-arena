@@ -76,6 +76,24 @@ create policy "acheter ou encaisser" on public.annonces for update to authentica
   using ((acheteur is null and vendeur <> auth.uid()) or vendeur = auth.uid())
   with check ((acheteur = auth.uid() and vendeur <> auth.uid()) or vendeur = auth.uid());
 
+-- L'économie : les mouvements d'Or (créé au Comptoir, détruit par la taxe, échangé entre joueurs), pour le bilan de
+-- chaque semaine et la taxe qui monte (engine/economie.gd). Chacun écrit les siens ; tout le monde lit les totaux.
+create table if not exists public.mouvements (
+  id bigint generated always as identity primary key,
+  compte uuid not null references auth.users (id) on delete cascade,
+  type text not null check (type in ('comptoir', 'taxe', 'achat')),
+  montant integer not null check (montant >= 0),
+  jour text not null,
+  semaine integer not null,
+  cree timestamptz not null default now()
+);
+create index if not exists mouvements_semaine on public.mouvements (semaine);
+alter table public.mouvements enable row level security;
+drop policy if exists "mouvements lus par les connectes" on public.mouvements;
+create policy "mouvements lus par les connectes" on public.mouvements for select to authenticated using (true);
+drop policy if exists "chacun note ses mouvements" on public.mouvements;
+create policy "chacun note ses mouvements" on public.mouvements for insert to authenticated with check (auth.uid() = compte);
+
 drop trigger if exists personnages_mis_a_jour on public.personnages;
 create trigger personnages_mis_a_jour
   before update on public.personnages

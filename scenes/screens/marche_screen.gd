@@ -22,7 +22,10 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	for v in encaisse:
 		var f := Equipement.fiche(v["annonce"]["objet"], app.data)
 		column.add_child(UiKit.label("Vendu : %s pour %d Or · taxe %d · tu touches %d Or." % [f["nom"], int(v["annonce"]["prix"]), int(v["annonce"]["prix"]) - int(v["net"]), int(v["net"])], 15, UiKit.GOLD))
-	column.add_child(UiKit.label("Entre joueurs : tu fixes ton prix dans une fourchette, les annonces sont anonymes et partent au premier acheteur, et chaque vente perd %d %% de taxe." % roundi(100.0 * float(app.data.marche["taxe"])), 14, UiKit.SOFT))
+	var taux: float = await app.taux_taxe()
+	if not is_inside_tree():
+		return
+	column.add_child(UiKit.label("Entre joueurs : tu fixes ton prix dans une fourchette, les annonces sont anonymes et partent au premier acheteur, et chaque vente perd une taxe, détruite. %s" % Economie.texte_taxe(app.bilan_passe(), taux, app.data), 14, UiKit.SOFT))
 	if not app.marche_ouvert():
 		var ferme := UiKit.card(column, 4)
 		ferme.add_child(UiKit.label("Le Marché est fermé pour toi", 20, UiKit.GOLD, false))
@@ -42,7 +45,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 			continue
 		nb_miennes += 1
 		var f := Equipement.fiche(a["objet"], app.data)
-		miennes.add_child(UiKit.label("%s · %s · niveau %d · qualité %d %% · %d Or (tu toucheras %d)" % [f["nom"], f["emplacement"], f["niveau"], f["qualite"], int(a["prix"]), Marche.net(int(a["prix"]), app.data)], 15, UiKit.rarete_couleur(int(f["rang"])), false))
+		miennes.add_child(UiKit.label("%s · %s · niveau %d · qualité %d %% · %d Or (tu toucheras %d)" % [f["nom"], f["emplacement"], f["niveau"], f["qualite"], int(a["prix"]), Marche.net(int(a["prix"]), app.data, taux)], 15, UiKit.rarete_couleur(int(f["rang"])), false))
 		miennes.add_child(UiKit.button("Retirer de la vente", func():
 			app.sfx.play("clic")
 			await app.retirer_annonce(str(a["id"]))
@@ -52,7 +55,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	# Mettre en vente.
 	var vente := UiKit.card(column, 6)
 	vente.add_child(UiKit.label("Mettre en vente", 20, UiKit.GOLD, false))
-	vente.add_child(UiKit.label("Tes objets échangeables. Choisis un prix dans la fourchette ; la taxe de %d %% est retenue à la vente." % roundi(100.0 * float(app.data.marche["taxe"])), 14, ATTENUE, false))
+	vente.add_child(UiKit.label("Tes objets échangeables. Choisis un prix dans la fourchette ; la taxe de %s est retenue à la vente. %s" % [Economie.texte_taux(taux), Economie.texte_reste(app.profile.compteurs_jour, app.jour(), "depots", app.data)], 14, ATTENUE, false))
 	var un := false
 	for i in range(app.profile.sac.size()):
 		var o: Dictionary = app.profile.sac[i]
@@ -81,14 +84,14 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 			if await app.deposer_annonce(i, prix):
 				app.show_screen("marche")
 			else:
-				retour.text = "Impossible : %d annonces au plus, ou le serveur refuse." % int(app.data.marche["annonces_max"]), 46, 15))
+				retour.text = "Impossible : %d annonces au plus, %d mises en vente par jour, ou le serveur refuse." % [int(app.data.marche["annonces_max"]), Economie.limite("depots", app.data)], 46, 15))
 		vente.add_child(retour)
 	if not un:
 		vente.add_child(UiKit.label("Rien d'échangeable dans ton sac.", 15, ATTENUE, false))
 	# Les annonces des autres.
 	var autres := UiKit.card(column, 6)
 	autres.add_child(UiKit.label("Les annonces", 20, UiKit.GOLD, false))
-	autres.add_child(UiKit.label("Anonymes, au premier acheteur. L'objet acheté reste échangeable tant que tu ne le portes pas.", 14, ATTENUE, false))
+	autres.add_child(UiKit.label("Anonymes, au premier acheteur. L'objet acheté reste échangeable tant que tu ne le portes pas. %s" % Economie.texte_reste(app.profile.compteurs_jour, app.jour(), "achats", app.data), 14, ATTENUE, false))
 	var nb := 0
 	for a in annonces:
 		if bool(a.get("mienne", false)):
@@ -102,7 +105,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		autres.add_child(UiKit.label(" + ".join(lignes), 13, Color.WHITE, false))
 		var prix := int(a["prix"])
 		var b := UiKit.button("Acheter (%d Or%s)" % [prix, "" if app.profile.monnaie_or >= prix else ", il t'en manque"], _acheter.bind(str(a["id"]), prix), 46, 16)
-		b.disabled = app.profile.monnaie_or < prix
+		b.disabled = app.profile.monnaie_or < prix or app.reste_du_jour("achats") <= 0
 		achat_boutons[str(a["id"])] = b
 		autres.add_child(b)
 	if nb == 0:

@@ -92,7 +92,7 @@ const CLES_DONJON := ["id", "nom", "famille", "niveau_min", "niveau_max", "nivea
 const CLES_RECOMPENSE_DONJON := ["rarete", "fragments", "eclats"]
 ## Le Comptoir (data/comptoir.json, GDD V2 § 10.2) : prix plancher par rareté, pente du niveau, base de qualité, multiples
 ## du Marché, l'étal du jour (raretés vendues et leur prix en Éclats).
-const CLES_COMPTOIR := ["plancher", "niveau_pente", "qualite_base", "marche", "etal"]
+const CLES_COMPTOIR := ["plancher", "niveau_pente", "qualite_base", "marche", "etal", "ventes_par_jour"]
 const CLES_ETAL := ["raretes", "prix"]
 ## Le boss à paliers (data/boss.json, GDD V2 § 8.5) : la limite de tours, les solutions connues (identifiant -> texte), et
 ## par boss ses paliers (fraction de PV, solution, texte du verrou, ce qui a manqué).
@@ -101,7 +101,9 @@ const CLES_BOSS := ["tours_max", "solutions", "boss"]
 ## des fiches, les mots des pseudos par défaut, le monde simulé (nombre de joueurs, graine, niveau le plus haut).
 const CLES_SERVEUR := ["url", "cle_publique", "table", "pseudos", "simule"]
 ## Le Marché (data/marche.json, GDD V2 § 10.2) : seuils d'ouverture, taxe, annonces par joueur, monde simulé.
-const CLES_MARCHE := ["niveau_min", "jours_min", "taxe", "annonces_max", "simule"]
+const CLES_MARCHE := ["niveau_min", "jours_min", "taxe", "taxe_max", "inflation", "annonces_max", "depots_par_jour", "achats_par_jour", "simule"]
+## L'inflation (engine/economie.gd) : au-delà de `seuil` fois l'Or détruit, la taxe monte de `pas` par cran de `par`.
+const CLES_INFLATION := ["seuil", "par", "pas", "minimum"]
 const CLES_MARCHE_SIMULE := ["annonces", "raretes", "vente_par_jour"]
 const CLES_SIMULE := ["joueurs", "graine", "niveau_max"]
 const CLES_PALIER := ["pv", "solution", "texte", "manque"]
@@ -309,6 +311,17 @@ func valider() -> void:
 	_valider_boss()
 	_cles(serveur, CLES_SERVEUR, CLES_SERVEUR, "serveur.json")
 	_cles(marche, CLES_MARCHE, CLES_MARCHE, "marche.json")
+	if marche is Dictionary:
+		_cles(marche.get("inflation", {}), CLES_INFLATION, CLES_INFLATION, "marche.json inflation")
+		if float(marche.get("taxe_max", 0.0)) < float(marche.get("taxe", 0.0)):
+			erreurs.append("marche.json : taxe_max doit valoir au moins taxe")
+		if marche.get("inflation", {}) is Dictionary and (float(marche["inflation"].get("par", 0.0)) <= 0.0 or float(marche["inflation"].get("pas", 0.0)) <= 0.0):
+			erreurs.append("marche.json inflation : par et pas doivent être positifs")
+		for cle in ["depots_par_jour", "achats_par_jour"]:
+			if int(marche.get(cle, 0)) < 1:
+				erreurs.append("marche.json : %s doit valoir au moins 1" % cle)
+	if comptoir is Dictionary and int(comptoir.get("ventes_par_jour", 0)) < 1:
+		erreurs.append("comptoir.json : ventes_par_jour doit valoir au moins 1")
 	_cles(marche.get("simule", {}), CLES_MARCHE_SIMULE, CLES_MARCHE_SIMULE, "marche.json simule")
 	if float(marche.get("taxe", 1.0)) < 0.0 or float(marche.get("taxe", 1.0)) >= 1.0:
 		erreurs.append("marche.json : une taxe entre 0 et 1 attendue")

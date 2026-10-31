@@ -41,6 +41,8 @@ var donjons: Dictionary = {}
 ## Le Comptoir (engine/comptoir.gd) : l'Or (la monnaie échangeable), le jour de l'étal et les objets de l'étal achetés
 ## ce jour-là (leurs index).
 var monnaie_or: int = 0
+## L'économie (engine/economie.gd) : les compteurs du jour {jour, ventes, depots, achats}.
+var compteurs_jour: Dictionary = {}
 var etal_jour: String = ""
 var etal_achetes: Array = []
 ## Le serveur (scenes/net/serveur.gd) : {compte, jeton, rafraichir, pseudo, fiche (la dernière fiche publiée)}.
@@ -80,6 +82,7 @@ static func load_profile() -> PlayerProfile:
 		profile.arene = cfg.get_value("arene", "etat", {})
 		profile.donjons = cfg.get_value("donjons", "cartes", {})
 		profile.monnaie_or = int(cfg.get_value("comptoir", "or", 0))
+		profile.compteurs_jour = cfg.get_value("economie", "jour", {})
 		profile.etal_jour = str(cfg.get_value("comptoir", "etal_jour", ""))
 		profile.etal_achetes = cfg.get_value("comptoir", "etal_achetes", [])
 		profile.serveur = cfg.get_value("serveur", "etat", {})
@@ -111,6 +114,7 @@ func save() -> void:
 	cfg.set_value("arene", "etat", arene)
 	cfg.set_value("donjons", "cartes", donjons)
 	cfg.set_value("comptoir", "or", monnaie_or)
+	cfg.set_value("economie", "jour", compteurs_jour)
 	cfg.set_value("comptoir", "etal_jour", etal_jour)
 	cfg.set_value("comptoir", "etal_achetes", etal_achetes)
 	cfg.set_value("serveur", "etat", serveur)

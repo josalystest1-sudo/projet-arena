@@ -34,14 +34,16 @@ static func prix_valide(objet: Dictionary, prix: int, d: Donnees) -> bool:
 	return Comptoir.vendable(objet) and prix >= int(f[0]) and prix <= int(f[1])
 
 
-## La taxe d'une vente (détruite), arrondie au-dessus.
-static func taxe(prix: int, d: Donnees) -> int:
-	return int(ceil(float(prix) * float(d.marche["taxe"])))
+## La taxe d'une vente (détruite), arrondie au-dessus : au taux de la semaine s'il est donné (engine/economie.gd), au
+## taux de base sinon.
+static func taxe(prix: int, d: Donnees, taux: float = -1.0) -> int:
+	var t := taux if taux >= 0.0 else float(d.marche["taxe"])
+	return int(ceil(float(prix) * t))
 
 
 ## Ce que touche le vendeur.
-static func net(prix: int, d: Donnees) -> int:
-	return maxi(0, prix - taxe(prix, d))
+static func net(prix: int, d: Donnees, taux: float = -1.0) -> int:
+	return maxi(0, prix - taxe(prix, d, taux))
 
 
 ## Une annonce : l'objet (échangeable), le prix, le vendeur (son compte ; jamais montré aux autres), un identifiant.

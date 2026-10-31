@@ -174,12 +174,32 @@ func acheter(id: String) -> Dictionary:
 	return {}
 
 
-func encaisser() -> Array:
+func encaisser(taux: float = -1.0) -> Array:
 	var r := await _requete_connectee(HTTPClient.METHOD_PATCH, "/rest/v1/annonces?vendeur=eq.%s&acheteur=not.is.null&encaisse=is.false" % compte_id, {"encaisse": true}, "return=representation")
 	var out: Array = []
 	if int(r["code"]) == 200 and r["corps"] is Array:
 		for a in r["corps"]:
-			out.append({"annonce": a, "net": Marche.net(int(a["prix"]), donnees)})
+			out.append({"annonce": a, "net": Marche.net(int(a["prix"]), donnees, taux)})
+	return out
+
+
+# --- L'économie : la table « mouvements » (docs/serveur/supabase.sql) ; jamais essayé contre un vrai projet. ----------
+
+func mouvement(m: Dictionary) -> bool:
+	if not Economie.mouvement_valide(m) or (not est_connecte() and not await connecter()):
+		return false
+	var corps := {"compte": compte_id, "type": str(m["type"]), "montant": int(m["montant"]), "jour": str(m["jour"]), "semaine": int(m["semaine"])}
+	var r := await _requete_connectee(HTTPClient.METHOD_POST, "/rest/v1/mouvements", corps, "return=minimal")
+	return int(r["code"]) in [200, 201, 204]
+
+
+func bilan(semaine: int) -> Dictionary:
+	var out := {"entre": 0, "detruit": 0, "echange": 0}
+	if not est_connecte() and not await connecter():
+		return out
+	var r := await _requete_connectee(HTTPClient.METHOD_GET, "/rest/v1/mouvements?select=type,montant,semaine&semaine=eq.%d&limit=10000" % semaine)
+	if int(r["code"]) == 200 and r["corps"] is Array:
+		return Economie.bilan(r["corps"], semaine)
 	return out
 
 
