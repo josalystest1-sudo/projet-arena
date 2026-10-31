@@ -49,6 +49,8 @@ func _forge() -> void:
 		bonus.add_child(UiKit.label("Aucun : équipe un objet.", 16, ATTENUE, false))
 	for l in lignes:
 		bonus.add_child(UiKit.label(l, 16, Color.WHITE, false))
+	for t in Equipement.traits(app.objets_portes(), app.data):
+		bonus.add_child(UiKit.label(Equipement.texte_trait(t, app.data), 16, UiKit.rarete_couleur(4), false))
 	# Le sac.
 	var sac := UiKit.card(column, 6)
 	sac.add_child(UiKit.label("Ton sac (%d)" % app.profile.sac.size(), 20, UiKit.GOLD, false))
@@ -90,6 +92,8 @@ func _fiche(ou: String, cle: Variant) -> void:
 	column.add_child(UiKit.label("%s · niveau %d · qualité %d %% · %s" % [f["emplacement"], f["niveau"], f["qualite"], "lié à toi" if f["lie"] else "échangeable"], 15, UiKit.SOFT))
 	if str(f.get("description", "")) != "":
 		column.add_child(UiKit.label(str(f["description"]), 14, ATTENUE, false))
+	if str(f.get("texte_trait", "")) != "":
+		column.add_child(UiKit.label("Trait légendaire · " + str(f["texte_trait"]), 16, UiKit.rarete_couleur(4), false))
 	if ou == "porte":
 		column.add_child(UiKit.label("Tu le portes.", 15, ATTENUE))
 	# Les lignes, chacune avec sa fourchette et sa reforge.

@@ -63,6 +63,18 @@
     "rune": {"nom": "Rune", "genre": "f", "emplacement": "talisman", "lignes": ["cle", "force", "barrieres", "degats"], "description": "Un galet gravé : la Clé, la force, la barrière, le coup."},
     "charme": {"nom": "Charme", "genre": "m", "emplacement": "talisman", "lignes": ["barrieres", "soins", "force", "dot"], "description": "Un ruban noué : barrières, soins, force, venin."}
   },
+  "traits": {
+    "tenacite": {"nom": "Ténacité", "texte": "la première fois que ses PV tomberaient à zéro, il reste à 1 PV (une fois par combat)", "valeur": 1},
+    "soif": {"nom": "Soif", "texte": "chaque dégât direct qu'il inflige le soigne de {v} % de ce dégât", "valeur": 0.1},
+    "epines": {"nom": "Épines", "texte": "quand il subit un dégât direct, l'attaquant en reprend {v} %", "valeur": 0.1},
+    "ancrage": {"nom": "Ancrage", "texte": "ses voies refroidissent un tour plus tard", "valeur": 1},
+    "fulgurance": {"nom": "Fulgurance", "texte": "ses Clés s'éteignent un tour de moins", "valeur": 1},
+    "endurance": {"nom": "Endurance", "texte": "les états négatifs qu'il subit durent un tour de moins (jamais moins d'un tour)", "valeur": 1},
+    "ferocite": {"nom": "Férocité", "texte": "+{v} % de dégâts directs sur un ennemi sous 30 % de ses PV", "valeur": 0.2},
+    "grace": {"nom": "Grâce", "texte": "les soins qu'il reçoit sont +{v} %", "valeur": 0.15},
+    "carapace": {"nom": "Carapace", "texte": "au début du combat, une barrière de {v} % de ses PV max", "valeur": 0.15},
+    "persistance": {"nom": "Persistance", "texte": "les poisons, brûlures et saignements qu'il pose durent un tour de plus", "valeur": 1}
+  },
   "butin": {"etage": {"commun": 70, "rare": 30}, "gardien": {"epique": 100}, "rejoue": 0.5},
   "reforge": {"cout": 20, "pente": 1.0},
   "recyclage": {"commun": 5, "rare": 15, "epique": 40, "legendaire": 100},

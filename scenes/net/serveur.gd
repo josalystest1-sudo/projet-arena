@@ -130,6 +130,7 @@ static func destin_de(fiche: Dictionary, d: Donnees) -> Destin:
 	var destin := Generateur.generer(str(fiche["classe"]), int(str(fiche["graine"])), int(fiche["niveau"]), allumage if not allumage.is_empty() else Generateur.PAR_DEFAUT, d)
 	destin.echo = true
 	destin.mods = Equipement.mods(fiche.get("equipement", []), d)
+	destin.traits = Equipement.traits(fiche.get("equipement", []), d)
 	return destin
 
 

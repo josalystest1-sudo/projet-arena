@@ -90,6 +90,15 @@ def main():
                 continue
             L.append("| **%s** | %s | %s |" % (b["nom"], ", ".join(objets["lignes"][s]["nom"] for s in b["lignes"]), b.get("description", "")))
         L.append("")
+    L.append("## Les traits légendaires")
+    L.append("")
+    L.append("Un objet légendaire porte un trait, tiré à la trouvaille parmi ceux-ci : un passif de combat de son porteur. Un même trait porté deux fois ne compte qu'une fois.")
+    L.append("")
+    L.append("| Trait | Ce qu'il fait |")
+    L.append("| --- | --- |")
+    for tid, t in objets.get("traits", {}).items():
+        L.append("| **%s** | %s |" % (t["nom"], t["texte"].replace("{v}", f(t["valeur"] * 100))))
+    L.append("")
     L.append("## Les fourchettes par rareté et par niveau")
     L.append("")
     L.append("Pour chaque ligne, les bornes d'un objet (en %) selon sa rareté, aux niveaux 1, 10, 20 et 30 (au-delà de 30, comme à 30).")

@@ -8,7 +8,9 @@
 ## fourchette connue, affichée, qui grandit avec le niveau de l'objet et sa rareté ; ses chiffres sont tirés à la
 ## trouvaille (graine fournie), et la qualité en % dit où le tirage est tombé dans ses fourchettes. Des plafonds par
 ## ligne, sur le total des cinq objets, pour qu'aucune ligne ne fasse un personnage à elle seule.
-## Un objet : {base, rarete, niveau, lignes: [{stat, valeur (en %)}], qualite (0 à 100), lie, reforges}.
+## Un objet : {base, rarete, niveau, lignes: [{stat, valeur (en %)}], qualite (0 à 100), lie, reforges, trait (un objet
+## légendaire seulement : l'identifiant de son trait, data/items.json traits, tiré à la trouvaille ; un passif de combat
+## que engine/regles.gd applique au porteur ; un même trait porté deux fois ne compte qu'une fois)}.
 ## Lié ou échangeable : un objet est échangeable seulement s'il vient d'un premier passage ; il devient lié dès
 ## qu'on l'équipe, et le reste. La reforge retire une ligne contre des Éclats, à coût croissant.
 ## Les bonus d'un équipement entrent dans un combat par `Destin.mods` (engine/destin.gd), lus une fois à la création
@@ -64,7 +66,37 @@ static func tirer(base_id: String, rarete: String, niveau: int, graine: int, d: 
 		var stat: String = reserve.pop_at(rng.randi_range(0, reserve.size() - 1))
 		objet["lignes"].append(_ligne(stat, rarete, objet["niveau"], rng, d))
 	objet["qualite"] = qualite(objet, d)
+	if a_trait(rarete, d):
+		var ids: Array = d.objets["traits"].keys()
+		ids.sort()
+		objet["trait"] = str(ids[rng.randi_range(0, ids.size() - 1)])
 	return objet
+
+
+## Un objet de cette rareté porte-t-il un trait ? Seulement la rareté la plus haute (légendaire).
+static func a_trait(rarete: String, d: Donnees) -> bool:
+	var rang_max := 0
+	for r in d.objets["raretes"]:
+		rang_max = maxi(rang_max, int(d.objets["raretes"][r]["rang"]))
+	return int(d.objets["raretes"][rarete]["rang"]) == rang_max and not d.objets.get("traits", {}).is_empty()
+
+
+## Les traits des objets portés, chacun une fois, dans l'ordre des données.
+static func traits(objets: Array, d: Donnees) -> Array[String]:
+	var out: Array[String] = []
+	for id in d.objets.get("traits", {}):
+		for o in objets:
+			if str(o.get("trait", "")) == str(id) and not str(id) in out:
+				out.append(str(id))
+	return out
+
+
+## « Soif : chaque dégât direct qu'il inflige le soigne de 10 % de ce dégât ».
+static func texte_trait(id: String, d: Donnees) -> String:
+	if not d.objets.get("traits", {}).has(id):
+		return ""
+	var t: Dictionary = d.objets["traits"][id]
+	return "%s : %s" % [t["nom"], str(t["texte"]).replace("{v}", chiffre(float(t["valeur"]) * 100.0))]
 
 
 ## Une ligne tirée : son chiffre entre les bornes de sa fourchette.
@@ -333,6 +365,7 @@ static func fiche(objet: Dictionary, d: Donnees) -> Dictionary:
 		"description": str(d.objets["bases"][objet["base"]].get("description", "")),
 		"rarete": d.objets["raretes"][objet["rarete"]]["nom"]["m"], "rang": int(d.objets["raretes"][objet["rarete"]]["rang"]),
 		"niveau": int(objet["niveau"]), "lignes": lignes, "qualite": int(objet["qualite"]), "lie": bool(objet["lie"]),
+		"trait": str(objet.get("trait", "")), "texte_trait": texte_trait(str(objet.get("trait", "")), d),
 		"reforge": cout_reforge(objet, d)}
 
 
@@ -343,6 +376,8 @@ static func valide(objet: Dictionary, d: Donnees) -> bool:
 		if not objet.has(cle):
 			return false
 	if not d.objets["bases"].has(objet["base"]) or not d.objets["raretes"].has(objet["rarete"]):
+		return false
+	if objet.has("trait") and (not a_trait(str(objet["rarete"]), d) or not d.objets["traits"].has(str(objet["trait"]))):
 		return false
 	var reserve: Array = d.objets["bases"][objet["base"]]["lignes"]
 	var vues: Array = []

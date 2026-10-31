@@ -95,6 +95,23 @@ Chaque base a une réserve de quatre lignes possibles ; un objet tire ses lignes
 | **Rune** | Clés, Force, Barrières, Dégâts | Un galet gravé : la Clé, la force, la barrière, le coup. |
 | **Charme** | Barrières, Soins, Force, Poisons et brûlures | Un ruban noué : barrières, soins, force, venin. |
 
+## Les traits légendaires
+
+Un objet légendaire porte un trait, tiré à la trouvaille parmi ceux-ci : un passif de combat de son porteur. Un même trait porté deux fois ne compte qu'une fois.
+
+| Trait | Ce qu'il fait |
+| --- | --- |
+| **Ténacité** | la première fois que ses PV tomberaient à zéro, il reste à 1 PV (une fois par combat) |
+| **Soif** | chaque dégât direct qu'il inflige le soigne de 10 % de ce dégât |
+| **Épines** | quand il subit un dégât direct, l'attaquant en reprend 10 % |
+| **Ancrage** | ses voies refroidissent un tour plus tard |
+| **Fulgurance** | ses Clés s'éteignent un tour de moins |
+| **Endurance** | les états négatifs qu'il subit durent un tour de moins (jamais moins d'un tour) |
+| **Férocité** | +20 % de dégâts directs sur un ennemi sous 30 % de ses PV |
+| **Grâce** | les soins qu'il reçoit sont +15 % |
+| **Carapace** | au début du combat, une barrière de 15 % de ses PV max |
+| **Persistance** | les poisons, brûlures et saignements qu'il pose durent un tour de plus |
+
 ## Les fourchettes par rareté et par niveau
 
 Pour chaque ligne, les bornes d'un objet (en %) selon sa rareté, aux niveaux 1, 10, 20 et 30 (au-delà de 30, comme à 30).

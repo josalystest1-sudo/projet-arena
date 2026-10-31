@@ -37,6 +37,9 @@ var voies: Array = []
 ## « degats », « soins », « barrieres », « dot », « cle », « ouverture »). Vide : aucun équipement. Lus une fois à la
 ## création d'un combat (engine/regles.gd), jamais pendant.
 var mods: Dictionary = {}
+## Les traits légendaires de l'équipement porté (engine/equipement.gd, `Equipement.traits`) : des passifs de combat
+## (engine/regles.gd) ; vide sans objet légendaire.
+var traits: Array[String] = []
 
 
 ## Le Destin « de base » d'une classe : chaque nœud dans sa forme Base, tel qu'écrit dans la section 9, sans éclat.
@@ -97,7 +100,7 @@ func bonus_pv() -> float:
 
 func vers_dict() -> Dictionary:
 	return {"classe_id": classe_id, "rang": rang, "nom": nom, "sprite": sprite, "role": role, "graine": graine, "acolyte": acolyte, "echo": echo, "pv_base": pv_base,
-		"pv_mult": pv_mult, "k": k, "moyeu": moyeu.duplicate(true), "voies": voies.duplicate(true), "mods": mods.duplicate(true)}
+		"pv_mult": pv_mult, "k": k, "moyeu": moyeu.duplicate(true), "voies": voies.duplicate(true), "mods": mods.duplicate(true), "traits": Array(traits)}
 
 
 static func depuis_dict(dico: Dictionary) -> Destin:
@@ -117,4 +120,6 @@ static func depuis_dict(dico: Dictionary) -> Destin:
 	d.voies = dico["voies"].duplicate(true)
 	for s in dico.get("mods", {}):
 		d.mods[str(s)] = float(dico["mods"][s])
+	for t in dico.get("traits", []):
+		d.traits.append(str(t))
 	return d
