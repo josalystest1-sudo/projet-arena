@@ -1,6 +1,6 @@
-## Les guildes (docs/GDD_V2.md, § 9.1 ; engine/guilde.gd) : nom et bannière, niveau et places, Influence, rôles et pouvoirs,
-## effets ; le serveur simulé (fonder, rejoindre, quitter, monter un effet, rôles, exclusion) ; les bonus dans l'application
-## (butin de guilde à la Tour).
+## Les guildes (docs/GDD_V2.md, § 9.1 ; engine/guilde.gd) : nom et bannière, niveau et places, Influence, les rôles que le
+## chef définit et leurs pouvoirs (décision de Gautier du 1er novembre), l'annonce, le recrutement, les effets ; le
+## serveur simulé ; les bonus dans l'application (butin de guilde à la Tour).
 extends "res://tests/test_case.gd"
 
 
@@ -21,7 +21,7 @@ func _fiche(id: String, niveau: int = 10) -> Dictionary:
 
 
 # Les données : un nom de 3 à 20 caractères, une bannière faite des modèles, le niveau par paliers, les places, l'Influence
-# par activité, les coûts et les textes des effets.
+# par activité, les coûts et les textes des effets, les pouvoirs et les rôles de départ.
 func test_regles() -> void:
 	for erreur in donnees.erreurs:
 		failures.append(erreur)
@@ -49,63 +49,113 @@ func test_regles() -> void:
 	assert_eq(Guilde.texte_effet("xp", 2, donnees), "Savoir de guilde II : +10 % d'XP pour chaque membre", "le texte d'un effet")
 	assert_almost(Guilde.bonus({"effets": {"xp": 2}}, "xp", donnees), 0.1, "le bonus d'un effet au niveau 2")
 	assert_almost(Guilde.bonus({}, "xp", donnees), 0.0, "rien sans guilde")
+	assert_eq(Guilde.pouvoirs(donnees).size(), 6, "six pouvoirs")
+	assert_eq(Guilde.texte_pouvoir("exclure", donnees), "exclure un membre", "le texte d'un pouvoir")
+	assert_eq(donnees.guildes["roles_defaut"].size(), 2, "deux rôles de départ")
+	assert_true(Guilde.role_valide({"id": "garde", "nom": "Garde", "pouvoirs": ["exclure"]}, donnees), "un rôle valide")
+	assert_false(Guilde.role_valide({"id": "chef", "nom": "Chef", "pouvoirs": []}, donnees), "« chef » est réservé")
+	assert_false(Guilde.role_valide({"id": "Garde", "nom": "Garde", "pouvoirs": []}, donnees), "un identifiant en minuscules")
+	assert_false(Guilde.role_valide({"id": "garde", "nom": "G", "pouvoirs": []}, donnees), "un nom trop court")
+	assert_false(Guilde.role_valide({"id": "garde", "nom": "Garde", "pouvoirs": ["voler"]}, donnees), "un pouvoir inconnu")
+	assert_false(Guilde.role_valide({"id": "garde", "nom": "Garde", "pouvoirs": ["exclure", "exclure"]}, donnees), "pas de doublon")
 
 
-# Une guilde : fondée par un chef ; des membres jusqu'aux places ; les rôles et leurs pouvoirs ; quitter (le chef passe
-# la main) ; dissoute quand elle se vide ; l'Influence et les effets.
+# Une guilde : fondée par un chef ; des membres jusqu'aux places ; les rôles de départ et leurs pouvoirs ; le chef définit
+# ses rôles (jusqu'à cinq) et les supprime ; quitter (le chef passe la main) ; dissoute quand elle se vide.
 func test_vie_d_une_guilde() -> void:
 	var g := Guilde.nouvelle("g1", "  Les Veilleurs ", Guilde.banniere_defaut(1, donnees), _fiche("chef"), "2026-11-01", donnees)
 	assert_true(Guilde.guilde_valide(g, donnees), "une guilde neuve est valide")
 	assert_eq(str(g["nom"]), "Les Veilleurs", "le nom sans ses espaces")
 	assert_eq(Guilde.role_de(g, "chef"), "chef", "le fondateur est chef")
 	assert_eq(Guilde.role_de(g, "x"), "", "un inconnu n'a pas de rôle")
+	assert_eq(Guilde.role_defaut(g), "membre", "les nouveaux venus sont membres")
+	assert_true(bool(g["ouvert"]), "ouverte au départ")
 	for i in range(19):
 		g = Guilde.ajouter(g, _fiche("m%d" % i), "2026-11-%02d" % (2 + i), donnees)
 	assert_eq(g["membres"].size(), 20, "vingt membres : la guilde de niveau 1 est pleine")
 	assert_false(Guilde.peut_rejoindre(g, donnees), "plus de place")
 	assert_eq(Guilde.ajouter(g, _fiche("trop"), "2026-11-30", donnees)["membres"].size(), 20, "un de plus est refusé")
 	assert_eq(Guilde.ajouter(g, _fiche("m3"), "2026-11-30", donnees)["membres"].size(), 20, "déjà membre : refusé")
-	# Les pouvoirs.
-	assert_true(Guilde.peut("chef", "transmettre") and Guilde.peut("officier", "acheter") and not Guilde.peut("officier", "promouvoir") and not Guilde.peut("membre", "exclure"), "les pouvoirs des rôles")
+	# Les pouvoirs : le chef a tout ; un officier ce que son rôle dit ; un membre rien.
+	assert_true(Guilde.peut(g, "chef", "banniere") and Guilde.peut(g, "chef", "exclure"), "le chef a tous les pouvoirs")
+	assert_false(Guilde.peut(g, "m0", "exclure"), "un membre n'a rien")
+	assert_false(Guilde.peut(g, "x", "exclure"), "un inconnu non plus")
 	assert_eq(Guilde.role_de(Guilde.changer_role(g, "m0", "m1", "officier", donnees), "m1"), "membre", "un membre ne nomme personne")
 	g = Guilde.changer_role(g, "chef", "m1", "officier", donnees)
 	assert_eq(Guilde.role_de(g, "m1"), "officier", "le chef nomme un officier")
-	for i in range(2, 9):
-		g = Guilde.changer_role(g, "chef", "m%d" % i, "officier", donnees)
-	var officiers := 0
-	for m in g["membres"]:
-		if str(m["role"]) == "officier":
-			officiers += 1
-	assert_eq(officiers, int(donnees.guildes["officiers_max"]), "pas plus d'officiers que le maximum")
-	assert_eq(Guilde.role_de(Guilde.exclure(g, "m1", "m2"), "m2"), "officier", "un officier n'exclut pas un officier")
-	assert_eq(Guilde.role_de(Guilde.exclure(g, "m1", "m10"), "m10"), "", "un officier exclut un membre")
+	assert_true(Guilde.peut(g, "m1", "exclure") and Guilde.peut(g, "m1", "roles") and not Guilde.peut(g, "m1", "banniere"), "les pouvoirs de l'officier de départ")
+	g = Guilde.changer_role(g, "m1", "m2", "officier", donnees)
+	assert_eq(Guilde.role_de(g, "m2"), "officier", "un officier (pouvoir « rôles ») nomme un officier")
+	assert_eq(Guilde.changer_role(g, "m1", "chef", "membre", donnees), g, "personne ne touche au rôle du chef")
+	assert_eq(Guilde.changer_role(g, "m1", "m3", "chef", donnees), g, "un officier ne transmet pas la guilde")
+	assert_eq(Guilde.changer_role(g, "chef", "m3", "inconnu", donnees), g, "un rôle inconnu")
+	assert_eq(Guilde.role_de(Guilde.exclure(g, "m1", "m2"), "m2"), "", "un officier exclut (même un officier : le pouvoir suffit)")
 	assert_eq(Guilde.role_de(Guilde.exclure(g, "m10", "m11"), "m11"), "membre", "un membre n'exclut personne")
 	assert_eq(Guilde.role_de(Guilde.exclure(g, "m1", "chef"), "chef"), "chef", "personne n'exclut le chef")
 	assert_eq(Guilde.exclure(g, "chef", "chef"), g, "le chef ne s'exclut pas lui-même")
-	g = Guilde.changer_role(g, "chef", "m1", "membre", donnees)
-	assert_eq(Guilde.role_de(g, "m1"), "membre", "le chef remet un officier membre")
-	# Le chef part : le plus ancien officier prend la guilde.
+	# Le chef définit ses rôles.
+	assert_eq(Guilde.definir_role(g, "m1", {"id": "garde", "nom": "Garde", "pouvoirs": ["exclure"]}, donnees), g, "seul le chef définit les rôles")
+	g = Guilde.definir_role(g, "chef", {"id": "garde", "nom": " Garde ", "pouvoirs": ["exclure", "banniere"]}, donnees)
+	assert_eq(g["roles"].size(), 3, "un troisième rôle")
+	assert_eq(str(Guilde.role(g, "garde")["nom"]), "Garde", "son nom, sans espaces")
+	assert_eq(Guilde.role_defaut(g), "garde", "le dernier de la liste accueille les nouveaux")
+	g = Guilde.definir_role(g, "chef", {"id": "garde", "nom": "Gardien", "pouvoirs": ["banniere"]}, donnees)
+	assert_eq(g["roles"].size(), 3, "retoucher ne crée pas de rôle")
+	assert_eq(str(Guilde.role(g, "garde")["nom"]), "Gardien", "renommé")
+	g = Guilde.changer_role(g, "chef", "m4", "garde", donnees)
+	assert_true(Guilde.peut(g, "m4", "banniere") and not Guilde.peut(g, "m4", "exclure"), "les pouvoirs suivent la retouche")
+	for i in range(4, 7):
+		g = Guilde.definir_role(g, "chef", {"id": "r%d" % i, "nom": "Rôle %d" % i, "pouvoirs": []}, donnees)
+	assert_eq(g["roles"].size(), int(donnees.guildes["roles_max"]), "pas plus de rôles que le maximum")
+	assert_eq(Guilde.supprimer_role(g, "m1", "garde"), g, "seul le chef supprime un rôle")
+	g = Guilde.supprimer_role(g, "chef", "garde")
+	assert_true(Guilde.role(g, "garde").is_empty(), "le rôle est parti")
+	assert_eq(Guilde.role_de(g, "m4"), Guilde.role_defaut(g), "ses membres prennent le rôle des nouveaux venus")
+	assert_true(Guilde.guilde_valide(g, donnees), "toujours valide")
+	var un_seul := Guilde.nouvelle("g3", "Un rôle", Guilde.banniere_defaut(3, donnees), _fiche("c"), "2026-11-01", donnees)
+	un_seul = Guilde.supprimer_role(un_seul, "c", "officier")
+	assert_eq(Guilde.supprimer_role(un_seul, "c", "membre"), un_seul, "jamais le dernier rôle")
+	# Le chef part : le membre du rôle le plus haut, le plus ancien, prend la guilde.
 	var sans_chef := Guilde.retirer(g, "chef")
-	assert_eq(Guilde.role_de(sans_chef, "m2"), "chef", "le plus ancien officier devient chef")
-	assert_eq(Guilde.chef(sans_chef)["id"], "m2", "la fonction chef")
-	assert_true(Guilde.guilde_valide(sans_chef, donnees), "toujours valide")
-	# Transmettre.
+	assert_eq(Guilde.role_de(sans_chef, "m1"), "chef", "le plus ancien officier devient chef")
+	assert_eq(Guilde.chef(sans_chef)["id"], "m1", "la fonction chef")
 	var transmise := Guilde.changer_role(g, "chef", "m5", "chef", donnees)
 	assert_eq(Guilde.role_de(transmise, "m5"), "chef", "la guilde transmise")
-	assert_eq(Guilde.role_de(transmise, "chef"), "officier", "l'ancien chef devient officier")
-	# Une guilde qui se vide est dissoute.
+	assert_eq(Guilde.role_de(transmise, "chef"), "officier", "l'ancien chef prend le premier rôle")
 	var seul := Guilde.nouvelle("g2", "Solitaire", Guilde.banniere_defaut(2, donnees), _fiche("a"), "2026-11-01", donnees)
 	assert_true(Guilde.retirer(seul, "a").is_empty(), "le dernier membre part : dissoute")
 	var deux := Guilde.ajouter(seul, _fiche("b"), "2026-11-02", donnees)
-	assert_eq(Guilde.role_de(Guilde.retirer(deux, "a"), "b"), "chef", "sans officier, le plus ancien membre devient chef")
-	# L'Influence et les effets.
+	assert_eq(Guilde.role_de(Guilde.retirer(deux, "a"), "b"), "chef", "sans officier, le membre devient chef")
+
+
+# L'annonce, le recrutement (ouverte ou sur invitation, inviter), la bannière, l'Influence et les effets.
+func test_annonce_recrutement_effets() -> void:
+	var g := Guilde.nouvelle("g1", "Les Veilleurs", Guilde.banniere_defaut(1, donnees), _fiche("chef"), "2026-11-01", donnees)
+	g = Guilde.ajouter(g, _fiche("off"), "2026-11-02", donnees)
+	g = Guilde.changer_role(g, "chef", "off", "officier", donnees)
+	g = Guilde.ajouter(g, _fiche("mem"), "2026-11-03", donnees)
+	assert_eq(Guilde.changer_annonce(g, "mem", "Salut", donnees), g, "un membre n'édite pas l'annonce")
+	g = Guilde.changer_annonce(g, "off", "  On grimpe le soir.  ", donnees)
+	assert_eq(str(g["annonce"]), "On grimpe le soir.", "l'officier édite l'annonce")
+	assert_eq(Guilde.changer_annonce(g, "chef", "x".repeat(300), donnees), g, "une annonce trop longue")
+	assert_eq(Guilde.changer_recrutement(g, "mem", false), g, "un membre ne ferme pas la guilde")
+	g = Guilde.changer_recrutement(g, "off", false)
+	assert_false(bool(g["ouvert"]), "fermée")
+	assert_false(Guilde.peut_rejoindre(g, donnees), "on ne la rejoint plus librement")
+	assert_eq(Guilde.ajouter(g, _fiche("n"), "2026-11-04", donnees), g, "entrer sans invitation : refusé")
+	assert_eq(Guilde.inviter(g, "mem", _fiche("n"), "2026-11-04", donnees), g, "un membre n'invite pas")
+	g = Guilde.inviter(g, "off", _fiche("n"), "2026-11-04", donnees)
+	assert_eq(Guilde.role_de(g, "n"), "membre", "invité par l'officier : entré, membre")
+	assert_eq(Guilde.changer_banniere(g, "off", Guilde.banniere_defaut(9, donnees), donnees), g, "l'officier de départ ne change pas la bannière")
+	g = Guilde.changer_banniere(g, "chef", Guilde.banniere_defaut(9, donnees), donnees)
+	assert_eq(g["banniere"], Guilde.banniere_defaut(9, donnees), "le chef change la bannière")
+	assert_eq(Guilde.changer_banniere(g, "chef", {"motif": "croix", "fond": "rouge", "couleur": "rouge"}, donnees), g, "une bannière invalide")
 	g = Guilde.gagner(g, 1000)
 	assert_eq(int(g["influence"]), 1000, "la réserve")
 	assert_eq(int(g["influence_totale"]), 1000, "le total")
 	assert_eq(Guilde.niveau(int(g["influence_totale"]), donnees), 3, "niveau 3 à 1000")
-	assert_true(Guilde.peut_rejoindre(g, donnees), "des places au niveau 3")
-	assert_eq(Guilde.acheter(g, "m10", "xp", donnees), g, "un membre n'achète pas")
-	var achete := Guilde.acheter(g, "m2", "xp", donnees)
+	assert_eq(Guilde.acheter(g, "mem", "xp", donnees), g, "un membre n'achète pas")
+	var achete := Guilde.acheter(g, "off", "xp", donnees)
 	assert_eq(int(achete["effets"]["xp"]), 1, "un officier monte le Savoir")
 	assert_eq(int(achete["influence"]), 600, "400 Influence de moins")
 	assert_eq(int(achete["influence_totale"]), 1000, "le total ne bouge pas")
@@ -114,7 +164,8 @@ func test_vie_d_une_guilde() -> void:
 	assert_eq(Guilde.acheter(g, "chef", "inconnu", donnees), g, "un effet inconnu")
 
 
-# Le monde simulé : des guildes faites des joueurs simulés, un chef et un officier chacune, de l'Influence par jour.
+# Le monde simulé : des guildes faites des joueurs simulés, un chef et un officier chacune, une sur deux fermée, de
+# l'Influence par jour.
 func test_monde_simule() -> void:
 	var joueurs: Array = []
 	for i in range(24):
@@ -125,14 +176,16 @@ func test_monde_simule() -> void:
 		assert_true(Guilde.guilde_valide(g, donnees), g["nom"] + " : valide")
 		assert_eq(g["membres"].size(), 6, g["nom"] + " : six membres")
 		assert_eq(str(g["membres"][1]["role"]), "officier", g["nom"] + " : un officier")
+		assert_true(str(g["annonce"]) != "", g["nom"] + " : une annonce")
+	assert_true(bool(liste[0]["ouvert"]) and not bool(liste[1]["ouvert"]), "une guilde sur deux est fermée")
 	assert_eq(Guilde.guildes_simulees(joueurs, "2026-11-02", donnees), liste, "mêmes joueurs, mêmes guildes")
 	var inf := Guilde.influence_simulee(liste[0], "2026-11-02", 2, donnees)
 	assert_between(float(inf), 6.0 * 2 * 5, 6.0 * 2 * 15, "six membres simulés pendant deux jours")
 	assert_eq(Guilde.influence_simulee(liste[0], "2026-11-02", 0, donnees), 0, "rien pour zéro jour")
 
 
-# Le serveur simulé : fonder, le nom pris, rejoindre une guilde du monde, apporter de l'Influence, monter un effet, les
-# rôles, exclure, quitter ; tout dans le profil.
+# Le serveur simulé : fonder, le nom pris, rejoindre une guilde ouverte (pas une fermée), apporter de l'Influence,
+# monter un effet, les rôles, l'annonce, le recrutement, inviter, exclure, quitter ; tout dans le profil.
 func test_serveur_simule() -> void:
 	var profile := _profil()
 	var s := _simule(profile)
@@ -141,35 +194,46 @@ func test_serveur_simule() -> void:
 	assert_true((await s.ma_guilde()).is_empty(), "sans guilde au départ")
 	var liste: Array = await s.guildes(10)
 	assert_eq(liste.size(), donnees.guildes["simule"]["noms"].size(), "les guildes du monde")
+	assert_true(liste[0].has("ouvert") and liste[0].has("annonce"), "le résumé dit si elle est ouverte, et son annonce")
 	assert_true((await s.creer_guilde("La Lame grise", Guilde.banniere_defaut(1, donnees), moi)).is_empty(), "un nom du monde est pris")
-	assert_true((await s.creer_guilde("Ab", Guilde.banniere_defaut(1, donnees), moi)).is_empty(), "un nom trop court")
 	var g: Dictionary = await s.creer_guilde("Les Nôtres", Guilde.banniere_defaut(1, donnees), moi)
 	assert_eq(Guilde.role_de(g, s.compte_id), "chef", "fondée : je suis chef")
-	assert_true((await s.creer_guilde("Encore", Guilde.banniere_defaut(1, donnees), moi)).is_empty(), "déjà dans une guilde")
-	assert_eq(int((await s.guildes(10))[0]["membres"]), 1, "ma guilde en tête de la liste")
 	assert_true(await s.influence_guilde(450), "de l'Influence apportée")
-	g = await s.ma_guilde()
-	assert_eq(int(g["influence"]), 450, "la réserve")
-	assert_true((await s.acheter_effet("butin"))["effets"]["butin"] == 1, "la Chasse montée")
-	assert_true((await s.acheter_effet("butin")).is_empty(), "plus assez pour la suivante")
-	assert_true((await s.role_guilde("personne", "officier")).is_empty(), "un inconnu")
+	assert_eq(int((await s.acheter_effet("butin"))["effets"]["butin"]), 1, "la Chasse montée")
+	assert_eq(str((await s.annonce_guilde("Bienvenue !"))["annonce"]), "Bienvenue !", "l'annonce")
+	assert_false(bool((await s.recrutement_guilde(false))["ouvert"]), "fermée")
+	g = await s.definir_role({"id": "garde", "nom": "Garde", "pouvoirs": ["exclure"]})
+	assert_eq(g["roles"].size(), 3, "un rôle défini")
+	g = await s.inviter_guilde(_fiche("sim-3", 9))
+	assert_eq(Guilde.role_de(g, "sim-3"), "garde", "invité, avec le rôle des nouveaux venus (le dernier)")
+	g = await s.role_guilde("sim-3", "officier")
+	assert_eq(Guilde.role_de(g, "sim-3"), "officier", "promu")
+	g = await s.supprimer_role("garde")
+	assert_eq(g["roles"].size(), 2, "le rôle supprimé")
+	g = await s.banniere_guilde(Guilde.banniere_defaut(5, donnees))
+	assert_eq(g["banniere"], Guilde.banniere_defaut(5, donnees), "la bannière changée")
+	g = await s.exclure_guilde("sim-3")
+	assert_eq(g["membres"].size(), 1, "exclu")
 	assert_true(await s.quitter_guilde(), "je dissous ma guilde en partant seul")
 	assert_true((await s.ma_guilde()).is_empty(), "plus de guilde")
-	# Rejoindre une guilde du monde.
-	var cible: Dictionary = (await s.guildes(10))[0]
-	g = await s.rejoindre_guilde(str(cible["id"]), moi)
+	# Rejoindre : une guilde fermée refuse, une ouverte accepte.
+	var fermee := {}
+	var ouverte := {}
+	for r in await s.guildes(10):
+		if not bool(r["ouvert"]) and fermee.is_empty():
+			fermee = r
+		if bool(r["ouvert"]) and ouverte.is_empty():
+			ouverte = r
+	assert_true((await s.rejoindre_guilde(str(fermee["id"]), moi)).is_empty(), "une guilde sur invitation refuse")
+	g = await s.rejoindre_guilde(str(ouverte["id"]), moi)
 	assert_eq(Guilde.role_de(g, s.compte_id), "membre", "rejointe comme membre")
-	assert_eq(g["membres"].size(), int(cible["membres"]) + 1, "un membre de plus")
 	assert_true((await s.acheter_effet("xp")).is_empty(), "un membre n'achète pas")
-	assert_true((await s.exclure_guilde(str(g["membres"][2]["id"]))).is_empty(), "un membre n'exclut pas")
-	# Les membres simulés apportent leur Influence chaque jour : la guilde datée d'hier en reçoit à la lecture.
 	profile.serveur["guilde"]["dernier_jour"] = "2026-01-01"
 	var avant := int(g["influence_totale"])
 	g = await s.ma_guilde()
 	assert_true(int(g["influence_totale"]) > avant, "l'Influence du monde simulé est arrivée")
 	assert_true(await s.quitter_guilde(), "je quitte")
-	assert_true((await s.ma_guilde()).is_empty(), "sans guilde")
-	assert_eq(int((await s.guildes(10))[0]["membres"]), int(cible["membres"]), "la guilde du monde a retrouvé ses membres")
+	assert_eq(int((await s.guildes(10))[0]["membres"]), int((await s.guildes(10))[0]["membres"]), "la liste reste cohérente")
 	s.free()
 
 

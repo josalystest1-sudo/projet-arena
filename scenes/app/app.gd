@@ -1143,6 +1143,44 @@ func exclure_guilde(membre: String) -> bool:
 	return true
 
 
+## Les rôles libres (décision de Gautier du 1er novembre) et le recrutement : chaque appel rend vrai si le serveur a
+## accepté, et garde la guilde relue.
+func _garder(g: Dictionary) -> bool:
+	if g.is_empty():
+		return false
+	guilde = g
+	return true
+
+
+func definir_role_guilde(r: Dictionary) -> bool:
+	return _garder(await serveur.definir_role(r))
+
+
+func supprimer_role_guilde(id_role: String) -> bool:
+	return _garder(await serveur.supprimer_role(id_role))
+
+
+func annonce_guilde(texte: String) -> bool:
+	return _garder(await serveur.annonce_guilde(texte))
+
+
+func recrutement_guilde(ouvert: bool) -> bool:
+	return _garder(await serveur.recrutement_guilde(ouvert))
+
+
+func banniere_guilde(b: Dictionary) -> bool:
+	return _garder(await serveur.banniere_guilde(b))
+
+
+func inviter_guilde(fiche: Dictionary) -> bool:
+	return _garder(await serveur.inviter_guilde({"id": str(fiche["id"]), "pseudo": str(fiche.get("pseudo", "")), "classe": str(fiche.get("classe", "")), "niveau": int(fiche.get("niveau", 1))}))
+
+
+## Ai-je ce pouvoir dans ma guilde ?
+func peut_guilde(pouvoir: String) -> bool:
+	return Guilde.peut(guilde, serveur.compte_id, pouvoir)
+
+
 ## Le coût d'une reforge pour toi : celui de l'objet, moins la Forge de guilde.
 func cout_reforge(objet: Dictionary) -> int:
 	return maxi(1, Regles.plancher(float(Equipement.cout_reforge(objet, data)) * (1.0 - Guilde.bonus(guilde, "reforge", data))))

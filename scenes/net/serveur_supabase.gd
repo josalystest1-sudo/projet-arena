@@ -225,7 +225,8 @@ func _lire_guildes(chemin: String) -> Array:
 
 func _ecrire_guilde(g: Dictionary) -> Dictionary:
 	var corps := {"id": g["id"], "nom": g["nom"], "banniere": g["banniere"], "influence": int(g["influence"]), "influence_totale": int(g["influence_totale"]),
-		"effets": g["effets"], "membres": g["membres"], "cree": str(g["cree"]), "chef": str(Guilde.chef(g).get("id", ""))}
+		"effets": g["effets"], "membres": g["membres"], "cree": str(g["cree"]), "chef": str(Guilde.chef(g).get("id", "")),
+		"roles": g["roles"], "annonce": str(g.get("annonce", "")), "ouvert": bool(g.get("ouvert", true))}
 	var r := await _requete_connectee(HTTPClient.METHOD_POST, "/rest/v1/guildes", corps, "resolution=merge-duplicates,return=minimal")
 	if int(r["code"]) in [200, 201, 204]:
 		profile.serveur["guilde_id"] = str(g["id"])
@@ -313,6 +314,37 @@ func role_guilde(membre: String, role: String) -> Dictionary:
 func exclure_guilde(membre: String) -> Dictionary:
 	var g := await ma_guilde()
 	return await _changer(Guilde.exclure(g, compte_id, membre), g)
+
+
+func definir_role(r: Dictionary) -> Dictionary:
+	var g := await ma_guilde()
+	return await _changer(Guilde.definir_role(g, compte_id, r, donnees), g)
+
+
+func supprimer_role(id_role: String) -> Dictionary:
+	var g := await ma_guilde()
+	return await _changer(Guilde.supprimer_role(g, compte_id, id_role), g)
+
+
+func annonce_guilde(texte: String) -> Dictionary:
+	var g := await ma_guilde()
+	return await _changer(Guilde.changer_annonce(g, compte_id, texte, donnees), g)
+
+
+func recrutement_guilde(ouvert: bool) -> Dictionary:
+	var g := await ma_guilde()
+	return await _changer(Guilde.changer_recrutement(g, compte_id, ouvert), g)
+
+
+func banniere_guilde(b: Dictionary) -> Dictionary:
+	var g := await ma_guilde()
+	return await _changer(Guilde.changer_banniere(g, compte_id, b, donnees), g)
+
+
+## Inviter : sur le vrai serveur, le personnage entre tout de suite (l'acceptation viendra avec le chat).
+func inviter_guilde(fiche: Dictionary) -> Dictionary:
+	var g := await ma_guilde()
+	return await _changer(Guilde.inviter(g, compte_id, fiche, Time.get_date_string_from_system(), donnees), g)
 
 
 ## Une requête avec le jeton ; si le serveur dit que le jeton a expiré (401), on se reconnecte et on réessaie une fois.

@@ -105,6 +105,9 @@ create table if not exists public.guildes (
   influence_totale integer not null default 0,
   effets jsonb not null default '{}'::jsonb,
   membres jsonb not null default '[]'::jsonb,
+  roles jsonb not null default '[]'::jsonb,
+  annonce text not null default '',
+  ouvert boolean not null default true,
   cree text not null,
   mis_a_jour timestamptz not null default now()
 );

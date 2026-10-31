@@ -155,11 +155,39 @@ func exclure_guilde(_membre: String) -> Dictionary:
 	return {}
 
 
+## Les rôles et le recrutement (décision de Gautier du 1er novembre) : définir ou supprimer un rôle (le chef), changer
+## l'annonce, ouvrir ou fermer la guilde, changer la bannière, inviter un personnage (sa fiche) ; la guilde rendue,
+## vide si refusé.
+func definir_role(_role: Dictionary) -> Dictionary:
+	return {}
+
+
+func supprimer_role(_id_role: String) -> Dictionary:
+	return {}
+
+
+func annonce_guilde(_texte: String) -> Dictionary:
+	return {}
+
+
+func recrutement_guilde(_ouvert: bool) -> Dictionary:
+	return {}
+
+
+func banniere_guilde(_b: Dictionary) -> Dictionary:
+	return {}
+
+
+func inviter_guilde(_fiche: Dictionary) -> Dictionary:
+	return {}
+
+
 ## Le résumé d'une guilde pour une liste.
 static func resume_guilde(g: Dictionary, d: Donnees) -> Dictionary:
 	var nv := Guilde.niveau(int(g.get("influence_totale", 0)), d)
 	return {"id": str(g["id"]), "nom": str(g["nom"]), "banniere": g["banniere"], "niveau": nv, "membres": g["membres"].size(),
-		"places": Guilde.taille_max(nv, d), "influence_totale": int(g.get("influence_totale", 0))}
+		"places": Guilde.taille_max(nv, d), "influence_totale": int(g.get("influence_totale", 0)), "ouvert": bool(g.get("ouvert", true)),
+		"annonce": str(g.get("annonce", ""))}
 
 
 ## Le nombre de fiches publiées (la tienne comprise).
