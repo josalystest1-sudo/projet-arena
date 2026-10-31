@@ -115,7 +115,7 @@ const CLES_LIGNE := ["nom", "texte", "fourchette", "plafond"]
 const CLES_RARETE := ["nom", "rang", "lignes", "echelle"]
 const CLES_NIVEAU := ["plancher", "plein"]
 const CLES_BASE := ["nom", "genre", "emplacement", "lignes", "description"]
-const CLES_BUTIN := ["etage", "gardien", "rejoue"]
+const CLES_BUTIN := ["etage", "gardien", "grand_gardien", "rejoue"]
 const CLES_REFORGE := ["cout", "pente"]
 
 var regles: Dictionary = {}
@@ -450,7 +450,7 @@ func _valider_objets() -> void:
 			erreurs.append("%s : %d lignes, il en faut %d pour la rareté la plus riche" % [ou, vues.size(), lignes_max])
 	_cles(objets.get("butin", {}), CLES_BUTIN, CLES_BUTIN, "items.json butin")
 	if objets.get("butin", {}) is Dictionary:
-		for source in ["etage", "gardien"]:
+		for source in ["etage", "gardien", "grand_gardien"]:
 			var poids: Variant = objets["butin"].get(source, {})
 			if not poids is Dictionary or poids.is_empty():
 				erreurs.append("items.json butin %s : des poids par rareté attendus" % source)

@@ -196,10 +196,11 @@ func _egide(e: EtatCombat) -> void:
 
 
 ## Le butin d'un étage franchi (GDD V2, § 10.1) : un objet du niveau de l'étage, tiré avec la graine de l'étage ;
-## épique à un Gardien, commun ou rare ailleurs ; échangeable seulement au premier passage, lié sinon ; un étage
+## épique à un Gardien, épique ou légendaire à un grand Gardien, commun ou rare ailleurs ; échangeable seulement au premier passage, lié sinon ; un étage
 ## rejoué n'en lâche qu'une fois sur deux (vide alors). Voir Equipement.butin.
 func butin(franchi: int, premier_passage: bool) -> Dictionary:
-	var source := "gardien" if gardien_de(franchi) != "" else "etage"
+	var sorte := gardien_de(franchi)
+	var source := "grand_gardien" if sorte == "grand" else ("gardien" if sorte == "gardien" else "etage")
 	return Equipement.butin(source, niveau_etage(franchi), premier_passage, graine_etage(franchi), donnees)
 
 

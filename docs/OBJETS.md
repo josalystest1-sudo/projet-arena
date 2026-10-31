@@ -157,8 +157,9 @@ Pour chaque ligne, les bornes d'un objet (en %) selon sa rareté, aux niveaux 1,
 | --- | --- | --- | --- |
 | Un étage de la Tour, franchi pour la première fois | commun 70 %, rare 30 % | celui de l'étage | échangeable |
 | Un étage de la Tour, rejoué | commun 70 %, rare 30 %, une fois sur 2 | celui de l'étage | lié |
-| Un Gardien de la Tour (tous les 5 étages ; un grand tous les 10), la première fois | épique 100 % | celui de l'étage | échangeable |
-| Un Gardien rejoué | épique 100 %, toujours | celui de l'étage | lié |
+| Un Gardien de la Tour (tous les 5 étages), la première fois | épique 100 % | celui de l'étage | échangeable |
+| Un grand Gardien de la Tour (tous les 10 étages), la première fois | épique 70 %, légendaire 30 % | celui de l'étage | échangeable |
+| Un Gardien ou un grand Gardien rejoué | les mêmes raretés, toujours un objet | celui de l'étage | lié |
 | L'élite d'un donjon | épique (+ 1 fragment, 30 Éclats) | celui du donjon | lié |
 | Le boss d'un donjon | légendaire (+ 100 Éclats) | celui du donjon | échangeable |
 | Le coffre de la semaine à l'Arène | commun dès 3 victoires ; rare dès 5 victoires ; épique dès 7 victoires | le tien | lié |

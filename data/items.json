@@ -75,7 +75,7 @@
     "carapace": {"nom": "Carapace", "texte": "au début du combat, une barrière de {v} % de ses PV max", "valeur": 0.15},
     "persistance": {"nom": "Persistance", "texte": "les poisons, brûlures et saignements qu'il pose durent un tour de plus", "valeur": 1}
   },
-  "butin": {"etage": {"commun": 70, "rare": 30}, "gardien": {"epique": 100}, "rejoue": 0.5},
+  "butin": {"etage": {"commun": 70, "rare": 30}, "gardien": {"epique": 100}, "grand_gardien": {"epique": 70, "legendaire": 30}, "rejoue": 0.5},
   "reforge": {"cout": 20, "pente": 1.0},
   "recyclage": {"commun": 5, "rare": 15, "epique": 40, "legendaire": 100},
   "eclats": {"duel_gagne": 15, "duel_perdu": 5, "etage_base": 10, "etage_pente": 2, "rejoue": 0.5}

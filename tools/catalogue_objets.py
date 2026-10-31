@@ -119,9 +119,11 @@ def main():
     L.append("| --- | --- | --- | --- |")
     L.append("| Un étage de la Tour, franchi pour la première fois | %s | celui de l'étage | échangeable |" % _poids(objets["butin"]["etage"], objets))
     L.append("| Un étage de la Tour, rejoué | %s, une fois sur %s | celui de l'étage | lié |" % (_poids(objets["butin"]["etage"], objets), f(1 / objets["butin"]["rejoue"])))
-    L.append("| Un Gardien de la Tour (tous les %d étages ; un grand tous les %d), la première fois | %s | celui de l'étage | échangeable |" % (
-        tour["gardien_tous_les"], tour["grand_gardien_tous_les"], _poids(objets["butin"]["gardien"], objets)))
-    L.append("| Un Gardien rejoué | %s, toujours | celui de l'étage | lié |" % _poids(objets["butin"]["gardien"], objets))
+    L.append("| Un Gardien de la Tour (tous les %d étages), la première fois | %s | celui de l'étage | échangeable |" % (
+        tour["gardien_tous_les"], _poids(objets["butin"]["gardien"], objets)))
+    L.append("| Un grand Gardien de la Tour (tous les %d étages), la première fois | %s | celui de l'étage | échangeable |" % (
+        tour["grand_gardien_tous_les"], _poids(objets["butin"]["grand_gardien"], objets)))
+    L.append("| Un Gardien ou un grand Gardien rejoué | les mêmes raretés, toujours un objet | celui de l'étage | lié |")
     L.append("| L'élite d'un donjon | %s (+ %d fragment, %d Éclats) | celui du donjon | lié |" % (
         objets["raretes"][donjons["recompenses"]["elite"]["rarete"]]["nom"]["m"], donjons["recompenses"]["elite"]["fragments"], donjons["recompenses"]["elite"]["eclats"]))
     L.append("| Le boss d'un donjon | %s (+ %d Éclats) | celui du donjon | échangeable |" % (
