@@ -3,5 +3,6 @@
   "niveau_pente": 1.0,
   "qualite_base": 0.5,
   "marche": {"commun": 2, "rare": 5, "epique": 50, "legendaire": 500},
-  "etal": {"raretes": ["commun", "rare"], "prix": {"commun": 40, "rare": 120}}
+  "etal": {"raretes": ["commun", "rare"], "prix": {"commun": 40, "rare": 120}},
+  "ventes_par_jour": 10
 }

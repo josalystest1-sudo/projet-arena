@@ -16,6 +16,15 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	column.add_child(UiKit.label("Le Comptoir", 34, UiKit.GOLD))
 	column.add_child(UiKit.label("%d Or · %d Éclat%s" % [app.profile.monnaie_or, app.profile.eclats, "s" if app.profile.eclats > 1 else ""], 18, Color.WHITE))
 	column.add_child(UiKit.label("L'Or ne tombe jamais du jeu : il naît ici, quand tu vends un objet échangeable (premier passage de la Tour, boss de donjon). Il sert au Marché, entre joueurs, et servira à la Boutique.", 14, UiKit.SOFT))
+	# L'Or de la semaine : la taxe du Marché, lue au serveur.
+	var taux: float = await app.taux_taxe()
+	if not is_inside_tree():
+		return
+	var eco := UiKit.card(column, 4)
+	eco.add_child(UiKit.label("L'Or de la semaine", 20, UiKit.GOLD, false))
+	eco.add_child(UiKit.label(Economie.texte_taxe(app.bilan_passe(), taux, app.data), 14, Color.WHITE, false))
+	eco.add_child(UiKit.label("Le jeu mesure chaque semaine l'Or qui entre et qui sort ; si trop d'Or est créé, la taxe monte, jamais les fourchettes de prix.", 13, ATTENUE, false))
+	eco.add_child(UiKit.label(Economie.texte_reste(app.profile.compteurs_jour, app.jour(), "ventes", app.data), 14, ATTENUE, false))
 	column.add_child(UiKit.main_button("Le Marché (entre joueurs)%s" % ("" if app.marche_ouvert() else " · fermé pour toi"), func():
 		app.sfx.play("clic")
 		app.show_screen("marche"), 70))
@@ -53,6 +62,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		var fm := Comptoir.fourchette_marche(o, app.data)
 		vente.add_child(UiKit.label("%s · %s · niveau %d · qualité %d %% · au Marché : de %d à %d Or" % [f["nom"], f["emplacement"], f["niveau"], f["qualite"], int(fm[0]), int(fm[1])], 15, UiKit.rarete_couleur(int(f["rang"])), false))
 		var b := UiKit.button("Vendre (+%d Or)" % Comptoir.prix_plancher(o, app.data), _vendre.bind(i), 46, 16)
+		b.disabled = app.reste_du_jour("ventes") <= 0
 		vendre_boutons[i] = b
 		vente.add_child(b)
 	if not un:

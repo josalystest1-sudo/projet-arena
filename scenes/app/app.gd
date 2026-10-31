@@ -677,6 +677,8 @@ func deposer_annonce(index_sac: int, prix: int) -> bool:
 	var objet: Dictionary = profile.sac[index_sac]
 	if not Marche.prix_valide(objet, prix, data) or not serveur.est_connecte():
 		return false
+	if reste_du_jour("depots") <= 0:
+		return false
 	var miennes := 0
 	for a in await serveur.annonces(1000):
 		if bool(a.get("mienne", false)):
@@ -687,6 +689,7 @@ func deposer_annonce(index_sac: int, prix: int) -> bool:
 	if not await serveur.deposer(Marche.annonce(objet, prix, serveur.compte_id, id)):
 		return false
 	profile.sac.remove_at(index_sac)
+	_compter_jour("depots")
 	profile.save()
 	return true
 
@@ -704,12 +707,14 @@ func retirer_annonce(id: String) -> bool:
 ## Acheter une annonce à ce prix : l'Or part, l'objet arrive dans le sac, encore échangeable. Faux si l'Or manque ou si
 ## l'annonce est déjà partie (au premier acheteur).
 func acheter_annonce(id: String, prix: int) -> bool:
-	if not marche_ouvert() or profile.monnaie_or < prix:
+	if not marche_ouvert() or profile.monnaie_or < prix or reste_du_jour("achats") <= 0:
 		return false
 	var a: Dictionary = await serveur.acheter(id)
 	if a.is_empty() or int(a["prix"]) != prix:
 		return false
 	profile.monnaie_or -= prix
+	_compter_jour("achats")
+	serveur.mouvement(Economie.mouvement("achat", prix, jour()))
 	var objet: Dictionary = a["objet"].duplicate(true)
 	objet["lie"] = false
 	profile.sac.append(objet)
@@ -717,13 +722,16 @@ func acheter_annonce(id: String, prix: int) -> bool:
 	return true
 
 
-## Encaisser ses ventes : l'Or net (après la taxe) arrive. Renvoie [{annonce, net}].
+## Encaisser ses ventes : l'Or net (après la taxe de la semaine) arrive ; la taxe est notée comme détruite. Renvoie
+## [{annonce, net}].
 func encaisser_ventes() -> Array:
 	if not serveur.est_connecte():
 		return []
-	var ventes: Array = await serveur.encaisser()
+	var taux: float = await taux_taxe()
+	var ventes: Array = await serveur.encaisser(taux)
 	for v in ventes:
 		profile.monnaie_or += int(v["net"])
+		serveur.mouvement(Economie.mouvement("taxe", int(v["annonce"]["prix"]) - int(v["net"]), jour()))
 	if not ventes.is_empty():
 		profile.save()
 	return ventes
@@ -764,15 +772,57 @@ func acheter_etal(index: int) -> bool:
 	return true
 
 
-## Vendre un objet échangeable du sac au prix plancher : l'Or gagné (0 : rien vendu).
+## Vendre un objet échangeable du sac au prix plancher : l'Or gagné (0 : rien vendu, ou la limite du jour atteinte).
+## L'Or créé est noté au serveur (engine/economie.gd).
 func vendre(index_sac: int) -> int:
-	if index_sac < 0 or index_sac >= profile.sac.size() or not Comptoir.vendable(profile.sac[index_sac]):
+	if index_sac < 0 or index_sac >= profile.sac.size() or not Comptoir.vendable(profile.sac[index_sac]) or reste_du_jour("ventes") <= 0:
 		return 0
 	var prix := Comptoir.prix_plancher(profile.sac[index_sac], data)
 	profile.sac.remove_at(index_sac)
 	profile.monnaie_or += prix
+	_compter_jour("ventes")
 	profile.save()
+	serveur.mouvement(Economie.mouvement("comptoir", prix, jour()))
 	return prix
+
+
+# ---------------------------------------------------------------------------
+# L'économie (engine/economie.gd)
+# ---------------------------------------------------------------------------
+
+## Le jour d'aujourd'hui (« AAAA-MM-JJ »).
+func jour() -> String:
+	return Time.get_date_string_from_system()
+
+
+## Ce qu'il reste aujourd'hui d'une action limitée (« ventes », « depots », « achats »).
+func reste_du_jour(quoi: String) -> int:
+	return Economie.reste(profile.compteurs_jour, jour(), quoi, data)
+
+
+func _compter_jour(quoi: String) -> void:
+	profile.compteurs_jour = Economie.compter(profile.compteurs_jour, jour(), quoi)
+
+
+## Le taux de taxe du Marché cette semaine, d'après le bilan de la semaine passée lu au serveur (gardé dans le profil
+## pour la semaine) ; le taux de base sans serveur.
+func taux_taxe() -> float:
+	var semaine := Arene.semaine(jour())
+	var cache: Dictionary = profile.serveur.get("taxe", {})
+	if int(cache.get("semaine", -1)) == semaine:
+		return float(cache["taux"])
+	if not serveur.est_connecte():
+		return float(data.marche["taxe"])
+	var passe: Dictionary = await serveur.bilan(semaine - 1)
+	var taux := Economie.taux_taxe(int(passe["entre"]), int(passe["detruit"]), data)
+	profile.serveur["taxe"] = {"semaine": semaine, "taux": taux, "bilan": passe}
+	profile.save()
+	return taux
+
+
+## Le bilan de la semaine passée, tel que le taux l'a lu (vide si pas encore lu).
+func bilan_passe() -> Dictionary:
+	return profile.serveur.get("taxe", {}).get("bilan", {})
 
 
 ## Le meilleur record de la Tour, toutes classes confondues (la « hauteur » du revenu passif).

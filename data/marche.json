@@ -2,6 +2,10 @@
   "niveau_min": 15,
   "jours_min": 7,
   "taxe": 0.15,
+  "taxe_max": 0.4,
+  "inflation": {"seuil": 4.0, "par": 1.0, "pas": 0.05, "minimum": 500},
   "annonces_max": 5,
+  "depots_par_jour": 5,
+  "achats_par_jour": 10,
   "simule": {"annonces": 12, "raretes": {"commun": 45, "rare": 35, "epique": 15, "legendaire": 5}, "vente_par_jour": 0.5}
 }

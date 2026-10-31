@@ -101,8 +101,18 @@ func acheter(_id: String) -> Dictionary:
 	return {}
 
 
-func encaisser() -> Array:
+func encaisser(_taux: float = -1.0) -> Array:
 	return []
+
+
+## L'économie (engine/economie.gd) : noter un mouvement d'Or (vrai si c'est fait) ; le bilan d'une semaine, tous les
+## joueurs ({entre, detruit, echange}) ; encaisser prend le taux de taxe de la semaine.
+func mouvement(_m: Dictionary) -> bool:
+	return false
+
+
+func bilan(_semaine: int) -> Dictionary:
+	return {"entre": 0, "detruit": 0, "echange": 0}
 
 
 ## Le nombre de fiches publiées (la tienne comprise).

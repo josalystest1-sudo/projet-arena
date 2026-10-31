@@ -145,7 +145,7 @@ func acheter(id: String) -> Dictionary:
 
 ## Le monde simulé achète : chaque jour après celui du dépôt, une annonce a une chance (vente_par_jour) d'être vendue,
 ## tirée avec la date et son identifiant ; les ventes pas encore encaissées sont rendues et marquées.
-func encaisser() -> Array:
+func encaisser(taux: float = -1.0) -> Array:
 	var jour := Time.get_date_string_from_system()
 	var miennes: Array = profile.serveur.get("annonces", [])
 	var out: Array = []
@@ -160,7 +160,7 @@ func encaisser() -> Array:
 		if bool(a.get("vendu", false)) and not bool(a.get("encaisse", false)):
 			a["encaisse"] = true
 			change = true
-			out.append({"annonce": a.duplicate(true), "net": Marche.net(int(a["prix"]), donnees)})
+			out.append({"annonce": a.duplicate(true), "net": Marche.net(int(a["prix"]), donnees, taux)})
 	if change:
 		profile.serveur["annonces"] = miennes
 		profile.save()
@@ -169,3 +169,21 @@ func encaisser() -> Array:
 
 func nombre_personnages() -> int:
 	return joueurs.size() + (1 if profile.serveur.has("fiche") else 0)
+
+
+## L'économie : tes mouvements dans le profil (les 400 derniers) ; le bilan d'une semaine, les tiens plus ceux du
+## monde simulé (engine/economie.gd, monde_simule).
+func mouvement(m: Dictionary) -> bool:
+	if not est_connecte() or not Economie.mouvement_valide(m):
+		return false
+	var liste: Array = profile.serveur.get("mouvements", [])
+	liste.append(m.duplicate(true))
+	if liste.size() > 400:
+		liste = liste.slice(liste.size() - 400)
+	profile.serveur["mouvements"] = liste
+	profile.save()
+	return true
+
+
+func bilan(semaine: int) -> Dictionary:
+	return Economie.somme(Economie.bilan(profile.serveur.get("mouvements", []), semaine), Economie.monde_simule(joueurs.size(), semaine, donnees))
