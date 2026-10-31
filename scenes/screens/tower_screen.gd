@@ -17,7 +17,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 	var regles := UiKit.card(column, 4)
 	regles.add_child(UiKit.label("Les règles", 20, UiKit.GOLD, false))
 	for ligne in ["La Tour n'a pas de fin. Chaque étage a toujours la même force, pour tout le monde, et elle monte d'étage en étage : c'est ton niveau qui te fait monter plus haut.",
-			"Un Gardien tous les 5 étages. Une fois franchi, tu reprends toujours après lui, avec tous tes PV : c'est ton palier.",
+			"Chaque étage est plus dur que le précédent. Un Gardien tous les 5 étages, un grand Gardien tous les 10 : des murs, bien plus forts que les étages qui les suivent. Une fois un Gardien franchi, tu reprends toujours après lui, avec tous tes PV : c'est ton palier.",
 			"Entre deux étages, chacun récupère 20 % de ses PV ; un Écho tombé revient avec 20 %. Pas de limite de tours : les soins des monstres s'affaiblissent à chaque fois.",
 			"La montée s'arrête quand tout ton trio tombe. L'étage atteint est ton record, classé par classe. Un étage déjà franchi rapporte moitié moins d'XP.",
 			"Chaque Gardien que tu bats pour la première fois t'offre une Faveur, à choisir parmi trois. Les Faveurs se cumulent et ne valent que dans la Tour."]:

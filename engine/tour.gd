@@ -6,9 +6,17 @@
 ## monstres s'affaiblissent à chaque usage (Regles, mode « tour »). Entre deux étages : +20 % des PV max à chaque
 ## membre vivant, un acolyte ou un Écho KO revient avec 20 %, et tout le reste repart à zéro (jalons, extinctions,
 ## états). La montée s'arrête quand tout le camp tombe ; l'étage atteint est le record.
-## Les paliers : un Gardien tous les 5 étages ; une fois le Gardien d'un étage franchi, les montées suivantes peuvent
-## reprendre à l'étage d'après, avec tous leurs PV (palier_apres). Les étages d'un même numéro sont les mêmes pour tous :
-## leurs monstres sont tirés avec la graine de la montée, mais leur force ne dépend que du numéro.
+## Les murs (décision de Gautier du 31 octobre) : on passe plusieurs étages par niveau, mais des étages bloquent. Un
+## Gardien tous les 5 étages, un grand Gardien tous les 10 (data/tour.json : gardien_tous_les, grand_gardien_tous_les).
+## Hors Gardiens, chaque étage est plus dur que le précédent (le niveau des monstres monte de niveau_par_etage à chaque
+## étage, depuis niveau_depart ; au-delà de etage_coude, de niveau_par_etage_haut : la pente des étages où arrivent les
+## évolués, bien plus forts, pour que la Tour garde le même rythme en niveaux après l'évolution). Un Gardien est un mur de puissance : il a la force d'un étage plus loin (avance_gardien :
+## 7 étages, avance_grand_gardien : 14 ; etage_force), de sorte que les cinq étages qui le suivent, Gardien moindre
+## compris, soient moins forts que lui, et que ce soit le Gardien suivant qui demande des niveaux en plus (ou de
+## l'équipement). La courbe « niveau → étage » se règle avec tools/regleur_tour.py.
+## Les paliers : une fois le Gardien d'un étage franchi (l'un ou l'autre), les montées suivantes peuvent reprendre à
+## l'étage d'après, avec tous leurs PV (palier_apres). Les étages d'un même numéro sont les mêmes pour tous : leurs
+## monstres sont tirés avec la graine de la montée, mais leur force ne dépend que du numéro.
 ## Les Faveurs (GDD V2, § 6 ; data/faveurs.json) : chaque Gardien vaincu pour la première fois offre une Faveur à
 ## choisir parmi trois (proposer_faveurs). Elles se cumulent (identifiant -> nombre), ne valent que dans la Tour, et
 ## s'appliquent au début de chaque étage (Vigueur, Puissance, Égide, Effroi) ou entre deux étages (Répit) ; le Savoir
@@ -62,6 +70,34 @@ static func commencer_camp(p_membres: Array, p_niveau: int, p_graine: int, p_don
 	t.etage = t.depart
 	t.atteint = t.depart
 	return t
+
+
+## La sorte de Gardien d'un étage : « grand » tous les grand_gardien_tous_les étages (10), « gardien » tous les
+## gardien_tous_les (5) sinon, « » pour un étage ordinaire.
+static func sorte_gardien(n: int, regles: Dictionary) -> String:
+	var g := int(regles.get("gardien_tous_les", 0))
+	var gg := int(regles.get("grand_gardien_tous_les", 0))
+	if gg > 0 and n % gg == 0:
+		return "grand"
+	if g > 0 and n % g == 0:
+		return "gardien"
+	return ""
+
+
+## La sorte de Gardien de l'étage n de cette Tour (voir sorte_gardien).
+func gardien_de(n: int) -> String:
+	return sorte_gardien(n, donnees.tour)
+
+
+## L'étage dont l'étage n a la force (les murs) : lui-même pour un étage ordinaire ; un Gardien a la force d'un étage
+## plus loin (avance_gardien), un grand Gardien plus loin encore (avance_grand_gardien).
+func etage_force(n: int) -> int:
+	match gardien_de(n):
+		"grand":
+			return n + int(donnees.tour["avance_grand_gardien"])
+		"gardien":
+			return n + int(donnees.tour["avance_gardien"])
+	return n
 
 
 ## Le palier où reprendre quand on a franchi l'étage n : l'étage qui suit le dernier Gardien franchi (1 avant le premier).
@@ -163,8 +199,7 @@ func _egide(e: EtatCombat) -> void:
 ## épique à un Gardien, commun ou rare ailleurs ; échangeable seulement au premier passage, lié sinon ; un étage
 ## rejoué n'en lâche qu'une fois sur deux (vide alors). Voir Equipement.butin.
 func butin(franchi: int, premier_passage: bool) -> Dictionary:
-	var g := int(donnees.tour["gardien_tous_les"])
-	var source := "gardien" if g > 0 and franchi % g == 0 else "etage"
+	var source := "gardien" if gardien_de(franchi) != "" else "etage"
 	return Equipement.butin(source, niveau_etage(franchi), premier_passage, graine_etage(franchi), donnees)
 
 
@@ -183,16 +218,23 @@ func graine_etage(n: int) -> int:
 	return graine ^ (n * 0x9E3779B1)
 
 
-## Le niveau des monstres d'un étage : 1 au premier, puis niveau_par_etage de plus à chaque étage.
+## Le niveau des monstres d'un étage : niveau_depart au premier, puis niveau_par_etage de plus à chaque étage jusqu'à
+## etage_coude, puis niveau_par_etage_haut ; un Gardien a le niveau de l'étage dont il a la force (etage_force).
 func niveau_etage(n: int) -> int:
-	return maxi(1, floori(1.0 + float(donnees.tour["niveau_par_etage"]) * float(n - 1) + 0.000001))
+	var regles := donnees.tour
+	var f := etage_force(n)
+	var coude := int(regles["etage_coude"])
+	var nv := float(regles["niveau_depart"]) + float(regles["niveau_par_etage"]) * float(mini(f, coude) - 1)
+	nv += float(regles["niveau_par_etage_haut"]) * float(maxi(0, f - coude))
+	return maxi(1, floori(nv + 0.000001))
 
 
 ## La force totale des monstres d'un étage : la somme de leurs multiplicateurs de PV tombe entre `bas` et
-## `bas + largeur`, où bas = départ + pente × (étage − 1), plafonné (data/tour.json). La même pour tous les trios.
+## `bas + largeur`, où bas = départ + pente × (étage − 1), plafonné (data/tour.json) ; un Gardien compte comme l'étage
+## dont il a la force (etage_force). La même pour tous les trios.
 func fourchette(n: int) -> Vector2:
 	var regles := donnees.tour
-	var bas := clampf(float(regles["somme_depart"]) + float(regles["somme_pente"]) * float(n - 1), 0.0, float(regles["somme_max"]))
+	var bas := clampf(float(regles["somme_depart"]) + float(regles["somme_pente"]) * float(etage_force(n) - 1), 0.0, float(regles["somme_max"]))
 	return Vector2(bas, bas + float(regles["somme_largeur"]))
 
 
@@ -206,7 +248,7 @@ func tirer_etage(n: int) -> Array[String]:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = graine_etage(n)
 	var familles: Array = donnees.bestiaire["familles"].keys()
-	var gardien_etage := int(regles["gardien_tous_les"]) > 0 and n % int(regles["gardien_tous_les"]) == 0
+	var gardien_etage := gardien_de(n) != ""
 	var famille: String = familles[rng.randi_range(0, familles.size() - 1)]
 	var gardien := ""
 	if gardien_etage:
