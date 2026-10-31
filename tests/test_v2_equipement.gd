@@ -19,8 +19,29 @@ func test_donnees_de_l_equipement() -> void:
 	assert_eq(donnees.objets["emplacements"].size(), 5, "cinq emplacements")
 	assert_eq(donnees.objets["lignes"].size(), 8, "huit lignes")
 	assert_eq(donnees.objets["raretes"].size(), 4, "quatre raretés")
+	assert_eq(donnees.objets["bases"].size(), 30, "trente bases")
 	for e in donnees.objets["emplacements"]:
-		assert_true(Equipement.bases_de(str(e), donnees).size() >= 2, "%s : au moins deux bases" % e)
+		assert_eq(Equipement.bases_de(str(e), donnees).size(), 6, "%s : six bases" % e)
+	# Chaque ligne est dans quinze réserves : aucune n'est plus facile à trouver qu'une autre.
+	var compte := {}
+	for id in donnees.objets["bases"]:
+		assert_eq(donnees.objets["bases"][id]["lignes"].size(), 4, id + " : quatre lignes possibles")
+		assert_true(str(donnees.objets["bases"][id]["description"]) != "", id + " : une description")
+		for l in donnees.objets["bases"][id]["lignes"]:
+			compte[l] = int(compte.get(l, 0)) + 1
+	for s in Equipement.STATS:
+		assert_eq(int(compte.get(s, 0)), 15, "la ligne « %s » est dans quinze réserves" % s)
+	# Les paliers : du niveau 1 au-delà du plafond, un suffixe chacun.
+	assert_eq(str(Equipement.palier(1, donnees)["suffixe"]), "de fer", "niveau 1 : de fer")
+	assert_eq(str(Equipement.palier(9, donnees)["suffixe"]), "de fer", "niveau 9 : encore de fer")
+	assert_eq(str(Equipement.palier(10, donnees)["suffixe"]), "d'acier", "niveau 10 : d'acier")
+	assert_eq(str(Equipement.palier(30, donnees)["suffixe"]), "de mithril", "niveau 30 : de mithril")
+	assert_eq(str(Equipement.palier(90, donnees)["suffixe"]), "de dragon", "niveau 90 : de dragon")
+	var d3 := Donnees.charger()
+	d3.objets["paliers"] = [{"niveau_min": 5, "suffixe": "x"}]
+	d3.erreurs.clear()
+	d3._valider_objets()
+	assert_false(d3.erreurs.is_empty(), "un premier palier qui ne commence pas au niveau 1 est signalé")
 	for s in Equipement.STATS:
 		assert_true(donnees.objets["lignes"].has(s), "la ligne « %s » existe" % s)
 	# Une donnée fausse est signalée : une ligne inconnue dans une base, une fourchette à l'envers.
@@ -226,14 +247,16 @@ func test_equipement_en_combat() -> void:
 # Les textes : « Épée épique », « +5,3 % de dégâts directs », la fiche d'un objet.
 func test_textes_de_l_equipement() -> void:
 	var o := Equipement.tirer("epee", "epique", 12, 2, donnees)
-	assert_eq(Equipement.nom(o, donnees), "Épée épique", "le nom d'une épée épique")
-	assert_eq(Equipement.nom(Equipement.tirer("cotte", "commun", 1, 2, donnees), donnees), "Cotte de mailles commune", "le féminin")
-	assert_eq(Equipement.nom(Equipement.tirer("anneau", "commun", 1, 2, donnees), donnees), "Anneau commun", "le masculin")
+	assert_eq(Equipement.nom(o, donnees), "Épée d'acier épique", "le nom d'une épée épique du niveau 12 : d'acier")
+	assert_eq(Equipement.nom(Equipement.tirer("cotte", "commun", 1, 2, donnees), donnees), "Cotte de mailles de fer commune", "le féminin, de fer au niveau 1")
+	assert_eq(Equipement.nom(Equipement.tirer("anneau", "commun", 1, 2, donnees), donnees), "Anneau de fer commun", "le masculin")
+	assert_eq(Equipement.nom(Equipement.tirer("rune", "legendaire", 45, 2, donnees), donnees), "Rune runique légendaire", "niveau 45 : runique")
+	assert_eq(str(Equipement.fiche(o, donnees)["description"]), str(donnees.objets["bases"]["epee"]["description"]), "la fiche porte la description de la base")
 	assert_eq(Equipement.texte_ligne({"stat": "degats", "valeur": 5.3}, donnees), "+5,3 % de dégâts directs", "le texte d'une ligne")
 	assert_eq(Equipement.texte_ligne({"stat": "pv", "valeur": 5.0}, donnees), "+5 % de PV max", "un chiffre rond")
 	assert_eq(Equipement.texte_fourchette("pv", {"rarete": "commun", "niveau": 30}, donnees), "[3 – 6]", "la fourchette affichée")
 	var f := Equipement.fiche(o, donnees)
-	assert_eq(f["nom"], "Épée épique", "fiche : nom")
+	assert_eq(f["nom"], "Épée d'acier épique", "fiche : nom")
 	assert_eq(f["emplacement"], "Arme", "fiche : emplacement")
 	assert_eq(f["rarete"], "épique", "fiche : rareté")
 	assert_eq(f["rang"], 3, "fiche : rang de la rareté")
