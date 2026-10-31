@@ -182,6 +182,16 @@ func inviter_guilde(_fiche: Dictionary) -> Dictionary:
 	return {}
 
 
+## La carte du monde (engine/carte.gd) : qui tient quoi cette saison ({territoire -> {guilde, nom, banniere, depuis}}) ;
+## le nombre de guildes du serveur (la population qui ouvre les territoires).
+func territoires(_saison: int) -> Dictionary:
+	return {}
+
+
+func nombre_guildes() -> int:
+	return 0
+
+
 ## Le résumé d'une guilde pour une liste.
 static func resume_guilde(g: Dictionary, d: Donnees) -> Dictionary:
 	var nv := Guilde.niveau(int(g.get("influence_totale", 0)), d)

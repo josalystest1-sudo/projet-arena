@@ -173,6 +173,24 @@ func nombre_personnages() -> int:
 
 # --- Les guildes : ta guilde vit dans le profil ; les autres sont celles du monde simulé (engine/guilde.gd). ------------
 
+## La carte : les guildes du monde simulé tiennent des territoires tirés avec la saison (engine/carte.gd) ; la tienne,
+## ceux que le profil lui donne (les guerres, plus tard).
+func territoires(saison: int) -> Dictionary:
+	var resumes: Array = []
+	for g in _guildes_du_monde():
+		resumes.append(Serveur.resume_guilde(g, donnees))
+	var etat := Carte.monde_simule(resumes, saison, nombre_guildes(), donnees)
+	var mienne: Dictionary = profile.serveur.get("guilde", {})
+	if not mienne.is_empty():
+		for t in profile.serveur.get("territoires", {}).get(str(saison), []):
+			etat[str(t)] = {"guilde": str(mienne["id"]), "nom": str(mienne["nom"]), "banniere": mienne["banniere"], "depuis": "saison %d" % saison}
+	return etat
+
+
+func nombre_guildes() -> int:
+	return _guildes_du_monde().size() + (1 if profile.serveur.has("guilde") else 0)
+
+
 func _guildes_du_monde() -> Array:
 	return Guilde.guildes_simulees(joueurs, Time.get_date_string_from_system(), donnees)
 

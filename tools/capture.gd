@@ -111,6 +111,15 @@ func _initialize() -> void:
 			await app.creer_guilde("Les Nôtres", Guilde.banniere_defaut(app.graine, app.data))
 			await app.serveur.influence_guilde(int(etape["guilde"]))
 			await app.ma_guilde()
+		elif etape.has("territoire"):
+			# Ta guilde tient ce territoire cette saison (pour la carte du monde).
+			var saison := str(Arene.saison(app.jour(), app.data))
+			var tenus: Dictionary = app.profile.serveur.get("territoires", {})
+			var liste: Array = tenus.get(saison, [])
+			liste.append(str(etape["territoire"]))
+			tenus[saison] = liste
+			app.profile.serveur["territoires"] = tenus
+			app.profile.save()
 		elif etape.has("vieillir"):
 			# Vieillir le compte de n jours (le Marché).
 			await app._publier_perso_async()
