@@ -3,7 +3,7 @@
 ## (user://capture_profil.cfg, effacé au départ) : le vrai profil n'est jamais touché.
 ##   godot --path . --script res://tools/capture.gd -- <dossier> '<étapes JSON>'
 ## Étapes : {"creer":"guerrier"} (nouveau perso, graine fixe 7), {"niveau":12} (niveau du perso), {"allumer":"v1.n2"},
-## {"ecran":"destin"}, {"duel":1} (un duel amical contre un trio IA), {"classe":1} (un combat classé de l'Arène), {"donjon":"terrier"} (une descente, aux portes ; ["terrier","vague"] : la première vague jouée, puis la fin ; ["terrier","boss"] : le boss verrouillé jusqu'à la limite, puis la fin), {"montee":1} (une montée de la Tour), {"fin":1} (un duel amical joué par l'IA, puis l'écran de fin ; {"fin":"classe"} : un combat classé), {"ouvrir":["versus",{"classe":true}]} (un écran avec ses options), {"gardien":5} (l'étage 5 d'une montée joué par l'IA, puis l'écran de fin : la Faveur du Gardien), {"sac":3} (trois objets dans le sac et 100 Éclats, pour la Forge), {"compter":["duels",2]} (un compteur des objectifs du jour), {"echangeable":1} (un objet échangeable dans le sac), {"legendaire":1} (un objet légendaire, avec son trait, en tête du sac), {"guilde":900} (une guilde fondée, avec cette Influence), {"vieillir":7} (le compte a 7 jours de plus), {"or":500} (de l'Or), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
+## {"ecran":"destin"}, {"duel":1} (un duel amical contre un trio IA), {"classe":1} (un combat classé de l'Arène), {"donjon":"terrier"} (une descente, aux portes ; ["terrier","vague"] : la première vague jouée, puis la fin ; ["terrier","boss"] : le boss verrouillé jusqu'à la limite, puis la fin), {"montee":1} (une montée de la Tour), {"fin":1} (un duel amical joué par l'IA, puis l'écran de fin ; {"fin":"classe"} : un combat classé), {"ouvrir":["versus",{"classe":true}]} (un écran avec ses options), {"gardien":5} (l'étage 5 d'une montée joué par l'IA, puis l'écran de fin : la Faveur du Gardien), {"sac":3} (trois objets dans le sac et 100 Éclats, pour la Forge), {"compter":["duels",2]} (un compteur des objectifs du jour), {"echangeable":1} (un objet échangeable dans le sac), {"legendaire":1} (un objet légendaire, avec son trait, en tête du sac), {"guilde":900} (une guilde fondée, avec cette Influence), {"guerre":"auto"} (une attaque déclarée par ta guilde sur le premier territoire possible, tes trois combats gagnés par l'IA ; ou un identifiant de territoire), {"vieillir":7} (le compte a 7 jours de plus), {"or":500} (de l'Or), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
 ## (Sans --headless : il faut une fenêtre pour dessiner.)
 extends SceneTree
 
@@ -120,6 +120,22 @@ func _initialize() -> void:
 			tenus[saison] = liste
 			app.profile.serveur["territoires"] = tenus
 			app.profile.save()
+		elif etape.has("guerre"):
+			# Une attaque déclarée par ta guilde sur ce territoire, et tes combats joués par l'IA (gagnés).
+			var cible := str(etape["guerre"])
+			if cible == "auto":
+				# Le premier territoire que ta guilde peut viser ce soir.
+				await app.carte_territoires()
+				var liste: Array = await app.batailles_du_jour()
+				for t in Carte.territoires_ouverts(app.nb_guildes, app.data):
+					if app.empeche_guerre(str(t["id"]), liste) == "":
+						cible = str(t["id"])
+						break
+			var b: Dictionary = await app.declarer_guerre(cible)
+			for _i in range(3):
+				if b.is_empty() or (await app.serveur.combat_guerre(str(b["id"]))).is_empty():
+					break
+				await app.serveur.resultat_guerre(str(b["id"]), true)
 		elif etape.has("vieillir"):
 			# Vieillir le compte de n jours (le Marché).
 			await app._publier_perso_async()

@@ -19,6 +19,9 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	if not is_inside_tree():
 		return
 	var donjons := app.donjons_de_la_semaine()
+	var batailles: Array = await app.batailles_du_jour()
+	if not is_inside_tree():
+		return
 	column.add_child(UiKit.label("Trois régions, des territoires reliés. Une guilde qui tient un territoire en touche le revenu ; le donjon d'une région apparaît chaque semaine sur l'un de ses territoires, et c'est là qu'on y entre. Touche un territoire.", 14, UiKit.SOFT))
 	var dessin := Dessin.new()
 	dessin.app = app
@@ -29,7 +32,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	dessin.choix = _choisir
 	column.add_child(dessin)
 	if selection != "":
-		_fiche(column, selection, etat, donjons)
+		_fiche(column, selection, etat, donjons, batailles)
 	else:
 		var aide := UiKit.card(column, 4)
 		aide.add_child(UiKit.label("Les donjons de la semaine", 20, UiKit.GOLD, false))
@@ -38,6 +41,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 			var ter := Carte.territoire(str(t), app.data)
 			aide.add_child(UiKit.button("%s · %s (niveaux %d à %d)" % [dj["nom"], ter["nom"], int(dj["niveau_min"]), int(dj["niveau_max"])], _choisir.bind(str(t)), 44, 15))
 		aide.add_child(UiKit.label("Légende : Mi mine · S sanctuaire · Ma marché · R relais · B bastion · un anneau d'or marque un donjon · la couleur est celle de la guilde qui tient le territoire, gris pour un territoire neutre.", 13, ATTENUE, false))
+	_guerres(column, batailles, etat)
 	column.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 52))
 
 
@@ -46,7 +50,7 @@ func _choisir(id: String) -> void:
 	app.show_screen("carte", {"territoire": id})
 
 
-func _fiche(column: VBoxContainer, id: String, etat: Dictionary, donjons: Dictionary) -> void:
+func _fiche(column: VBoxContainer, id: String, etat: Dictionary, donjons: Dictionary, batailles: Array) -> void:
 	var d := app.data
 	var t := Carte.territoire(id, d)
 	if t.is_empty():
@@ -78,8 +82,15 @@ func _fiche(column: VBoxContainer, id: String, etat: Dictionary, donjons: Dictio
 		noms.append(str(Carte.territoire(v, d).get("nom", v)))
 	carte.add_child(UiKit.label("Voisins : %s." % ", ".join(noms), 13, ATTENUE, false))
 	if not app.guilde.is_empty():
-		if Carte.peut_viser(etat, str(app.guilde["id"]), id, d):
-			carte.add_child(UiKit.label("Ta guilde pourra le viser (les guerres de guilde arrivent).", 13, ATTENUE, false))
+		var pourquoi := app.empeche_guerre(id, batailles)
+		if pourquoi == "":
+			carte.add_child(UiKit.button("Déclarer une attaque ce soir", func():
+				app.sfx.play("clic")
+				if (await app.declarer_guerre(id)).is_empty():
+					app.sfx.play("defaite")
+				app.show_screen("carte", {"territoire": id}), 44, 15))
+		else:
+			carte.add_child(UiKit.label("Pas d'attaque possible : %s." % pourquoi, 13, ATTENUE, false))
 	if donjons.has(id):
 		var dj := Donjon.definition(str(donjons[id]), d)
 		var carte_dj := UiKit.card(column, 4)
@@ -96,6 +107,32 @@ func _fiche(column: VBoxContainer, id: String, etat: Dictionary, donjons: Dictio
 		bouton.disabled = not assez
 		carte_dj.add_child(bouton)
 		carte_dj.add_child(UiKit.button("Ta carte de ce donjon", func(): app.show_screen("donjon"), 40, 14))
+
+
+## Les guerres du soir : chaque bataille (le territoire, l'attaquant, le défenseur, les scores), tes combats à jouer si ta
+## guilde attaque ; les soirs passés sont résolus au passage (le résultat se lit sur la carte).
+func _guerres(column: VBoxContainer, batailles: Array, _etat: Dictionary) -> void:
+	var d := app.data
+	var carte := UiKit.card(column, 4)
+	carte.add_child(UiKit.label("Les guerres du soir", 20, UiKit.GOLD, false))
+	carte.add_child(UiKit.label("Chaque soir, une guilde déclare des attaques sur des territoires voisins des siens (1 + sa taille ÷ %d). Chaque membre a %d combats de guerre contre les trios des défenseurs ; la défense est automatique. Le score pèse chaque victoire par le niveau de l'adversaire battu. Un territoire neutre va au meilleur score ; un territoire tenu tombe si l'attaque dépasse la défense × %s (× %s avec un Bastion voisin). Le résultat tombe le lendemain ; un territoire pris est protégé %d jours ; sans combat pendant %d jours, il redevient neutre." % [int(d.guerre["membres_par_attaque"]), int(d.guerre["combats_par_membre"]), str(d.guerre["defense"]).replace(".", ","), str(d.guerre["defense_bastion"]).replace(".", ","), int(d.guerre["protection_jours"]), int(d.carte["neutre_apres_jours"])], 13, ATTENUE, false))
+	if batailles.is_empty():
+		carte.add_child(UiKit.label("Aucune bataille ce soir pour l'instant. Touche un territoire voisin des tiens pour déclarer une attaque.", 14, UiKit.SOFT, false))
+	for b in batailles:
+		var ter := Carte.territoire(str(b["territoire"]), d)
+		var att: Dictionary = b["attaquant"]
+		var def: Dictionary = b["defenseur"]
+		var mienne: bool = not app.guilde.is_empty() and str(att.get("id", "")) == str(app.guilde["id"])
+		var defendue: bool = not app.guilde.is_empty() and str(def.get("id", "")) == str(app.guilde["id"])
+		carte.add_child(UiKit.label("%s : %s%s attaque %s" % [ter.get("nom", "?"), att.get("nom", "?"), " (ta guilde)" if mienne else "", (str(def.get("nom", "?")) + (" (ta guilde)" if defendue else "")) if not def.is_empty() else "un territoire neutre"], 15, UiKit.GOLD if mienne or defendue else Color.WHITE, false))
+		carte.add_child(UiKit.label("Score : attaquants %s · défenseurs %s · %d combat%s joué%s%s" % [("%.1f" % Guerre.score(b, "attaquant")).replace(".", ","), ("%.1f" % Guerre.score(b, "defenseur")).replace(".", ","), b["combats"].size(), "s" if b["combats"].size() > 1 else "", "s" if b["combats"].size() > 1 else "", (" · " + str(b["resultat"])) if bool(b["resolue"]) else ""], 13, ATTENUE, false))
+		if mienne and not bool(b["resolue"]):
+			var reste := Guerre.reste(b, app.serveur.compte_id, "attaquant", d)
+			var bouton := UiKit.button("Combattre (%d combat%s restant%s ce soir)" % [reste, "s" if reste > 1 else "", "s" if reste > 1 else ""] if reste > 0 else "Tes combats du soir sont faits", func():
+				app.sfx.play("clic")
+				app.show_screen("versus", {"guerre": str(b["id"])}), 44, 15)
+			bouton.disabled = reste <= 0
+			carte.add_child(bouton)
 
 
 ## Le dessin de la carte : trois bandes (les régions), les liens, un rond par territoire (la couleur de la guilde qui le

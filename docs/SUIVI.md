@@ -128,6 +128,7 @@ Dernier retour : la spécification du combat V2, validée, avec la consigne de s
 | 30 oct, soir | « Oui, continue » (l'Arène contre de vrais personnages). | PR #73. |
 | 30 oct, soir | « Le Marché » (plutôt que le chat, sans vrai serveur). | PR #74. |
 | 30 oct, nuit | « Le rang 2 » (plutôt que créer le projet Supabase). | PR #75 : le rang 2 des évolutions. |
+| 1er nov | « Oui, les guerres ». | PR #87 : les guerres de guilde. |
 | 1er nov | « Oui, la carte ». | PR #86 : la carte du monde. |
 | 1er nov | « le chef peut créer jusqu'à 5 rôles et paramétrer quel rôle fait quoi (Exclure, éditer l'annonce, recruter, mettre les points de guilde, etc.) ». | PR #85 : les rôles libres. |
 | 1er nov | « Oui, les guildes ». | PR #84 : les guildes. |
@@ -204,6 +205,7 @@ Dernier retour : la spécification du combat V2, validée, avec la consigne de s
 | #65 | 30 oct | PR 6.3 du plan, en solo : les donjons à routes. Trois donjons par tranche de niveau (`data/donjons.json`), `engine/donjon.gd` (arbre, portes sans nom à l'ordre propre au joueur, même vague par profondeur, route du boss par chasse, carte, fragments, récompenses), l'écran du Donjon, combat et fin adaptés. Profil `[donjons]`. 107 tests. |
 | #66 | 30 oct | PR 5.5 du plan, hors ligne : le Comptoir et l'Or. Prix plancher par rareté, niveau et qualité, fourchette du Marché, étal du jour (un commun et un rare liés contre des Éclats), vente des objets échangeables, l'Or dans le profil et la ville, le lien depuis la Forge. 110 tests. |
 | #67 | 30 oct | PR 6.4 du plan, en solo : le boss à paliers. `data/boss.json` (deux paliers par boss, solution par geste de classe, rang ou rôle, limite de 60 tours), `Donjon.apres_tour` (verrou, PV au palier, déverrouillage, ce qui a manqué), combat (étiquette « VERROUILLÉ », ligne d'aide), fin (ce qui a manqué, les secrets), les secrets sur la carte. 113 tests. |
+| #87 | 1er nov | Les guerres de guilde : attaques par soir sur des voisins, trois combats de guerre par membre, score pesé, prise ou défense, protection de deux jours, territoires sans combat qui redeviennent neutres, revenus des Mines et des Sanctuaires, batailles du monde simulé jouées par l'IA. 153 tests. |
 | #86 | 1er nov | La carte du monde : trois régions, vingt-quatre territoires reliés et typés, qui tient quoi (serveur), le donjon de chaque région qui apparaît chaque semaine sur un territoire, l'entrée depuis la carte avec une part à la guilde tenante, l'écran de la carte. 149 tests. |
 | #85 | 1er nov | Les rôles libres des guildes : jusqu'à cinq rôles définis par le chef, six pouvoirs, l'annonce, le recrutement (ouverte ou sur invitation, inviter), la bannière modifiable. 145 tests. |
 | #84 | 1er nov | Les guildes : nom, bannière, rôles, taille par niveau, Influence (activité des membres), trois effets (XP, butin, reforge), serveur simulé et table Supabase, l'écran de la Guilde dans la ville. 144 tests. |

@@ -48,6 +48,8 @@ var message_boss := ""
 var noms := {}
 ## Un combat classé de l'Arène (ses points en jeu) ou un amical.
 var classe := false
+## Un combat de guerre : l'identifiant de la bataille ("" sinon).
+var guerre := ""
 var vues := {}
 var declarations := {}
 var choisie := -1
@@ -95,6 +97,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	donjon = options.get("donjon", null)
 	noms = options.get("noms", {})
 	classe = bool(options.get("classe", false))
+	guerre = str(options.get("guerre", ""))
 	_construire()
 	_debut_tour()
 
@@ -963,6 +966,9 @@ func _on_quitter() -> void:
 	elif donjon != null:
 		app.abandonner_donjon()
 		app.show_screen("donjon")
+	elif guerre != "":
+		await app.fin_guerre(guerre, false)
+		app.show_screen("carte")
 	else:
 		app.fin_duel(false, classe)
 		app.show_screen("ville")
@@ -971,7 +977,7 @@ func _on_quitter() -> void:
 func _fin() -> void:
 	phase = "fin"
 	lbl_chrono.text = ""
-	var options := {"etat": e, "noms": noms, "trace": trace, "synergies": synergies, "parts": parts, "classe": classe}
+	var options := {"etat": e, "noms": noms, "trace": trace, "synergies": synergies, "parts": parts, "classe": classe, "guerre": guerre}
 	if tour != null:
 		options["tour"] = tour
 	if donjon != null:

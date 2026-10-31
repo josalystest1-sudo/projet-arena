@@ -1090,6 +1090,10 @@ func ma_guilde() -> Dictionary:
 	if not serveur.est_connecte():
 		return guilde
 	guilde = await serveur.ma_guilde()
+	# Les Sanctuaires de la guilde : l'XP des jours passés (engine/carte.gd, revenus ; résolue par les guerres).
+	var xp: int = await serveur.xp_territoires()
+	if xp > 0:
+		gain_xp(xp)
 	return guilde
 
 
@@ -1202,6 +1206,48 @@ func carte_territoires() -> Dictionary:
 ## Où les donjons apparaissent cette semaine ({territoire -> donjon}).
 func donjons_de_la_semaine() -> Dictionary:
 	return Carte.donjons_de_la_semaine(Arene.semaine(jour()), nb_guildes, data)
+
+
+# ---------------------------------------------------------------------------
+# Les guerres de guilde (engine/guerre.gd ; les batailles sur le serveur)
+# ---------------------------------------------------------------------------
+
+## Les batailles de ce soir (les soirs passés sont résolus au passage).
+func batailles_du_jour() -> Array:
+	return await serveur.batailles(jour())
+
+
+## Pourquoi ta guilde ne peut pas attaquer ce territoire ce soir ("" si elle le peut).
+func empeche_guerre(territoire: String, batailles: Array) -> String:
+	return Guerre.empeche(carte_etat, serveur.protections(), guilde, territoire, jour(), batailles, data)
+
+
+## Déclarer une attaque : la bataille (vide si refusée ; `serveur.erreur` dit pourquoi).
+func declarer_guerre(territoire: String) -> Dictionary:
+	return await serveur.declarer_guerre(territoire)
+
+
+## Un combat de guerre dans une bataille : ton trio contre celui du défenseur (ou d'un garde). Les options du combat
+## (comme duel_classe), vides s'il ne te reste pas de combat.
+func duel_guerre(id: String) -> Dictionary:
+	var c: Dictionary = await serveur.combat_guerre(id)
+	if c.is_empty():
+		return {}
+	var adv: Dictionary = c["adversaire"]
+	var chef := Serveur.destin_de(adv, data)
+	chef.echo = false
+	var ennemis := Trio.camp(chef, int(adv["niveau"]), data)
+	var e := Regles.nouveau_combat(trio(), ennemis, profile.level, "pvp", data)
+	var noms := noms_trio()
+	noms["b1"] = str(adv["pseudo"])
+	return {"etat": e, "noms": noms, "guerre": id, "bataille": c["bataille"], "adversaire": {"nom": str(adv["pseudo"]), "niveau": int(adv["niveau"]), "garde": str(adv["id"]).begins_with("garde-")}}
+
+
+## La fin d'un combat de guerre : le résultat noté dans la bataille ; un combat de guerre rapporte l'XP d'un amical (rien)
+## et compte comme un duel. Renvoie la bataille (vide si rien n'était en cours).
+func fin_guerre(id: String, gagne: bool) -> Dictionary:
+	fin_duel(gagne, false)
+	return await serveur.resultat_guerre(id, gagne)
 
 
 ## Les territoires que tient ta guilde (vide sans guilde).
