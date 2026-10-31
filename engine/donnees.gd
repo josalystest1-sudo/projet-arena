@@ -107,7 +107,7 @@ const CLES_INFLATION := ["seuil", "par", "pas", "minimum"]
 const CLES_MARCHE_SIMULE := ["annonces", "raretes", "vente_par_jour"]
 ## Les guildes (data/guildes.json, engine/guilde.gd) : le nom, la taille, les paliers de niveau, les rôles, l'Influence par
 ## activité, les effets, les modèles de bannière, le monde simulé.
-const CLES_GUILDES := ["nom", "taille", "niveaux", "roles", "officiers_max", "influence", "effets", "banniere", "simule"]
+const CLES_GUILDES := ["nom", "taille", "niveaux", "roles_max", "pouvoirs", "roles_defaut", "annonce_max", "influence", "effets", "banniere", "simule"]
 const CLES_GUILDE_EFFET := ["nom", "texte", "valeur", "max", "cout", "pente"]
 const CLES_GUILDE_BANNIERE := ["motifs", "couleurs"]
 const CLES_GUILDE_SIMULE := ["noms", "graine", "influence_par_jour"]
@@ -392,9 +392,15 @@ func _valider_guildes() -> void:
 			if int(paliers[i]) <= int(paliers[i - 1]):
 				erreurs.append("guildes.json niveaux : les paliers doivent monter")
 				break
-	for role in ["chef", "officier", "membre"]:
-		if not guildes.get("roles", {}).has(role):
-			erreurs.append("guildes.json roles : « %s » manque" % role)
+	var defauts: Variant = guildes.get("roles_defaut", [])
+	if not defauts is Array or defauts.is_empty() or defauts.size() > int(guildes.get("roles_max", 0)):
+		erreurs.append("guildes.json roles_defaut : de 1 à roles_max rôles attendus")
+	else:
+		for r in defauts:
+			if not r is Dictionary or not Guilde.role_valide(r, self):
+				erreurs.append("guildes.json roles_defaut : un rôle invalide (%s)" % str(r))
+	if guildes.get("pouvoirs", {}).is_empty():
+		erreurs.append("guildes.json pouvoirs : au moins un pouvoir")
 	if guildes.get("banniere", {}) is Dictionary and guildes["banniere"].get("couleurs", {}).size() < 2:
 		erreurs.append("guildes.json banniere : au moins deux couleurs")
 

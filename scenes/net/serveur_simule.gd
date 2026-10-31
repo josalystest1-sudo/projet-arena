@@ -274,6 +274,36 @@ func exclure_guilde(membre: String) -> Dictionary:
 	return {} if g.is_empty() or apres == g else _garder_guilde(apres)
 
 
+func _appliquer(apres: Dictionary) -> Dictionary:
+	var g: Dictionary = profile.serveur.get("guilde", {})
+	return {} if g.is_empty() or apres == g else _garder_guilde(apres)
+
+
+func definir_role(r: Dictionary) -> Dictionary:
+	return _appliquer(Guilde.definir_role(profile.serveur.get("guilde", {}), compte_id, r, donnees))
+
+
+func supprimer_role(id_role: String) -> Dictionary:
+	return _appliquer(Guilde.supprimer_role(profile.serveur.get("guilde", {}), compte_id, id_role))
+
+
+func annonce_guilde(texte: String) -> Dictionary:
+	return _appliquer(Guilde.changer_annonce(profile.serveur.get("guilde", {}), compte_id, texte, donnees))
+
+
+func recrutement_guilde(ouvert: bool) -> Dictionary:
+	return _appliquer(Guilde.changer_recrutement(profile.serveur.get("guilde", {}), compte_id, ouvert))
+
+
+func banniere_guilde(b: Dictionary) -> Dictionary:
+	return _appliquer(Guilde.changer_banniere(profile.serveur.get("guilde", {}), compte_id, b, donnees))
+
+
+## Inviter un personnage : dans le monde simulé, il accepte tout de suite.
+func inviter_guilde(fiche: Dictionary) -> Dictionary:
+	return _appliquer(Guilde.inviter(profile.serveur.get("guilde", {}), compte_id, fiche, Time.get_date_string_from_system(), donnees))
+
+
 ## L'économie : tes mouvements dans le profil (les 400 derniers) ; le bilan d'une semaine, les tiens plus ceux du
 ## monde simulé (engine/economie.gd, monde_simule).
 func mouvement(m: Dictionary) -> bool:

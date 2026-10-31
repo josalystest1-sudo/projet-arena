@@ -2,8 +2,20 @@
   "nom": {"min": 3, "max": 20},
   "taille": {"base": 20, "par_niveau": 10, "max": 100},
   "niveaux": [0, 300, 800, 1500, 2500, 4000, 6000, 8500, 12000],
-  "roles": {"chef": "Chef", "officier": "Officier", "membre": "Membre"},
-  "officiers_max": 5,
+  "roles_max": 5,
+  "pouvoirs": {
+    "exclure": "exclure un membre",
+    "recruter": "recruter : inviter des joueurs, ouvrir ou fermer la guilde",
+    "annonce": "éditer l'annonce",
+    "acheter": "dépenser l'Influence (monter les effets)",
+    "roles": "donner un rôle à un membre",
+    "banniere": "changer la bannière"
+  },
+  "roles_defaut": [
+    {"id": "officier", "nom": "Officier", "pouvoirs": ["exclure", "recruter", "annonce", "acheter", "roles"]},
+    {"id": "membre", "nom": "Membre", "pouvoirs": []}
+  ],
+  "annonce_max": 200,
   "influence": {"duel": 2, "duel_gagne": 3, "etage": 1, "gardien": 10, "boss": 50, "selection": 3},
   "effets": {
     "xp": {"nom": "Savoir de guilde", "texte": "+{v} % d'XP pour chaque membre", "valeur": 0.05, "max": 3, "cout": 400, "pente": 1.0},
