@@ -1,7 +1,9 @@
 ## L'équipement (docs/GDD_V2.md, § 10.1 ; docs/PLAN.md, PR 3.1) : un objet est un paquet de modificateurs dans la langue
 ## du Destin ; il n'a de valeur que pour un Destin. Cinq emplacements (Arme, Armure, Anneau, Amulette, Talisman), quatre
-## raretés (commun 1 ligne, rare 2, épique 3, légendaire 4), des bases aux noms fixes (data/items.json), chacune avec
-## sa réserve de lignes possibles. Les huit lignes (décision de Gautier du 29 octobre) : PV max, Force (toutes les
+## raretés (commun 1 ligne, rare 2, épique 3, légendaire 4), trente bases aux noms fixes (data/items.json : six par
+## emplacement, chaque ligne dans quinze réserves), chacune avec sa réserve de quatre lignes possibles, et des paliers
+## de niveau qui donnent au nom son matériau (« Épée d'acier épique » : de fer, d'acier, d'argent, de mithril, runique,
+## de dragon). Les huit lignes (décision de Gautier du 29 octobre) : PV max, Force (toutes les
 ## valeurs), Dégâts, Soins, Barrières, Poisons et brûlures (DoT), Clés, Ouvertures (moyeu et N1). Une ligne a une
 ## fourchette connue, affichée, qui grandit avec le niveau de l'objet et sa rareté ; ses chiffres sont tirés à la
 ## trouvaille (graine fournie), et la qualité en % dit où le tirage est tombé dans ses fourchettes. Des plafonds par
@@ -283,11 +285,22 @@ static func _effet_a_valeur(noeud: Dictionary) -> Dictionary:
 
 # --- Textes et contrôle ------------------------------------------------------------------------
 
-## « Épée épique », « Cotte de mailles commune ».
+## Le palier d'un niveau d'objet (data/items.json, paliers) : le dernier dont le niveau minimal est atteint.
+static func palier(niveau: int, d: Donnees) -> Dictionary:
+	var out: Dictionary = {}
+	for p in d.objets.get("paliers", []):
+		if int(p["niveau_min"]) <= maxi(1, niveau):
+			out = p
+	return out
+
+
+## « Épée d'acier épique », « Cotte de mailles de fer commune » : la base, le matériau de son palier, la rareté.
 static func nom(objet: Dictionary, d: Donnees) -> String:
 	var base: Dictionary = d.objets["bases"][objet["base"]]
 	var genre := "f" if str(base["genre"]) == "f" else "m"
-	return "%s %s" % [base["nom"], d.objets["raretes"][objet["rarete"]]["nom"][genre]]
+	var p := palier(int(objet["niveau"]), d)
+	var materiau := (" " + str(p["suffixe"])) if p.has("suffixe") else ""
+	return "%s%s %s" % [base["nom"], materiau, d.objets["raretes"][objet["rarete"]]["nom"][genre]]
 
 
 ## Un chiffre en % à la française : « 5,3 ».
@@ -317,6 +330,7 @@ static func fiche(objet: Dictionary, d: Donnees) -> Dictionary:
 		lignes.append({"stat": l["stat"], "nom": d.objets["lignes"][l["stat"]]["nom"], "texte": texte_ligne(l, d),
 			"fourchette": texte_fourchette(str(l["stat"]), objet, d), "valeur": float(l["valeur"])})
 	return {"nom": nom(objet, d), "emplacement": d.objets["emplacements"][emplacement(objet, d)]["nom"],
+		"description": str(d.objets["bases"][objet["base"]].get("description", "")),
 		"rarete": d.objets["raretes"][objet["rarete"]]["nom"]["m"], "rang": int(d.objets["raretes"][objet["rarete"]]["rang"]),
 		"niveau": int(objet["niveau"]), "lignes": lignes, "qualite": int(objet["qualite"]), "lie": bool(objet["lie"]),
 		"reforge": cout_reforge(objet, d)}

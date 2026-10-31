@@ -64,7 +64,10 @@ const CLES_FAVEUR_OBLIGATOIRES := ["nom", "texte", "valeur"]
 const FAVEURS := ["vigueur", "puissance", "repit", "egide", "effroi", "savoir"]
 ## L'équipement (data/items.json, engine/equipement.gd) : les emplacements, les huit lignes que le moteur sait
 ## appliquer, les raretés, l'échelle du niveau, les bases, le butin par source, la reforge.
-const CLES_OBJETS := ["emplacements", "lignes", "raretes", "niveau", "bases", "butin", "reforge", "recyclage", "eclats"]
+const CLES_OBJETS := ["emplacements", "lignes", "raretes", "niveau", "paliers", "bases", "butin", "reforge", "recyclage", "eclats"]
+## Un palier de niveau d'un objet (data/items.json, paliers) : à partir de ce niveau, le nom de l'objet porte ce suffixe
+## (« Épée d'acier épique »).
+const CLES_PALIER_OBJET := ["niveau_min", "suffixe"]
 ## Les Éclats (la monnaie liée, GDD V2 § 10.2) gagnés en duel et par étage de la Tour (data/items.json).
 ## La ville (data/ville.json, GDD V2 § 11) : ses bâtiments (nom, sous-titre, écran ouvert et ses options, position sur
 ## la carte en fractions, disponible ou non, forme du dessin provisoire).
@@ -107,7 +110,7 @@ const LIGNES := ["pv", "force", "degats", "soins", "barrieres", "dot", "cle", "o
 const CLES_LIGNE := ["nom", "texte", "fourchette", "plafond"]
 const CLES_RARETE := ["nom", "rang", "lignes", "echelle"]
 const CLES_NIVEAU := ["plancher", "plein"]
-const CLES_BASE := ["nom", "genre", "emplacement", "lignes"]
+const CLES_BASE := ["nom", "genre", "emplacement", "lignes", "description"]
 const CLES_BUTIN := ["etage", "gardien", "rejoue"]
 const CLES_REFORGE := ["cout", "pente"]
 
@@ -396,6 +399,21 @@ func _valider_objets() -> void:
 		var p := float(objets["niveau"].get("plancher", 0.0))
 		if p <= 0.0 or p > 1.0 or float(objets["niveau"].get("plein", 0.0)) < 1.0:
 			erreurs.append("items.json niveau : plancher entre 0 et 1, plein d'au moins 1")
+	var paliers: Variant = objets.get("paliers", [])
+	if not paliers is Array or paliers.is_empty():
+		erreurs.append("items.json paliers : une liste d'au moins un palier attendue")
+	else:
+		var precedent := 0
+		for i in range(paliers.size()):
+			_cles(paliers[i], CLES_PALIER_OBJET, CLES_PALIER_OBJET, "items.json palier %d" % i)
+			if not paliers[i] is Dictionary:
+				continue
+			var nv := int(paliers[i].get("niveau_min", 0))
+			if i == 0 and nv != 1:
+				erreurs.append("items.json paliers : le premier palier commence au niveau 1")
+			elif i > 0 and nv <= precedent:
+				erreurs.append("items.json palier %d : les niveaux doivent monter" % i)
+			precedent = nv
 	for id in objets.get("bases", {}):
 		var ou := "items.json base " + str(id)
 		var b: Variant = objets["bases"][id]

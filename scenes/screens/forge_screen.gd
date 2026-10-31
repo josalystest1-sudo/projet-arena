@@ -88,6 +88,8 @@ func _fiche(ou: String, cle: Variant) -> void:
 	var column := UiKit.scroll_column(self, 12)
 	column.add_child(UiKit.label(str(f["nom"]), 30, UiKit.rarete_couleur(int(f["rang"]))))
 	column.add_child(UiKit.label("%s · niveau %d · qualité %d %% · %s" % [f["emplacement"], f["niveau"], f["qualite"], "lié à toi" if f["lie"] else "échangeable"], 15, UiKit.SOFT))
+	if str(f.get("description", "")) != "":
+		column.add_child(UiKit.label(str(f["description"]), 14, ATTENUE, false))
 	if ou == "porte":
 		column.add_child(UiKit.label("Tu le portes.", 15, ATTENUE))
 	# Les lignes, chacune avec sa fourchette et sa reforge.
