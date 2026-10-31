@@ -192,6 +192,34 @@ func nombre_guildes() -> int:
 	return 0
 
 
+## Les guerres de guilde (engine/guerre.gd). Les batailles d'un soir (celles des guildes du monde et les tiennes, après la
+## résolution des soirs passés) ; les protections en cours (territoire -> jour) ; déclarer une attaque (la bataille, vide
+## si refusée, `erreur` dit pourquoi) ; un combat de guerre à jouer dans une bataille ({bataille, adversaire : une fiche},
+## vide s'il n'en reste pas) ; son résultat (la bataille mise à jour) ; l'XP des territoires à donner au joueur.
+func batailles(_jour: String) -> Array:
+	return []
+
+
+func protections() -> Dictionary:
+	return {}
+
+
+func declarer_guerre(_territoire: String) -> Dictionary:
+	return {}
+
+
+func combat_guerre(_id: String) -> Dictionary:
+	return {}
+
+
+func resultat_guerre(_id: String, _gagne: bool) -> Dictionary:
+	return {}
+
+
+func xp_territoires() -> int:
+	return 0
+
+
 ## Le résumé d'une guilde pour une liste.
 static func resume_guilde(g: Dictionary, d: Donnees) -> Dictionary:
 	var nv := Guilde.niveau(int(g.get("influence_totale", 0)), d)

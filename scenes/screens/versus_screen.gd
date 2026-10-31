@@ -7,17 +7,22 @@ const ENEMY_NAMES := ["Ombre", "Brume", "Cendre", "Givre", "Ronce", "Écume", "N
 
 var app: ArenaApp
 var options := {}
-## Un combat classé (l'Arène) ou un amical.
+## Un combat classé (l'Arène) ou un amical ; ou un combat de guerre (l'identifiant de la bataille).
 var classe := false
+var guerre := ""
 
 
 func setup(p_app: ArenaApp, p_options: Dictionary) -> void:
 	app = p_app
 	classe = bool(p_options.get("classe", false))
-	options = (await app.duel_classe()) if classe else app.duel_contre_ia()
+	guerre = str(p_options.get("guerre", ""))
+	if guerre != "":
+		options = await app.duel_guerre(guerre)
+	else:
+		options = (await app.duel_classe()) if classe else app.duel_contre_ia()
 	if options.is_empty():
-		# Plus de combat classé aujourd'hui : retour à l'Arène.
-		app.show_screen("arene")
+		# Plus de combat classé aujourd'hui (ou de guerre ce soir) : retour à l'Arène ou à la carte.
+		app.show_screen("carte" if guerre != "" else "arene")
 		return
 	var libres := ENEMY_NAMES.filter(func(n): return n != str(options["noms"].get("b1", "")))
 	for id in ["b1", "b2", "b3"]:
@@ -51,7 +56,11 @@ func _face_a_face(column: VBoxContainer, cherche: Label) -> void:
 			rangee.add_child(p)
 		if camp[1]:
 			var adv: Dictionary = options.get("adversaire", {})
-			if classe:
+			if guerre != "":
+				var b: Dictionary = options.get("bataille", {})
+				var ter := Carte.territoire(str(b.get("territoire", "")), app.data)
+				column.add_child(UiKit.label("Combat de guerre · %s · contre %s, niveau %d%s" % [ter.get("nom", "?"), adv.get("nom", "?"), int(adv.get("niveau", e.niveau)), " · un garde du territoire" if bool(adv.get("garde", false)) else " · défenseur de %s" % str(b.get("defenseur", {}).get("nom", "?"))], 14, UiKit.SOFT))
+			elif classe:
 				if bool(adv.get("reel", false)):
 					column.add_child(UiKit.label("Combat classé · %s, niveau %d, %d points · personnage d'un autre joueur, ses Échos générés%s" % [adv.get("nom", "?"), int(adv.get("niveau", e.niveau)), int(adv.get("points", 0)), " · équipé" if str(adv.get("equipement", "")) != "" else ""], 14, UiKit.SOFT))
 				else:

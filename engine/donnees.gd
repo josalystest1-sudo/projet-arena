@@ -158,6 +158,8 @@ var objets_arene: Dictionary = {}
 var donjons: Dictionary = {}
 ## La carte du monde (data/carte.json, engine/carte.gd).
 var carte: Dictionary = {}
+## Les guerres de guilde (data/guerre.json, engine/guerre.gd).
+var guerre: Dictionary = {}
 ## Le Comptoir (data/comptoir.json, GDD V2 § 10.2).
 var comptoir: Dictionary = {}
 ## Les guildes (data/guildes.json).
@@ -204,6 +206,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.objets_arene = _lire(dossier + "arene.json", donnees.erreurs)
 	donnees.donjons = _lire(dossier + "donjons.json", donnees.erreurs)
 	donnees.carte = _lire(dossier + "carte.json", donnees.erreurs)
+	donnees.guerre = _lire(dossier + "guerre.json", donnees.erreurs)
 	donnees.comptoir = _lire(dossier + "comptoir.json", donnees.erreurs)
 	donnees.guildes = _lire(dossier + "guildes.json", donnees.erreurs)
 	donnees.boss = _lire(dossier + "boss.json", donnees.erreurs)
@@ -320,6 +323,9 @@ func valider() -> void:
 			erreurs.append(ou + " : pv_mult hors de 0,5 à 1,5")
 	_valider_donjons()
 	_valider_carte()
+	_cles(guerre, CLES_GUERRE, CLES_GUERRE, "guerre.json")
+	if guerre is Dictionary and (int(guerre.get("combats_par_membre", 0)) < 1 or float(guerre.get("defense", 0.0)) < 1.0):
+		erreurs.append("guerre.json : au moins un combat par membre, une défense d'au moins 1")
 	_valider_comptoir()
 	_valider_guildes()
 	_valider_boss()
@@ -605,6 +611,7 @@ func _valider_arene() -> void:
 ## La carte du monde (data/carte.json) : des types connus, des régions avec un donjon du jeu, des territoires aux
 ## identifiants uniques et au type connu, des liens entre territoires existants.
 const CLES_CARTE := ["types", "donjon", "neutre_apres_jours", "regions", "simule"]
+const CLES_GUERRE := ["combats_par_membre", "defenses_max_par_perso", "attaques_base", "membres_par_attaque", "membres_min_pour_attaquer_tenu", "defense", "defense_bastion", "protection_jours", "poids_niveau", "simule"]
 const CLES_CARTE_TYPE := ["nom", "texte", "valeur"]
 const CLES_CARTE_REGION := ["id", "nom", "niveau_min", "niveau_max", "donjon", "territoires", "liens"]
 const CLES_CARTE_TERRITOIRE := ["id", "nom", "type", "x", "y", "des"]

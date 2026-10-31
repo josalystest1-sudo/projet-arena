@@ -1,0 +1,12 @@
+{
+  "combats_par_membre": 3,
+  "defenses_max_par_perso": 3,
+  "attaques_base": 1,
+  "membres_par_attaque": 20,
+  "membres_min_pour_attaquer_tenu": 10,
+  "defense": 1.2,
+  "defense_bastion": 1.5,
+  "protection_jours": 2,
+  "poids_niveau": 30,
+  "simule": {"graine": 1313, "attaques_par_jour": 1}
+}

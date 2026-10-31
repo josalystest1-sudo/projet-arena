@@ -42,6 +42,18 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	cartes.add_theme_constant_override("separation", 8)
 	if donjon != null:
 		_donjon(column, cartes, donjon, e)
+	elif tour == null and str(options.get("guerre", "")) != "":
+		var b: Dictionary = await app.fin_guerre(str(options["guerre"]), gagne)
+		if not is_inside_tree():
+			return
+		column.add_child(UiKit.label("Victoire !" if gagne else "Défaite", 40, OR if gagne else ROUGE))
+		app.sfx.play("victoire" if gagne else "defaite")
+		column.add_child(cartes)
+		if not b.is_empty():
+			_carte(cartes, "Combat de guerre", Carte.territoire(str(b["territoire"]), app.data).get("nom", "?"), "attaquants %s · défenseurs %s" % [("%.1f" % Guerre.score(b, "attaquant")).replace(".", ","), ("%.1f" % Guerre.score(b, "defenseur")).replace(".", ",")])
+			_carte(cartes, "Tes combats ce soir", "%d" % Guerre.combats_de(b, app.serveur.compte_id, "attaquant"), "sur %d · le résultat demain" % int(app.data.guerre["combats_par_membre"]))
+		var syn: Array = options.get("synergies", [])
+		_carte(cartes, "Synergies", str(syn.size()), ", ".join(_uniques(syn)) if not syn.is_empty() else "aucune")
 	elif tour == null:
 		var classe := bool(options.get("classe", false))
 		var resultat := app.fin_duel(gagne, classe)
@@ -130,6 +142,10 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 		else:
 			suite_boutons.add_child(UiKit.main_button("Les donjons", func(): app.show_screen("donjon")))
 			suite_boutons.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 56))
+	elif tour == null and str(options.get("guerre", "")) != "":
+		var id_guerre := str(options["guerre"])
+		suite_boutons.add_child(UiKit.main_button("Combattre encore", func(): app.show_screen("versus", {"guerre": id_guerre})))
+		suite_boutons.add_child(UiKit.button("Retour à la carte", func(): app.show_screen("carte"), 56))
 	elif tour == null:
 		var classe_fin := bool(options.get("classe", false))
 		suite_boutons.add_child(UiKit.main_button("Rejouer", func(): app.show_screen("versus", {"classe": classe_fin})))
