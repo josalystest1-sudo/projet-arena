@@ -249,6 +249,7 @@ func _nom_d_echo() -> String:
 func _regenerer() -> void:
 	destin = Generateur.generer(player_class, graine, profile.level, allumage, data)
 	destin.mods = Equipement.mods(objets_portes(), data)
+	destin.traits = Equipement.traits(objets_portes(), data)
 	echos.clear()
 	for role in Trio.roles_des_echos(player_class, data):
 		var choix: Dictionary = echos_choisis[role]

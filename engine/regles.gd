@@ -6,6 +6,10 @@
 class_name Regles
 extends RefCounted
 
+## Les traits légendaires (data/items.json, traits ; engine/equipement.gd) : des passifs du porteur, appliqués ici.
+## Férocité frappe plus fort un ennemi sous ce seuil de PV ; Carapace pose sa barrière pour ce nombre de tours.
+const FEROCITE_SEUIL := 0.30
+const CARAPACE_TOURS := 3
 ## Les états de contrôle qui ouvrent Brisure (section 8).
 const CONTROLES_BRISURE := ["etourdi", "gele", "enracine", "aveugle", "silencie", "provoque"]
 ## Les chiffres des quatre Synergies (section 8), des règles comme les éclats : hors des données.
@@ -41,6 +45,7 @@ static func nouveau_combat(camp_a: Array, camp_b: Array, niveau: int, mode: Stri
 	e.mode = mode
 	e.regles = d.regles
 	e.defs_etats = d.etats
+	e.defs_traits = d.objets.get("traits", {})
 	var m := multiplicateur_niveau(e)
 	for c in [["a", camp_a], ["b", camp_b]]:
 		var membres: Array = c[1]
@@ -59,15 +64,29 @@ static func nouveau_combat(camp_a: Array, camp_b: Array, niveau: int, mode: Stri
 			var pv_max := plancher(float(destin.pv_base) * destin.pv_mult * m * (1.0 + destin.bonus_pv()) * (1.0 + float(destin.mods.get("pv", 0.0))))
 			e.statique[id] = {"camp": c[0], "place": place, "classe": destin.classe_id, "nom": destin.nom, "sprite": destin.sprite,
 				"role": destin.role, "k": destin.k * (1.0 + float(destin.mods.get("force", 0.0))), "pv_max": pv_max, "moyeu": destin.moyeu,
-				"voies": destin.voies, "bonus": bonus, "mods": destin.mods.duplicate()}
+				"voies": destin.voies, "bonus": bonus, "mods": destin.mods.duplicate(), "traits": Array(destin.traits)}
 			var nv := destin.voies.size()
 			var eteints: Array = []
 			for v in range(nv):
 				eteints.append([0, 0, 0, 0])
 			e.persos[id] = {"pv": pv_max, "ko": false, "etats": {}, "barriere": 0, "barrier_until": 0,
 				"jalons": _zeros(nv), "spent_until": eteints, "inactivite": _zeros(nv), "last_voie": -1,
-				"cible_ennemie": "", "cible_alliee": "", "soins": 0}
+				"cible_ennemie": "", "cible_alliee": "", "soins": 0, "tenacite": false}
+			# Carapace : une barrière dès le début du combat, comme posée au tour 1.
+			if porte(e, id, "carapace"):
+				e.persos[id]["barriere"] = plancher(float(pv_max) * valeur_trait(e, "carapace"))
+				e.persos[id]["barrier_until"] = e.tour + CARAPACE_TOURS - 1
 	return e
+
+
+## Ce perso porte-t-il ce trait légendaire ? (« trait » est un mot réservé de GDScript.)
+static func porte(e: EtatCombat, id: String, nom: String) -> bool:
+	return nom in e.fiche(id).get("traits", [])
+
+
+## La valeur d'un trait (data/items.json, traits).
+static func valeur_trait(e: EtatCombat, nom: String) -> float:
+	return float(e.defs_traits.get(nom, {}).get("valeur", 0.0))
 
 
 ## M(niveau) = 1 + 0,05 × (niveau − 1) (section 3.3).
@@ -476,7 +495,13 @@ static func _appliquer(e: EtatCombat, a: Dictionary, index: int, ef: Dictionary,
 				base *= DESARME
 			for t in touches:
 				var montant := plancher(base * float(mods["degats"].get("%s|%d|%s" % [id, index, t], 1.0)))
+				# Férocité : plus fort sur un ennemi déjà bas.
+				if porte(e, id, "ferocite") and e.pv_pourcent(t) < FEROCITE_SEUIL:
+					montant = plancher(float(montant) * (1.0 + valeur_trait(e, "ferocite")))
 				_blesser(e, phase, id, nid, t, montant, false, "degats")
+				# Soif : une part du dégât revient en soin.
+				if porte(e, id, "soif") and montant > 0 and e.vivant(id):
+					_soigner(e, phase, id, nid, id, plancher(float(montant) * valeur_trait(e, "soif")), "soin", "soif")
 		"soin":
 			var base := valeur(e, id, voie, rang, float(ef["valeur"]), "soin") * maxf(0.0, forces) * usure_soins(e, id)
 			for t in touches:
@@ -505,6 +530,8 @@ static func _appliquer(e: EtatCombat, a: Dictionary, index: int, ef: Dictionary,
 			var par_tour := plancher(valeur(e, id, voie, rang, float(ef["par_tour"]), "dot") * maxf(0.0, forces))
 			for t in touches:
 				var tours := int(ef["tours"]) + int(mods["dot"].get("%s|%d|%s" % [id, index, t], 0))
+				if porte(e, id, "persistance"):
+					tours += 1
 				_poser(e, t, str(ef["sous_type"]), tours, float(par_tour), id)
 				_ev(e, phase, id, nid, t, "etat", par_tour, 0, "%s:%d" % [ef["sous_type"], tours])
 		"gardien":
@@ -574,10 +601,16 @@ static func _blesser(e: EtatCombat, phase: String, acteur: String, nid: String, 
 	p["barriere"] = int(p["barriere"]) - absorbe
 	p["pv"] = int(p["pv"]) - (montant - absorbe)
 	_ev(e, phase, acteur, nid, t, type, montant, absorbe, detail)
+	# Épines : un dégât direct subi en renvoie une part à l'attaquant (jamais en chaîne).
+	if type == "degats" and acteur != t and acteur != "" and montant > 0 and porte(e, t, "epines") and e.vivant(acteur):
+		_blesser(e, phase, t, "", acteur, plancher(float(montant) * valeur_trait(e, "epines")), false, "epines")
 
 
 static func _soigner(e: EtatCombat, phase: String, acteur: String, nid: String, t: String, montant: int, type: String, detail: String = "") -> void:
 	var p := e.perso(t)
+	# Grâce : les soins reçus sont plus grands.
+	if porte(e, t, "grace"):
+		montant = plancher(float(montant) * (1.0 + valeur_trait(e, "grace")))
 	var avant := int(p["pv"])
 	p["pv"] = mini(avant + montant, int(e.fiche(t)["pv_max"]))
 	_ev(e, phase, acteur, nid, t, type, int(p["pv"]) - avant, 0, detail)
@@ -587,6 +620,9 @@ static func _soigner(e: EtatCombat, phase: String, acteur: String, nid: String, 
 ## la valeur la plus forte sont gardées, jamais deux instances.
 static func _poser(e: EtatCombat, t: String, nom: String, duree: int, val: float, source: String) -> void:
 	var etats: Dictionary = e.perso(t)["etats"]
+	# Endurance : un état négatif subi dure un tour de moins, jamais moins d'un.
+	if porte(e, t, "endurance") and bool(e.defs_etats.get(nom, {}).get("negatif", false)):
+		duree = maxi(1, duree - 1)
 	var fin := e.tour + duree
 	if etats.has(nom):
 		var s: Dictionary = etats[nom]
@@ -638,10 +674,14 @@ static func _jalons(e: EtatCombat, actions: Dictionary) -> void:
 		var p := e.perso(id)
 		var a: Dictionary = actions.get(id, {})
 		var jouee := -1
+		# Ancrage : ses voies refroidissent un tour plus tard.
+		var refroidissement_id := refroidissement + (1 if porte(e, id, "ancrage") else 0)
 		if not a.is_empty() and str(a["source"]) == "voie":
 			jouee = int(a["voie"])
 			var rang := int(a["rang"])
-			p["spent_until"][jouee][rang - 1] = e.tour + extinction + 1
+			# Fulgurance : une Clé s'éteint un tour de moins.
+			var extinction_noeud := extinction - (1 if rang == 4 and porte(e, id, "fulgurance") else 0)
+			p["spent_until"][jouee][rang - 1] = e.tour + extinction_noeud + 1
 			p["jalons"][jouee] = rang if rang < 4 else 0
 			p["last_voie"] = jouee if rang < 4 else -1
 			_ev(e, "2h", id, id_noeud(e, a), id, "jalon", int(p["jalons"][jouee]), 0, str(e.fiche(id)["voies"][jouee]["id"]))
@@ -650,7 +690,7 @@ static func _jalons(e: EtatCombat, actions: Dictionary) -> void:
 				p["inactivite"][w] = 0
 			else:
 				p["inactivite"][w] = int(p["inactivite"][w]) + 1
-			if int(p["inactivite"][w]) >= refroidissement:
+			if int(p["inactivite"][w]) >= refroidissement_id:
 				p["inactivite"][w] = 0
 				if int(p["jalons"][w]) > 0:
 					p["jalons"][w] = int(p["jalons"][w]) - 1
@@ -663,6 +703,11 @@ static func _ko_et_fin(e: EtatCombat, pv_debut: Dictionary) -> void:
 	var tombes: Array[String] = []
 	for id in e.ordre:
 		var p := e.perso(id)
+		# Ténacité : la première fois, il reste à 1 PV.
+		if not bool(p["ko"]) and int(p["pv"]) <= 0 and porte(e, id, "tenacite") and not bool(p.get("tenacite", false)):
+			p["tenacite"] = true
+			p["pv"] = 1
+			_ev(e, "2i", id, "", id, "tenacite")
 		if not bool(p["ko"]) and int(p["pv"]) <= 0:
 			p["ko"] = true
 			p["pv"] = 0

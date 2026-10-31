@@ -122,5 +122,7 @@ static func adversaire(niveau: int, graine: int, d: Donnees) -> Dictionary:
 static func trio_adverse(adv: Dictionary, d: Donnees) -> Array[Destin]:
 	var joueur := Generateur.generer(str(adv["classe"]), int(adv["graine"]), int(adv["niveau"]), Generateur.PAR_DEFAUT, d)
 	if str(adv.get("equipement", "")) != "":
-		joueur.mods = Equipement.mods(Equipement.jeu(int(adv["niveau"]), str(adv["equipement"]), int(adv["graine"]) ^ 0x33, d), d)
+		var jeu := Equipement.jeu(int(adv["niveau"]), str(adv["equipement"]), int(adv["graine"]) ^ 0x33, d)
+		joueur.mods = Equipement.mods(jeu, d)
+		joueur.traits = Equipement.traits(jeu, d)
 	return Trio.camp(joueur, int(adv["niveau"]), d)

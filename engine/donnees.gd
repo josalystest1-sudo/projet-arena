@@ -64,7 +64,11 @@ const CLES_FAVEUR_OBLIGATOIRES := ["nom", "texte", "valeur"]
 const FAVEURS := ["vigueur", "puissance", "repit", "egide", "effroi", "savoir"]
 ## L'équipement (data/items.json, engine/equipement.gd) : les emplacements, les huit lignes que le moteur sait
 ## appliquer, les raretés, l'échelle du niveau, les bases, le butin par source, la reforge.
-const CLES_OBJETS := ["emplacements", "lignes", "raretes", "niveau", "paliers", "bases", "butin", "reforge", "recyclage", "eclats"]
+const CLES_OBJETS := ["emplacements", "lignes", "raretes", "niveau", "paliers", "bases", "traits", "butin", "reforge", "recyclage", "eclats"]
+## Les traits légendaires (data/items.json, traits : un par objet légendaire, un passif de combat appliqué par
+## engine/regles.gd) : seuls ces identifiants sont connus du moteur.
+const TRAITS_CONNUS := ["tenacite", "soif", "epines", "ancrage", "fulgurance", "endurance", "ferocite", "grace", "carapace", "persistance"]
+const CLES_TRAIT := ["nom", "texte", "valeur"]
 ## Un palier de niveau d'un objet (data/items.json, paliers) : à partir de ce niveau, le nom de l'objet porte ce suffixe
 ## (« Épée d'acier épique »).
 const CLES_PALIER_OBJET := ["niveau_min", "suffixe"]
@@ -414,6 +418,17 @@ func _valider_objets() -> void:
 			elif i > 0 and nv <= precedent:
 				erreurs.append("items.json palier %d : les niveaux doivent monter" % i)
 			precedent = nv
+	var traits: Variant = objets.get("traits", {})
+	if not traits is Dictionary or traits.is_empty():
+		erreurs.append("items.json traits : au moins un trait attendu")
+	else:
+		for id in traits:
+			var ou_t := "items.json trait " + str(id)
+			_cles(traits[id], CLES_TRAIT, CLES_TRAIT, ou_t)
+			if not str(id) in TRAITS_CONNUS:
+				erreurs.append(ou_t + " : inconnu du moteur")
+			if traits[id] is Dictionary and float(traits[id].get("valeur", 0.0)) <= 0.0:
+				erreurs.append(ou_t + " : valeur nulle ou négative")
 	for id in objets.get("bases", {}):
 		var ou := "items.json base " + str(id)
 		var b: Variant = objets["bases"][id]

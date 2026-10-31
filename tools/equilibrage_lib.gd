@@ -60,7 +60,9 @@ static func destins(d: Donnees, classe: String, graine: int, memoire: Dictionary
 			camp = [joueur, Generateur.acolyte(classe, graine, niveau, d)]
 		if equipement != "":
 			for i in range(camp.size()):
-				camp[i].mods = Equipement.mods(Equipement.jeu(niveau, equipement, graine * 7 + i, d), d)
+				var jeu := Equipement.jeu(niveau, equipement, graine * 7 + i, d)
+				camp[i].mods = Equipement.mods(jeu, d)
+				camp[i].traits = Equipement.traits(jeu, d)
 		memoire[cle] = camp
 	return memoire[cle]
 

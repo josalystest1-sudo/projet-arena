@@ -17,6 +17,8 @@ var mode := "pvp"
 ## Les règles chiffrées (data/rules.json) et les états (data/etats.json), partagés, en lecture seule.
 var regles: Dictionary = {}
 var defs_etats: Dictionary = {}
+## Les traits légendaires (data/items.json, traits), pour leurs valeurs.
+var defs_traits: Dictionary = {}
 ## L'ordre d'application (section 5.4) : joueur A, acolyte A (ou ses deux Échos), joueur B (ou ennemi 1), acolyte B (ou
 ## ses deux Échos, ou ennemis 2 à 4).
 var ordre: Array[String] = []
@@ -38,6 +40,7 @@ func copie() -> EtatCombat:
 	e.mode = mode
 	e.regles = regles
 	e.defs_etats = defs_etats
+	e.defs_traits = defs_traits
 	e.ordre = ordre.duplicate()
 	e.statique = statique
 	e.persos = persos.duplicate(true)
@@ -50,7 +53,7 @@ func copie() -> EtatCombat:
 
 func vers_dict() -> Dictionary:
 	return {"tour": tour, "niveau": niveau, "mode": mode, "regles": regles.duplicate(true),
-		"defs_etats": defs_etats.duplicate(true), "ordre": Array(ordre), "statique": statique.duplicate(true),
+		"defs_etats": defs_etats.duplicate(true), "defs_traits": defs_traits.duplicate(true), "ordre": Array(ordre), "statique": statique.duplicate(true),
 		"persos": persos.duplicate(true), "fini": fini, "vainqueur": vainqueur, "journal": journal.duplicate(true),
 		"actions_jouees": actions_jouees.duplicate(true)}
 
@@ -62,6 +65,7 @@ static func depuis_dict(dico: Dictionary) -> EtatCombat:
 	e.mode = str(dico["mode"])
 	e.regles = dico["regles"].duplicate(true)
 	e.defs_etats = dico["defs_etats"].duplicate(true)
+	e.defs_traits = dico.get("defs_traits", {}).duplicate(true)
 	for id in dico["ordre"]:
 		e.ordre.append(str(id))
 	e.statique = dico["statique"].duplicate(true)
@@ -80,7 +84,7 @@ static func depuis_dict(dico: Dictionary) -> EtatCombat:
 		e.persos[id] = {"pv": int(p["pv"]), "ko": bool(p["ko"]), "etats": etats, "barriere": int(p["barriere"]),
 			"barrier_until": int(p["barrier_until"]), "jalons": _entiers(p["jalons"]), "spent_until": eteints,
 			"inactivite": _entiers(p["inactivite"]), "last_voie": int(p["last_voie"]),
-			"cible_ennemie": str(p["cible_ennemie"]), "cible_alliee": str(p["cible_alliee"]), "soins": int(p.get("soins", 0))}
+			"cible_ennemie": str(p["cible_ennemie"]), "cible_alliee": str(p["cible_alliee"]), "soins": int(p.get("soins", 0)), "tenacite": bool(p.get("tenacite", false))}
 	e.fini = bool(dico["fini"])
 	e.vainqueur = str(dico["vainqueur"])
 	e.journal = dico["journal"].duplicate(true)
