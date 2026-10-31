@@ -52,7 +52,8 @@ const CLES_NOEUD := ["rang", "nom", "genre", "effets", "budget_override"]
 const CLES_BESTIAIRE := ["familles", "rangs", "monstres"]
 const CLES_MONSTRE := ["nom", "famille", "rang", "classe", "voies", "pv_mult", "description"]
 const CLES_TOUR := ["pv_entre_etages", "monstres_max", "somme_depart", "somme_pente", "somme_largeur", "somme_max",
-	"niveau_par_etage", "tirages", "gardien_tous_les", "revenu"]
+	"niveau_depart", "niveau_par_etage", "niveau_par_etage_haut", "etage_coude", "tirages", "gardien_tous_les", "grand_gardien_tous_les", "avance_gardien",
+	"avance_grand_gardien", "revenu"]
 ## Le revenu passif de la Tour (data/tour.json, GDD V2 § 6) : des Éclats et un peu d'XP par jour selon le record, plafonnés.
 const CLES_REVENU := ["eclats_par_etage", "xp_par_etage", "eclats_max", "xp_max"]
 ## Une Faveur de la Tour (data/faveurs.json) : son nom, son texte (« {v} » : la valeur cumulée, en %), sa valeur par
@@ -247,6 +248,16 @@ func valider() -> void:
 		if str(ev.get("description", "")) == "":
 			erreurs.append("évolution %s : description vide" % id)
 	_cles(tour, CLES_TOUR, CLES_TOUR, "tour.json")
+	# Les murs de la Tour (décision de Gautier du 31 octobre) : un grand Gardien tous les 10 étages, un Gardien moindre
+	# tous les 5 ; les cinq étages qui suivent un Gardien sont moins forts que lui.
+	if tour is Dictionary and int(tour.get("gardien_tous_les", 0)) > 0:
+		var g := int(tour["gardien_tous_les"])
+		if int(tour.get("grand_gardien_tous_les", 0)) % g != 0:
+			erreurs.append("tour.json : grand_gardien_tous_les doit être un multiple de gardien_tous_les")
+		if int(tour.get("avance_gardien", 0)) <= g:
+			erreurs.append("tour.json : avance_gardien doit dépasser gardien_tous_les (les étages qui suivent un Gardien sont moins forts que lui)")
+		if int(tour.get("avance_grand_gardien", 0)) <= int(tour.get("avance_gardien", 0)) + g:
+			erreurs.append("tour.json : avance_grand_gardien doit dépasser avance_gardien + gardien_tous_les (le Gardien moindre qui suit un grand Gardien est moins fort que lui)")
 	_cles(tour.get("revenu", {}), CLES_REVENU, CLES_REVENU, "tour.json revenu")
 	_cles(faveurs, FAVEURS, FAVEURS, "faveurs.json")
 	for id in faveurs:

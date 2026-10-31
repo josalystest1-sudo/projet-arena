@@ -77,7 +77,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 			_carte(cartes, "PV rendus", "+%d %%" % roundi(rendu * 100.0), "à chacun")
 			_carte(cartes, "XP", "+%d" % xp, "niveau %d · +%d Éclats" % [app.profile.level, int(franchi["eclats"])])
 			if bool(franchi["gardien"]):
-				_carte(cartes, "Palier", "étage %d" % tour.etage, "tu reprendras d'ici")
+				_carte(cartes, "Grand Gardien vaincu" if bool(franchi.get("grand", false)) else "Gardien vaincu", "palier %d" % tour.etage, "tu reprendras d'ici")
 			if bool(franchi["faveur"]):
 				_carte_faveur(column, tour, franchi["propositions"])
 			if not (franchi["butin"] as Dictionary).is_empty():
@@ -86,7 +86,8 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 			for id in tour.tirer_etage(tour.etage):
 				noms_m.append(str(app.data.bestiaire["monstres"][id]["nom"]))
 			var suite := UiKit.card(column, 4)
-			suite.add_child(UiKit.label("Étage %d" % tour.etage, 20, OR, false))
+			var sorte := tour.gardien_de(tour.etage)
+			suite.add_child(UiKit.label("Étage %d%s" % [tour.etage, " · grand Gardien" if sorte == "grand" else (" · Gardien" if sorte == "gardien" else "")], 20, OR, false))
 			suite.add_child(UiKit.label(", ".join(noms_m), 17, Color.WHITE, false))
 	# La part de chacun des trois : ce qu'il a infligé, soigné, protégé.
 	var parts: Dictionary = options.get("parts", {})

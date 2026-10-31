@@ -932,11 +932,12 @@ func xp_etage(n: int) -> int:
 ## perdre) : le record de la classe et, si c'est un Gardien, le palier. Un Gardien vaincu pour la première fois offre
 ## une Faveur : le palier n'est alors avancé qu'au choix de la Faveur (choisir_faveur), pour qu'un jeu fermé avant le
 ## choix la propose encore. Le butin (un objet dans le sac, échangeable au premier passage de l'étage avec cette
-## classe, lié sinon) et les Éclats de l'étage. Renvoie {gardien, faveur, propositions, premier, butin, eclats}.
+## classe, lié sinon) et les Éclats de l'étage. Renvoie {gardien, grand, faveur, propositions, premier, butin, eclats}.
 func etage_franchi(t: Tour) -> Dictionary:
 	var franchi := t.etage - 1
 	var g := int(data.tour["gardien_tous_les"])
-	var gardien := g > 0 and franchi % g == 0
+	var sorte := t.gardien_de(franchi)
+	var gardien := sorte != ""
 	var faveur := Tour.gardien_premiere_fois(franchi, palier(), g)
 	var premier := franchi >= int(profile.tower_records.get(lignee(), 0))
 	if t.atteint > int(profile.tower_records.get(lignee(), 0)):
@@ -952,7 +953,7 @@ func etage_franchi(t: Tour) -> Dictionary:
 	compter("etages")
 	if gardien:
 		compter("gardiens")
-	return {"gardien": gardien, "faveur": faveur, "propositions": t.proposer_faveurs(franchi) if faveur else [],
+	return {"gardien": gardien, "grand": sorte == "grand", "faveur": faveur, "propositions": t.proposer_faveurs(franchi) if faveur else [],
 		"premier": premier, "butin": butin, "eclats": eclats}
 
 

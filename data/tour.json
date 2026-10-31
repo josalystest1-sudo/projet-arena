@@ -1,12 +1,18 @@
 {
   "pv_entre_etages": 0.2,
   "monstres_max": 6,
-  "somme_depart": 0.5055,
-  "somme_pente": 0.0285,
+  "somme_depart": 0.7,
+  "somme_pente": 0.01,
   "somme_largeur": 0.8,
   "somme_max": 3.0,
-  "niveau_par_etage": 2.5,
+  "niveau_depart": 2.5,
+  "niveau_par_etage": 0.731,
+  "niveau_par_etage_haut": 2.117,
+  "etage_coude": 50,
   "tirages": 60,
   "gardien_tous_les": 5,
+  "grand_gardien_tous_les": 10,
+  "avance_gardien": 6,
+  "avance_grand_gardien": 12,
   "revenu": {"eclats_par_etage": 3, "xp_par_etage": 2, "eclats_max": 150, "xp_max": 120}
 }

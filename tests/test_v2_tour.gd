@@ -235,6 +235,41 @@ func test_faveurs_proposees_au_gardien() -> void:
 	assert_false(Tour.gardien_premiere_fois(10, 16, 5), "le Gardien 10, palier 16 : déjà battu")
 
 
+# Les murs (décision de Gautier du 31 octobre) : un grand Gardien tous les 10 étages, un Gardien moindre tous les 5 ;
+# hors Gardiens, chaque étage est plus dur que le précédent ; un Gardien est plus fort que les cinq étages qui le suivent
+# (le Gardien moindre compris, après un grand), et le Gardien suivant est plus fort que lui.
+func test_murs() -> void:
+	var t := _tour()
+	assert_eq(t.gardien_de(4), "", "l'étage 4 : ordinaire")
+	assert_eq(t.gardien_de(5), "gardien", "l'étage 5 : un Gardien")
+	assert_eq(t.gardien_de(10), "grand", "l'étage 10 : un grand Gardien")
+	assert_eq(t.gardien_de(15), "gardien", "l'étage 15 : un Gardien moindre")
+	assert_eq(t.gardien_de(20), "grand", "l'étage 20 : un grand Gardien")
+	assert_eq(t.etage_force(7), 7, "un étage ordinaire a sa propre force")
+	assert_true(t.etage_force(5) > 10, "le Gardien 5 a la force d'un étage au-delà du 10")
+	assert_true(t.etage_force(10) > t.etage_force(15), "le grand Gardien 10 est plus fort que le Gardien moindre 15")
+	for n in range(1, 60):
+		var sorte := t.gardien_de(n)
+		if sorte == "":
+			if n > 1 and t.gardien_de(n - 1) == "":
+				assert_true(t.niveau_etage(n) >= t.niveau_etage(n - 1) and t.fourchette(n).x >= t.fourchette(n - 1).x, "étage %d : au moins aussi dur que le %d" % [n, n - 1])
+			if n > 2 and t.gardien_de(n - 1) == "" and t.gardien_de(n - 2) == "":
+				assert_true(t.niveau_etage(n) > t.niveau_etage(n - 2), "étage %d : plus dur que le %d" % [n, n - 2])
+		else:
+			for k in range(1, 6):
+				if sorte == "gardien" and t.gardien_de(n + k) == "grand":
+					assert_true(t.niveau_etage(n + k) > t.niveau_etage(n), "le grand Gardien %d est plus fort que le Gardien %d" % [n + k, n])
+				else:
+					assert_true(t.niveau_etage(n + k) < t.niveau_etage(n), "l'étage %d est moins fort que le Gardien %d" % [n + k, n])
+			assert_true(t.niveau_etage(n + 5) < t.niveau_etage(n) or t.gardien_de(n + 5) == "grand", "le Gardien %d tient cinq étages" % n)
+	assert_true(t.niveau_etage(9) > t.niveau_etage(7), "l'étage 9 est plus dur que le 7")
+	assert_true(t.butin(10, true).has("rarete"), "un grand Gardien lâche un objet")
+	assert_eq(str(t.butin(10, true)["rarete"]), "epique", "épique, comme un Gardien")
+	assert_eq(Tour.sorte_gardien(30, {"gardien_tous_les": 5, "grand_gardien_tous_les": 10}), "grand", "la sorte se lit dans les règles")
+	assert_eq(Tour.sorte_gardien(30, {"gardien_tous_les": 5}), "gardien", "sans grand Gardien : un Gardien")
+	assert_eq(Tour.sorte_gardien(30, {}), "", "sans Gardien du tout")
+
+
 # À la Tour, les soins d'un monstre s'affaiblissent à chaque usage (× 0,75) ; pas ceux du trio, ni en duel.
 func test_soins_des_monstres_qui_s_affaiblissent() -> void:
 	var soigneur := essai([[[soin(400)]]])
