@@ -12,7 +12,7 @@
   "tirages": 60,
   "gardien_tous_les": 5,
   "grand_gardien_tous_les": 10,
-  "avance_gardien": 6,
-  "avance_grand_gardien": 12,
+  "avance_gardien": 7,
+  "avance_grand_gardien": 14,
   "revenu": {"eclats_par_etage": 3, "xp_par_etage": 2, "eclats_max": 150, "xp_max": 120}
 }

@@ -254,10 +254,12 @@ func valider() -> void:
 		var g := int(tour["gardien_tous_les"])
 		if int(tour.get("grand_gardien_tous_les", 0)) % g != 0:
 			erreurs.append("tour.json : grand_gardien_tous_les doit être un multiple de gardien_tous_les")
-		if int(tour.get("avance_gardien", 0)) <= g:
-			erreurs.append("tour.json : avance_gardien doit dépasser gardien_tous_les (les étages qui suivent un Gardien sont moins forts que lui)")
-		if int(tour.get("avance_grand_gardien", 0)) <= int(tour.get("avance_gardien", 0)) + g:
-			erreurs.append("tour.json : avance_grand_gardien doit dépasser avance_gardien + gardien_tous_les (le Gardien moindre qui suit un grand Gardien est moins fort que lui)")
+		# En niveaux de monstres (le niveau d'un étage est arrondi vers le bas) : au moins un niveau d'écart.
+		var pente := float(tour.get("niveau_par_etage", 0.0))
+		if float(int(tour.get("avance_gardien", 0)) - g) * pente < 1.0:
+			erreurs.append("tour.json : avance_gardien doit dépasser gardien_tous_les d'au moins un niveau de monstres (les étages qui suivent un Gardien sont moins forts que lui)")
+		if float(int(tour.get("avance_grand_gardien", 0)) - int(tour.get("avance_gardien", 0)) - g) * pente < 1.0:
+			erreurs.append("tour.json : avance_grand_gardien doit dépasser avance_gardien + gardien_tous_les d'au moins un niveau de monstres (le Gardien moindre qui suit un grand Gardien est moins fort que lui)")
 	_cles(tour.get("revenu", {}), CLES_REVENU, CLES_REVENU, "tour.json revenu")
 	_cles(faveurs, FAVEURS, FAVEURS, "faveurs.json")
 	for id in faveurs:

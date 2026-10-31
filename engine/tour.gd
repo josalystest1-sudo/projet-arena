@@ -11,7 +11,7 @@
 ## Hors Gardiens, chaque étage est plus dur que le précédent (le niveau des monstres monte de niveau_par_etage à chaque
 ## étage, depuis niveau_depart ; au-delà de etage_coude, de niveau_par_etage_haut : la pente des étages où arrivent les
 ## évolués, bien plus forts, pour que la Tour garde le même rythme en niveaux après l'évolution). Un Gardien est un mur de puissance : il a la force d'un étage plus loin (avance_gardien :
-## 6 étages, avance_grand_gardien : 12 ; etage_force), de sorte que les cinq étages qui le suivent, Gardien moindre
+## 7 étages, avance_grand_gardien : 14 ; etage_force), de sorte que les cinq étages qui le suivent, Gardien moindre
 ## compris, soient moins forts que lui, et que ce soit le Gardien suivant qui demande des niveaux en plus (ou de
 ## l'équipement). La courbe « niveau → étage » se règle avec tools/regleur_tour.py.
 ## Les paliers : une fois le Gardien d'un étage franchi (l'un ou l'autre), les montées suivantes peuvent reprendre à
