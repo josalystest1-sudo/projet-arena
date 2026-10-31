@@ -4,11 +4,11 @@
 extends "res://tests/test_case.gd"
 
 
-# Soixante évolutions : trente de rang 1 (trois par classe de base, une de chaque rôle) et trente de rang 2 (une par
-# évolution de rang 1, du même rôle), chacune une roue entière, dans le budget.
+# Cent vingt évolutions : trente de rang 1 (trois par classe de base, une de chaque rôle) et quatre-vingt-dix de rang 2
+# (trois par évolution de rang 1, une de chaque rôle), chacune une roue entière, dans le budget.
 func test_donnees_des_evolutions() -> void:
 	assert_eq(donnees.erreurs, [] as Array[String], "aucune erreur de données")
-	assert_eq(donnees.ordre_evolutions.size(), 60, "soixante évolutions")
+	assert_eq(donnees.ordre_evolutions.size(), 120, "cent vingt évolutions")
 	var par_rang := {1: 0, 2: 0}
 	var enfants := {}
 	var bases := {}
@@ -26,9 +26,8 @@ func test_donnees_des_evolutions() -> void:
 			roles_par_base[str(ev["base"]) + "|" + str(ev["role"])] = true
 		else:
 			assert_eq(Evolution.rang(str(ev["base"]), donnees), 1, id + " : son parent est de rang 1")
-			assert_eq(str(ev["role"]), str(donnees.classe(str(ev["base"]))["role"]), id + " : le rôle de son parent")
 			assert_true(donnees.ordre_classes.has(Evolution.base(id, donnees)), id + " : une lignée connue")
-			enfants[str(ev["base"])] = int(enfants.get(str(ev["base"]), 0)) + 1
+			enfants[str(ev["base"]) + "|" + str(ev["role"])] = int(enfants.get(str(ev["base"]) + "|" + str(ev["role"]), 0)) + 1
 		assert_eq(ev["voies"].size(), 5, id + " : 5 voies")
 		for voie in ev["voies"]:
 			assert_eq(voie["noeuds"].size(), 4, "%s %s : 4 nœuds" % [id, voie["id"]])
@@ -38,8 +37,11 @@ func test_donnees_des_evolutions() -> void:
 	assert_eq(bases.size(), 10, "chaque classe de base a ses évolutions")
 	assert_eq(roles.size(), 3, "les trois rôles parmi les évolutions")
 	assert_eq(roles_par_base.size(), 30, "chaque classe a une évolution de chaque rôle")
-	assert_eq(par_rang, {1: 30, 2: 30}, "trente de chaque rang")
-	assert_eq(enfants.size(), 30, "chaque évolution de rang 1 a son évolution de rang 2")
+	assert_eq(par_rang, {1: 30, 2: 90}, "trente de rang 1, quatre-vingt-dix de rang 2")
+	assert_eq(enfants.size(), 90, "chaque évolution de rang 1 a une évolution de rang 2 de chaque rôle")
+	for id in donnees.ordre_evolutions:
+		if Evolution.rang(id, donnees) == 1:
+			assert_eq(Evolution.evolutions_de(id, donnees).size(), 3, id + " : trois évolutions de rang 2")
 	assert_eq(Budget.fautes(donnees), [] as Array[Dictionary], "tous les nœuds des évolutions dans leur budget")
 	for classe in donnees.ordre_classes:
 		assert_eq(Evolution.evolutions_de(classe, donnees).size(), 3, classe + " : trois évolutions")
@@ -74,7 +76,7 @@ func test_points_et_niveaux() -> void:
 	assert_false(Evolution.peut_evoluer("champion", 59, donnees), "pas avant le niveau 60")
 	assert_true(Evolution.peut_evoluer("champion", 60, donnees), "au niveau 60, le rang 2")
 	assert_false(Evolution.peut_evoluer("parangon", 90, donnees), "le rang 3 n'existe pas")
-	assert_eq(Evolution.evolutions_de("champion", donnees), ["parangon"] as Array[String], "l'évolution du Champion")
+	assert_true(Evolution.evolutions_de("champion", donnees).has("parangon"), "le Parangon est une évolution du Champion")
 	assert_eq(Evolution.base("parangon", donnees), "guerrier", "la lignée du Parangon")
 	assert_eq(Evolution.parent("parangon", donnees), "champion", "son parent")
 	assert_eq(Evolution.classe_au_niveau("guerrier", 30, 5, donnees), "guerrier", "jusqu'à 30 : la classe de base")
@@ -82,7 +84,7 @@ func test_points_et_niveaux() -> void:
 	var deux := Evolution.classe_au_niveau("guerrier", 65, 5, donnees)
 	assert_eq(Evolution.rang(deux, donnees), 2, "au niveau 65 : un rang 2")
 	assert_eq(Evolution.base(deux, donnees), "guerrier", "de la lignée du Guerrier")
-	assert_eq(Evolution.classe_au_niveau("champion", 65, 5, donnees), "parangon", "un Champion au niveau 65 : Parangon")
+	assert_true(Evolution.classe_au_niveau("champion", 65, 5, donnees) in Evolution.evolutions_de("champion", donnees), "un Champion au niveau 65 : une de ses évolutions")
 	var tirees := {}
 	for graine in range(1, 31):
 		tirees[Evolution.tirer("guerrier", graine, donnees)] = true
@@ -164,7 +166,7 @@ func test_echos_et_adversaires_evolues() -> void:
 	var roles_paladin := Trio.roles_des_echos("paladin", donnees)
 	assert_eq(roles_paladin, ["degats", "soutien"] as Array[String], "le Paladin est servi comme un Front")
 	assert_eq(Trio.classes_du_role("front", donnees, 1).size(), 10, "dix évolutions Front (une par classe)")
-	assert_eq(Trio.classes_du_role("front", donnees, 2).size(), 10, "dix évolutions Front de rang 2")
+	assert_eq(Trio.classes_du_role("front", donnees, 2).size(), 30, "trente évolutions Front de rang 2 (une par évolution de rang 1)")
 	for x in Trio.echos("parangon", 3, 65, donnees):
 		assert_eq(x.rang, 2, "%s : au niveau 65, des Échos de rang 2" % x.classe_id)
 	var haut := Arene.adversaire(75, 9, donnees)
@@ -196,15 +198,15 @@ func test_echos_et_adversaires_evolues() -> void:
 
 # Le garde-fou de Gautier : un évolué à roue vide (au niveau de son évolution, 30 ou 60, zéro point) bat son parent un
 # niveau en dessous (29 ou 59 points), pour chacune des soixante évolutions, sur deux graines et dans les deux sens :
-# presque toujours en 1 contre 1, le plus souvent en trio (les Échos des deux camps sont du rang du parent). Le réglage
-# fin est pour la phase 9.
+# presque toujours en 1 contre 1, le plus souvent en trio (les Échos des deux camps sont du rang du parent) ; deux graines
+# pour le rang 1, une pour le rang 2 (quatre-vingt-dix roues). Le réglage fin est pour la phase 9.
 func test_evolue_vide_bat_niveau_29() -> void:
 	var solo := [0, 0]
 	var trio := [0, 0]
 	for evo in donnees.ordre_evolutions:
 		var classe := Evolution.parent(evo, donnees)
 		var nv := Evolution.niveau_max(Evolution.rang(evo, donnees) - 1, donnees)
-		for graine in [11, 12]:
+		for graine in ([11, 12] if Evolution.rang(evo, donnees) == 1 else [11]):
 			for evo_en_premier in [true, false]:
 				var a := Generateur.generer(evo, graine, nv, Generateur.PAR_DEFAUT, donnees)
 				var b := Generateur.generer(classe, graine + 1000, nv - 1, Generateur.PAR_DEFAUT, donnees)

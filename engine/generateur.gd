@@ -30,7 +30,21 @@ const DOT_PERSISTANTE := {"guerrier": "saignement", "voleur": "saignement", "pug
 	"traqueur": "brulure", "guide": "saignement", "seigneur_des_betes": "familier", "liche": "familier", "oracle": "familier",
 	"croise": "saignement", "grand_inquisiteur": "brulure", "hierophante": "saignement", "colosse": "familier",
 	"grand_artificier": "brulure", "maitre_alchimiste": "poison", "porte_etendard": "saignement", "chantre_de_guerre": "saignement",
-	"maestro": "saignement", "garde_royal": "saignement", "maitre_d_escrime": "saignement", "chancelier": "saignement"}
+	"maestro": "saignement", "garde_royal": "saignement", "maitre_d_escrime": "saignement", "chancelier": "saignement",
+	"conquerant": "saignement", "capitaine": "saignement", "gladiateur": "saignement", "instructeur": "saignement",
+	"suzerain": "saignement", "tyran": "saignement", "maitre_du_dragon": "saignement", "abbe": "saignement", "fauve": "saignement",
+	"chef_de_horde": "saignement", "colonne_de_jade": "saignement", "vent_tranchant": "saignement", "pyromancien": "brulure",
+	"mystique": "brulure", "gardien_des_arcanes": "brulure", "sage_des_arcanes": "brulure", "sorcier_de_guerre": "brulure",
+	"illusionniste": "brulure", "sicaire": "saignement", "maitre_des_poisons": "poison", "escrimeur": "saignement",
+	"condottiere": "saignement", "sentinelle_noire": "poison", "executeur": "poison", "garde_forestier": "brulure",
+	"guerisseur_des_bois": "brulure", "arbaletriere": "brulure", "vigie": "brulure", "pionnier": "brulure",
+	"tireur_d_elite": "brulure", "dresseur_de_dragons": "familier", "druide": "familier", "chevalier_de_la_mort": "familier",
+	"gardien_des_ames": "familier", "totemiste": "familier", "foudroyeur": "familier", "justicier": "saignement",
+	"chapelain": "saignement", "templier": "brulure", "confesseur": "brulure", "prelat": "saignement", "zelote": "saignement",
+	"mutant": "poison", "empoisonneur": "poison", "demolisseur": "brulure", "ingenieur": "brulure", "briseur": "familier",
+	"mecaniste": "familier", "tambour_major": "saignement", "rhapsode": "saignement", "jarl": "saignement", "conteur": "saignement",
+	"clairon": "saignement", "messager": "saignement", "garde_d_honneur": "saignement", "intrigant": "saignement",
+	"champion_de_cour": "saignement", "maitre_de_ceremonie": "saignement", "bourreau": "saignement", "chambellan": "saignement"}
 const MONO := ["un_ennemi", "un_allie", "soi"]
 const MULTI := ["tous_les_ennemis", "duo"]
 
