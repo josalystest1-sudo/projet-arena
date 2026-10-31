@@ -143,6 +143,10 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 
 Tout ensemble, avec le simulateur et les régleurs existants : les classes et les rôles en trio (PR 1.5 d'origine), les Soutiens à égalité, la courbe « niveau → étage » de la Tour (PR 2.2 d'origine), les lignes d'équipement (PR 3.3 d'origine), les Faveurs, les bonus de guilde et de territoire, les évolutions et les grimoires. Ce qu'il faut mesurer : la liste ci-dessous.
 
+**Périmètre de la version 1 (Gautier, 31 octobre)** : les dix classes et leurs trente évolutions de rang 1 ; le rang 2 est caché (`rang_max` 1), pour une mise à jour.
+
+**PR 9.1** (**faite**, PR #77) Les outils en trio (`tools/regleur.py --format trio --niveau --etage-max`, l'ancien bouton de la Tour retiré), la mesure de départ (bas de `docs/EQUILIBRAGE-V2.md`), le rang 2 caché. **PR 9.2** Les classes en trio : des passes du régleur (k, budgets des nœuds, coûts des états, PV) jusqu'aux cinq critères des classes (sans le 6, la Tour), puis une vérification sur des graines jamais vues. **PR 9.3** La Tour à murs (décision de Gautier du 31 octobre : un grand Gardien tous les 10 étages, un Gardien moindre tous les 5, chaque étage plus dur que le précédent, les cinq étages après un Gardien moins forts que lui) : le moteur (`engine/tour.gd`, `data/tour.json`), un régleur de la courbe « niveau → étage » (`tools/regleur_tour.py`), les paliers et les Faveurs des deux sortes de Gardiens. **PR 9.4** Les trente évolutions de rang 1 : la même matrice en trio au niveau 60, et le garde-fou de l'évolué à roue vide. **PR 9.5** L'équipement (les huit lignes, les raretés, le +50 % voulu) et les Faveurs, mesurés à la Tour et en PvP. **PR 9.6** La vérification finale (classes, évolutions, Tour, équipement) sur des graines neuves, et le rapport pour Gautier.
+
 ### Phase 10 — Les graphismes, puis le lancement
 
 Art PixelLab (personnages, monstres, ville, carte du monde), animations, écrans soignés ; boutique de cosmétiques ; bêta fermée Android puis TestFlight ; lancement.
@@ -150,7 +154,7 @@ Art PixelLab (personnages, monstres, ville, carte du monde), animations, écrans
 ## 3. Ce qu'il faudra mesurer à la phase 9
 
 - Phase 1 : classes et kits dans 48–52 % des deux côtés ; Soutiens à égalité en étages atteints ; erreurs de l'IA rares ; Synergies par combat (viser au moins 1,5 par trio).
-- Phase 2 : courbe niveau → étage ; part d'étages gagnés après 50 tours (viser < 2 %) ; aucun combat au plafond technique.
+- Phase 2 : courbe niveau → étage (depuis le 31 octobre : la Tour à murs, voir la PR 9.3 ; l'ancienne cible « étage 3 au niveau 1, Gardien 5 vers 8–10, étage 10 vers 25–30 » est remplacée) ; part d'étages gagnés après 50 tours (viser < 2 %) ; aucun combat au plafond technique.
 - Phase 3 : lignes d'équipement à 48–52 % en moyenne, écart-type par Destin élevé ; écart de puissance entre un joueur sans équipement et un joueur équipé à son niveau (viser +30 à +50 %, à confirmer par Gautier).
 - Phase 5 : or entré / or détruit par semaine ; nombre d'objets échangeables par compte et par jour.
 

@@ -6,7 +6,9 @@
 ## puis un point par niveau jusqu'au plafond du rang suivant (31 à 60, puis 61 à 90) ; la graine ne change pas. Le saut de puissance du GDD (×2,5)
 ## est porté par data/rules.json (`evolution.puissance_pv` et `puissance_valeurs` : PV ×2,5 et valeurs ×2,5, pour qu'un
 ## évolué à roue vide batte un niveau 29 à roue pleine, même en trio ; tools/mesure_evolution.gd le mesure), appliqué aux
-## PV et au multiplicateur de classe de tout Destin évolué (Destin.de_base). Module pur.
+## PV et au multiplicateur de classe de tout Destin évolué (Destin.de_base). Le rang jouable est borné par
+## data/rules.json (`evolution.rang_max` : 1 en version 1, décision de Gautier du 31 octobre ; le rang 2 reste dans les
+## données pour une mise à jour : rang_max, evolutions_jouables). Module pur.
 class_name Evolution
 extends RefCounted
 
@@ -57,12 +59,22 @@ static func du_role(role: String, d: Donnees, p_rang: int = 1) -> Array[String]:
 	return out
 
 
-## Le rang le plus haut qui existe dans les données (0 tant qu'il n'y a pas d'évolution).
+## Le rang le plus haut jouable : celui qui existe dans les données (0 tant qu'il n'y a pas d'évolution), borné par
+## `evolution.rang_max` de data/rules.json (1 en version 1 : le rang 2 attend une mise à jour).
 static func rang_max(d: Donnees) -> int:
 	var out := 0
 	for id in d.ordre_evolutions:
 		out = maxi(out, rang(id, d))
-	return out
+	return mini(out, int(d.regles["evolution"].get("rang_max", out)))
+
+
+## Les évolutions d'une classe que cette version laisse jouer : ses évolutions si leur rang est jouable, rien pour une
+## classe déjà au rang le plus haut jouable (en version 1 : une évolution de rang 1 n'en propose aucune).
+static func evolutions_jouables(classe_id: String, d: Donnees) -> Array[String]:
+	var out: Array[String] = []
+	if rang(classe_id, d) >= rang_max(d):
+		return out
+	return evolutions_de(classe_id, d)
 
 
 ## Le niveau le plus haut d'un rang : 30 pour la classe de base, 60 pour le rang 1, 90 pour le rang 2.
@@ -85,7 +97,7 @@ static func points(niveau: int, p_rang: int, d: Donnees) -> int:
 ## Ce personnage peut-il évoluer maintenant ? Au plafond de son rang, si sa classe a des évolutions.
 static func peut_evoluer(classe_id: String, niveau: int, d: Donnees) -> bool:
 	var r := rang(classe_id, d)
-	return r < rang_max(d) and niveau >= niveau_max(r, d) and not evolutions_de(classe_id, d).is_empty()
+	return r < rang_max(d) and niveau >= niveau_max(r, d) and not evolutions_jouables(classe_id, d).is_empty()
 
 
 ## Le multiplicateur des PV de base d'un Destin de ce rang (×1 pour une classe de base).
@@ -99,9 +111,9 @@ static func puissance_valeurs(p_rang: int, d: Donnees) -> float:
 
 
 ## L'évolution d'une classe tirée avec une graine (pour les Échos et les adversaires générés au-delà du niveau 30) ;
-## la classe elle-même si elle n'en a pas.
+## la classe elle-même si elle n'en a pas de jouable.
 static func tirer(classe_id: String, graine: int, d: Donnees) -> String:
-	var choix := evolutions_de(classe_id, d)
+	var choix := evolutions_jouables(classe_id, d)
 	if choix.is_empty():
 		return classe_id
 	var rng := RandomNumberGenerator.new()
