@@ -1,0 +1,18 @@
+{
+  "nom": {"min": 3, "max": 20},
+  "taille": {"base": 20, "par_niveau": 10, "max": 100},
+  "niveaux": [0, 300, 800, 1500, 2500, 4000, 6000, 8500, 12000],
+  "roles": {"chef": "Chef", "officier": "Officier", "membre": "Membre"},
+  "officiers_max": 5,
+  "influence": {"duel": 2, "duel_gagne": 3, "etage": 1, "gardien": 10, "boss": 50, "selection": 3},
+  "effets": {
+    "xp": {"nom": "Savoir de guilde", "texte": "+{v} % d'XP pour chaque membre", "valeur": 0.05, "max": 3, "cout": 400, "pente": 1.0},
+    "butin": {"nom": "Chasse de guilde", "texte": "les étages rejoués de la Tour lâchent un objet {v} points plus souvent", "valeur": 0.1, "max": 3, "cout": 400, "pente": 1.0},
+    "reforge": {"nom": "Forge de guilde", "texte": "la reforge coûte {v} % de moins", "valeur": 0.1, "max": 3, "cout": 300, "pente": 1.0}
+  },
+  "banniere": {
+    "motifs": {"croix": "Croix", "etoile": "Étoile", "lune": "Lune", "tour": "Tour", "flamme": "Flamme", "vague": "Vague"},
+    "couleurs": {"rouge": "c0392b", "bleu": "2e6fd8", "vert": "27ae60", "or": "d4a017", "noir": "222222", "blanc": "eeeeee", "violet": "8e44ad"}
+  },
+  "simule": {"noms": ["Les Veilleurs", "La Lame grise", "Les Enfants du Vent", "Le Cercle d'Ambre"], "graine": 9191, "influence_par_jour": [5, 15]}
+}

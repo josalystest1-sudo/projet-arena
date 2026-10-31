@@ -115,6 +115,53 @@ func bilan(_semaine: int) -> Dictionary:
 	return {"entre": 0, "detruit": 0, "echange": 0}
 
 
+## Les guildes (engine/guilde.gd). La liste des guildes (n au plus : {id, nom, banniere, niveau, membres (le nombre), places,
+## influence_totale}) ; la tienne (vide sans guilde) ; en fonder une (la guilde, vide si refusée : déjà membre, nom pris ou
+## invalide) ; en rejoindre une (la guilde, vide si plus de place) ; la quitter ; lui apporter de l'Influence ; monter un
+## effet, changer le rôle d'un membre, exclure un membre (la guilde rendue, vide si refusé).
+func guildes(_n: int) -> Array:
+	return []
+
+
+func ma_guilde() -> Dictionary:
+	return {}
+
+
+func creer_guilde(_nom: String, _banniere: Dictionary, _fiche: Dictionary) -> Dictionary:
+	return {}
+
+
+func rejoindre_guilde(_id: String, _fiche: Dictionary) -> Dictionary:
+	return {}
+
+
+func quitter_guilde() -> bool:
+	return false
+
+
+func influence_guilde(_gain: int) -> bool:
+	return false
+
+
+func acheter_effet(_effet: String) -> Dictionary:
+	return {}
+
+
+func role_guilde(_membre: String, _role: String) -> Dictionary:
+	return {}
+
+
+func exclure_guilde(_membre: String) -> Dictionary:
+	return {}
+
+
+## Le résumé d'une guilde pour une liste.
+static func resume_guilde(g: Dictionary, d: Donnees) -> Dictionary:
+	var nv := Guilde.niveau(int(g.get("influence_totale", 0)), d)
+	return {"id": str(g["id"]), "nom": str(g["nom"]), "banniere": g["banniere"], "niveau": nv, "membres": g["membres"].size(),
+		"places": Guilde.taille_max(nv, d), "influence_totale": int(g.get("influence_totale", 0))}
+
+
 ## Le nombre de fiches publiées (la tienne comprise).
 func nombre_personnages() -> int:
 	return 0

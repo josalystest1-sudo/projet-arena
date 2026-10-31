@@ -105,6 +105,12 @@ const CLES_MARCHE := ["niveau_min", "jours_min", "taxe", "taxe_max", "inflation"
 ## L'inflation (engine/economie.gd) : au-delà de `seuil` fois l'Or détruit, la taxe monte de `pas` par cran de `par`.
 const CLES_INFLATION := ["seuil", "par", "pas", "minimum"]
 const CLES_MARCHE_SIMULE := ["annonces", "raretes", "vente_par_jour"]
+## Les guildes (data/guildes.json, engine/guilde.gd) : le nom, la taille, les paliers de niveau, les rôles, l'Influence par
+## activité, les effets, les modèles de bannière, le monde simulé.
+const CLES_GUILDES := ["nom", "taille", "niveaux", "roles", "officiers_max", "influence", "effets", "banniere", "simule"]
+const CLES_GUILDE_EFFET := ["nom", "texte", "valeur", "max", "cout", "pente"]
+const CLES_GUILDE_BANNIERE := ["motifs", "couleurs"]
+const CLES_GUILDE_SIMULE := ["noms", "graine", "influence_par_jour"]
 const CLES_SIMULE := ["joueurs", "graine", "niveau_max"]
 const CLES_PALIER := ["pv", "solution", "texte", "manque"]
 const CLES_OBJECTIF := ["id", "texte", "compteur", "cible", "xp", "eclats"]
@@ -152,6 +158,8 @@ var objets_arene: Dictionary = {}
 var donjons: Dictionary = {}
 ## Le Comptoir (data/comptoir.json, GDD V2 § 10.2).
 var comptoir: Dictionary = {}
+## Les guildes (data/guildes.json).
+var guildes: Dictionary = {}
 ## Le boss à paliers (data/boss.json, GDD V2 § 8.5).
 var boss: Dictionary = {}
 ## Ce qui ne va pas dans les données : une ligne par problème (vide si tout est connu et cohérent).
@@ -194,6 +202,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.objets_arene = _lire(dossier + "arene.json", donnees.erreurs)
 	donnees.donjons = _lire(dossier + "donjons.json", donnees.erreurs)
 	donnees.comptoir = _lire(dossier + "comptoir.json", donnees.erreurs)
+	donnees.guildes = _lire(dossier + "guildes.json", donnees.erreurs)
 	donnees.boss = _lire(dossier + "boss.json", donnees.erreurs)
 	donnees.serveur = _lire(dossier + "serveur.json", donnees.erreurs)
 	donnees.marche = _lire(dossier + "marche.json", donnees.erreurs)
@@ -308,6 +317,7 @@ func valider() -> void:
 			erreurs.append(ou + " : pv_mult hors de 0,5 à 1,5")
 	_valider_donjons()
 	_valider_comptoir()
+	_valider_guildes()
 	_valider_boss()
 	_cles(serveur, CLES_SERVEUR, CLES_SERVEUR, "serveur.json")
 	_cles(marche, CLES_MARCHE, CLES_MARCHE, "marche.json")
@@ -363,6 +373,32 @@ func _valider_boss() -> void:
 
 ## Le Comptoir (data/comptoir.json) : clés connues, un plancher et un multiple de Marché par rareté connue, une pente et
 ## une base de qualité cohérentes, un étal sur des raretés connues avec leur prix.
+func _valider_guildes() -> void:
+	_cles(guildes, CLES_GUILDES, CLES_GUILDES, "guildes.json")
+	if not guildes is Dictionary or not erreurs.is_empty() and erreurs[-1].begins_with("guildes.json"):
+		return
+	_cles(guildes.get("banniere", {}), CLES_GUILDE_BANNIERE, CLES_GUILDE_BANNIERE, "guildes.json banniere")
+	_cles(guildes.get("simule", {}), CLES_GUILDE_SIMULE, CLES_GUILDE_SIMULE, "guildes.json simule")
+	for id in guildes.get("effets", {}):
+		var ou := "guildes.json effet " + str(id)
+		_cles(guildes["effets"][id], CLES_GUILDE_EFFET, CLES_GUILDE_EFFET, ou)
+		if guildes["effets"][id] is Dictionary and (int(guildes["effets"][id].get("max", 0)) < 1 or float(guildes["effets"][id].get("cout", 0)) <= 0.0):
+			erreurs.append(ou + " : max d'au moins 1, coût positif")
+	var paliers: Variant = guildes.get("niveaux", [])
+	if not paliers is Array or paliers.is_empty() or int(paliers[0]) != 0:
+		erreurs.append("guildes.json niveaux : une liste qui commence à 0")
+	else:
+		for i in range(1, paliers.size()):
+			if int(paliers[i]) <= int(paliers[i - 1]):
+				erreurs.append("guildes.json niveaux : les paliers doivent monter")
+				break
+	for role in ["chef", "officier", "membre"]:
+		if not guildes.get("roles", {}).has(role):
+			erreurs.append("guildes.json roles : « %s » manque" % role)
+	if guildes.get("banniere", {}) is Dictionary and guildes["banniere"].get("couleurs", {}).size() < 2:
+		erreurs.append("guildes.json banniere : au moins deux couleurs")
+
+
 func _valider_comptoir() -> void:
 	_cles(comptoir, CLES_COMPTOIR, CLES_COMPTOIR, "comptoir.json")
 	if not comptoir is Dictionary or not comptoir.has("etal"):
