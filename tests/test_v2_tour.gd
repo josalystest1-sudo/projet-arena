@@ -264,7 +264,14 @@ func test_murs() -> void:
 			assert_true(t.niveau_etage(n + 5) < t.niveau_etage(n) or t.gardien_de(n + 5) == "grand", "le Gardien %d tient cinq étages" % n)
 	assert_true(t.niveau_etage(9) > t.niveau_etage(7), "l'étage 9 est plus dur que le 7")
 	assert_true(t.butin(10, true).has("rarete"), "un grand Gardien lâche un objet")
-	assert_eq(str(t.butin(10, true)["rarete"]), "epique", "épique, comme un Gardien")
+	assert_true(str(t.butin(10, true)["rarete"]) in ["epique", "legendaire"], "épique ou légendaire (un grand Gardien)")
+	assert_eq(str(t.butin(5, true)["rarete"]), "epique", "épique à un Gardien moindre")
+	var raretes := {}
+	for graine in range(1, 41):
+		var t2 := _tour("guerrier", 10, graine)
+		raretes[str(t2.butin(20, true)["rarete"])] = true
+		assert_false(t2.butin(20, false).is_empty(), "graine %d : un grand Gardien rejoué lâche toujours un objet" % graine)
+	assert_eq(raretes.keys().size(), 2, "un grand Gardien lâche de l'épique et du légendaire selon la graine")
 	assert_eq(Tour.sorte_gardien(30, {"gardien_tous_les": 5, "grand_gardien_tous_les": 10}), "grand", "la sorte se lit dans les règles")
 	assert_eq(Tour.sorte_gardien(30, {"gardien_tous_les": 5}), "gardien", "sans grand Gardien : un Gardien")
 	assert_eq(Tour.sorte_gardien(30, {}), "", "sans Gardien du tout")

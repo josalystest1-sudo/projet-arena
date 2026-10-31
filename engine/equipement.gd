@@ -147,13 +147,14 @@ static func emplacement(objet: Dictionary, d: Donnees) -> String:
 
 # --- Le butin --------------------------------------------------------------------------
 
-## Le butin d'une source (« etage » ou « gardien », data/items.json) à ce niveau : sa rareté tirée selon les poids de la
-## source, sa base parmi toutes ; échangeable seulement au premier passage ; un étage rejoué n'en lâche qu'une fois sur
-## deux (vide alors). Un Gardien en lâche toujours.
+## Le butin d'une source (« etage », « gardien » ou « grand_gardien », data/items.json) à ce niveau : sa rareté tirée selon
+## les poids de la source, sa base parmi toutes ; échangeable seulement au premier passage ; un étage ordinaire rejoué
+## n'en lâche qu'une fois sur deux (vide alors). Un Gardien en lâche toujours (épique) ; un grand Gardien, parfois un
+## légendaire (GDD V2, § 10.1 ; les murs de la Tour, décision de Gautier du 31 octobre).
 static func butin(source: String, niveau: int, premier_passage: bool, graine: int, d: Donnees) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = graine ^ 0x2F6E1B35
-	if not premier_passage and source != "gardien" and rng.randf_range(0.0, 1.0) >= float(d.objets["butin"]["rejoue"]):
+	if not premier_passage and source == "etage" and rng.randf_range(0.0, 1.0) >= float(d.objets["butin"]["rejoue"]):
 		return {}
 	var poids: Dictionary = d.objets["butin"][source]
 	var total := 0.0
