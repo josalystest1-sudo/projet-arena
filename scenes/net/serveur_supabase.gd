@@ -276,7 +276,7 @@ func ma_guilde() -> Dictionary:
 func creer_guilde(nom: String, banniere: Dictionary, fiche: Dictionary) -> Dictionary:
 	if not (await ma_guilde()).is_empty() or not Guilde.nom_valide(nom, donnees) or not Guilde.banniere_valide(banniere, donnees):
 		return {}
-	return await _ecrire_guilde(Guilde.nouvelle("g-%s-%d" % [compte_id, Time.get_unix_time_from_system()], nom, banniere, fiche, Time.get_date_string_from_system(), donnees))
+	return await _ecrire_guilde(Guilde.nouvelle("g-%s-%d" % [compte_id, Time.get_unix_time_from_system()], nom, banniere, fiche, profile.aujourd_hui(), donnees))
 
 
 func rejoindre_guilde(id: String, fiche: Dictionary) -> Dictionary:
@@ -285,7 +285,7 @@ func rejoindre_guilde(id: String, fiche: Dictionary) -> Dictionary:
 	var liste := await _lire_guildes("/rest/v1/guildes?select=*&id=eq.%s" % id)
 	if liste.is_empty():
 		return {}
-	var avec := Guilde.ajouter(liste[0], fiche, Time.get_date_string_from_system(), donnees)
+	var avec := Guilde.ajouter(liste[0], fiche, profile.aujourd_hui(), donnees)
 	if avec["membres"].size() == liste[0]["membres"].size():
 		return {}
 	return await _ecrire_guilde(avec)
@@ -362,7 +362,7 @@ func banniere_guilde(b: Dictionary) -> Dictionary:
 ## Inviter : sur le vrai serveur, le personnage entre tout de suite (l'acceptation viendra avec le chat).
 func inviter_guilde(fiche: Dictionary) -> Dictionary:
 	var g := await ma_guilde()
-	return await _changer(Guilde.inviter(g, compte_id, fiche, Time.get_date_string_from_system(), donnees), g)
+	return await _changer(Guilde.inviter(g, compte_id, fiche, profile.aujourd_hui(), donnees), g)
 
 
 ## Une requête avec le jeton ; si le serveur dit que le jeton a expiré (401), on se reconnecte et on réessaie une fois.

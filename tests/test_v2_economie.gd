@@ -114,3 +114,15 @@ func test_serveur_simule() -> void:
 	assert_eq(ventes.size(), 1, "une vente encaissée")
 	assert_eq(int(ventes[0]["net"]), 140, "au taux de 30 % : 140 sur 200")
 	s.free()
+
+
+## L'outil du prototype « Passer au lendemain » : le jour du profil avance d'autant de jours, sans toucher au système.
+func test_jours_avance() -> void:
+	var p := PlayerProfile.new()
+	var aujourd_hui := p.aujourd_hui()
+	assert_eq(aujourd_hui, Time.get_date_string_from_system(), "sans avance : la date du jour")
+	p.jours_avance = 1
+	assert_eq(Arene.jours(p.aujourd_hui()) - Arene.jours(aujourd_hui), 1, "un jour d'avance : demain")
+	p.jours_avance = 40
+	assert_eq(Arene.jours(p.aujourd_hui()) - Arene.jours(aujourd_hui), 40, "quarante jours d'avance")
+	assert_eq(p.aujourd_hui().length(), 10, "au format AAAA-MM-JJ")

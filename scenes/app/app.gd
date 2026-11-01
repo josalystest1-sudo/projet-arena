@@ -312,7 +312,7 @@ func _publier_perso_async() -> void:
 		publication = "hors ligne : " + serveur.erreur
 		return
 	if str(profile.serveur.get("compte_jour", "")) == "":
-		profile.serveur["compte_jour"] = Time.get_date_string_from_system()
+		profile.serveur["compte_jour"] = profile.aujourd_hui()
 		profile.save()
 	publication = "publié" if await serveur.publier(fiche_publique()) else "non publié : " + serveur.erreur
 	await ma_guilde()
@@ -365,6 +365,30 @@ func _nouvelle_graine() -> int:
 func reroll_player() -> void:
 	graine = _nouvelle_graine()
 	allumage.clear()
+	_regenerer()
+	sauver_perso()
+
+
+## Outil du prototype : le jeu passe au lendemain (objectifs, Arène, Marché, guerres, revenus).
+func passer_au_lendemain() -> void:
+	profile.jours_avance += 1
+	profile.save()
+
+
+## Outil du prototype : monter de n niveaux d'un coup (jusqu'au plafond du rang), sans passer par l'XP.
+func monter_niveaux(n: int) -> void:
+	profile.level = clampi(profile.level + n, 1, niveau_max())
+	profile.xp = 0
+	gain_xp(0)
+
+
+## Outil du prototype : le perso repart au niveau 1 avec une roue neuve (même classe, même Destin ; l'équipement,
+## les Éclats et le reste du profil sont gardés). Une évolution redevient sa classe de base.
+func remettre_perso_a_zero() -> void:
+	player_class = Evolution.base(player_class, data)
+	allumage.clear()
+	profile.level = 1
+	profile.xp = 0
 	_regenerer()
 	sauver_perso()
 
@@ -526,7 +550,7 @@ func reforger(ou: String, cle: Variant, ligne: int) -> bool:
 
 ## Le jour des objectifs : quand la date change, les compteurs et les objectifs réclamés repartent de zéro.
 func _jour_objectifs() -> String:
-	var aujourd_hui := Time.get_date_string_from_system()
+	var aujourd_hui := profile.aujourd_hui()
 	if profile.objectifs_jour != aujourd_hui:
 		profile.objectifs_jour = aujourd_hui
 		profile.compteurs = {}
@@ -668,12 +692,12 @@ func jours_compte() -> int:
 	var jour := str(profile.serveur.get("compte_jour", ""))
 	if jour == "":
 		return 0
-	return maxi(0, Arene.jours(Time.get_date_string_from_system()) - Arene.jours(jour))
+	return maxi(0, Arene.jours(profile.aujourd_hui()) - Arene.jours(jour))
 
 
 ## Prototype : vieillir le compte de n jours (pour ouvrir le Marché sans attendre).
 func vieillir_compte(n: int) -> void:
-	var jour := str(profile.serveur.get("compte_jour", Time.get_date_string_from_system()))
+	var jour := str(profile.serveur.get("compte_jour", profile.aujourd_hui()))
 	var unix := (Arene.jours(jour) - n) * 86400
 	profile.serveur["compte_jour"] = Time.get_datetime_string_from_unix_time(unix).substr(0, 10)
 	profile.save()
@@ -760,7 +784,7 @@ func encaisser_ventes() -> Array:
 
 ## L'étal du jour (deux objets liés à ton niveau), avec « achete » pour ceux déjà pris aujourd'hui.
 func etal_du_jour() -> Array:
-	var aujourd_hui := Time.get_date_string_from_system()
+	var aujourd_hui := profile.aujourd_hui()
 	if profile.etal_jour != aujourd_hui:
 		profile.etal_jour = aujourd_hui
 		profile.etal_achetes = []
@@ -809,7 +833,7 @@ func vendre(index_sac: int) -> int:
 
 ## Le jour d'aujourd'hui (« AAAA-MM-JJ »).
 func jour() -> String:
-	return Time.get_date_string_from_system()
+	return profile.aujourd_hui()
 
 
 ## Ce qu'il reste aujourd'hui d'une action limitée (« ventes », « depots », « achats »).
@@ -854,7 +878,7 @@ func meilleur_record() -> int:
 ## peu d'XP selon le meilleur record, plafonnés (Tour.revenu). Renvoie {eclats, xp, record}, ou vide si déjà réclamé ou
 ## sans record.
 func reclamer_revenu() -> Dictionary:
-	var aujourd_hui := Time.get_date_string_from_system()
+	var aujourd_hui := profile.aujourd_hui()
 	if profile.revenu_jour == aujourd_hui:
 		return {}
 	profile.revenu_jour = aujourd_hui
@@ -892,7 +916,7 @@ func noms_trio() -> Dictionary:
 ## L'état de l'Arène, remis d'aplomb : les points repartent de zéro au changement de saison, les combats du jour au
 ## changement de jour, les victoires et le coffre au changement de semaine.
 func _arene() -> Dictionary:
-	var aujourd_hui := Time.get_date_string_from_system()
+	var aujourd_hui := profile.aujourd_hui()
 	var a: Dictionary = profile.arene
 	if a.is_empty():
 		a = {"points": 0, "saison": Arene.saison(aujourd_hui, data), "jour": aujourd_hui, "combats_jour": 0, "semaine": Arene.semaine(aujourd_hui), "victoires_semaine": 0, "coffre_reclame": false}
@@ -914,7 +938,7 @@ func _arene() -> Dictionary:
 ## semaine, rareté du coffre, coffre réclamé.
 func etat_arene() -> Dictionary:
 	var a := _arene()
-	var aujourd_hui := Time.get_date_string_from_system()
+	var aujourd_hui := profile.aujourd_hui()
 	return {"points": int(a["points"]), "ligue": Arene.ligue(rang_perso()), "saison": int(a["saison"]), "fin_saison": Arene.fin_de_saison(aujourd_hui, data),
 		"restants": maxi(0, int(data.objets_arene["combats_par_jour"]) - int(a["combats_jour"])), "victoires_semaine": int(a["victoires_semaine"]),
 		"coffre": Arene.rarete_coffre(int(a["victoires_semaine"]), data), "coffre_reclame": bool(a["coffre_reclame"])}
