@@ -1,0 +1,9 @@
+{
+  "energie_max": 100,
+  "cout_combat": 10,
+  "recuperation_par_heure": 40,
+  "seuil_fatigue": 50,
+  "malus_max": 0.3,
+  "reveil": 30,
+  "potion": {"energie": 50, "par_jour": 3, "prix_eclats": 40, "prix_or": 5}
+}

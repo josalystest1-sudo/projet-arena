@@ -165,6 +165,8 @@ var donjons: Dictionary = {}
 var carte: Dictionary = {}
 ## Les guerres de guilde (data/guerre.json, engine/guerre.gd).
 var guerre: Dictionary = {}
+## La fatigue et la potion d'énergie (data/fatigue.json, engine/fatigue.gd).
+var fatigue: Dictionary = {}
 ## Le Comptoir (data/comptoir.json, GDD V2 § 10.2).
 var comptoir: Dictionary = {}
 ## Les guildes (data/guildes.json).
@@ -212,6 +214,7 @@ static func charger(dossier: String = DOSSIER) -> Donnees:
 	donnees.donjons = _lire(dossier + "donjons.json", donnees.erreurs)
 	donnees.carte = _lire(dossier + "carte.json", donnees.erreurs)
 	donnees.guerre = _lire(dossier + "guerre.json", donnees.erreurs)
+	donnees.fatigue = _lire(dossier + "fatigue.json", donnees.erreurs)
 	donnees.comptoir = _lire(dossier + "comptoir.json", donnees.erreurs)
 	donnees.guildes = _lire(dossier + "guildes.json", donnees.erreurs)
 	donnees.boss = _lire(dossier + "boss.json", donnees.erreurs)
@@ -329,6 +332,19 @@ func valider() -> void:
 	_valider_donjons()
 	_valider_carte()
 	_cles(guerre, CLES_GUERRE, CLES_GUERRE, "guerre.json")
+	_cles(fatigue, CLES_FATIGUE, CLES_FATIGUE, "fatigue.json")
+	if fatigue is Dictionary and fatigue.has("potion"):
+		_cles(fatigue["potion"], CLES_POTION, CLES_POTION, "fatigue.json potion")
+		var fmax := float(fatigue.get("energie_max", 0.0))
+		if fmax <= 0.0 or float(fatigue.get("cout_combat", 0.0)) <= 0.0 or float(fatigue.get("recuperation_par_heure", 0.0)) <= 0.0:
+			erreurs.append("fatigue.json : energie_max, cout_combat et recuperation_par_heure doivent être positifs")
+		for cle: String in ["seuil_fatigue", "reveil"]:
+			if float(fatigue.get(cle, -1.0)) < 0.0 or float(fatigue.get(cle, 0.0)) > fmax:
+				erreurs.append("fatigue.json : %s entre 0 et energie_max" % cle)
+		if float(fatigue.get("malus_max", -1.0)) < 0.0 or float(fatigue.get("malus_max", 0.0)) > 1.0:
+			erreurs.append("fatigue.json : malus_max entre 0 et 1")
+		if fatigue["potion"] is Dictionary and (int(fatigue["potion"].get("par_jour", -1)) < 0 or float(fatigue["potion"].get("energie", 0.0)) <= 0.0):
+			erreurs.append("fatigue.json potion : energie positive, par_jour au moins 0")
 	if guerre is Dictionary and (int(guerre.get("combats_par_membre", 0)) < 1 or float(guerre.get("defense", 0.0)) < 1.0):
 		erreurs.append("guerre.json : au moins un combat par membre, une défense d'au moins 1")
 	_valider_comptoir()
@@ -628,6 +644,10 @@ func _valider_arene() -> void:
 ## La carte du monde (data/carte.json) : des types connus, des régions avec un donjon du jeu, des territoires aux
 ## identifiants uniques et au type connu, des liens entre territoires existants.
 const CLES_CARTE := ["types", "donjon", "neutre_apres_jours", "regions", "simule"]
+## La fatigue (data/fatigue.json, engine/fatigue.gd) : la jauge, le coût d'un combat de farm, la récupération, le seuil
+## et le malus, le réveil, la potion.
+const CLES_FATIGUE := ["energie_max", "cout_combat", "recuperation_par_heure", "seuil_fatigue", "malus_max", "reveil", "potion"]
+const CLES_POTION := ["energie", "par_jour", "prix_eclats", "prix_or"]
 const CLES_GUERRE := ["combats_par_membre", "defenses_max_par_perso", "attaques_base", "membres_par_attaque", "membres_min_pour_attaquer_tenu", "defense", "defense_bastion", "protection_jours", "poids_niveau", "simule"]
 const CLES_CARTE_TYPE := ["nom", "texte", "valeur"]
 const CLES_CARTE_REGION := ["id", "nom", "niveau_min", "niveau_max", "donjon", "territoires", "liens"]

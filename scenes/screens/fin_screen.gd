@@ -130,7 +130,10 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	column.add_child(suite_boutons)
 	if donjon != null:
 		if donjon.phase == "combat":
-			suite_boutons.add_child(UiKit.main_button("Au bout de la route", func(): app.show_screen("combat", {"etat": donjon.combat(), "donjon": donjon, "noms": noms})))
+			if app.peut_farmer():
+				suite_boutons.add_child(UiKit.main_button("Au bout de la route", func(): app.show_screen("combat", app.combat_donjon(donjon))))
+			else:
+				suite_boutons.add_child(UiKit.label(app.texte_ecroule(), 15, ATTENUE))
 			suite_boutons.add_child(UiKit.button("Abandonner (la carte est gardée)", func():
 				app.abandonner_donjon()
 				app.show_screen("donjon"), 56))
@@ -154,7 +157,12 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 		suite_boutons.add_child(UiKit.main_button("Remonter", func(): app.show_screen("tower")))
 		suite_boutons.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 56))
 	else:
-		suite_boutons.add_child(UiKit.main_button("Étage suivant", func(): app.show_screen("combat", {"etat": tour.combat(), "tour": tour, "noms": noms})))
+		if app.farm_tour(tour):
+			suite_boutons.add_child(UiKit.label("Étage déjà franchi : il coûte %d points d'énergie. %s" % [int(app.data.fatigue["cout_combat"]), app.texte_energie()], 14, ATTENUE))
+		if app.farm_tour(tour) and not app.peut_farmer():
+			suite_boutons.add_child(UiKit.label(app.texte_ecroule(), 15, ATTENUE))
+		else:
+			suite_boutons.add_child(UiKit.main_button("Étage suivant", func(): app.show_screen("combat", app.combat_tour(tour))))
 		suite_boutons.add_child(UiKit.button("Arrêter la montée", func():
 			tour.arreter()
 			app.fin_tour(tour)

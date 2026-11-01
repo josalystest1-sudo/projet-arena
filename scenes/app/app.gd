@@ -663,10 +663,11 @@ func carte_donjon(id: String) -> Dictionary:
 	return profile.donjons[id]
 
 
-## Entrer dans un donjon : l'entrée en Éclats, puis la descente commence (aux portes). Faux s'il manque des Éclats.
+## Entrer dans un donjon : l'entrée en Éclats, puis la descente commence (aux portes). Faux s'il manque des Éclats, ou
+## si le personnage est écroulé de fatigue (les donjons sont du farm).
 func commencer_donjon(id: String) -> bool:
 	var def := Donjon.definition(id, data)
-	if def.is_empty() or profile.eclats < int(def["entree"]):
+	if def.is_empty() or profile.eclats < int(def["entree"]) or not peut_farmer():
 		return false
 	profile.eclats -= int(def["entree"])
 	# Une part de l'entrée va à la guilde qui tient le territoire du donjon cette semaine (la tienne : en Influence).
@@ -722,11 +723,88 @@ func fin_combat_donjon(dj: Donjon, e: EtatCombat) -> Dictionary:
 	return out
 
 
+## Le combat de l'endroit où en est une descente : chaque combat de donjon est du farm (il coûte de l'énergie ; un
+## personnage écroulé ne le joue pas : vide) ; le malus de fatigue du moment entre dans le combat. {etat, donjon, noms}.
+func combat_donjon(dj: Donjon) -> Dictionary:
+	if not peut_farmer():
+		return {}
+	profile.fatigue = Fatigue.apres_combat(fatigue_etat(), profile.maintenant(), data)
+	profile.save()
+	dj.membres[0].fatigue = malus_fatigue()
+	return {"etat": dj.combat(), "donjon": dj, "noms": noms_trio()}
+
+
 ## Abandonner la descente en cours (entre deux vagues, ou en plein combat) : la carte est gardée.
 func abandonner_donjon() -> void:
 	if donjon_en_cours != null:
 		donjon_en_cours.abandonner()
 		donjon_en_cours = null
+	profile.save()
+
+
+# ---------------------------------------------------------------------------
+# La fatigue (engine/fatigue.gd ; dans le profil)
+# ---------------------------------------------------------------------------
+
+## Ton état de fatigue, à l'instant (l'énergie revenue depuis la dernière lecture).
+func fatigue_etat() -> Dictionary:
+	profile.fatigue = Fatigue.a_jour(profile.fatigue, profile.maintenant(), data)
+	return profile.fatigue
+
+
+func energie() -> int:
+	return Fatigue.energie(fatigue_etat(), profile.maintenant(), data)
+
+
+func texte_energie() -> String:
+	return Fatigue.texte_energie(fatigue_etat(), profile.maintenant(), data)
+
+
+## Le malus de fatigue du moment (une fraction retirée aux PV et aux valeurs en combat).
+func malus_fatigue() -> float:
+	return Fatigue.malus_actuel(fatigue_etat(), profile.maintenant(), data)
+
+
+## Peut-il faire un combat de farm (un étage déjà franchi, un combat de donjon) ? Non s'il est écroulé.
+func peut_farmer() -> bool:
+	return Fatigue.peut_combattre(fatigue_etat(), profile.maintenant(), data)
+
+
+## Ce qu'il faut dire à un personnage écroulé.
+func texte_ecroule() -> String:
+	return "Ton personnage s'écroule de fatigue : réveil dans %s, ou une potion d'énergie chez l'Alchimiste du Comptoir." % Fatigue.texte_duree(Fatigue.secondes_reveil(fatigue_etat(), profile.maintenant(), data))
+
+
+func potions_restantes() -> int:
+	return Fatigue.potions_restantes(fatigue_etat(), jour(), data)
+
+
+## Boire une potion d'énergie chez l'Alchimiste, payée en Éclats (« eclats ») ou en Or (« or », détruit : un mouvement
+## « potion » au serveur). Faux s'il n'en reste plus ce jour ou s'il manque de quoi payer.
+func boire_potion(avec: String) -> bool:
+	if potions_restantes() <= 0:
+		return false
+	var prix := Fatigue.prix_potion(data)
+	if avec == "or":
+		if profile.monnaie_or < int(prix["or"]):
+			return false
+		profile.monnaie_or -= int(prix["or"])
+		serveur.mouvement(Economie.mouvement("potion", int(prix["or"]), jour()))
+	else:
+		if profile.eclats < int(prix["eclats"]):
+			return false
+		profile.eclats -= int(prix["eclats"])
+	profile.fatigue = Fatigue.boire(fatigue_etat(), profile.maintenant(), jour(), data)
+	profile.save()
+	return true
+
+
+## Outil du prototype : mettre l'énergie à cette valeur (0 : écroulé).
+func fatiguer(n: int) -> void:
+	var f := fatigue_etat()
+	f["energie"] = float(clampi(n, 0, int(data.fatigue["energie_max"])))
+	f["ecroule"] = n <= 0
+	profile.fatigue = f
 	profile.save()
 
 
@@ -942,6 +1020,7 @@ func reclamer_revenu() -> Dictionary:
 
 ## Le trio du joueur : lui, puis ses Échos (Front, Dégâts, Soutien moins son rôle).
 func trio() -> Array[Destin]:
+	destin.fatigue = malus_fatigue()
 	var out: Array[Destin] = [destin]
 	out.append_array(echos)
 	return out
@@ -1043,7 +1122,29 @@ func duel_contre_ia() -> Dictionary:
 ## le combat de son premier étage.
 func commencer_tour(depart: int = 0) -> Dictionary:
 	var t := Tour.commencer_camp(trio(), profile.level, _nouvelle_graine(), data, depart if depart >= 1 else palier(), faveurs())
+	return combat_tour(t)
+
+
+## Le combat de l'étage où en est une montée. Un étage déjà franchi (au plus le record de la classe) est du farm : il
+## coûte de l'énergie, et un personnage écroulé ne le joue pas (vide). Le malus de fatigue du moment entre dans le
+## combat. Renvoie {etat, tour, noms}.
+func combat_tour(t: Tour) -> Dictionary:
+	if farm_tour(t):
+		if not peut_farmer():
+			return {}
+		profile.fatigue = Fatigue.apres_combat(fatigue_etat(), profile.maintenant(), data)
+		profile.save()
+	t.membres[0].fatigue = malus_fatigue()
 	return {"etat": t.combat(), "tour": t, "noms": noms_trio()}
+
+
+## L'étage où en est une montée est-il du farm (déjà franchi par la classe) ?
+func farm_tour(t: Tour) -> bool:
+	return farm_etage(t.etage)
+
+
+func farm_etage(etage: int) -> bool:
+	return Fatigue.est_farm_tour(etage, int(profile.tower_records.get(lignee(), 0)))
 
 
 ## L'étage d'où ta classe reprend la Tour (après le dernier Gardien franchi).

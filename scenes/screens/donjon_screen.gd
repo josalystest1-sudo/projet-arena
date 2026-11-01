@@ -25,6 +25,10 @@ func _liste() -> void:
 	column.add_child(UiKit.label("Un donjon est un arbre de routes : trois portes à chaque embranchement, une vague derrière chacune. Au bout, un élite ; sur une seule route, le boss. Tu descends avec tes deux Échos ; le vote des portes est ton choix.", 15, UiKit.SOFT))
 	column.add_child(UiKit.label("Les portes n'ont pas de nom : leur ordre est le tien, personne ne peut te dicter une route. Ta carte retient où tu es passé ; un élite lâche un fragment qui révèle une porte du boss.", 14, ATTENUE))
 	column.add_child(UiKit.label("%d Éclat%s" % [app.profile.eclats, "s" if app.profile.eclats > 1 else ""], 17, Color.WHITE))
+	# La fatigue : chaque combat de donjon coûte de l'énergie ; écroulé, on attend (ou une potion).
+	column.add_child(UiKit.label("%s · chaque combat de donjon coûte %d points d'énergie." % [app.texte_energie(), int(app.data.fatigue["cout_combat"])], 14, UiKit.SOFT))
+	if not app.peut_farmer():
+		column.add_child(UiKit.label(app.texte_ecroule(), 15, UiKit.SOFT))
 	for dj in app.data.donjons["donjons"]:
 		var carte := app.carte_donjon(str(dj["id"]))
 		var c := UiKit.card(column, 4)
@@ -43,7 +47,7 @@ func _liste() -> void:
 		var assez := app.profile.eclats >= entree
 		var hors := app.profile.level < int(dj["niveau_min"])
 		var b := UiKit.button("Entrer (%d Éclats)%s" % [entree, "" if assez else ", il t'en manque"] if not hors else "Entrer (%d Éclats) · tu es sous le niveau %d" % [entree, int(dj["niveau_min"])], _entrer.bind(str(dj["id"])), 56, 17)
-		b.disabled = not assez
+		b.disabled = not assez or not app.peut_farmer()
 		c.add_child(b)
 	column.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 52))
 
@@ -76,6 +80,7 @@ func _portes() -> void:
 			detail = "révélée par un fragment : vers le boss"
 			couleur = UiKit.GOLD
 		var b := UiKit.button("%s · %s" % [texte, detail], _choisir.bind(int(p["position"])), 64, 17)
+		b.disabled = not app.peut_farmer()
 		b.add_theme_color_override("font_color", couleur)
 		column.add_child(b)
 	# Les PV du trio.
@@ -93,6 +98,8 @@ func _portes() -> void:
 
 func _choisir(position: int) -> void:
 	var dj: Donjon = app.donjon_en_cours
+	if not app.peut_farmer():
+		return
 	if dj.choisir(position):
 		app.sfx.play("clic")
-		app.show_screen("combat", {"etat": dj.combat(), "donjon": dj, "noms": app.noms_trio()})
+		app.show_screen("combat", app.combat_donjon(dj))
