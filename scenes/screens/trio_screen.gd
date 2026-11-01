@@ -44,8 +44,13 @@ func _construire() -> void:
 			app.sfx.play("clic")
 			app.show_screen("combat", app.commencer_tour(depart))
 		var etage := depart if depart >= 1 else app.palier()
+		var bloque := app.farm_etage(etage) and not app.peut_farmer()
 		var texte := "Monter la Tour" if etage <= 1 else "Monter la Tour (étage %d)" % etage
-		column.add_child(UiKit.main_button(texte, monter) if mode == "tour" else UiKit.button(texte, monter, 64))
+		if bloque:
+			texte = "Écroulé de fatigue : repos d'abord"
+		var bouton_tour: Button = UiKit.main_button(texte, monter) if mode == "tour" else UiKit.button(texte, monter, 64)
+		bouton_tour.disabled = bloque
+		column.add_child(bouton_tour)
 	if mode != "":
 		column.add_child(UiKit.button("Retour", func(): app.show_screen("arene" if mode in ["duel", "classe"] else "tower"), 52))
 

@@ -107,6 +107,7 @@ Modifiées le 29 octobre :
 - **Faveurs de la Tour** : chaque Gardien vaincu pour la première fois (avec cette classe) donne une Faveur permanente, à choisir parmi trois, **valable seulement dans la Tour**. **[Décidé, 29 octobre : « des petits bonus cumulables »]** Fait (PR 2.2) : six Faveurs cumulables (Vigueur +4 % de PV, Puissance +4 % de force, Répit +5 points de PV rendus entre deux étages, Égide une barrière de 8 % au début de chaque étage, Effroi les monstres affaiblis de 10 % pendant 2 tours (50 % au plus), Savoir +10 % d'XP), chiffres à régler à la phase 9.
 - **Revenu passif selon la hauteur** : monnaie et un peu d'XP par jour, plafonnés, jamais d'objets de puissance. **[Décidé dans le principe, à mesurer contre l'économie]** Reporté à la phase 3, avec la Forge (décision de Gautier du 29 octobre : il arrive quand les Éclats servent).
 - **Classement** = étage atteint, par classe. Pas de saison pour la Tour (elle ne se remet pas). **[Décidé]**
+- **La fatigue** **[Décidé le 1er novembre]** (« la Tour ne se monte qu'une fois… refaire un étage coûte de l'énergie ; quand l'énergie est faible, le personnage devient moins fort, et s'il continue, il s'écroule de fatigue et doit attendre ») : une jauge d'énergie ; **seul le farm fatigue** (rejouer un étage déjà franchi, chaque combat de donjon) ; le record, les classés, les amicaux, les guerres jamais ; moins fort sous la moitié, écroulé à zéro, l'énergie revient avec le temps ; la potion d'énergie chez l'Alchimiste du Comptoir, en nombre limité par jour. Fait (PR #93) : `data/fatigue.json`, `engine/fatigue.gd`, le malus par `Destin.fatigue`, les écrans. **[Chiffres : Proposé, à régler à la fin]**
 
 ## 7. Le PvP (trio contre trio)
 
@@ -122,7 +123,7 @@ Modifiées le 29 octobre :
 
 - Plusieurs donjons ouverts en même temps, **un par tranche de niveau**, communs au serveur ; on y va avec sa guilde, ses amis ou des inconnus. **[Décidé]** Ils sont placés sur la carte du monde, avec leur niveau. **[Décidé]**
 - Un donjon est un arbre de routes : **trois portes** à chaque embranchement ; une route fait X combats ; au bout, **un élite**, sauf sur une seule route : **le boss**. Après chaque vague, le trio **vote** la porte suivante (majorité ; trois votes différents : celui qui a le plus de routes explorées tranche). **[Décidé ; départage : Proposé]**
-- Entrer coûte des Éclats (une part va à la guilde qui tient le territoire, § 9). Pas de limite de tours, abandon libre. Fait en solo (PR #65) : trois donjons par tranche de niveau, l'arbre, les portes sans nom, la carte personnelle, les fragments, l'élite et le boss (sans paliers à secret encore), les récompenses ; les trois humains, le vote et la carte de guilde avec le serveur.
+- Entrer coûte des Éclats (une part va à la guilde qui tient le territoire, § 9). Pas de limite de tours, abandon libre. **[Décidé le 1er novembre]** Illimités, mais chaque combat de donjon fatigue (§ 6, PR #93). Fait en solo (PR #65) : trois donjons par tranche de niveau, l'arbre, les portes sans nom, la carte personnelle, les fragments, l'élite et le boss (sans paliers à secret encore), les récompenses ; les trois humains, le vote et la carte de guilde avec le serveur.
 
 ### 8.2 Les portes sans nom
 

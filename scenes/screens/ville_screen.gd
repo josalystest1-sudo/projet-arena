@@ -51,6 +51,7 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		facts.append("%d Or" % profile.monnaie_or)
 	facts.append("Tour : étage %d" % record if record > 0 else "Tour : pas encore tentée")
 	haut_col.add_child(UiKit.label(" · ".join(facts), 15, UiKit.SOFT))
+	haut_col.add_child(UiKit.label(app.texte_energie(), 14, UiKit.SOFT))
 	# La carte : le reste de l'écran.
 	carte = Control.new()
 	carte.size_flags_vertical = Control.SIZE_EXPAND_FILL

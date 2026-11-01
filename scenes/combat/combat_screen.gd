@@ -242,6 +242,10 @@ func _debut_tour() -> void:
 	chrono = float(e.regles["chrono_s"]) if tour == null else -1.0
 	_dernier_tic = 0
 	_maj()
+	# La fatigue (engine/fatigue.gd) : le malus entré dans ce combat, dit une fois.
+	var malus_fatigue := float(e.fiche("a1").get("fatigue", 0.0))
+	if malus_fatigue > 0.0:
+		aide.text = "Fatigué : tes PV et tes valeurs sont à −%d %% pour ce combat." % roundi(malus_fatigue * 100.0)
 	if message_boss != "":
 		aide.text = message_boss
 		message_boss = ""

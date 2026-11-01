@@ -43,6 +43,8 @@ var donjons: Dictionary = {}
 ## Le Comptoir (engine/comptoir.gd) : l'Or (la monnaie échangeable), le jour de l'étal et les objets de l'étal achetés
 ## ce jour-là (leurs index).
 var monnaie_or: int = 0
+## La fatigue (engine/fatigue.gd) : {energie, depuis, ecroule, potions, jour_potions} ; vide : un personnage reposé.
+var fatigue: Dictionary = {}
 ## L'économie (engine/economie.gd) : les compteurs du jour {jour, ventes, depots, achats}.
 var compteurs_jour: Dictionary = {}
 var etal_jour: String = ""
@@ -85,6 +87,7 @@ static func load_profile() -> PlayerProfile:
 		profile.arene = cfg.get_value("arene", "etat", {})
 		profile.donjons = cfg.get_value("donjons", "cartes", {})
 		profile.monnaie_or = int(cfg.get_value("comptoir", "or", 0))
+		profile.fatigue = cfg.get_value("fatigue", "etat", {})
 		profile.compteurs_jour = cfg.get_value("economie", "jour", {})
 		profile.etal_jour = str(cfg.get_value("comptoir", "etal_jour", ""))
 		profile.etal_achetes = cfg.get_value("comptoir", "etal_achetes", [])
@@ -118,6 +121,7 @@ func save() -> void:
 	cfg.set_value("arene", "etat", arene)
 	cfg.set_value("donjons", "cartes", donjons)
 	cfg.set_value("comptoir", "or", monnaie_or)
+	cfg.set_value("fatigue", "etat", fatigue)
 	cfg.set_value("economie", "jour", compteurs_jour)
 	cfg.set_value("comptoir", "etal_jour", etal_jour)
 	cfg.set_value("comptoir", "etal_achetes", etal_achetes)
@@ -138,6 +142,11 @@ static func xp_to_next(from_level: int) -> int:
 ## Ajoute de l'XP ; renvoie {levels: niveaux gagnés, level: le niveau atteint}.
 ## Le jour d'aujourd'hui pour le jeu (« AAAA-MM-JJ », heure locale), décalé des jours d'avance du prototype.
 ## Tout ce qui lit la date (objectifs, Arène, Marché, guerres, serveur simulé) passe par ici.
+## L'instant du jeu (unix, en secondes), décalé comme le jour par l'outil « Passer au lendemain » : la fatigue le lit.
+func maintenant() -> int:
+	return int(Time.get_unix_time_from_system()) + jours_avance * 86400
+
+
 func aujourd_hui() -> String:
 	if jours_avance == 0:
 		return Time.get_date_string_from_system()

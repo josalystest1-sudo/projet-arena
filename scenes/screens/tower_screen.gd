@@ -22,7 +22,15 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 			"La montée s'arrête quand tout ton trio tombe. L'étage atteint est ton record, classé par classe. Un étage déjà franchi rapporte moitié moins d'XP.",
 			"Chaque Gardien que tu bats pour la première fois t'offre une Faveur, à choisir parmi trois. Les Faveurs se cumulent et ne valent que dans la Tour."]:
 		regles.add_child(UiKit.label(ligne, 16, UiKit.SOFT, false))
-	column.add_child(UiKit.main_button("Reprendre à l'étage %d" % palier if palier > 1 else "Monter", _monter.bind(palier), 84))
+	# Ta forme : rejouer un étage déjà franchi fatigue ; écroulé, on attend (ou une potion).
+	var forme := UiKit.card(column, 4)
+	forme.add_child(UiKit.label("Ta forme", 20, UiKit.GOLD, false))
+	forme.add_child(UiKit.label(app.texte_energie(), 16, Color.WHITE, false))
+	forme.add_child(UiKit.label("Rejouer un étage déjà franchi (jusqu'à ton record) coûte %d points d'énergie ; ton record, jamais. Sous %d, tu es moins fort ; à zéro, tu t'écroules et tu attends, ou tu bois une potion chez l'Alchimiste du Comptoir. L'énergie revient toute seule : %d points par heure." % [int(app.data.fatigue["cout_combat"]), int(app.data.fatigue["seuil_fatigue"]), int(app.data.fatigue["recuperation_par_heure"])], 14, UiKit.SOFT, false))
+	var bloque := app.farm_etage(palier) and not app.peut_farmer()
+	var monter := UiKit.main_button("Écroulé de fatigue : repos d'abord" if bloque else ("Reprendre à l'étage %d" % palier if palier > 1 else "Monter"), _monter.bind(palier), 84)
+	monter.disabled = bloque
+	column.add_child(monter)
 	# Les Faveurs acquises par cette classe.
 	var faveurs := app.faveurs()
 	var carte_faveurs := UiKit.card(column, 4)
@@ -41,7 +49,11 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		ligne.add_theme_constant_override("v_separation", 8)
 		rejouer.add_child(ligne)
 		for p in plus_bas:
-			ligne.add_child(UiKit.button("Étage %d" % p, _monter.bind(p), 48, 16))
+			var b := UiKit.button("Étage %d" % p, _monter.bind(p), 48, 16)
+			b.disabled = not app.peut_farmer()
+			ligne.add_child(b)
+		if not app.peut_farmer():
+			rejouer.add_child(UiKit.label(app.texte_ecroule(), 14, UiKit.SOFT, false))
 	column.add_child(UiKit.button("Le bestiaire", func(): app.show_screen("bestiaire"), 52))
 	column.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 52))
 	var records := UiKit.card(column, 2)

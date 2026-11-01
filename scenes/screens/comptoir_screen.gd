@@ -67,7 +67,28 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		vente.add_child(b)
 	if not un:
 		vente.add_child(UiKit.label("Rien d'échangeable dans ton sac.", 15, ATTENUE, false))
+	# L'Alchimiste : la potion d'énergie (engine/fatigue.gd), contre des Éclats ou de l'Or, en nombre limité par jour.
+	var alchimiste := UiKit.card(column, 6)
+	alchimiste.add_child(UiKit.label("L'Alchimiste : la potion d'énergie", 20, UiKit.GOLD, false))
+	alchimiste.add_child(UiKit.label(app.texte_energie(), 15, Color.WHITE, false))
+	var potion: Dictionary = app.data.fatigue["potion"]
+	var reste := app.potions_restantes()
+	alchimiste.add_child(UiKit.label("Une potion rend %d points d'énergie et relève un personnage écroulé. %d par jour : il t'en reste %d." % [int(potion["energie"]), int(potion["par_jour"]), reste], 14, ATTENUE, false))
+	if reste > 0:
+		var prix := Fatigue.prix_potion(app.data)
+		var be := UiKit.button("Boire (%d Éclats)" % int(prix["eclats"]), _boire.bind("eclats"), 48, 16)
+		be.disabled = app.profile.eclats < int(prix["eclats"])
+		alchimiste.add_child(be)
+		var bo := UiKit.button("Boire (%d Or)" % int(prix["or"]), _boire.bind("or"), 48, 16)
+		bo.disabled = app.profile.monnaie_or < int(prix["or"])
+		alchimiste.add_child(bo)
 	column.add_child(UiKit.button("Retour à la ville", func(): app.show_screen("ville"), 52))
+
+
+func _boire(avec: String) -> void:
+	if app.boire_potion(avec):
+		app.sfx.play("clic")
+	app.show_screen("comptoir")
 
 
 func _acheter(index: int) -> void:

@@ -60,11 +60,13 @@ static func nouveau_combat(camp_a: Array, camp_b: Array, niveau: int, mode: Stri
 			for v in range(destin.voies.size()):
 				bonus.append([destin.bonus_valeurs(v, 1), destin.bonus_valeurs(v, 2), destin.bonus_valeurs(v, 3), destin.bonus_valeurs(v, 4)])
 			# L'équipement (engine/equipement.gd) : ses PV max et sa Force entrent ici ; ses autres lignes à chaque valeur
-			# (valeur). Sans équipement, × 1 : le combat est le même au bit près.
-			var pv_max := plancher(float(destin.pv_base) * destin.pv_mult * m * (1.0 + destin.bonus_pv()) * (1.0 + float(destin.mods.get("pv", 0.0))))
+			# (valeur). Sans équipement, × 1 : le combat est le même au bit près. La fatigue (engine/fatigue.gd) retire sa
+			# fraction aux PV max et au multiplicateur de classe (donc à toutes les valeurs) ; en forme, × 1.
+			var forme := 1.0 - clampf(destin.fatigue, 0.0, 1.0)
+			var pv_max := plancher(float(destin.pv_base) * destin.pv_mult * m * (1.0 + destin.bonus_pv()) * (1.0 + float(destin.mods.get("pv", 0.0))) * forme)
 			e.statique[id] = {"camp": c[0], "place": place, "classe": destin.classe_id, "nom": destin.nom, "sprite": destin.sprite,
-				"role": destin.role, "k": destin.k * (1.0 + float(destin.mods.get("force", 0.0))), "pv_max": pv_max, "moyeu": destin.moyeu,
-				"voies": destin.voies, "bonus": bonus, "mods": destin.mods.duplicate(), "traits": Array(destin.traits)}
+				"role": destin.role, "k": destin.k * (1.0 + float(destin.mods.get("force", 0.0))) * forme, "pv_max": pv_max, "moyeu": destin.moyeu,
+				"voies": destin.voies, "bonus": bonus, "mods": destin.mods.duplicate(), "traits": Array(destin.traits), "fatigue": destin.fatigue}
 			var nv := destin.voies.size()
 			var eteints: Array = []
 			for v in range(nv):

@@ -9,9 +9,10 @@ class_name Economie
 extends RefCounted
 
 ## Les types de mouvement : « comptoir » (de l'Or créé : une vente au Comptoir), « taxe » (de l'Or détruit : la taxe d'une
-## vente au Marché), « amelioration » (de l'Or détruit : un cran d'amélioration payé à la Forge), « achat » (de l'Or passé
-## d'un joueur à un autre : le prix d'une annonce achetée).
-const TYPES := ["comptoir", "taxe", "amelioration", "achat"]
+## vente au Marché), « amelioration » (de l'Or détruit : un cran d'amélioration payé à la Forge), « potion » (de l'Or
+## détruit : une potion d'énergie payée en Or chez l'Alchimiste), « achat » (de l'Or passé d'un joueur à un autre : le
+## prix d'une annonce achetée).
+const TYPES := ["comptoir", "taxe", "amelioration", "potion", "achat"]
 const CLES_MOUVEMENT := ["type", "montant", "jour", "semaine"]
 ## Les garde-fous par jour : ce qu'on compte -> [le fichier de données, la clé].
 const LIMITES := {"ventes": ["comptoir", "ventes_par_jour"], "depots": ["marche", "depots_par_jour"], "achats": ["marche", "achats_par_jour"]}
@@ -31,7 +32,7 @@ static func mouvement_valide(m: Dictionary) -> bool:
 	return str(m["type"]) in TYPES and int(m["montant"]) >= 0
 
 
-## Le bilan d'une semaine : {entre (créé au Comptoir), detruit (la taxe et l'amélioration), echange (passé entre joueurs)}, en Or.
+## Le bilan d'une semaine : {entre (créé au Comptoir), detruit (la taxe, l'amélioration, les potions), echange (passé entre joueurs)}, en Or.
 static func bilan(mouvements: Array, semaine: int) -> Dictionary:
 	var out := {"entre": 0, "detruit": 0, "echange": 0}
 	for m in mouvements:
@@ -40,7 +41,7 @@ static func bilan(mouvements: Array, semaine: int) -> Dictionary:
 		match str(m.get("type", "")):
 			"comptoir":
 				out["entre"] += int(m["montant"])
-			"taxe", "amelioration":
+			"taxe", "amelioration", "potion":
 				out["detruit"] += int(m["montant"])
 			"achat":
 				out["echange"] += int(m["montant"])
