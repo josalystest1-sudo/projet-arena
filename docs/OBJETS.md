@@ -4,26 +4,26 @@ Généré par `tools/catalogue_objets.py` depuis `data/items.json` (et les donn�
 
 ## Comment un objet est fait
 
-Un objet, c'est **une base** (ce qu'il est : une Épée, une Robe…), **un palier de niveau** (son matériau), **une rareté** et **ses lignes** : des bonus en %, tirés à la trouvaille dans la réserve de sa base. Il n'a de valeur que pour un Destin : ses lignes s'ajoutent aux éclats de la roue. Cinq emplacements, un objet porté par emplacement.
+Un objet, c'est **une base** (ce qu'il est : une Épée, une Robe…), **un palier de niveau** (son matériau), **une rareté** et **ses lignes** : des bonus en %, tirés à la trouvaille dans la réserve de sa base. Il n'a de valeur que pour un Destin : ses lignes s'ajoutent aux éclats de la roue. Huit emplacements, un objet porté par emplacement.
 
-- **Les raretés** : commun (1 ligne, fourchettes × 1) ; rare (2 lignes, fourchettes × 1,1) ; épique (3 lignes, fourchettes × 1,3) ; légendaire (4 lignes, fourchettes × 1,5).
+- **Les raretés** : commun (1 ligne, fourchettes × 1) ; peu commun (2 lignes, fourchettes × 1) ; rare (2 lignes, fourchettes × 1,2) ; épique (3 lignes, fourchettes × 1,4) ; légendaire (4 lignes, fourchettes × 1,5).
 - **Le niveau** : les fourchettes valent 50 % de leur pleine valeur au niveau 1, 100 % au niveau 30 et au-delà.
 - **La qualité** (0 à 100 %) dit où les chiffres sont tombés dans leurs fourchettes.
 - **Lié ou échangeable** : échangeable seulement s'il vient d'un premier passage (Tour) ou d'un boss de donjon ; lié dès qu'on l'équipe, et pour toujours.
-- **La reforge** : une ligne retirée contre 20 Éclats, +100 % par reforge déjà faite. **Le recyclage** rend 5 (commun) / 15 (rare) / 40 (épique) / 100 (légendaire) Éclats.
+- **La reforge** : une ligne retirée contre 20 Éclats, +100 % par reforge déjà faite. **Le recyclage** rend 5 (commun) / 10 (peu commun) / 15 (rare) / 40 (épique) / 100 (légendaire) Éclats.
 
 ## Les huit lignes
 
 | Ligne | Ce qu'elle fait | Fourchette (commun, niveau 30) | Plafond sur le total porté |
 | --- | --- | --- | --- |
-| PV max | +X % de PV max | 3 – 6 % | 25 % |
-| Force | +X % de force (toutes les valeurs) | 2 – 4 % | 15 % |
-| Dégâts | +X % de dégâts directs | 3 – 6 % | 25 % |
-| Soins | +X % de soins et de Gardiens | 3 – 6 % | 25 % |
-| Barrières | +X % de barrières | 4 – 8 % | 30 % |
-| Poisons et brûlures | +X % de dégâts sur la durée | 4 – 8 % | 30 % |
-| Clés | +X % sur les Clés | 4 – 8 % | 30 % |
-| Ouvertures | +X % sur le moyeu et les ouvertures | 4 – 8 % | 30 % |
+| PV max | +X % de PV max | 2 – 4 % | 25 % |
+| Force | +X % de force (toutes les valeurs) | 1,2 – 2,5 % | 15 % |
+| Dégâts | +X % de dégâts directs | 2 – 4 % | 25 % |
+| Soins | +X % de soins et de Gardiens | 2 – 4 % | 25 % |
+| Barrières | +X % de barrières | 2,5 – 5 % | 30 % |
+| Poisons et brûlures | +X % de dégâts sur la durée | 2,5 – 5 % | 30 % |
+| Clés | +X % sur les Clés | 2,5 – 5 % | 30 % |
+| Ouvertures | +X % sur le moyeu et les ouvertures | 2,5 – 5 % | 30 % |
 
 ## Les paliers de niveau (le matériau du nom)
 
@@ -36,9 +36,9 @@ Un objet, c'est **une base** (ce qu'il est : une Épée, une Robe…), **un pali
 | 40 | runique | Épée runique rare |
 | 50 | de dragon | Épée de dragon rare |
 
-## Les trente bases, par emplacement
+## Les quarante-huit bases, par emplacement
 
-Chaque base a une réserve de quatre lignes possibles ; un objet tire ses lignes dedans (autant que sa rareté en donne, toutes différentes). Chaque ligne est dans quinze réserves : aucune n'est plus rare qu'une autre.
+Chaque base a une réserve de quatre lignes possibles ; un objet tire ses lignes dedans (autant que sa rareté en donne, toutes différentes). Chaque ligne est dans vingt-quatre réserves : aucune n'est plus rare qu'une autre.
 
 ### Arme
 
@@ -51,6 +51,17 @@ Chaque base a une réserve de quatre lignes possibles ; un objet tire ses lignes
 | **Hache** | Dégâts, Force, Poisons et brûlures, Barrières | Large et lourde : elle tranche, elle saigne, et le bras tient le choc. |
 | **Marteau** | PV max, Dégâts, Barrières, Clés | Le poids d'une enclume : encaisser, écraser, et finir par la Clé. |
 
+### Casque
+
+| Base | Lignes possibles | Description |
+| --- | --- | --- |
+| **Casque** | PV max, Barrières, Force, Ouvertures | Un bol de fer sur la tête : la vie, la garde, la force, l'ouverture. |
+| **Heaume** | PV max, Barrières, Dégâts, Clés | Fermé, lourd, sans visage : on encaisse, on garde, on frappe, on finit. |
+| **Capuche** | Poisons et brûlures, Ouvertures, Dégâts, Soins | De l'ombre sur les yeux : le venin, le premier coup, la frappe, un peu de soin. |
+| **Couronne** | Clés, Force, Soins, PV max | Un cercle d'or qui commande : la Clé, la force, les soins, la vie. |
+| **Diadème** | Soins, Barrières, Clés, Ouvertures | Un fin bandeau serti : les soins, les barrières, la Clé, l'ouverture. |
+| **Bandeau** | Ouvertures, Poisons et brûlures, Force, Dégâts | Une bande de toile nouée : l'ouverture vive, le venin, la force, le coup. |
+
 ### Armure
 
 | Base | Lignes possibles | Description |
@@ -60,7 +71,40 @@ Chaque base a une réserve de quatre lignes possibles ; un objet tire ses lignes
 | **Armure de cuir** | PV max, Dégâts, Poisons et brûlures, Ouvertures | Souple et silencieuse : pour frapper fort sans peser. |
 | **Armure de plates** | PV max, Barrières, Soins, Ouvertures | Des plaques d'acier : rien ne passe, et le porteur dure. |
 | **Tunique** | Soins, Poisons et brûlures, Ouvertures, Force | Légère, propre aux soigneurs qui bougent : soins, venins, ouverture vive. |
+| **Brigandine** | PV max, Dégâts, Force, Clés | Des plaques cousues sous le cuir : solide, et faite pour frapper. |
+
+### Cape
+
+| Base | Lignes possibles | Description |
+| --- | --- | --- |
 | **Cape** | Poisons et brûlures, Dégâts, Barrières, Clés | Un pan d'ombre sur les épaules : les poisons, la frappe, la barrière. |
+| **Manteau** | PV max, Soins, Barrières, Force | Long et lourd, doublé de laine : la vie, les soins, la barrière, la force. |
+| **Pèlerine** | Soins, Ouvertures, Poisons et brûlures, PV max | Courte, pour la route : les soins, l'ouverture, le venin, la vie. |
+| **Houppelande** | Clés, Barrières, Soins, Dégâts | Ample, aux manches immenses : la Clé, la barrière, les soins, la frappe. |
+| **Mantelet** | Dégâts, Ouvertures, Force, Poisons et brûlures | Un pan court sur une épaule : la frappe, l'ouverture, la force, le venin. |
+| **Voile** | Poisons et brûlures, Soins, Clés, Barrières | Léger comme un souffle : le venin, les soins, la Clé, la barrière. |
+
+### Bottes
+
+| Base | Lignes possibles | Description |
+| --- | --- | --- |
+| **Bottes** | Ouvertures, PV max, Force, Dégâts | Du cuir jusqu'au genou : l'ouverture, la vie, la force, le coup. |
+| **Sandales** | Soins, Ouvertures, Poisons et brûlures, Barrières | Des lanières et une semelle : les soins, l'ouverture, le venin, la barrière. |
+| **Sabots** | PV max, Barrières, Force, Poisons et brûlures | Du bois plein : la vie, la garde, la force, et le venin qu'on écrase. |
+| **Brodequins** | Dégâts, Clés, Ouvertures, Poisons et brûlures | Lacés serré, pour courir : la frappe, la Clé, l'ouverture, le venin. |
+| **Souliers** | Soins, Clés, Poisons et brûlures, Ouvertures | Fins et souples : les soins, la Clé, le venin, l'ouverture. |
+| **Cuissardes** | PV max, Dégâts, Barrières, Clés | Hautes et épaisses : la vie, la frappe, la barrière, la Clé. |
+
+### Ceinture
+
+| Base | Lignes possibles | Description |
+| --- | --- | --- |
+| **Ceinture** | Force, PV max, Dégâts, Soins | Du cuir et une boucle : la force, la vie, le coup, un peu de soin. |
+| **Ceinturon** | Soins, Force, Barrières, Clés | Large, à poches : les soins, la force, la barrière, la Clé. |
+| **Baudrier** | Dégâts, Clés, Poisons et brûlures, Force | En travers de la poitrine, pour l'arme : la frappe, la Clé, le venin, la force. |
+| **Écharpe** | Soins, Poisons et brûlures, Barrières, Ouvertures | De la soie nouée à la taille : les soins, le venin, la barrière, l'ouverture. |
+| **Cordelière** | Soins, Clés, Ouvertures, Poisons et brûlures | Une corde à nœuds : les soins, la Clé, l'ouverture, le venin. |
+| **Chaîne** | Barrières, Force, PV max, Poisons et brûlures | Des maillons lourds : la barrière, la force, la vie, le venin. |
 
 ### Anneau
 
@@ -83,17 +127,6 @@ Chaque base a une réserve de quatre lignes possibles ; un objet tire ses lignes
 | **Médaillon** | Barrières, Clés, Soins, Dégâts | Un portrait sous verre : barrières, Clé, soins, frappe. |
 | **Camée** | Poisons et brûlures, PV max, Barrières, Soins | Un profil taillé dans la pierre : venins, vie, barrière, soin. |
 | **Fétiche** | Clés, Force, Dégâts, Poisons et brûlures | Des plumes et des dents : la Clé, la force, la frappe, le venin. |
-
-### Talisman
-
-| Base | Lignes possibles | Description |
-| --- | --- | --- |
-| **Talisman** | Clés, Ouvertures, Force, Poisons et brûlures | Un signe qui ouvre et qui ferme : les Clés et les Ouvertures. |
-| **Relique** | Soins, Barrières, Clés, PV max | Un os de saint, dit-on : les soins, les barrières, la Clé et la vie. |
-| **Idole** | Dégâts, Poisons et brûlures, Ouvertures, Soins | Une petite figure de bois : le poison, la frappe, l'élan. |
-| **Grigri** | Ouvertures, PV max, Soins, Poisons et brûlures | Un petit sac cousu : l'ouverture, la vie, les soins, le venin. |
-| **Rune** | Clés, Force, Barrières, Dégâts | Un galet gravé : la Clé, la force, la barrière, le coup. |
-| **Charme** | Barrières, Soins, Force, Poisons et brûlures | Un ruban noué : barrières, soins, force, venin. |
 
 ## Les traits légendaires
 
@@ -118,54 +151,62 @@ Pour chaque ligne, les bornes d'un objet (en %) selon sa rareté, aux niveaux 1,
 
 | Ligne | Rareté | Niveau 1 | Niveau 10 | Niveau 20 | Niveau 30 |
 | --- | --- | --- | --- | --- | --- |
-| PV max | commun | 1,5 – 3 | 2 – 3,9 | 2,5 – 5 | 3 – 6 |
-| PV max | rare | 1,7 – 3,4 | 2,3 – 4,5 | 2,9 – 5,7 | 3,4 – 6,9 |
-| PV max | épique | 2 – 3,9 | 2,6 – 5,1 | 3,2 – 6,5 | 3,9 – 7,8 |
-| PV max | légendaire | 2,2 – 4,5 | 2,9 – 5,9 | 3,7 – 7,4 | 4,5 – 9 |
-| Force | commun | 1 – 2 | 1,3 – 2,6 | 1,7 – 3,3 | 2 – 4 |
-| Force | rare | 1,1 – 2,3 | 1,5 – 3 | 1,9 – 3,8 | 2,3 – 4,6 |
-| Force | épique | 1,3 – 2,6 | 1,7 – 3,4 | 2,2 – 4,3 | 2,6 – 5,2 |
-| Force | légendaire | 1,5 – 3 | 2 – 3,9 | 2,5 – 5 | 3 – 6 |
-| Dégâts | commun | 1,5 – 3 | 2 – 3,9 | 2,5 – 5 | 3 – 6 |
-| Dégâts | rare | 1,7 – 3,4 | 2,3 – 4,5 | 2,9 – 5,7 | 3,4 – 6,9 |
-| Dégâts | épique | 2 – 3,9 | 2,6 – 5,1 | 3,2 – 6,5 | 3,9 – 7,8 |
-| Dégâts | légendaire | 2,2 – 4,5 | 2,9 – 5,9 | 3,7 – 7,4 | 4,5 – 9 |
-| Soins | commun | 1,5 – 3 | 2 – 3,9 | 2,5 – 5 | 3 – 6 |
-| Soins | rare | 1,7 – 3,4 | 2,3 – 4,5 | 2,9 – 5,7 | 3,4 – 6,9 |
-| Soins | épique | 2 – 3,9 | 2,6 – 5,1 | 3,2 – 6,5 | 3,9 – 7,8 |
-| Soins | légendaire | 2,2 – 4,5 | 2,9 – 5,9 | 3,7 – 7,4 | 4,5 – 9 |
-| Barrières | commun | 2 – 4 | 2,6 – 5,2 | 3,3 – 6,6 | 4 – 8 |
-| Barrières | rare | 2,3 – 4,6 | 3 – 6 | 3,8 – 7,6 | 4,6 – 9,2 |
-| Barrières | épique | 2,6 – 5,2 | 3,4 – 6,8 | 4,3 – 8,6 | 5,2 – 10,4 |
-| Barrières | légendaire | 3 – 6 | 3,9 – 7,9 | 5 – 9,9 | 6 – 12 |
-| Poisons et brûlures | commun | 2 – 4 | 2,6 – 5,2 | 3,3 – 6,6 | 4 – 8 |
-| Poisons et brûlures | rare | 2,3 – 4,6 | 3 – 6 | 3,8 – 7,6 | 4,6 – 9,2 |
-| Poisons et brûlures | épique | 2,6 – 5,2 | 3,4 – 6,8 | 4,3 – 8,6 | 5,2 – 10,4 |
-| Poisons et brûlures | légendaire | 3 – 6 | 3,9 – 7,9 | 5 – 9,9 | 6 – 12 |
-| Clés | commun | 2 – 4 | 2,6 – 5,2 | 3,3 – 6,6 | 4 – 8 |
-| Clés | rare | 2,3 – 4,6 | 3 – 6 | 3,8 – 7,6 | 4,6 – 9,2 |
-| Clés | épique | 2,6 – 5,2 | 3,4 – 6,8 | 4,3 – 8,6 | 5,2 – 10,4 |
-| Clés | légendaire | 3 – 6 | 3,9 – 7,9 | 5 – 9,9 | 6 – 12 |
-| Ouvertures | commun | 2 – 4 | 2,6 – 5,2 | 3,3 – 6,6 | 4 – 8 |
-| Ouvertures | rare | 2,3 – 4,6 | 3 – 6 | 3,8 – 7,6 | 4,6 – 9,2 |
-| Ouvertures | épique | 2,6 – 5,2 | 3,4 – 6,8 | 4,3 – 8,6 | 5,2 – 10,4 |
-| Ouvertures | légendaire | 3 – 6 | 3,9 – 7,9 | 5 – 9,9 | 6 – 12 |
+| PV max | commun | 1 – 2 | 1,3 – 2,6 | 1,7 – 3,3 | 2 – 4 |
+| PV max | peu commun | 1 – 2 | 1,3 – 2,6 | 1,7 – 3,3 | 2 – 4 |
+| PV max | rare | 1,2 – 2,4 | 1,6 – 3,1 | 2 – 4 | 2,4 – 4,8 |
+| PV max | épique | 1,4 – 2,7 | 1,8 – 3,5 | 2,2 – 4,5 | 2,7 – 5,4 |
+| PV max | légendaire | 1,5 – 3 | 2 – 3,9 | 2,5 – 5 | 3 – 6 |
+| Force | commun | 0,6 – 1,2 | 0,8 – 1,6 | 1 – 2,1 | 1,2 – 2,5 |
+| Force | peu commun | 0,6 – 1,2 | 0,8 – 1,6 | 1 – 2,1 | 1,2 – 2,5 |
+| Force | rare | 0,7 – 1,5 | 0,9 – 2 | 1,2 – 2,5 | 1,4 – 3 |
+| Force | épique | 0,8 – 1,7 | 1,1 – 2,2 | 1,3 – 2,8 | 1,6 – 3,4 |
+| Force | légendaire | 0,9 – 1,9 | 1,2 – 2,5 | 1,5 – 3,1 | 1,8 – 3,8 |
+| Dégâts | commun | 1 – 2 | 1,3 – 2,6 | 1,7 – 3,3 | 2 – 4 |
+| Dégâts | peu commun | 1 – 2 | 1,3 – 2,6 | 1,7 – 3,3 | 2 – 4 |
+| Dégâts | rare | 1,2 – 2,4 | 1,6 – 3,1 | 2 – 4 | 2,4 – 4,8 |
+| Dégâts | épique | 1,4 – 2,7 | 1,8 – 3,5 | 2,2 – 4,5 | 2,7 – 5,4 |
+| Dégâts | légendaire | 1,5 – 3 | 2 – 3,9 | 2,5 – 5 | 3 – 6 |
+| Soins | commun | 1 – 2 | 1,3 – 2,6 | 1,7 – 3,3 | 2 – 4 |
+| Soins | peu commun | 1 – 2 | 1,3 – 2,6 | 1,7 – 3,3 | 2 – 4 |
+| Soins | rare | 1,2 – 2,4 | 1,6 – 3,1 | 2 – 4 | 2,4 – 4,8 |
+| Soins | épique | 1,4 – 2,7 | 1,8 – 3,5 | 2,2 – 4,5 | 2,7 – 5,4 |
+| Soins | légendaire | 1,5 – 3 | 2 – 3,9 | 2,5 – 5 | 3 – 6 |
+| Barrières | commun | 1,2 – 2,5 | 1,6 – 3,3 | 2,1 – 4,1 | 2,5 – 5 |
+| Barrières | peu commun | 1,2 – 2,5 | 1,6 – 3,3 | 2,1 – 4,1 | 2,5 – 5 |
+| Barrières | rare | 1,5 – 3 | 2 – 3,9 | 2,5 – 5 | 3 – 6 |
+| Barrières | épique | 1,7 – 3,4 | 2,2 – 4,4 | 2,8 – 5,6 | 3,4 – 6,8 |
+| Barrières | légendaire | 1,9 – 3,8 | 2,5 – 4,9 | 3,1 – 6,2 | 3,8 – 7,5 |
+| Poisons et brûlures | commun | 1,2 – 2,5 | 1,6 – 3,3 | 2,1 – 4,1 | 2,5 – 5 |
+| Poisons et brûlures | peu commun | 1,2 – 2,5 | 1,6 – 3,3 | 2,1 – 4,1 | 2,5 – 5 |
+| Poisons et brûlures | rare | 1,5 – 3 | 2 – 3,9 | 2,5 – 5 | 3 – 6 |
+| Poisons et brûlures | épique | 1,7 – 3,4 | 2,2 – 4,4 | 2,8 – 5,6 | 3,4 – 6,8 |
+| Poisons et brûlures | légendaire | 1,9 – 3,8 | 2,5 – 4,9 | 3,1 – 6,2 | 3,8 – 7,5 |
+| Clés | commun | 1,2 – 2,5 | 1,6 – 3,3 | 2,1 – 4,1 | 2,5 – 5 |
+| Clés | peu commun | 1,2 – 2,5 | 1,6 – 3,3 | 2,1 – 4,1 | 2,5 – 5 |
+| Clés | rare | 1,5 – 3 | 2 – 3,9 | 2,5 – 5 | 3 – 6 |
+| Clés | épique | 1,7 – 3,4 | 2,2 – 4,4 | 2,8 – 5,6 | 3,4 – 6,8 |
+| Clés | légendaire | 1,9 – 3,8 | 2,5 – 4,9 | 3,1 – 6,2 | 3,8 – 7,5 |
+| Ouvertures | commun | 1,2 – 2,5 | 1,6 – 3,3 | 2,1 – 4,1 | 2,5 – 5 |
+| Ouvertures | peu commun | 1,2 – 2,5 | 1,6 – 3,3 | 2,1 – 4,1 | 2,5 – 5 |
+| Ouvertures | rare | 1,5 – 3 | 2 – 3,9 | 2,5 – 5 | 3 – 6 |
+| Ouvertures | épique | 1,7 – 3,4 | 2,2 – 4,4 | 2,8 – 5,6 | 3,4 – 6,8 |
+| Ouvertures | légendaire | 1,9 – 3,8 | 2,5 – 4,9 | 3,1 – 6,2 | 3,8 – 7,5 |
 
 ## D'où tombe quoi
 
 | Source | Rareté | Niveau de l'objet | Lié ou échangeable |
 | --- | --- | --- | --- |
-| Un étage de la Tour, franchi pour la première fois | commun 70 %, rare 30 % | celui de l'étage | échangeable |
-| Un étage de la Tour, rejoué | commun 70 %, rare 30 %, une fois sur 2 | celui de l'étage | lié |
-| Un Gardien de la Tour (tous les 5 étages), la première fois | épique 100 % | celui de l'étage | échangeable |
-| Un grand Gardien de la Tour (tous les 10 étages), la première fois | épique 70 %, légendaire 30 % | celui de l'étage | échangeable |
+| Un étage de la Tour, franchi pour la première fois | commun 70 %, peu commun 30 %, 7 fois sur 10 (sinon rien) | celui de l'étage | échangeable |
+| Un étage de la Tour, rejoué | commun 70 %, peu commun 30 %, une fois sur 2 | celui de l'étage | lié |
+| Un Gardien de la Tour (tous les 5 étages), la première fois | peu commun 100 % | celui de l'étage | échangeable |
+| Un grand Gardien de la Tour (tous les 10 étages), la première fois | peu commun 60 %, rare 40 % | celui de l'étage | échangeable |
 | Un Gardien ou un grand Gardien rejoué | les mêmes raretés, toujours un objet | celui de l'étage | lié |
 | L'élite d'un donjon | épique (+ 1 fragment, 30 Éclats) | celui du donjon | lié |
 | Le boss d'un donjon | légendaire (+ 100 Éclats) | celui du donjon | échangeable |
 | Le coffre de la semaine à l'Arène | commun dès 3 victoires ; rare dès 5 victoires ; épique dès 7 victoires | le tien | lié |
-| L'étal du Comptoir (contre des Éclats) | commun à 40 Éclats ; rare à 120 Éclats | le tien | lié |
+| L'étal du Comptoir (contre des Éclats) | commun à 40 Éclats ; peu commun à 80 Éclats ; rare à 120 Éclats | le tien | lié |
 
 ## Les prix (Comptoir et Marché)
 
-Le Comptoir achète un objet échangeable à son **prix plancher** : 2 (commun) / 6 (rare) / 20 (épique) / 80 (légendaire) Or selon la rareté, × le niveau (pente 1), × la qualité (de 0,5 à 1). Au Marché, le vendeur fixe son prix entre le plancher et le plancher × 2 (commun) / 5 (rare) / 50 (épique) / 500 (légendaire).
+Le Comptoir achète un objet échangeable à son **prix plancher** : 2 (commun) / 4 (peu commun) / 6 (rare) / 20 (épique) / 80 (légendaire) Or selon la rareté, × le niveau (pente 1), × la qualité (de 0,5 à 1). Au Marché, le vendeur fixe son prix entre le plancher et le plancher × 2 (commun) / 3 (peu commun) / 5 (rare) / 50 (épique) / 500 (légendaire).
 

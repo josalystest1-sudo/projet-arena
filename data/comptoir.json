@@ -1,8 +1,8 @@
 {
-  "plancher": {"commun": 2, "rare": 6, "epique": 20, "legendaire": 80},
+  "plancher": {"commun": 2, "peu_commun": 4, "rare": 6, "epique": 20, "legendaire": 80},
   "niveau_pente": 1.0,
   "qualite_base": 0.5,
-  "marche": {"commun": 2, "rare": 5, "epique": 50, "legendaire": 500},
-  "etal": {"raretes": ["commun", "rare"], "prix": {"commun": 40, "rare": 120}},
+  "marche": {"commun": 2, "peu_commun": 3, "rare": 5, "epique": 50, "legendaire": 500},
+  "etal": {"raretes": ["commun", "peu_commun", "rare"], "prix": {"commun": 40, "peu_commun": 80, "rare": 120}},
   "ventes_par_jour": 10
 }

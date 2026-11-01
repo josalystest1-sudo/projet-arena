@@ -123,7 +123,9 @@ const CLES_LIGNE := ["nom", "texte", "fourchette", "plafond"]
 const CLES_RARETE := ["nom", "rang", "lignes", "echelle"]
 const CLES_NIVEAU := ["plancher", "plein"]
 const CLES_BASE := ["nom", "genre", "emplacement", "lignes", "description"]
-const CLES_BUTIN := ["etage", "gardien", "grand_gardien", "rejoue"]
+## Une base au pluriel (« Bottes ») accorde sa rareté : facultatif.
+const CLES_BASE_PERMISES := ["nom", "genre", "emplacement", "lignes", "description", "pluriel"]
+const CLES_BUTIN := ["etage", "gardien", "grand_gardien", "chance_etage", "rejoue"]
 const CLES_REFORGE := ["cout", "pente"]
 
 var regles: Dictionary = {}
@@ -497,7 +499,7 @@ func _valider_objets() -> void:
 	for id in objets.get("bases", {}):
 		var ou := "items.json base " + str(id)
 		var b: Variant = objets["bases"][id]
-		_cles(b, CLES_BASE, CLES_BASE, ou)
+		_cles(b, CLES_BASE_PERMISES, CLES_BASE, ou)
 		if not b is Dictionary:
 			continue
 		if not objets.get("emplacements", {}).has(str(b.get("emplacement", ""))):
@@ -523,9 +525,10 @@ func _valider_objets() -> void:
 			for r in poids:
 				if not objets.get("raretes", {}).has(str(r)) or float(poids[r]) <= 0.0:
 					erreurs.append("items.json butin %s : rareté inconnue ou poids nul « %s »" % [source, r])
-		var rejoue := float(objets["butin"].get("rejoue", -1.0))
-		if rejoue < 0.0 or rejoue > 1.0:
-			erreurs.append("items.json butin : rejoue entre 0 et 1 attendu")
+		for chance in ["chance_etage", "rejoue"]:
+			var c := float(objets["butin"].get(chance, -1.0))
+			if c < 0.0 or c > 1.0:
+				erreurs.append("items.json butin : %s entre 0 et 1 attendu" % chance)
 	_cles(objets.get("reforge", {}), CLES_REFORGE, CLES_REFORGE, "items.json reforge")
 	var raretes: Array = objets.get("raretes", {}).keys()
 	_cles(objets.get("recyclage", {}), raretes, raretes, "items.json recyclage")

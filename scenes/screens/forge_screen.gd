@@ -1,4 +1,4 @@
-## La Forge (docs/GDD_V2.md, § 10.1 ; docs/PLAN.md, PR 3.2) : ce que tu portes (cinq emplacements), tes bonus, ton sac,
+## La Forge (docs/GDD_V2.md, § 10.1 ; docs/PLAN.md, PR 3.2) : ce que tu portes (huit emplacements), tes bonus, ton sac,
 ## et la fiche d'un objet : ses lignes avec leurs fourchettes entre crochets, sa qualité, lié ou échangeable, la
 ## comparaison avec ce que tu portes (les bonus avant et après, et ce que ça change sur ta roue : « Boule de feu :
 ## 48 → 54 »), équiper, retirer, recycler (des Éclats), reforger une ligne (des Éclats, de plus en plus cher).
@@ -55,7 +55,7 @@ func _forge() -> void:
 	var sac := UiKit.card(column, 6)
 	sac.add_child(UiKit.label("Ton sac (%d)" % app.profile.sac.size(), 20, UiKit.GOLD, false))
 	if app.profile.sac.is_empty():
-		sac.add_child(UiKit.label("Vide. Chaque étage de la Tour franchi lâche un objet (épique aux Gardiens) ; un étage rejoué, une fois sur deux.", 16, ATTENUE, false))
+		sac.add_child(UiKit.label("Vide. Un étage de la Tour franchi lâche souvent un objet commun ou peu commun (toujours aux Gardiens) ; les objets rares et plus viennent des donjons.", 16, ATTENUE, false))
 	for i in range(app.profile.sac.size()):
 		var f := Equipement.fiche(app.profile.sac[i], app.data)
 		var b := UiKit.button("%s · %s · niveau %d · qualité %d %%" % [f["nom"], f["emplacement"], f["niveau"], f["qualite"]], _ouvrir.bind("sac", i), 52, 16)

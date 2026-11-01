@@ -95,7 +95,9 @@ func _initialize() -> void:
 		elif etape.has("sac"):
 			# Des objets dans le sac (tirés comme un butin d'étage, puis de Gardien) et des Éclats, pour voir la Forge.
 			for i in range(int(etape["sac"])):
-				app.profile.sac.append(Equipement.butin("gardien" if i % 3 == 2 else "etage", app.profile.level, true, 100 + i, app.data))
+				var raretes: Array = app.data.objets["raretes"].keys()
+				var bases: Array = app.data.objets["bases"].keys()
+				app.profile.sac.append(Equipement.tirer(str(bases[(i * 7) % bases.size()]), str(raretes[i % raretes.size()]), app.profile.level, 100 + i, app.data, false))
 			app.profile.eclats += 100
 			app.profile.save()
 		elif etape.has("echangeable"):

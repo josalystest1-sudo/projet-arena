@@ -7,5 +7,5 @@
   "annonces_max": 5,
   "depots_par_jour": 5,
   "achats_par_jour": 10,
-  "simule": {"annonces": 12, "raretes": {"commun": 45, "rare": 35, "epique": 15, "legendaire": 5}, "vente_par_jour": 0.5}
+  "simule": {"annonces": 12, "raretes": {"commun": 30, "peu_commun": 25, "rare": 27, "epique": 14, "legendaire": 4}, "vente_par_jour": 0.5}
 }

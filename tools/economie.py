@@ -112,7 +112,7 @@ def simuler(joueurs, semaines, bots, graine):
                         j["etage"] += 1
                         rarete, niveau, qualite = m.butin_etage(j["etage"])
                         plancher = m.prix_plancher(rarete, niveau, qualite)
-                        if rarete in ("commun", "rare"):
+                        if rarete in ("commun", "peu_commun", "rare"):
                             entre += plancher
                         else:
                             offre += (plancher + m.prix_max_marche(rarete, niveau, qualite)) // 2
