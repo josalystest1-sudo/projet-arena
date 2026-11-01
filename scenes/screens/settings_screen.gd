@@ -46,6 +46,10 @@ func setup(p_app: ArenaApp, _options: Dictionary) -> void:
 		app.sfx.play("clic")
 		app.vieillir_compte(7)
 		app.show_screen("marche"), 52))
+	proto.add_child(UiKit.button("+500 Or (pour l'amélioration et le Marché)", func():
+		app.sfx.play("clic")
+		app.ajouter_or(500)
+		app.show_screen("forge"), 52))
 	proto.add_child(UiKit.button("Nouveau personnage (autre classe)", func(): app.show_screen("creation"), 52))
 	erase_button = UiKit.button("Effacer toutes mes données", _erase, 52)
 	proto.add_child(erase_button)

@@ -15,6 +15,9 @@
 ## que engine/regles.gd applique au porteur ; un même trait porté deux fois ne compte qu'une fois)}.
 ## Lié ou échangeable : un objet est échangeable seulement s'il vient d'un premier passage ; il devient lié dès
 ## qu'on l'équipe, et le reste. La reforge retire une ligne contre des Éclats, à coût croissant.
+## L'amélioration +1 à +10 (décision de Gautier du 1er novembre) : payée en Or (détruit), chaque cran ajoute un pourcentage
+## aux lignes de l'objet ; réussie, l'objet monte d'un cran ; ratée, il en perd un (« de +3 à +4, si ça rate, je passe à
+## +2 ») ; c'est le seul hasard du jeu hors combat avec la création, il ne touche jamais un combat (`amelioration` : le cran).
 ## Les bonus d'un équipement entrent dans un combat par `Destin.mods` (engine/destin.gd), lus une fois à la création
 ## du combat (engine/regles.gd) : les PV max et le multiplicateur de classe, puis chaque valeur selon son type.
 ## Module pur : le hasard vient de la graine fournie.
@@ -63,7 +66,7 @@ static func tirer(base_id: String, rarete: String, niveau: int, graine: int, d: 
 	var rng := RandomNumberGenerator.new()
 	rng.seed = graine
 	var reserve: Array = d.objets["bases"][base_id]["lignes"].duplicate()
-	var objet := {"base": base_id, "rarete": rarete, "niveau": maxi(1, niveau), "lignes": [], "qualite": 0, "lie": lie, "reforges": 0}
+	var objet := {"base": base_id, "rarete": rarete, "niveau": maxi(1, niveau), "lignes": [], "qualite": 0, "lie": lie, "reforges": 0, "amelioration": 0}
 	for i in range(nb_lignes(base_id, rarete, d)):
 		var stat: String = reserve.pop_at(rng.randi_range(0, reserve.size() - 1))
 		objet["lignes"].append(_ligne(stat, rarete, objet["niveau"], rng, d))
@@ -192,12 +195,14 @@ static func mods_vides() -> Dictionary:
 	return out
 
 
-## Les bonus d'un ensemble d'objets (ceux qu'on porte) : la somme de leurs lignes, en fraction, chacune sous son plafond.
+## Les bonus d'un ensemble d'objets (ceux qu'on porte) : la somme de leurs lignes (chacune × le facteur d'amélioration de
+## son objet), en fraction, chacune sous son plafond.
 static func mods(objets: Array, d: Donnees) -> Dictionary:
 	var out := mods_vides()
 	for o in objets:
+		var fa := facteur_amelioration(o, d)
 		for l in o["lignes"]:
-			out[str(l["stat"])] = float(out[str(l["stat"])]) + float(l["valeur"]) / 100.0
+			out[str(l["stat"])] = float(out[str(l["stat"])]) + float(l["valeur"]) * fa / 100.0
 	for s in STATS:
 		out[s] = minf(float(out[s]), float(d.objets["lignes"][s]["plafond"]) / 100.0)
 	return out
@@ -260,6 +265,59 @@ static func reforger(objet: Dictionary, index: int, graine: int, d: Donnees) -> 
 	o["reforges"] = int(o.get("reforges", 0)) + 1
 	o["qualite"] = qualite(o, d)
 	return o
+
+
+# --- L'amélioration +1 à +10 ----------------------------------------------------------------------
+
+## Le cran d'amélioration d'un objet (0 au plus haut des données) ; un objet d'avant l'amélioration est à 0.
+static func cran(objet: Dictionary) -> int:
+	return int(objet.get("amelioration", 0))
+
+
+## Le multiplicateur des lignes d'un objet selon son cran : 1 + bonus_par_cran × cran (+50 % à +10).
+static func facteur_amelioration(objet: Dictionary, d: Donnees) -> float:
+	return 1.0 + float(d.objets["amelioration"]["bonus_par_cran"]) * float(cran(objet))
+
+
+## La valeur d'une ligne (en %) une fois le cran compté.
+static func valeur_ligne(objet: Dictionary, ligne: Dictionary, d: Donnees) -> float:
+	return float(ligne["valeur"]) * facteur_amelioration(objet, d)
+
+
+## Le coût en Or du prochain cran : cout × rang de la rareté × échelle du niveau × pente^cran (× 1,6 par cran : +10 vaut
+## des dizaines de fois +1, et les riches y versent leur fortune ; VISION § 8). 0 quand l'objet est au plus haut.
+static func cout_amelioration(objet: Dictionary, d: Donnees) -> int:
+	var a: Dictionary = d.objets["amelioration"]
+	var c := cran(objet)
+	if c >= int(a["max"]):
+		return 0
+	var rang := int(d.objets["raretes"][objet["rarete"]]["rang"])
+	return maxi(1, roundi(float(a["cout"]) * float(rang) * echelle_niveau(int(objet["niveau"]), d) * pow(float(a["pente"]), float(c))))
+
+
+## La chance de réussite du prochain cran (0 à 1) : la table des données, un chiffre par cran de départ. 0 au plus haut.
+static func chance_amelioration(objet: Dictionary, d: Donnees) -> float:
+	var a: Dictionary = d.objets["amelioration"]
+	var c := cran(objet)
+	if c >= int(a["max"]):
+		return 0.0
+	return clampf(float(a["reussite"][c]), 0.0, 1.0)
+
+
+## Une tentative d'amélioration, tirée avec la graine : réussie, l'objet gagne un cran ; ratée, il en perd un (jamais
+## sous zéro). L'Or est payé dans les deux cas (l'application s'en charge). Au plus haut, rien ne bouge. L'objet reste
+## lié ou échangeable comme il était ; ses lignes, son trait et ses reforges ne changent pas. {objet, reussi, avant, apres}.
+static func ameliorer(objet: Dictionary, graine: int, d: Donnees) -> Dictionary:
+	var o := objet.duplicate(true)
+	var avant := cran(o)
+	if avant >= int(d.objets["amelioration"]["max"]):
+		return {"objet": o, "reussi": false, "avant": avant, "apres": avant}
+	var chance := chance_amelioration(o, d)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = graine
+	var reussi := chance >= 1.0 or rng.randf_range(0.0, 1.0) < chance
+	o["amelioration"] = avant + 1 if reussi else maxi(0, avant - 1)
+	return {"objet": o, "reussi": reussi, "avant": avant, "apres": int(o["amelioration"])}
 
 
 # --- Les Éclats ------------------------------------------------------------------------------------
@@ -335,7 +393,7 @@ static func palier(niveau: int, d: Donnees) -> Dictionary:
 
 
 ## « Épée d'acier épique », « Cotte de mailles de fer commune », « Bottes de fer communes » (une base au pluriel) : la base,
-## le matériau de son palier, la rareté accordée.
+## le matériau de son palier, la rareté accordée ; puis le cran s'il est amélioré (« Épée d'acier épique +4 »).
 static func nom(objet: Dictionary, d: Donnees) -> String:
 	var base: Dictionary = d.objets["bases"][objet["base"]]
 	var genre := "f" if str(base["genre"]) == "f" else "m"
@@ -344,7 +402,8 @@ static func nom(objet: Dictionary, d: Donnees) -> String:
 	var rarete := str(d.objets["raretes"][objet["rarete"]]["nom"][genre])
 	if bool(base.get("pluriel", false)):
 		rarete += "s"
-	return "%s%s %s" % [base["nom"], materiau, rarete]
+	var c := cran(objet)
+	return "%s%s %s%s" % [base["nom"], materiau, rarete, (" +%d" % c) if c > 0 else ""]
 
 
 ## Un chiffre en % à la française : « 5,3 ».
@@ -366,27 +425,32 @@ static func texte_fourchette(stat: String, objet: Dictionary, d: Donnees) -> Str
 	return "[%s – %s]" % [chiffre(float(f[0])), chiffre(float(f[1]))]
 
 
-## La fiche d'un objet, prête à afficher : nom, emplacement, rareté, niveau, lignes (texte et fourchette), qualité,
-## lié ou échangeable, coût de la prochaine reforge.
+## La fiche d'un objet, prête à afficher : nom, emplacement, rareté, niveau, lignes (texte avec le cran compté, texte de
+## base, fourchette), qualité, lié ou échangeable, coût de la prochaine reforge, le cran, le plus haut, le coût en Or et la
+## chance (en %) du prochain cran.
 static func fiche(objet: Dictionary, d: Donnees) -> Dictionary:
 	var lignes: Array = []
 	for l in objet["lignes"]:
-		lignes.append({"stat": l["stat"], "nom": d.objets["lignes"][l["stat"]]["nom"], "texte": texte_ligne(l, d),
-			"fourchette": texte_fourchette(str(l["stat"]), objet, d), "valeur": float(l["valeur"])})
+		var v := valeur_ligne(objet, l, d)
+		lignes.append({"stat": l["stat"], "nom": d.objets["lignes"][l["stat"]]["nom"], "texte": texte_ligne({"stat": l["stat"], "valeur": v}, d),
+			"base": texte_ligne(l, d), "fourchette": texte_fourchette(str(l["stat"]), objet, d), "valeur": v})
 	return {"nom": nom(objet, d), "emplacement": d.objets["emplacements"][emplacement(objet, d)]["nom"],
 		"description": str(d.objets["bases"][objet["base"]].get("description", "")),
 		"rarete": d.objets["raretes"][objet["rarete"]]["nom"]["m"], "rang": int(d.objets["raretes"][objet["rarete"]]["rang"]),
 		"niveau": int(objet["niveau"]), "lignes": lignes, "qualite": int(objet["qualite"]), "lie": bool(objet["lie"]),
 		"trait": str(objet.get("trait", "")), "texte_trait": texte_trait(str(objet.get("trait", "")), d),
-		"reforge": cout_reforge(objet, d)}
+		"reforge": cout_reforge(objet, d), "amelioration": cran(objet), "amelioration_max": int(d.objets["amelioration"]["max"]),
+		"cout_amelioration": cout_amelioration(objet, d), "chance_amelioration": roundi(chance_amelioration(objet, d) * 100.0)}
 
 
 ## Un objet est-il conforme aux données : base et rareté connues, lignes de sa réserve, toutes différentes, chacune dans
-## sa fourchette ?
+## sa fourchette, un cran d'amélioration possible (la clé peut manquer : un objet d'avant est à +0) ?
 static func valide(objet: Dictionary, d: Donnees) -> bool:
 	for cle in ["base", "rarete", "niveau", "lignes", "qualite", "lie", "reforges"]:
 		if not objet.has(cle):
 			return false
+	if cran(objet) < 0 or cran(objet) > int(d.objets["amelioration"]["max"]):
+		return false
 	if not d.objets["bases"].has(objet["base"]) or not d.objets["raretes"].has(objet["rarete"]):
 		return false
 	if objet.has("trait") and (not a_trait(str(objet["rarete"]), d) or not d.objets["traits"].has(str(objet["trait"]))):

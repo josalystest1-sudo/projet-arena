@@ -11,6 +11,23 @@ Un objet, c'est **une base** (ce qu'il est : une Épée, une Robe…), **un pali
 - **La qualité** (0 à 100 %) dit où les chiffres sont tombés dans leurs fourchettes.
 - **Lié ou échangeable** : échangeable seulement s'il vient d'un premier passage (Tour) ou d'un boss de donjon ; lié dès qu'on l'équipe, et pour toujours.
 - **La reforge** : une ligne retirée contre 20 Éclats, +100 % par reforge déjà faite. **Le recyclage** rend 5 (commun) / 10 (peu commun) / 15 (rare) / 40 (épique) / 100 (légendaire) Éclats.
+- **L'amélioration +1 à +10** (décision de Gautier du 1er novembre) : payée en Or, et cet Or est détruit (réussite ou échec). Chaque cran ajoute 5 % aux lignes de l'objet (+50 % à +10). Le cran suivant coûte 5 Or × le rang de la rareté (1 commun / 2 peu commun / 3 rare / 4 épique / 5 légendaire) × l'échelle du niveau, puis × 1,6 par cran déjà pris. Les chances de réussite, cran par cran : 100 %, 90 %, 80 %, 70 %, 60 %, 50 %, 40 %, 35 %, 30 %, 25 %. **Un échec fait perdre un cran** (de +3, on retombe à +2). La reforge et l'équipement gardent le cran ; le nom le porte (« Épée d'acier épique +4 »). C'est le seul hasard du jeu hors combat avec la création.
+
+Le coût de chaque cran pour un objet du niveau 30 (en Or) :
+
+| Cran | commun | peu commun | rare | épique | légendaire |
+| --- | --- | --- | --- | --- | --- |
+| +1 | 5 | 10 | 15 | 20 | 25 |
+| +2 | 8 | 16 | 24 | 32 | 40 |
+| +3 | 13 | 26 | 38 | 51 | 64 |
+| +4 | 20 | 41 | 61 | 82 | 102 |
+| +5 | 33 | 66 | 98 | 131 | 164 |
+| +6 | 52 | 105 | 157 | 210 | 262 |
+| +7 | 84 | 168 | 252 | 336 | 419 |
+| +8 | 134 | 268 | 403 | 537 | 671 |
+| +9 | 215 | 429 | 644 | 859 | 1074 |
+| +10 | 344 | 687 | 1031 | 1374 | 1718 |
+| total | 908 | 1816 | 2723 | 3632 | 4539 |
 
 ## Les huit lignes
 

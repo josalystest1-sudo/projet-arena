@@ -1,6 +1,6 @@
 ## L'économie (docs/GDD_V2.md, § 10.2 : prix libres, Or impossible à fabriquer, aucune inflation). L'Or n'entre dans le jeu
 ## que par le Comptoir (la vente d'un objet échangeable au prix plancher) et n'en sort que par la taxe du Marché (détruite à
-## chaque vente entre joueurs). Ce module mesure ces mouvements semaine par semaine (bilan), fait monter la taxe quand
+## chaque vente entre joueurs) et par l'amélioration des objets (l'Or payé est détruit, réussite ou échec ; VISION § 8). Ce module mesure ces mouvements semaine par semaine (bilan), fait monter la taxe quand
 ## l'Or créé dépasse de trop l'Or détruit (data/marche.json : taxe, taxe_max, inflation ; la taxe d'une semaine se lit
 ## sur le bilan de la semaine d'avant, la même pour tout le monde), et tient les garde-fous par jour contre les bots et
 ## les revendeurs d'Or (data/comptoir.json : ventes_par_jour ; data/marche.json : depots_par_jour, achats_par_jour). Les
@@ -9,8 +9,9 @@ class_name Economie
 extends RefCounted
 
 ## Les types de mouvement : « comptoir » (de l'Or créé : une vente au Comptoir), « taxe » (de l'Or détruit : la taxe d'une
-## vente au Marché), « achat » (de l'Or passé d'un joueur à un autre : le prix d'une annonce achetée).
-const TYPES := ["comptoir", "taxe", "achat"]
+## vente au Marché), « amelioration » (de l'Or détruit : un cran d'amélioration payé à la Forge), « achat » (de l'Or passé
+## d'un joueur à un autre : le prix d'une annonce achetée).
+const TYPES := ["comptoir", "taxe", "amelioration", "achat"]
 const CLES_MOUVEMENT := ["type", "montant", "jour", "semaine"]
 ## Les garde-fous par jour : ce qu'on compte -> [le fichier de données, la clé].
 const LIMITES := {"ventes": ["comptoir", "ventes_par_jour"], "depots": ["marche", "depots_par_jour"], "achats": ["marche", "achats_par_jour"]}
@@ -30,7 +31,7 @@ static func mouvement_valide(m: Dictionary) -> bool:
 	return str(m["type"]) in TYPES and int(m["montant"]) >= 0
 
 
-## Le bilan d'une semaine : {entre (créé au Comptoir), detruit (la taxe), echange (passé entre joueurs)}, en Or.
+## Le bilan d'une semaine : {entre (créé au Comptoir), detruit (la taxe et l'amélioration), echange (passé entre joueurs)}, en Or.
 static func bilan(mouvements: Array, semaine: int) -> Dictionary:
 	var out := {"entre": 0, "detruit": 0, "echange": 0}
 	for m in mouvements:
@@ -39,7 +40,7 @@ static func bilan(mouvements: Array, semaine: int) -> Dictionary:
 		match str(m.get("type", "")):
 			"comptoir":
 				out["entre"] += int(m["montant"])
-			"taxe":
+			"taxe", "amelioration":
 				out["detruit"] += int(m["montant"])
 			"achat":
 				out["echange"] += int(m["montant"])

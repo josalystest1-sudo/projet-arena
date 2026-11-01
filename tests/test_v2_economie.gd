@@ -126,3 +126,12 @@ func test_jours_avance() -> void:
 	p.jours_avance = 40
 	assert_eq(Arene.jours(p.aujourd_hui()) - Arene.jours(aujourd_hui), 40, "quarante jours d'avance")
 	assert_eq(p.aujourd_hui().length(), 10, "au format AAAA-MM-JJ")
+
+
+# L'Or de l'amélioration est détruit, comme la taxe (VISION § 8 : un puits qui grandit avec la richesse).
+func test_amelioration_detruit_de_l_or() -> void:
+	var m := Economie.mouvement("amelioration", 40, "2026-11-02")
+	assert_true(Economie.mouvement_valide(m), "l'amélioration est un mouvement connu")
+	var b := Economie.bilan([m, Economie.mouvement("taxe", 10, "2026-11-02")], Arene.semaine("2026-11-02"))
+	assert_eq(int(b["detruit"]), 50, "l'Or de l'amélioration compte dans l'Or détruit")
+	assert_eq(int(b["entre"]), 0, "et pas dans l'Or créé")

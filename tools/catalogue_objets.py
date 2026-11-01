@@ -60,6 +60,22 @@ def main():
     L.append("- **Lié ou échangeable** : échangeable seulement s'il vient d'un premier passage (Tour) ou d'un boss de donjon ; lié dès qu'on l'équipe, et pour toujours.")
     L.append("- **La reforge** : une ligne retirée contre %d Éclats, +%d %% par reforge déjà faite. **Le recyclage** rend %s Éclats." % (
         objets["reforge"]["cout"], round(objets["reforge"]["pente"] * 100), " / ".join("%d (%s)" % (v, objets["raretes"][k]["nom"]["m"]) for k, v in objets["recyclage"].items())))
+    a = objets["amelioration"]
+    L.append("- **L'amélioration +1 à +%d** (décision de Gautier du 1er novembre) : payée en Or, et cet Or est détruit (réussite ou échec). "
+             "Chaque cran ajoute %s %% aux lignes de l'objet (+%s %% à +%d). Le cran suivant coûte %s Or × le rang de la rareté (%s) × l'échelle du "
+             "niveau, puis × %s par cran déjà pris. Les chances de réussite, cran par cran : %s. **Un échec fait perdre un cran** (de +3, on retombe à +2). "
+             "La reforge et l'équipement gardent le cran ; le nom le porte (« Épée d'acier épique +4 »). C'est le seul hasard du jeu hors combat avec la "
+             "création." % (a["max"], f(a["bonus_par_cran"] * 100), f(a["bonus_par_cran"] * 100 * a["max"]), a["max"], f(a["cout"]),
+                            " / ".join("%d %s" % (r["rang"], r["nom"]["m"]) for r in objets["raretes"].values()), f(a["pente"]),
+                            ", ".join("%s %%" % f(c * 100) for c in a["reussite"])))
+    L.append("")
+    L.append("Le coût de chaque cran pour un objet du niveau %d (en Or) :" % objets["niveau"]["plein"])
+    L.append("")
+    L.append("| Cran | " + " | ".join(r["nom"]["m"] for r in objets["raretes"].values()) + " |")
+    L.append("| --- |" + " --- |" * len(objets["raretes"]))
+    for c in range(a["max"]):
+        L.append("| +%d | " % (c + 1) + " | ".join(str(max(1, round(a["cout"] * r["rang"] * a["pente"] ** c))) for r in objets["raretes"].values()) + " |")
+    L.append("| total | " + " | ".join(str(sum(max(1, round(a["cout"] * r["rang"] * a["pente"] ** c)) for c in range(a["max"]))) for r in objets["raretes"].values()) + " |")
     L.append("")
     L.append("## Les huit lignes")
     L.append("")

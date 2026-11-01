@@ -197,6 +197,7 @@ Modifiées le 29 octobre :
   - **Le coffre hebdomadaire du PvP**, **les territoires**, **le Marché** (§ 10.2).
 - **Lié ou échangeable** : un objet est **échangeable** seulement s'il vient d'un **premier passage** (un étage de la Tour franchi pour la première fois, un Gardien la première fois) ou d'un **donjon** (élite, boss). Tout objet d'un étage rejoué, du coffre PvP ou d'un territoire est **lié** au personnage. Un objet échangeable devient lié dès qu'on l'équipe. **[Décidé]**
 - **Reforge** d'une ligne contre des Éclats, coût croissant. **[Décidé]**
+- **L'amélioration +1 à +10** **[Décidé le 1er novembre]** (« on renforce de +1 à +10 avec la monnaie ; si ça échoue, on perd une amélioration ») : payée en Or, qui est détruit ; chaque cran ajoute 5 % aux lignes de l'objet ; le coût monte de 60 % par cran et la chance de réussite baisse (100 % puis 90, 80… 25 %) ; un échec fait perdre un cran. Fait (PR #92) : `data/items.json` → `amelioration`, `Equipement.ameliorer`, la carte « Amélioration » de la Forge. **[Chiffres : Proposé, à régler à la fin]**
 
 ### 10.2 L'économie : prix libres, or impossible à fabriquer **[Décidé le 29 octobre au soir]**
 

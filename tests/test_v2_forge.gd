@@ -116,6 +116,7 @@ func test_profil_de_la_forge() -> void:
 	assert_true(vierge.portes.is_empty() and vierge.sac.is_empty() and vierge.eclats == 0 and vierge.revenu_jour == "", "un profil neuf : rien à la Forge")
 	var p := PlayerProfile.new()
 	var objet := Equipement.tirer("epee", "rare", 12, 4, donnees, false)
+	objet["amelioration"] = 2
 	p.portes["arme"] = Equipement.equiper(objet)
 	p.sac.append(Equipement.tirer("robe", "commun", 3, 9, donnees))
 	p.eclats = 42
@@ -126,6 +127,7 @@ func test_profil_de_la_forge() -> void:
 	assert_true(bool(relu.portes["arme"]["lie"]), "porté : lié")
 	assert_eq(relu.portes["arme"]["lignes"], objet["lignes"], "ses lignes, à l'identique")
 	assert_true(Equipement.valide(relu.portes["arme"], donnees), "l'objet relu est conforme")
+	assert_eq(Equipement.cran(relu.portes["arme"]), 2, "le cran d'amélioration relu")
 	assert_eq(relu.sac.size(), 1, "le sac relu")
 	assert_eq(relu.eclats, 42, "les Éclats relus")
 	assert_eq(relu.revenu_jour, "2026-10-29", "le jour du revenu relu")
