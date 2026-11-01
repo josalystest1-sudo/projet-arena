@@ -100,3 +100,181 @@ Une petite communauté d'abord (des joueurs comme Gautier), le jeu gratuit, sans
 - Garder la version 1 **petite** (ce qui est écrit ici, rien de plus) pour répondre à l'inquiétude « trop gros ».
 - Faire la preuve graphique (un personnage complet) **avant** de produire en série, pour répondre à l'inquiétude « je n'y arriverai pas » et « trop cher ».
 - Mettre le combat en premier dans chaque phase : design, graphismes, équilibrage.
+
+
+---
+
+# Deuxième interview (1er novembre, même jour) : les coins d'ombre
+
+Gautier a demandé d'aller plus loin : « il doit te rester plein d'éléments non pensés, pose toutes les questions qui vont t'éclairer ». Dix tours de quatre questions. Ses réponses, puis ce qui change, puis la proposition d'économie qu'il a demandée, puis le nouvel ordre de travail.
+
+## 6. Les réponses de Gautier (deuxième interview)
+
+### Le combat
+
+| Question | Réponse |
+| --- | --- |
+| Les Échos annoncent avant le joueur | **Oui, on garde** : le joueur joue en dernier, chef d'orchestre. |
+| Le chrono en PvP | **30 secondes par tour** (au lieu de 20). La mort subite au tour 18 n'a pas été contestée. |
+| Un allié KO | **On peut le relever** : un Soutien a un nœud ou une Clé de résurrection (rare, coûteux) ; les retournements sont possibles. |
+| La durée d'un tour animé | **Rapide, 3 à 5 secondes** ; seules les Clés ont une vraie cinématique (2 secondes). |
+
+### La création, le compte, les plateformes
+
+| Question | Réponse |
+| --- | --- |
+| À la création | **Classe, nom et apparence** (genre, peau, cheveux, couleurs : un éditeur simple, visible sur le sprite). |
+| Un seul personnage par compte | **Oui, un seul** : le compte, c'est le perso. |
+| L'objet qui remet le Destin à zéro ou change de classe | **Gagnable aussi en jeu** (un par saison : classement, Tour), ou achetable. |
+| Les plateformes | **Le web d'abord**, comme aujourd'hui. |
+
+### Le rythme, la fatigue, la Tour, les donjons, l'histoire
+
+| Question | Réponse |
+| --- | --- |
+| Les limites par jour | « Classé limité à 5 par jour. Les donjons sont illimités si on peut payer l'entrée ; cependant **si on enchaîne trop, le personnage devient de plus en plus fatigué, et plus il est fatigué, moins il est performant. Pour être en forme, il faut faire des pauses ou prendre une potion d'énergie.** » |
+| La Tour | « **La Tour ne se monte qu'une fois** ; le joueur peut refaire d'anciens étages quand il veut, mais **moins l'étage est haut, moins la récompense est forte**. Refaire un étage coûte de l'énergie ; quand l'énergie est faible, le personnage devient moins fort, et s'il continue, **il s'écroule de fatigue et doit attendre** avant de relancer. **Le butin de la Tour, c'est de l'équipement commun ou peu commun**, dont le niveau monte avec les étages. **Butin non assuré** : des fois, on gagne juste de l'XP et de la monnaie. » |
+| Ce qui fatigue | **Seulement le « farm »** : rejouer un étage déjà battu et enchaîner les donjons. Le record de la Tour, les classés, les guerres, l'amical : jamais. |
+| Le rythme de la fatigue | **Court** : fatigué après 8 à 10 combats de farm, repos en 2 ou 3 heures ; on fait des pauses dans la soirée. |
+| La potion d'énergie | **L'Alchimiste du Comptoir** : achetable contre des Éclats ou de l'Or, en nombre limité par jour. |
+| Les donjons | **Illimités**, sous réserve de payer l'entrée et de ne pas être fatigué. |
+| Une histoire | **Juste de l'ambiance** : descriptions, noms, bestiaire ; pas de quêtes ni de dialogues. |
+
+### L'équipement
+
+| Question | Réponse |
+| --- | --- |
+| Les raretés | **Cinq** : commun, peu commun, rare, épique, légendaire. La Tour lâche les deux premières, les donjons les trois dernières. |
+| Les emplacements | **Huit, à la Dofus** : arme, casque, armure, cape, bottes, ceinture, anneau, amulette. |
+| L'équipement visible sur le sprite | **Non** : les cosmétiques font l'apparence ; l'équipement n'est que des chiffres. |
+| Faire progresser un objet | **Un niveau d'amélioration de +1 à +10, payé en monnaie ; si ça échoue, on perd un cran** (« si je veux passer de +3 à +4 et que ça rate, je passe à +2 »). |
+| L'échange entre joueurs | **Seulement par le Marché** (annonces anonymes, taxe) : pas de don, pas d'échange direct. |
+
+### L'économie
+
+| Question | Réponse |
+| --- | --- |
+| À quoi sert l'Or | « **Il va falloir se reposer les questions sur l'économie.** Je passe cette question, et **il faudra que tu me trouves une solution anti-bots et anti-inflation.** » (→ § 8) |
+| L'Or contre de l'argent réel | **Jamais**, d'aucune façon. |
+| Le Marché | **Annonces anonymes, 7 jours.** |
+| Contre les bots | **L'âge et le niveau** du compte (ce qui existe) et **un compte vérifié pour vendre** (une adresse mail confirmée ; pas de carte, pas de téléphone). |
+
+### Les guildes
+
+| Question | Réponse |
+| --- | --- |
+| Un trésor de guilde | **Oui, en Or et en Influence** : les membres donnent de l'Or ; le trésor paie les effets, la bannière, les guerres ; le chef et les rôles autorisés dépensent. |
+| Des activités en plus des guerres | **Un boss de guilde** (chaque semaine, tous le frappent chacun de son côté, récompenses selon la part) et **un donjon de guilde** (réservé aux membres, ses salles s'ouvrent avec les fragments trouvés par tous). |
+| La taille | **Plus petites : 50 au plus** (plus de guildes, plus de guerres, chaque membre compte). |
+| Changer de guilde | **Libre, avec un délai** : on part quand on veut, on ne rejoint une autre guilde qu'après 3 jours, et on ne combat pas en guerre la première semaine. |
+
+### Les territoires et les guerres
+
+| Question | Réponse |
+| --- | --- |
+| Le rythme des guerres | « **Il faut mettre au clair avec toi le fonctionnement des guerres de guilde avant de répondre.** » |
+| La forme d'une guerre | « **Je n'ai pas encore d'idée en tête pour les combats de guilde. Il faut qu'on voie ça tous les deux**, qu'on réfléchisse à quelque chose. Mais dans tous les cas, **je ne veux pas que ce soit juste des combats faits à la suite. Je veux que les officiers de chaque guilde aient une importance sur le placement. Je veux que ce soit du 3 contre 3 comme tous les formats de combat, mais avec 3 joueurs, pas de PNJ.** Est-ce que les joueurs doivent être connectés ? On ne peut pas leur demander d'être tout le temps connectés. Ce qu'on peut faire, c'est **leur donner un avantage s'ils sont connectés, et sinon laisser l'IA jouer leur perso** : les gens se connectent pour avoir plus de chances de gagner. **Il faudrait qu'on décide vraiment du gameplay.** » |
+| La durée | « Vu qu'il y a un aspect officier et préparation, on ne peut pas faire une guerre par jour. Ce que je propose : **2 jours de préparation, 1 jour de guerre**. Hypothétique ; **ne pas le prendre au pied de la lettre.** » |
+| Qui fait quoi | **Les officiers planifient, les défenseurs présents jouent, les alliés renforcent**, et autre chose à définir ensemble. |
+| La fin de saison | **Tout redevient neutre** ; la guilde qui tenait le plus reçoit un titre et un coffre. |
+| Ce que gagne un joueur | **Des bonus de jeu, un revenu (Or ou Éclats chaque jour selon les territoires), des cosmétiques et des titres.** |
+
+### L'Arène et les Échos
+
+| Question | Réponse |
+| --- | --- |
+| L'adversaire classé | « **En classé, seul le nombre de points du joueur sert à trouver un adversaire.** Comme ça, un bon joueur peut monter, et un mauvais joueur finit forcément par monter parce qu'il commence à avoir du bon stuff. » (Plus de niveau à ±2.) |
+| Les récompenses de saison | **Un titre et une aura, un coffre selon la ligue, un cosmétique exclusif.** |
+| Être pris comme Écho | **Oui, un petit revenu** (des Éclats à chaque fois que ton perso est choisi). |
+| Les replays | **Non.** |
+
+### Le social
+
+| Question | Réponse |
+| --- | --- |
+| Les canaux | **Le chat de guilde**, et « si possible, **un moyen rapide pour que les guildes mettent leur lien Discord** dans une interface, et que les gens aient juste à cliquer dessus ». Pas de canal général. |
+| Les amis | **Prendre un ami comme Écho, le duel amical, voir ses progrès.** |
+| La modération | **Un filtre de mots.** |
+| Les langues | **Français seulement.** |
+
+### L'univers, le son, l'argent, la sortie
+
+| Question | Réponse |
+| --- | --- |
+| Le nom et l'univers | **Plus tard, avec les graphismes.** |
+| La musique | **Orchestral pixel, à la Octopath** (des thèmes riches, produits avec des outils d'IA). |
+| La boutique | **Des tenues (2 à 5 €)** et **un passe de saison (5 à 10 €)** de cosmétiques. |
+| La première sortie | **Ouverte à tous dès que c'est joli** (Discord, Reddit, etc.). |
+
+## 7. Ce qui change (décisions du 1er novembre, deuxième interview)
+
+Tout ce qui suit est **[Décidé]** par Gautier, sauf mention.
+
+- **Le combat** : chrono PvP à **30 s** ; **la résurrection** entre dans le jeu (un nœud ou une Clé de Soutien, rare et coûteux : à placer dans les roues des Soutiens, avec son coût dans la grille du budget) ; la résolution d'un tour vise 3 à 5 s, cinématique de Clé 2 s.
+- **La fatigue** (nouveau système) : une jauge d'énergie par personnage. **Seul le farm fatigue** : rejouer un étage déjà battu, enchaîner les donjons. Le record de la Tour, les classés, les guerres, l'amical ne fatiguent jamais. Fatigué après 8 à 10 combats de farm : les valeurs du personnage baissent avec la fatigue ; au bout, **il s'écroule** et doit attendre. Repos en 2 ou 3 heures. **La potion d'énergie** s'achète au Comptoir (chez l'Alchimiste), en nombre limité par jour, contre des Éclats ou de l'Or. Chiffres exacts à l'équilibrage.
+- **La Tour** : une seule montée (le record) ; les étages passés se rejouent à volonté, en fatiguant, avec une récompense qui baisse avec la hauteur de l'étage ; **butin commun ou peu commun**, au niveau de l'étage, **pas toujours** (parfois XP et monnaie seulement). Les objets épiques et légendaires ne viennent plus de la Tour mais **des donjons** (et des grands Gardiens, à confirmer).
+- **L'équipement, refondu** : **cinq raretés** (commun, peu commun, rare, épique, légendaire), **huit emplacements** (arme, casque, armure, cape, bottes, ceinture, anneau, amulette ; le catalogue des bases passe de 30 à environ 48), **l'amélioration +1 à +10** (payée en Or, un échec fait perdre un cran ; c'est **le seul hasard du jeu hors combat avec la création** : il ne touche jamais un combat), la reforge reste. **Rien ne se voit sur le sprite** : l'apparence vient de l'éditeur de création et des cosmétiques. Échange **seulement par le Marché**.
+- **La création** : classe, **nom et apparence** (un éditeur simple : genre, peau, cheveux, couleurs). **Un seul personnage par compte.** L'objet de remise à zéro du Destin : un par saison gagnable en jeu, ou achetable.
+- **Les donjons** : illimités, payés en Éclats, soumis à la fatigue.
+- **Pas d'histoire** : de l'ambiance (descriptions, noms, bestiaire). **Français seulement.** Le nom du jeu attend les graphismes.
+- **Les guildes** : **50 membres au plus** (à retailler : 20 au départ, +5 par niveau par exemple) ; **un trésor** en Or et en Influence (dons des membres ; le trésor paie les effets, la bannière, les guerres ; les rôles autorisés dépensent) ; **un boss de guilde** par semaine ; **un donjon de guilde** ouvert par les fragments de tous ; **un lien Discord** cliquable sur la fiche de la guilde ; **changer de guilde** : libre, 3 jours avant d'en rejoindre une autre, pas de guerre la première semaine.
+- **Les guerres de guilde : à concevoir ensemble**, dans une séance à part, avant de les coder. Les contraintes de Gautier : pas une suite de combats ; les officiers comptent par **le placement** ; des **trios de trois vrais joueurs** (pas de PNJ, pas d'Échos générés) ; un **avantage aux connectés**, l'IA joue les absents ; **deux jours de préparation puis un jour de guerre** (hypothèse). Ce qui existe (PR #87) reste comme base technique. En fin de saison, **tout redevient neutre** (titre et coffre à la meilleure guilde). Tenir des territoires donne **des bonus de jeu, un revenu quotidien à chaque membre, des cosmétiques et des titres**.
+- **L'Arène** : l'adversaire classé est choisi **par les points seulement** (plus de contrainte de niveau) ; récompenses de saison : **titre et aura, coffre selon la ligue, cosmétique exclusif** ; pas de replays.
+- **Les Échos** : être choisi comme Écho **rapporte des Éclats** à son propriétaire.
+- **Le social** : chat de guilde, lien Discord, amis (Écho, duel amical, progrès), filtre de mots ; pas de canal général.
+- **Le son** : orchestral pixel, à la Octopath, produit avec des outils d'IA.
+- **La boutique** : des tenues (2 à 5 €) et un passe de saison (5 à 10 €) ; **l'Or ne s'achète jamais**, d'aucune façon.
+- **La sortie** : sur le web, ouverte à tous dès que c'est joli.
+
+## 8. L'économie : la proposition de Claude (à valider par Gautier)
+
+Gautier demande « une solution anti-bots et anti-inflation ». Voici une proposition complète, à discuter ; elle part de ce qui existe (PR #83 : l'Or mesuré, la taxe qui monte, les garde-fous) et de ses réponses (jamais d'Or contre de l'argent réel, Marché seulement, compte vérifié pour vendre, amélioration +1 à +10, fatigue).
+
+### Le principe : deux monnaies, deux rôles
+
+- **Les Éclats** (liés, jamais échangeables) : la monnaie **du joueur seul**. Gagnés en jouant (étages, duels, objectifs, revenu du jour, recyclage, être pris comme Écho). Ils paient **ce qui ne concerne que toi** : la reforge, l'entrée des donjons, les potions d'énergie, l'étal du Comptoir. Un bot qui farme des Éclats ne gagne rien de transmissible : **les Éclats ne valent rien pour un revendeur.**
+- **L'Or** (échangeable) : la monnaie **entre joueurs**. Il n'a qu'une source : **le Comptoir, qui achète les objets échangeables** (ceux du premier passage d'un étage ou d'un donjon). Il n'a qu'un circuit : **le Marché**. Il a des puits : **la taxe** (détruite), **l'amélioration +1 à +10** (payée en Or, détruite), le trésor de guilde (immobilisé), des cosmétiques achetables en Or (détruits).
+
+### Anti-bots : rendre le farm d'Or inutile plutôt que l'interdire
+
+1. **L'Or ne naît que d'objets de premier passage.** Un étage ou un donjon rejoué lâche des objets **liés** (invendables au Comptoir, recyclables en Éclats). Un compte a donc une quantité d'Or finie à créer sur toute sa vie, qui croît seulement en progressant (nouveaux étages, nouveaux donjons). Un bot ne peut pas « farmer » : il doit **progresser**, ce qu'un bot fait mal (le combat sans hasard contre l'IA demande de jouer).
+2. **La fatigue** borne le farm d'objets liés par jour ; elle ne touche pas la création d'Or (qui est déjà bornée par le premier passage).
+3. **Vendre au Marché demande** : niveau 15, 7 jours de compte, **une adresse mail confirmée** (décision de Gautier), et au plus 5 annonces et 10 ventes au Comptoir par jour.
+4. **La fourchette de prix** (du plancher à un multiple selon la rareté) empêche le transfert d'Or déguisé (un objet commun vendu 10 000 Or à un complice) : c'est la faille classique des revendeurs d'Or. Elle existe déjà.
+5. **La taxe est détruite** (15 %, jusqu'à 40 %) : chaque transfert entre comptes perd de la valeur ; une chaîne de comptes mules fond.
+6. **Pas de don, pas d'échange direct, jamais d'Or contre de l'argent réel** (décisions de Gautier) : il n'y a rien à vendre pour un revendeur, et rien à acheter pour un tricheur.
+7. **Le serveur tient les comptes** : le solde d'Or et chaque mouvement vivent sur le serveur (table `mouvements`, déjà prévue), jamais dans le téléphone ; un client modifié ne peut pas s'inventer de l'Or. Plus tard : une détection des rythmes anormaux (combats 24 h sur 24) qui gèle le Marché pour le compte, revue à la main.
+
+### Anti-inflation : mesurer, puis freiner là où ça entre et aspirer là où ça sort
+
+1. **La mesure existe** (`Economie.bilan`) : chaque semaine, l'Or créé (Comptoir) contre l'Or détruit (taxe, et désormais amélioration et cosmétiques en Or).
+2. **La taxe monte** quand l'Or créé dépasse 4 fois l'Or détruit (jusqu'à 40 %) : déjà en place.
+3. **Nouveau : le Comptoir paie moins quand l'Or abonde.** Le prix plancher d'achat du Comptoir baisse (jusqu'à −50 %) quand l'Or en circulation par joueur actif dépasse un seuil, et remonte quand il baisse. L'Or devient plus rare à créer précisément quand il y en a trop.
+4. **Nouveau : des puits qui grandissent avec la richesse.** L'amélioration +1 à +10 coûte de plus en plus cher à chaque cran (par exemple ×1,6 par cran : +10 vaut des centaines de fois +1) et **un échec détruit l'Or payé** ; les riches y versent leur fortune pour l'objet parfait, ce qui est exactement ce que Gautier veut (« avoir l'équipement parfait ou le vendre et devenir riche »). Des cosmétiques en Or (une partie des tenues, des titres) donnent une raison d'être riche sans toucher à la puissance.
+5. **Les prix du Marché restent ancrés** : la fourchette est calculée sur le plancher du Comptoir (qui bouge avec l'inflation) : si l'Or abonde, les plafonds de prix ne s'envolent pas.
+6. **Les objets sont périssables en valeur** : un objet porté est lié ; un objet acheté reste échangeable seulement tant qu'on ne le porte pas ; le niveau monte et les objets d'un niveau deviennent vite inutiles aux joueurs qui progressent : l'offre se renouvelle, personne ne thésaurise des objets.
+
+### Ce qui reste à décider avec Gautier (§ 6 : « il va falloir se reposer les questions sur l'économie »)
+
+- Les cosmétiques en Or : oui ou non (Claude recommande oui, une petite partie).
+- Le revenu quotidien des territoires : en Éclats (sûr) ou en Or (crée de l'Or hors Comptoir ; à borner).
+- Les dons au trésor de guilde : en Or (immobilisé, pas détruit) ; le trésor peut-il reverser aux membres (non : sinon c'est un transfert déguisé).
+- Les chiffres (seuils, pentes) : à l'équilibrage, avec `tools/economie.py`.
+
+## 9. Le plan de travail, réordonné (deuxième interview)
+
+Le game design de la version 1 s'allonge ; dans l'ordre proposé par Claude (à corriger par Gautier) :
+
+1. **L'équipement refondu** : cinq raretés, huit emplacements et leurs bases, l'amélioration +1 à +10 en Or avec échec, la Tour qui lâche du commun et du peu commun au niveau de l'étage (pas toujours), les donjons qui lâchent le reste ; les écrans de la Forge et du Comptoir qui suivent.
+2. **La fatigue et les potions** : la jauge, ce qui fatigue, l'affaiblissement, l'écroulement, le repos, l'Alchimiste du Comptoir.
+3. **L'économie** : les décisions du § 8 une fois validées (Comptoir qui paie moins, puits), le compte vérifié pour vendre (avec Supabase), les annonces à 7 jours.
+4. **L'Arène et les Échos** : l'adversaire par les points, les récompenses de saison, le revenu de l'Écho choisi.
+5. **Les guildes** : 50 membres, le trésor, le délai de changement, le boss de guilde, le donjon de guilde, le lien Discord.
+6. **Les amis** : la liste, l'ami comme Écho, le duel amical, ses progrès (serveur simulé, prêt pour Supabase).
+7. **La création** : nom et apparence (l'éditeur simple ; le sprite suit avec les graphismes).
+8. **La résurrection** : un nœud ou une Clé par Soutien (budget), la règle des KO relevés.
+9. **Les classes de grimoire.**
+10. **Les guerres de guilde** : **une séance de conception avec Gautier** (sur la base des contraintes du § 7), puis les PR.
+11. **La boutique** : le catalogue (tenues, passe de saison), sans paiement réel.
+
+Puis, inchangé : les graphismes par preuve (avec l'éditeur d'apparence et la musique orchestrale), le serveur réel et le social, l'équilibrage en dernier (avec la fatigue, l'amélioration, l'économie et la courbe d'XP).
