@@ -1,9 +1,10 @@
 ## La Forge (docs/GDD_V2.md, § 10.1 ; docs/PLAN.md, PR 3.2) : ce que tu portes (huit emplacements), tes bonus, ton sac,
 ## et la fiche d'un objet : ses lignes avec leurs fourchettes entre crochets, sa qualité, lié ou échangeable, la
 ## comparaison avec ce que tu portes (les bonus avant et après, et ce que ça change sur ta roue : « Boule de feu :
-## 48 → 54 »), équiper, retirer, recycler (des Éclats), reforger une ligne (des Éclats, de plus en plus cher).
+## 48 → 54 »), équiper, retirer, recycler (des Éclats), reforger une ligne (des Éclats, de plus en plus cher), améliorer
+## d'un cran (+1 à +10, de l'Or ; raté, l'objet perd un cran ; un second appui pour confirmer).
 ## Affichage et navigation seulement : les objets et leurs règles viennent d'engine/equipement.gd ; l'inventaire vit
-## dans le profil (ArenaApp.equiper, retirer, recycler, reforger).
+## dans le profil (ArenaApp.equiper, retirer, recycler, reforger, ameliorer).
 extends Control
 
 const ATTENUE := Color("aaa49b")
@@ -11,10 +12,15 @@ const ATTENUE := Color("aaa49b")
 var app: ArenaApp
 var recycler_bouton: Button
 var _recycler_arme := false
+var ameliorer_bouton: Button
+var _ameliorer_arme := false
+## Le résultat de la dernière amélioration, à montrer en tête de la fiche ({texte, reussi}) ; vide sinon.
+var message: Dictionary = {}
 
 
 func setup(p_app: ArenaApp, options: Dictionary) -> void:
 	app = p_app
+	message = options.get("message", {})
 	if options.has("ou"):
 		_fiche(str(options["ou"]), options["cle"])
 	else:
@@ -26,7 +32,7 @@ func setup(p_app: ArenaApp, options: Dictionary) -> void:
 func _forge() -> void:
 	var column := UiKit.scroll_column(self, 12)
 	column.add_child(UiKit.label("La Forge", 34, UiKit.GOLD))
-	column.add_child(UiKit.label("%d Éclat%s" % [app.profile.eclats, "s" if app.profile.eclats > 1 else ""], 18, Color.WHITE))
+	column.add_child(UiKit.label("%d Éclat%s · %d Or" % [app.profile.eclats, "s" if app.profile.eclats > 1 else "", app.profile.monnaie_or], 18, Color.WHITE))
 	column.add_child(UiKit.label("Un objet n'a de valeur que pour ta roue : ses lignes s'ajoutent à tes nœuds. Équipe, compare, reforge.", 15, UiKit.SOFT))
 	# Ce que tu portes.
 	var porte := UiKit.card(column, 6)
@@ -89,6 +95,8 @@ func _fiche(ou: String, cle: Variant) -> void:
 	var f := Equipement.fiche(objet, app.data)
 	var column := UiKit.scroll_column(self, 12)
 	column.add_child(UiKit.label(str(f["nom"]), 30, UiKit.rarete_couleur(int(f["rang"]))))
+	if not message.is_empty():
+		column.add_child(UiKit.label(str(message["texte"]), 18, UiKit.GREEN if bool(message.get("reussi", false)) else UiKit.RED, false))
 	column.add_child(UiKit.label("%s · niveau %d · qualité %d %% · %s" % [f["emplacement"], f["niveau"], f["qualite"], "lié à toi" if f["lie"] else "échangeable"], 15, UiKit.SOFT))
 	if str(f.get("description", "")) != "":
 		column.add_child(UiKit.label(str(f["description"]), 14, ATTENUE, false))
@@ -104,11 +112,25 @@ func _fiche(ou: String, cle: Variant) -> void:
 	for i in range(f["lignes"].size()):
 		var l: Dictionary = f["lignes"][i]
 		lignes.add_child(UiKit.label("%s  %s" % [l["texte"], l["fourchette"]], 17, Color.WHITE, false))
+		if int(f["amelioration"]) > 0:
+			lignes.add_child(UiKit.label("Sans l'amélioration : %s" % l["base"], 14, ATTENUE, false))
 		var assez := app.profile.eclats >= cout
 		var b := UiKit.button("Reforger « %s » (%d Éclats%s)" % [l["nom"], cout, "" if assez else ", il t'en manque"], _reforger.bind(ou, cle, i), 44, 15)
 		b.disabled = not assez
 		lignes.add_child(b)
 	lignes.add_child(UiKit.label("Reforger retire une ligne au sort (une autre statistique possible, un autre chiffre). Chaque reforge coûte plus cher que la précédente.", 14, ATTENUE, false))
+	# L'amélioration +1 à +10 : de l'Or, un échec fait perdre un cran.
+	var amel := UiKit.card(column, 6)
+	amel.add_child(UiKit.label("Amélioration : +%d sur %d" % [f["amelioration"], f["amelioration_max"]], 20, UiKit.GOLD, false))
+	amel.add_child(UiKit.label("Chaque cran ajoute %s %% à ses lignes. Réussi, l'objet monte d'un cran ; raté, il en perd un. L'Or est dépensé dans les deux cas." % Equipement.chiffre(float(app.data.objets["amelioration"]["bonus_par_cran"]) * 100.0), 14, ATTENUE, false))
+	if int(f["cout_amelioration"]) > 0:
+		var assez_or := app.profile.monnaie_or >= int(f["cout_amelioration"])
+		ameliorer_bouton = UiKit.button("Passer à +%d (%d Or, %d %% de réussite%s)" % [int(f["amelioration"]) + 1, f["cout_amelioration"], f["chance_amelioration"], "" if assez_or else " ; il te manque de l'Or"], _ameliorer.bind(ou, cle), 48, 15)
+		ameliorer_bouton.disabled = not assez_or
+		amel.add_child(ameliorer_bouton)
+	else:
+		amel.add_child(UiKit.label("Au plus haut : plus rien à améliorer.", 15, ATTENUE, false))
+	amel.add_child(UiKit.label("Tu as %d Or (le Comptoir en donne contre tes objets échangeables)." % app.profile.monnaie_or, 14, ATTENUE, false))
 	# La comparaison : les bonus avant et après, et ce que ça change sur ta roue.
 	var e := Equipement.emplacement(objet, app.data)
 	var avant := app.bonus_portes()
@@ -171,6 +193,26 @@ func _recycler(index: int) -> void:
 	app.sfx.play("clic")
 	app.recycler(index)
 	app.show_screen("forge")
+
+
+## Améliorer demande une confirmation : un second appui. Puis la fiche se redessine avec le résultat en tête.
+func _ameliorer(ou: String, cle: Variant) -> void:
+	if not _ameliorer_arme:
+		_ameliorer_arme = true
+		ameliorer_bouton.text = "Sûr ? Touche encore pour tenter l'amélioration"
+		ameliorer_bouton.modulate = Color(1, 0.85, 0.6)
+		return
+	var r := app.ameliorer(ou, cle)
+	var m := {}
+	if r.is_empty():
+		m = {"texte": "Pas assez d'Or.", "reussi": false}
+	elif bool(r["reussi"]):
+		app.sfx.play("victoire")
+		m = {"texte": "Réussi ! L'objet passe à +%d (%d Or)." % [int(r["apres"]), int(r["cout"])], "reussi": true}
+	else:
+		app.sfx.play("defaite")
+		m = {"texte": "Raté… l'objet retombe à +%d (%d Or perdus)." % [int(r["apres"]), int(r["cout"])], "reussi": false}
+	app.show_screen("forge", {"ou": ou, "cle": cle, "message": m})
 
 
 func _reforger(ou: String, cle: Variant, ligne: int) -> void:

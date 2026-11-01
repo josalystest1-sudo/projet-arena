@@ -3,7 +3,7 @@
 ## (user://capture_profil.cfg, effacé au départ) : le vrai profil n'est jamais touché.
 ##   godot --path . --script res://tools/capture.gd -- <dossier> '<étapes JSON>'
 ## Étapes : {"creer":"guerrier"} (nouveau perso, graine fixe 7), {"niveau":12} (niveau du perso), {"allumer":"v1.n2"},
-## {"ecran":"destin"}, {"duel":1} (un duel amical contre un trio IA), {"classe":1} (un combat classé de l'Arène), {"donjon":"terrier"} (une descente, aux portes ; ["terrier","vague"] : la première vague jouée, puis la fin ; ["terrier","boss"] : le boss verrouillé jusqu'à la limite, puis la fin), {"montee":1} (une montée de la Tour), {"fin":1} (un duel amical joué par l'IA, puis l'écran de fin ; {"fin":"classe"} : un combat classé), {"ouvrir":["versus",{"classe":true}]} (un écran avec ses options), {"gardien":5} (l'étage 5 d'une montée joué par l'IA, puis l'écran de fin : la Faveur du Gardien), {"sac":3} (trois objets dans le sac et 100 Éclats, pour la Forge), {"compter":["duels",2]} (un compteur des objectifs du jour), {"echangeable":1} (un objet échangeable dans le sac), {"legendaire":1} (un objet légendaire, avec son trait, en tête du sac), {"guilde":900} (une guilde fondée, avec cette Influence), {"guerre":"auto"} (une attaque déclarée par ta guilde sur le premier territoire possible, tes trois combats gagnés par l'IA ; ou un identifiant de territoire), {"vieillir":7} (le compte a 7 jours de plus), {"or":500} (de l'Or), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
+## {"ecran":"destin"}, {"duel":1} (un duel amical contre un trio IA), {"classe":1} (un combat classé de l'Arène), {"donjon":"terrier"} (une descente, aux portes ; ["terrier","vague"] : la première vague jouée, puis la fin ; ["terrier","boss"] : le boss verrouillé jusqu'à la limite, puis la fin), {"montee":1} (une montée de la Tour), {"fin":1} (un duel amical joué par l'IA, puis l'écran de fin ; {"fin":"classe"} : un combat classé), {"ouvrir":["versus",{"classe":true}]} (un écran avec ses options), {"gardien":5} (l'étage 5 d'une montée joué par l'IA, puis l'écran de fin : la Faveur du Gardien), {"sac":3} (trois objets dans le sac et 100 Éclats, pour la Forge), {"compter":["duels",2]} (un compteur des objectifs du jour), {"echangeable":1} (un objet échangeable dans le sac), {"legendaire":1} (un objet légendaire, avec son trait, en tête du sac), {"guilde":900} (une guilde fondée, avec cette Influence), {"guerre":"auto"} (une attaque déclarée par ta guilde sur le premier territoire possible, tes trois combats gagnés par l'IA ; ou un identifiant de territoire), {"vieillir":7} (le compte a 7 jours de plus), {"or":500} (de l'Or), {"ameliorer":3} (le premier objet du sac à +3), {"clic":[x,y]}, {"appui":[x,y,secondes]} (appui long), {"tenir":[x,y,secondes,"nom"]} (capture le doigt posé), {"attendre":0.5}, {"capture":"nom"}.
 ## (Sans --headless : il faut une fenêtre pour dessiner.)
 extends SceneTree
 
@@ -144,6 +144,11 @@ func _initialize() -> void:
 			app.vieillir_compte(int(etape["vieillir"]))
 		elif etape.has("or"):
 			app.profile.monnaie_or = int(etape["or"])
+			app.profile.save()
+		elif etape.has("ameliorer"):
+			if not app.profile.sac.is_empty():
+				app.profile.sac[0]["amelioration"] = int(etape["ameliorer"])
+				app.profile.save()
 			app.profile.save()
 		elif etape.has("compter"):
 			app.compter(str(etape["compter"][0]), int(etape["compter"][1]))

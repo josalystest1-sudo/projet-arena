@@ -63,8 +63,8 @@ const CLES_FAVEUR_OBLIGATOIRES := ["nom", "texte", "valeur"]
 ## Les six Faveurs que le moteur sait appliquer (engine/tour.gd et scenes/app/app.gd).
 const FAVEURS := ["vigueur", "puissance", "repit", "egide", "effroi", "savoir"]
 ## L'équipement (data/items.json, engine/equipement.gd) : les emplacements, les huit lignes que le moteur sait
-## appliquer, les raretés, l'échelle du niveau, les bases, le butin par source, la reforge.
-const CLES_OBJETS := ["emplacements", "lignes", "raretes", "niveau", "paliers", "bases", "traits", "butin", "reforge", "recyclage", "eclats"]
+## appliquer, les raretés, l'échelle du niveau, les bases, le butin par source, la reforge, l'amélioration.
+const CLES_OBJETS := ["emplacements", "lignes", "raretes", "niveau", "paliers", "bases", "traits", "butin", "reforge", "amelioration", "recyclage", "eclats"]
 ## Les traits légendaires (data/items.json, traits : un par objet légendaire, un passif de combat appliqué par
 ## engine/regles.gd) : seuls ces identifiants sont connus du moteur.
 const TRAITS_CONNUS := ["tenacite", "soif", "epines", "ancrage", "fulgurance", "endurance", "ferocite", "grace", "carapace", "persistance"]
@@ -127,6 +127,9 @@ const CLES_BASE := ["nom", "genre", "emplacement", "lignes", "description"]
 const CLES_BASE_PERMISES := ["nom", "genre", "emplacement", "lignes", "description", "pluriel"]
 const CLES_BUTIN := ["etage", "gardien", "grand_gardien", "chance_etage", "rejoue"]
 const CLES_REFORGE := ["cout", "pente"]
+## L'amélioration +1 à +10 (data/items.json, amelioration) : le cran le plus haut, le bonus par cran sur les lignes, le coût du
+## premier cran et sa pente, les chances de réussite cran par cran.
+const CLES_AMELIORATION := ["max", "bonus_par_cran", "cout", "pente", "reussite"]
 
 var regles: Dictionary = {}
 var etats: Dictionary = {}
@@ -148,7 +151,7 @@ var bestiaire: Dictionary = {}
 var tour: Dictionary = {}
 ## Les Faveurs de la Tour (data/faveurs.json, GDD V2 § 6) : identifiant -> {nom, texte, valeur, max}.
 var faveurs: Dictionary = {}
-## L'équipement (data/items.json, GDD V2 § 10.1) : emplacements, lignes, raretés, niveau, bases, butin, reforge.
+## L'équipement (data/items.json, GDD V2 § 10.1) : emplacements, lignes, raretés, niveau, bases, butin, reforge, amélioration.
 var objets: Dictionary = {}
 ## La ville (data/ville.json, GDD V2 § 11) : la liste de ses bâtiments.
 var ville: Dictionary = {}
@@ -530,6 +533,17 @@ func _valider_objets() -> void:
 			if c < 0.0 or c > 1.0:
 				erreurs.append("items.json butin : %s entre 0 et 1 attendu" % chance)
 	_cles(objets.get("reforge", {}), CLES_REFORGE, CLES_REFORGE, "items.json reforge")
+	_cles(objets.get("amelioration", {}), CLES_AMELIORATION, CLES_AMELIORATION, "items.json amelioration")
+	if objets.get("amelioration", {}) is Dictionary and objets["amelioration"].has("reussite"):
+		var a: Dictionary = objets["amelioration"]
+		if not a["reussite"] is Array or a["reussite"].size() != int(a.get("max", 0)) or int(a.get("max", 0)) < 1:
+			erreurs.append("items.json amelioration : « reussite » doit donner une chance par cran (max)")
+		else:
+			for ch in a["reussite"]:
+				if float(ch) < 0.0 or float(ch) > 1.0:
+					erreurs.append("items.json amelioration : une chance entre 0 et 1 attendue")
+		if float(a.get("pente", 0.0)) < 1.0 or float(a.get("cout", 0.0)) <= 0.0 or float(a.get("bonus_par_cran", -1.0)) < 0.0:
+			erreurs.append("items.json amelioration : cout > 0, pente ≥ 1 et bonus_par_cran ≥ 0 attendus")
 	var raretes: Array = objets.get("raretes", {}).keys()
 	_cles(objets.get("recyclage", {}), raretes, raretes, "items.json recyclage")
 	if objets.get("recyclage", {}) is Dictionary:

@@ -562,6 +562,35 @@ func reforger(ou: String, cle: Variant, ligne: int) -> bool:
 	return true
 
 
+## Améliorer un objet (porté ou du sac) d'un cran contre de l'Or : réussi, il monte ; raté, il descend d'un cran. L'Or est
+## détruit dans les deux cas (un mouvement « amelioration » au serveur). Vide s'il manque de l'Or ou si l'objet est au plus
+## haut ; sinon {objet, reussi, avant, apres, cout}.
+func ameliorer(ou: String, cle: Variant) -> Dictionary:
+	var objet := objet_a(ou, cle)
+	if objet.is_empty():
+		return {}
+	var cout := Equipement.cout_amelioration(objet, data)
+	if cout <= 0 or profile.monnaie_or < cout:
+		return {}
+	var r := Equipement.ameliorer(objet, _nouvelle_graine(), data)
+	if ou == "sac":
+		profile.sac[int(cle)] = r["objet"]
+	else:
+		profile.portes[str(cle)] = r["objet"]
+		_regenerer()
+	profile.monnaie_or -= cout
+	serveur.mouvement(Economie.mouvement("amelioration", cout, jour()))
+	profile.save()
+	r["cout"] = cout
+	return r
+
+
+## Outil du prototype : de l'Or tombé du ciel (pour essayer l'amélioration et le Marché).
+func ajouter_or(n: int) -> void:
+	profile.monnaie_or += n
+	profile.save()
+
+
 # ---------------------------------------------------------------------------
 # Les objectifs du jour
 # ---------------------------------------------------------------------------

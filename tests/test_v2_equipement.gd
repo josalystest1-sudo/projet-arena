@@ -288,3 +288,73 @@ func test_simulateur_equipe() -> void:
 		assert_false(Equipement.sans_bonus(camp[i].mods), "membre %d : équipé" % i)
 		assert_true(nu[i].mods.is_empty(), "membre %d : sans équipement quand rien n'est demandé" % i)
 	assert_eq(camp[0].classe_id, nu[0].classe_id, "le même joueur")
+
+
+# L'amélioration +1 à +10 (décision de Gautier du 1er novembre) : de l'Or, un coût qui monte à chaque cran, un échec fait
+# perdre un cran, chaque cran renforce les lignes ; le nom, la fiche, la validité, la reforge et l'équipement suivent.
+func test_amelioration() -> void:
+	var a: Dictionary = donnees.objets["amelioration"]
+	assert_eq(int(a["max"]), 10, "dix crans")
+	var o := Equipement.tirer("epee", "commun", 30, 5, donnees)
+	assert_eq(Equipement.cran(o), 0, "un objet trouvé est à +0")
+	assert_eq(Equipement.cout_amelioration(o, donnees), 5, "commun niveau 30, +1 : 5 Or")
+	assert_eq(Equipement.cout_amelioration(Equipement.tirer("epee", "legendaire", 30, 5, donnees), donnees), 25, "légendaire : × 5 (son rang)")
+	assert_eq(Equipement.cout_amelioration(Equipement.tirer("epee", "commun", 1, 5, donnees), donnees), 3, "niveau 1 : la moitié, arrondie")
+	var o3 := o.duplicate(true)
+	o3["amelioration"] = 3
+	assert_eq(Equipement.cout_amelioration(o3, donnees), roundi(5.0 * pow(1.6, 3.0)), "+3 → +4 : 5 × 1,6³")
+	var o10 := o.duplicate(true)
+	o10["amelioration"] = 10
+	assert_eq(Equipement.cout_amelioration(o10, donnees), 0, "au plus haut : plus rien à payer")
+	assert_eq(Equipement.chance_amelioration(o10, donnees), 0.0, "au plus haut : aucune chance")
+	assert_eq(int(Equipement.ameliorer(o10, 1, donnees)["apres"]), 10, "au plus haut : rien ne bouge")
+	# +0 → +1 ne rate jamais.
+	assert_eq(Equipement.chance_amelioration(o, donnees), 1.0, "le premier cran est sûr")
+	for g in range(20):
+		assert_true(bool(Equipement.ameliorer(o, g, donnees)["reussi"]), "+0 → +1 réussit toujours")
+	# Plus haut, ça rate parfois, et un échec fait perdre un cran (de +3 : à +2).
+	var reussites := 0
+	for g in range(200):
+		var r := Equipement.ameliorer(o3, g, donnees)
+		assert_eq(int(r["avant"]), 3, "avant : +3")
+		if bool(r["reussi"]):
+			reussites += 1
+			assert_eq(int(r["apres"]), 4, "réussi : +4")
+		else:
+			assert_eq(int(r["apres"]), 2, "raté : +2")
+	assert_true(reussites > 110 and reussites < 170, "de +3 à +4 : 70 %% environ (%d sur 200)" % reussites)
+	assert_eq(int(o3["amelioration"]), 3, "l'objet d'origine n'est pas modifié")
+	# Jamais sous zéro : à +1, un échec ramène à +0.
+	var o1 := o.duplicate(true)
+	o1["amelioration"] = 1
+	var vu_zero := false
+	for g in range(200):
+		var r := Equipement.ameliorer(o1, g, donnees)
+		if not bool(r["reussi"]):
+			vu_zero = true
+			assert_eq(int(r["apres"]), 0, "raté à +1 : retour à +0")
+	assert_true(vu_zero, "à +1, un échec arrive (90 % de réussite)")
+	# Le bonus : +5 % par cran sur les lignes ; le nom, la fiche, la validité, la reforge et l'équipement.
+	var m0 := Equipement.mods([o], donnees)
+	var m3 := Equipement.mods([o3], donnees)
+	var s: String = o["lignes"][0]["stat"]
+	assert_true(absf(float(m3[s]) - float(m0[s]) * 1.15) < 0.0001, "+3 : les lignes × 1,15")
+	assert_true(Equipement.nom(o3, donnees).ends_with(" +3"), "le nom porte le cran")
+	assert_false(Equipement.nom(o, donnees).contains("+"), "à +0 : rien dans le nom")
+	var f := Equipement.fiche(o3, donnees)
+	assert_eq(int(f["amelioration"]), 3, "fiche : le cran")
+	assert_eq(int(f["amelioration_max"]), 10, "fiche : le plus haut")
+	assert_eq(int(f["chance_amelioration"]), 70, "fiche : la chance en %")
+	assert_eq(int(f["cout_amelioration"]), Equipement.cout_amelioration(o3, donnees), "fiche : le coût")
+	assert_true(absf(float(f["lignes"][0]["valeur"]) - float(o["lignes"][0]["valeur"]) * 1.15) < 0.0001, "fiche : la ligne avec le cran compté")
+	assert_true(str(f["lignes"][0]["base"]) != str(f["lignes"][0]["texte"]), "fiche : le texte de base diffère")
+	assert_true(Equipement.valide(o3, donnees), "un objet amélioré est conforme")
+	var sans := o.duplicate(true)
+	sans.erase("amelioration")
+	assert_true(Equipement.valide(sans, donnees), "un objet d'avant l'amélioration (sans la clé) est conforme")
+	assert_eq(Equipement.cran(sans), 0, "et il est à +0")
+	var trop := o.duplicate(true)
+	trop["amelioration"] = 11
+	assert_false(Equipement.valide(trop, donnees), "+11 : refusé")
+	assert_eq(Equipement.cran(Equipement.reforger(o3, 0, 4, donnees)), 3, "la reforge garde le cran")
+	assert_eq(Equipement.cran(Equipement.equiper(o3)), 3, "équiper garde le cran")
