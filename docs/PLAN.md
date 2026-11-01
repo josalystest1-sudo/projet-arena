@@ -139,6 +139,8 @@ Chaque PR a : son contenu, ses fichiers principaux, son critère de sortie, et c
 
 **PR 8.1** (**faite**, PR #69) Le mécanisme et une évolution par classe : `data/evolutions.json` et `data/evolutions/<id>.json`, `engine/evolution.gd` (rang, lignée, points d'un rang, plafond de niveau, saut de puissance, évolution d'une classe au-delà du niveau 30), « Évoluer » sur l'écran du Destin au niveau 30, Échos et adversaires évolués, ligue Élus à l'Arène, `tools/mesure_evolution.gd`. **PR 8.2** (**faite**, PR #70) Les deux autres évolutions de chaque classe (une de chaque rôle par classe), le choix parmi trois sur l'écran du Destin, l'étoile dorée des évolués. **PR 8.3** (**faite** pour le rang 2, PR #75 puis #76 : évolution au niveau 60, plafond 90, quatre-vingt-dix évolutions de rang 2, trois par évolution de rang 1, une de chaque rôle, deux étoiles) Le rang 2 (niveau 60) et les grimoires (**à faire** : classes rares, épiques, légendaires lâchées par les boss de donjon, ligue Ascendants).
 
+**La vision (1er novembre)** : `docs/VISION.md` (l'interview de Gautier) fixe le contenu de la version 1 et l'ordre de ce qui reste : grimoires, guerres poussées, donjons de fin de jeu, boutique, chat et amis ; puis les graphismes par preuve, le serveur, l'équilibrage.
+
 **Phase 7, la carte du monde** : **PR 7.1** (**faite**, PR #86) la carte, les territoires, l'apparition des donjons ; **PR 7.2** (**faite**, PR #87) les guerres de guilde (sans fenêtre du soir : la journée, résolution le lendemain).
 
 **Phase 6, les guildes** : **PR 6.5** (**faite**, PR #84) les guildes avec le serveur simulé (création, bannière, rôles, Influence, effets) ; les territoires, la carte du monde et les guerres viennent ensuite (phase 7).
