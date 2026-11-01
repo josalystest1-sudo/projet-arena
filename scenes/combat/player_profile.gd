@@ -13,6 +13,8 @@ var losses: int = 0
 var streak: int = 0
 var best_streak: int = 0
 var muted: bool = false
+## Outil du prototype : le jeu se croit ce nombre de jours plus tard qu'aujourd'hui (« Passer au lendemain »).
+var jours_avance: int = 0
 ## Le duo (combat V2) : {version: 2, classe, graine, allumage, acolyte_nom} (vide tant qu'aucun duo n'est créé).
 var duo: Dictionary = {}
 ## Record à la Tour par classe : étage atteint (GDD : le record est classé par classe).
@@ -68,6 +70,7 @@ static func load_profile() -> PlayerProfile:
 		profile.streak = int(cfg.get_value("stats", "streak", 0))
 		profile.best_streak = int(cfg.get_value("stats", "best_streak", 0))
 		profile.muted = bool(cfg.get_value("options", "muted", false))
+		profile.jours_avance = int(cfg.get_value("options", "jours_avance", 0))
 		profile.duo = cfg.get_value("duo", "duo", {})
 		profile.tower_records = cfg.get_value("tour", "records", {})
 		profile.tower_paliers = cfg.get_value("tour", "paliers", {})
@@ -100,6 +103,7 @@ func save() -> void:
 	cfg.set_value("stats", "streak", streak)
 	cfg.set_value("stats", "best_streak", best_streak)
 	cfg.set_value("options", "muted", muted)
+	cfg.set_value("options", "jours_avance", jours_avance)
 	cfg.set_value("duo", "duo", duo)
 	cfg.set_value("tour", "records", tower_records)
 	cfg.set_value("tour", "paliers", tower_paliers)
@@ -132,6 +136,15 @@ static func xp_to_next(from_level: int) -> int:
 
 
 ## Ajoute de l'XP ; renvoie {levels: niveaux gagnés, level: le niveau atteint}.
+## Le jour d'aujourd'hui pour le jeu (« AAAA-MM-JJ », heure locale), décalé des jours d'avance du prototype.
+## Tout ce qui lit la date (objectifs, Arène, Marché, guerres, serveur simulé) passe par ici.
+func aujourd_hui() -> String:
+	if jours_avance == 0:
+		return Time.get_date_string_from_system()
+	var unix := Time.get_unix_time_from_datetime_dict(Time.get_datetime_dict_from_system()) + jours_avance * 86400
+	return Time.get_date_string_from_unix_time(unix)
+
+
 func gain_xp(amount: int, max_level: int = MAX_LEVEL) -> Dictionary:
 	var gained := 0
 	if level < max_level:

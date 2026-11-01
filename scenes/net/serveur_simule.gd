@@ -89,7 +89,7 @@ func classement(saison: int, n: int) -> Array:
 
 
 func annonces(n: int) -> Array:
-	var jour := Time.get_date_string_from_system()
+	var jour := profile.aujourd_hui()
 	var achetees: Array = profile.serveur.get("achetees", [])
 	var out: Array = []
 	for a in Marche.annonces_simulees(joueurs, jour, donnees):
@@ -110,7 +110,7 @@ func deposer(annonce: Dictionary) -> bool:
 	var miennes: Array = profile.serveur.get("annonces", [])
 	var copie := annonce.duplicate(true)
 	copie["vendeur"] = compte_id
-	copie["jour"] = Time.get_date_string_from_system()
+	copie["jour"] = profile.aujourd_hui()
 	copie["vendu"] = false
 	copie["encaisse"] = false
 	miennes.append(copie)
@@ -146,7 +146,7 @@ func acheter(id: String) -> Dictionary:
 ## Le monde simulé achète : chaque jour après celui du dépôt, une annonce a une chance (vente_par_jour) d'être vendue,
 ## tirée avec la date et son identifiant ; les ventes pas encore encaissées sont rendues et marquées.
 func encaisser(taux: float = -1.0) -> Array:
-	var jour := Time.get_date_string_from_system()
+	var jour := profile.aujourd_hui()
 	var miennes: Array = profile.serveur.get("annonces", [])
 	var out: Array = []
 	var change := false
@@ -199,7 +199,7 @@ func nombre_guildes() -> int:
 
 
 func _guildes_du_monde() -> Array:
-	return Guilde.guildes_simulees(joueurs, Time.get_date_string_from_system(), donnees)
+	return Guilde.guildes_simulees(joueurs, profile.aujourd_hui(), donnees)
 
 
 func guildes(n: int) -> Array:
@@ -219,7 +219,7 @@ func ma_guilde() -> Dictionary:
 	var g: Dictionary = profile.serveur.get("guilde", {})
 	if g.is_empty():
 		return {}
-	var jour := Time.get_date_string_from_system()
+	var jour := profile.aujourd_hui()
 	var dernier := str(g.get("dernier_jour", jour))
 	var n_jours := Arene.jours(jour) - Arene.jours(dernier)
 	if n_jours > 0:
@@ -234,7 +234,7 @@ func _garder_guilde(g: Dictionary) -> Dictionary:
 	if g.is_empty() or Guilde.membre(g, compte_id).is_empty():
 		profile.serveur.erase("guilde")
 	else:
-		g["dernier_jour"] = Time.get_date_string_from_system()
+		g["dernier_jour"] = profile.aujourd_hui()
 		profile.serveur["guilde"] = g
 	profile.save()
 	return g.duplicate(true) if profile.serveur.has("guilde") else {}
@@ -248,7 +248,7 @@ func creer_guilde(nom: String, banniere: Dictionary, fiche: Dictionary) -> Dicti
 		if str(g["nom"]).to_lower() == nom.strip_edges().to_lower():
 			erreur = "ce nom est déjà pris"
 			return {}
-	var jour := Time.get_date_string_from_system()
+	var jour := profile.aujourd_hui()
 	return _garder_guilde(Guilde.nouvelle("g-%s-%d" % [compte_id, Time.get_unix_time_from_system()], nom, banniere, fiche, jour, donnees))
 
 
@@ -257,7 +257,7 @@ func rejoindre_guilde(id: String, fiche: Dictionary) -> Dictionary:
 		return {}
 	for g in _guildes_du_monde():
 		if str(g["id"]) == id:
-			var avec := Guilde.ajouter(g, fiche, Time.get_date_string_from_system(), donnees)
+			var avec := Guilde.ajouter(g, fiche, profile.aujourd_hui(), donnees)
 			if avec.get("membres", []).size() == g["membres"].size():
 				erreur = "plus de place"
 				return {}
@@ -326,7 +326,7 @@ func banniere_guilde(b: Dictionary) -> Dictionary:
 
 ## Inviter un personnage : dans le monde simulé, il accepte tout de suite.
 func inviter_guilde(fiche: Dictionary) -> Dictionary:
-	return _appliquer(Guilde.inviter(profile.serveur.get("guilde", {}), compte_id, fiche, Time.get_date_string_from_system(), donnees))
+	return _appliquer(Guilde.inviter(profile.serveur.get("guilde", {}), compte_id, fiche, profile.aujourd_hui(), donnees))
 
 
 ## L'économie : tes mouvements dans le profil (les 400 derniers) ; le bilan d'une semaine, les tiens plus ceux du
@@ -519,7 +519,7 @@ func protections() -> Dictionary:
 
 
 func declarer_guerre(territoire: String) -> Dictionary:
-	var jour := Time.get_date_string_from_system()
+	var jour := profile.aujourd_hui()
 	var mienne: Dictionary = profile.serveur.get("guilde", {})
 	if not est_connecte() or mienne.is_empty():
 		erreur = "il faut une guilde"
@@ -544,7 +544,7 @@ func declarer_guerre(territoire: String) -> Dictionary:
 
 
 func combat_guerre(id: String) -> Dictionary:
-	var jour := Time.get_date_string_from_system()
+	var jour := profile.aujourd_hui()
 	for b in batailles(jour):
 		if str(b["id"]) != id or str(b["attaquant"].get("id", "")) != str(profile.serveur.get("guilde", {}).get("id", "?")):
 			continue
@@ -564,7 +564,7 @@ func resultat_guerre(id: String, gagne: bool) -> Dictionary:
 	var en_cours: Dictionary = _guerre().get("en_cours", {})
 	if en_cours.is_empty() or str(en_cours.get("bataille", "")) != id:
 		return {}
-	var jour := Time.get_date_string_from_system()
+	var jour := profile.aujourd_hui()
 	for b in _batailles_du(jour):
 		if str(b["id"]) == id:
 			var adv: Dictionary = en_cours["adversaire"]
