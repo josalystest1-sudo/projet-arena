@@ -51,7 +51,7 @@ def main():
     L.append("")
     L.append("Un objet, c'est **une base** (ce qu'il est : une Épée, une Robe…), **un palier de niveau** (son matériau), **une rareté** et "
              "**ses lignes** : des bonus en %, tirés à la trouvaille dans la réserve de sa base. Il n'a de valeur que pour un Destin : "
-             "ses lignes s'ajoutent aux éclats de la roue. Cinq emplacements, un objet porté par emplacement.")
+             "ses lignes s'ajoutent aux éclats de la roue. Huit emplacements, un objet porté par emplacement.")
     L.append("")
     L.append("- **Les raretés** : " + " ; ".join("%s (%d ligne%s, fourchettes × %s)" % (r["nom"]["m"], r["lignes"], "s" if r["lignes"] > 1 else "", f(r["echelle"]))
                                              for r in objets["raretes"].values()) + ".")
@@ -75,10 +75,10 @@ def main():
     for p in objets["paliers"]:
         L.append("| %d | %s | Épée %s rare |" % (p["niveau_min"], p["suffixe"], p["suffixe"]))
     L.append("")
-    L.append("## Les trente bases, par emplacement")
+    L.append("## Les quarante-huit bases, par emplacement")
     L.append("")
     L.append("Chaque base a une réserve de quatre lignes possibles ; un objet tire ses lignes dedans (autant que sa rareté en donne, toutes différentes). "
-             "Chaque ligne est dans quinze réserves : aucune n'est plus rare qu'une autre.")
+             "Chaque ligne est dans vingt-quatre réserves : aucune n'est plus rare qu'une autre.")
     L.append("")
     for eid, e in objets["emplacements"].items():
         L.append("### %s" % e["nom"])
@@ -117,7 +117,7 @@ def main():
     L.append("")
     L.append("| Source | Rareté | Niveau de l'objet | Lié ou échangeable |")
     L.append("| --- | --- | --- | --- |")
-    L.append("| Un étage de la Tour, franchi pour la première fois | %s | celui de l'étage | échangeable |" % _poids(objets["butin"]["etage"], objets))
+    L.append("| Un étage de la Tour, franchi pour la première fois | %s, %d fois sur 10 (sinon rien) | celui de l'étage | échangeable |" % (_poids(objets["butin"]["etage"], objets), round(objets["butin"]["chance_etage"] * 10)))
     L.append("| Un étage de la Tour, rejoué | %s, une fois sur %s | celui de l'étage | lié |" % (_poids(objets["butin"]["etage"], objets), f(1 / objets["butin"]["rejoue"])))
     L.append("| Un Gardien de la Tour (tous les %d étages), la première fois | %s | celui de l'étage | échangeable |" % (
         tour["gardien_tous_les"], _poids(objets["butin"]["gardien"], objets)))

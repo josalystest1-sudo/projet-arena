@@ -1,26 +1,30 @@
 {
   "emplacements": {
     "arme": {"nom": "Arme"},
+    "casque": {"nom": "Casque"},
     "armure": {"nom": "Armure"},
+    "cape": {"nom": "Cape"},
+    "bottes": {"nom": "Bottes"},
+    "ceinture": {"nom": "Ceinture"},
     "anneau": {"nom": "Anneau"},
-    "amulette": {"nom": "Amulette"},
-    "talisman": {"nom": "Talisman"}
+    "amulette": {"nom": "Amulette"}
   },
   "lignes": {
-    "pv": {"nom": "PV max", "texte": "+{v} % de PV max", "fourchette": [3, 6], "plafond": 25},
-    "force": {"nom": "Force", "texte": "+{v} % de force (toutes les valeurs)", "fourchette": [2, 4], "plafond": 15},
-    "degats": {"nom": "Dégâts", "texte": "+{v} % de dégâts directs", "fourchette": [3, 6], "plafond": 25},
-    "soins": {"nom": "Soins", "texte": "+{v} % de soins et de Gardiens", "fourchette": [3, 6], "plafond": 25},
-    "barrieres": {"nom": "Barrières", "texte": "+{v} % de barrières", "fourchette": [4, 8], "plafond": 30},
-    "dot": {"nom": "Poisons et brûlures", "texte": "+{v} % de dégâts sur la durée", "fourchette": [4, 8], "plafond": 30},
-    "cle": {"nom": "Clés", "texte": "+{v} % sur les Clés", "fourchette": [4, 8], "plafond": 30},
-    "ouverture": {"nom": "Ouvertures", "texte": "+{v} % sur le moyeu et les ouvertures", "fourchette": [4, 8], "plafond": 30}
+    "pv": {"nom": "PV max", "texte": "+{v} % de PV max", "fourchette": [2, 4], "plafond": 25},
+    "force": {"nom": "Force", "texte": "+{v} % de force (toutes les valeurs)", "fourchette": [1.2, 2.5], "plafond": 15},
+    "degats": {"nom": "Dégâts", "texte": "+{v} % de dégâts directs", "fourchette": [2, 4], "plafond": 25},
+    "soins": {"nom": "Soins", "texte": "+{v} % de soins et de Gardiens", "fourchette": [2, 4], "plafond": 25},
+    "barrieres": {"nom": "Barrières", "texte": "+{v} % de barrières", "fourchette": [2.5, 5], "plafond": 30},
+    "dot": {"nom": "Poisons et brûlures", "texte": "+{v} % de dégâts sur la durée", "fourchette": [2.5, 5], "plafond": 30},
+    "cle": {"nom": "Clés", "texte": "+{v} % sur les Clés", "fourchette": [2.5, 5], "plafond": 30},
+    "ouverture": {"nom": "Ouvertures", "texte": "+{v} % sur le moyeu et les ouvertures", "fourchette": [2.5, 5], "plafond": 30}
   },
   "raretes": {
     "commun": {"nom": {"m": "commun", "f": "commune"}, "rang": 1, "lignes": 1, "echelle": 1.0},
-    "rare": {"nom": {"m": "rare", "f": "rare"}, "rang": 2, "lignes": 2, "echelle": 1.15},
-    "epique": {"nom": {"m": "épique", "f": "épique"}, "rang": 3, "lignes": 3, "echelle": 1.3},
-    "legendaire": {"nom": {"m": "légendaire", "f": "légendaire"}, "rang": 4, "lignes": 4, "echelle": 1.5}
+    "peu_commun": {"nom": {"m": "peu commun", "f": "peu commune"}, "rang": 2, "lignes": 2, "echelle": 1.0},
+    "rare": {"nom": {"m": "rare", "f": "rare"}, "rang": 3, "lignes": 2, "echelle": 1.2},
+    "epique": {"nom": {"m": "épique", "f": "épique"}, "rang": 4, "lignes": 3, "echelle": 1.35},
+    "legendaire": {"nom": {"m": "légendaire", "f": "légendaire"}, "rang": 5, "lignes": 4, "echelle": 1.5}
   },
   "niveau": {"plancher": 0.5, "plein": 30},
   "paliers": [
@@ -38,12 +42,36 @@
     "dague": {"nom": "Dague", "genre": "f", "emplacement": "arme", "lignes": ["degats", "dot", "ouverture", "force"], "description": "Courte et vicieuse : le poison, le premier coup, la main vive."},
     "hache": {"nom": "Hache", "genre": "f", "emplacement": "arme", "lignes": ["degats", "force", "dot", "barrieres"], "description": "Large et lourde : elle tranche, elle saigne, et le bras tient le choc."},
     "marteau": {"nom": "Marteau", "genre": "m", "emplacement": "arme", "lignes": ["pv", "degats", "barrieres", "cle"], "description": "Le poids d'une enclume : encaisser, écraser, et finir par la Clé."},
+    "casque": {"nom": "Casque", "genre": "m", "emplacement": "casque", "lignes": ["pv", "barrieres", "force", "ouverture"], "description": "Un bol de fer sur la tête : la vie, la garde, la force, l'ouverture."},
+    "heaume": {"nom": "Heaume", "genre": "m", "emplacement": "casque", "lignes": ["pv", "barrieres", "degats", "cle"], "description": "Fermé, lourd, sans visage : on encaisse, on garde, on frappe, on finit."},
+    "capuche": {"nom": "Capuche", "genre": "f", "emplacement": "casque", "lignes": ["dot", "ouverture", "degats", "soins"], "description": "De l'ombre sur les yeux : le venin, le premier coup, la frappe, un peu de soin."},
+    "couronne": {"nom": "Couronne", "genre": "f", "emplacement": "casque", "lignes": ["cle", "force", "soins", "pv"], "description": "Un cercle d'or qui commande : la Clé, la force, les soins, la vie."},
+    "diademe": {"nom": "Diadème", "genre": "m", "emplacement": "casque", "lignes": ["soins", "barrieres", "cle", "ouverture"], "description": "Un fin bandeau serti : les soins, les barrières, la Clé, l'ouverture."},
+    "bandeau": {"nom": "Bandeau", "genre": "m", "emplacement": "casque", "lignes": ["ouverture", "dot", "force", "degats"], "description": "Une bande de toile nouée : l'ouverture vive, le venin, la force, le coup."},
     "cotte": {"nom": "Cotte de mailles", "genre": "f", "emplacement": "armure", "lignes": ["pv", "barrieres", "force", "ouverture"], "description": "Des anneaux de métal tissés : on encaisse, on tient, on repart."},
     "robe": {"nom": "Robe", "genre": "f", "emplacement": "armure", "lignes": ["pv", "soins", "barrieres", "cle"], "description": "Du tissu brodé de signes : les soins et les barrières y sont plus grands."},
     "cuir": {"nom": "Armure de cuir", "genre": "f", "emplacement": "armure", "lignes": ["pv", "degats", "dot", "ouverture"], "description": "Souple et silencieuse : pour frapper fort sans peser."},
     "plates": {"nom": "Armure de plates", "genre": "f", "emplacement": "armure", "lignes": ["pv", "barrieres", "soins", "ouverture"], "description": "Des plaques d'acier : rien ne passe, et le porteur dure."},
     "tunique": {"nom": "Tunique", "genre": "f", "emplacement": "armure", "lignes": ["soins", "dot", "ouverture", "force"], "description": "Légère, propre aux soigneurs qui bougent : soins, venins, ouverture vive."},
-    "cape": {"nom": "Cape", "genre": "f", "emplacement": "armure", "lignes": ["dot", "degats", "barrieres", "cle"], "description": "Un pan d'ombre sur les épaules : les poisons, la frappe, la barrière."},
+    "brigandine": {"nom": "Brigandine", "genre": "f", "emplacement": "armure", "lignes": ["pv", "degats", "force", "cle"], "description": "Des plaques cousues sous le cuir : solide, et faite pour frapper."},
+    "cape": {"nom": "Cape", "genre": "f", "emplacement": "cape", "lignes": ["dot", "degats", "barrieres", "cle"], "description": "Un pan d'ombre sur les épaules : les poisons, la frappe, la barrière."},
+    "manteau": {"nom": "Manteau", "genre": "m", "emplacement": "cape", "lignes": ["pv", "soins", "barrieres", "force"], "description": "Long et lourd, doublé de laine : la vie, les soins, la barrière, la force."},
+    "pelerine": {"nom": "Pèlerine", "genre": "f", "emplacement": "cape", "lignes": ["soins", "ouverture", "dot", "pv"], "description": "Courte, pour la route : les soins, l'ouverture, le venin, la vie."},
+    "houppelande": {"nom": "Houppelande", "genre": "f", "emplacement": "cape", "lignes": ["cle", "barrieres", "soins", "degats"], "description": "Ample, aux manches immenses : la Clé, la barrière, les soins, la frappe."},
+    "mantelet": {"nom": "Mantelet", "genre": "m", "emplacement": "cape", "lignes": ["degats", "ouverture", "force", "dot"], "description": "Un pan court sur une épaule : la frappe, l'ouverture, la force, le venin."},
+    "voile": {"nom": "Voile", "genre": "m", "emplacement": "cape", "lignes": ["dot", "soins", "cle", "barrieres"], "description": "Léger comme un souffle : le venin, les soins, la Clé, la barrière."},
+    "bottes": {"nom": "Bottes", "genre": "f", "pluriel": true, "emplacement": "bottes", "lignes": ["ouverture", "pv", "force", "degats"], "description": "Du cuir jusqu'au genou : l'ouverture, la vie, la force, le coup."},
+    "sandales": {"nom": "Sandales", "genre": "f", "pluriel": true, "emplacement": "bottes", "lignes": ["soins", "ouverture", "dot", "barrieres"], "description": "Des lanières et une semelle : les soins, l'ouverture, le venin, la barrière."},
+    "sabots": {"nom": "Sabots", "genre": "m", "pluriel": true, "emplacement": "bottes", "lignes": ["pv", "barrieres", "force", "dot"], "description": "Du bois plein : la vie, la garde, la force, et le venin qu'on écrase."},
+    "brodequins": {"nom": "Brodequins", "genre": "m", "pluriel": true, "emplacement": "bottes", "lignes": ["degats", "cle", "ouverture", "dot"], "description": "Lacés serré, pour courir : la frappe, la Clé, l'ouverture, le venin."},
+    "souliers": {"nom": "Souliers", "genre": "m", "pluriel": true, "emplacement": "bottes", "lignes": ["soins", "cle", "dot", "ouverture"], "description": "Fins et souples : les soins, la Clé, le venin, l'ouverture."},
+    "cuissardes": {"nom": "Cuissardes", "genre": "f", "pluriel": true, "emplacement": "bottes", "lignes": ["pv", "degats", "barrieres", "cle"], "description": "Hautes et épaisses : la vie, la frappe, la barrière, la Clé."},
+    "ceinture": {"nom": "Ceinture", "genre": "f", "emplacement": "ceinture", "lignes": ["force", "pv", "degats", "soins"], "description": "Du cuir et une boucle : la force, la vie, le coup, un peu de soin."},
+    "ceinturon": {"nom": "Ceinturon", "genre": "m", "emplacement": "ceinture", "lignes": ["soins", "force", "barrieres", "cle"], "description": "Large, à poches : les soins, la force, la barrière, la Clé."},
+    "baudrier": {"nom": "Baudrier", "genre": "m", "emplacement": "ceinture", "lignes": ["degats", "cle", "dot", "force"], "description": "En travers de la poitrine, pour l'arme : la frappe, la Clé, le venin, la force."},
+    "echarpe": {"nom": "Écharpe", "genre": "f", "emplacement": "ceinture", "lignes": ["soins", "dot", "barrieres", "ouverture"], "description": "De la soie nouée à la taille : les soins, le venin, la barrière, l'ouverture."},
+    "cordeliere": {"nom": "Cordelière", "genre": "f", "emplacement": "ceinture", "lignes": ["soins", "cle", "ouverture", "dot"], "description": "Une corde à nœuds : les soins, la Clé, l'ouverture, le venin."},
+    "chaine": {"nom": "Chaîne", "genre": "f", "emplacement": "ceinture", "lignes": ["barrieres", "force", "pv", "dot"], "description": "Des maillons lourds : la barrière, la force, la vie, le venin."},
     "anneau": {"nom": "Anneau", "genre": "m", "emplacement": "anneau", "lignes": ["force", "cle", "pv", "degats"], "description": "Un cercle simple ; sa force va partout."},
     "sceau": {"nom": "Sceau", "genre": "m", "emplacement": "anneau", "lignes": ["soins", "barrieres", "pv", "ouverture"], "description": "Une bague gravée d'un serment : protéger et soigner."},
     "chevaliere": {"nom": "Chevalière", "genre": "f", "emplacement": "anneau", "lignes": ["pv", "ouverture", "barrieres", "degats"], "description": "Le blason d'une maison : la vie, l'ouverture, la garde, le coup."},
@@ -55,13 +83,7 @@
     "collier": {"nom": "Collier", "genre": "m", "emplacement": "amulette", "lignes": ["force", "ouverture", "pv", "soins"], "description": "Des perles enfilées : la force, l'ouverture, la vie, les soins."},
     "medaillon": {"nom": "Médaillon", "genre": "m", "emplacement": "amulette", "lignes": ["barrieres", "cle", "soins", "degats"], "description": "Un portrait sous verre : barrières, Clé, soins, frappe."},
     "camee": {"nom": "Camée", "genre": "m", "emplacement": "amulette", "lignes": ["dot", "pv", "barrieres", "soins"], "description": "Un profil taillé dans la pierre : venins, vie, barrière, soin."},
-    "fetiche": {"nom": "Fétiche", "genre": "m", "emplacement": "amulette", "lignes": ["cle", "force", "degats", "dot"], "description": "Des plumes et des dents : la Clé, la force, la frappe, le venin."},
-    "talisman": {"nom": "Talisman", "genre": "m", "emplacement": "talisman", "lignes": ["cle", "ouverture", "force", "dot"], "description": "Un signe qui ouvre et qui ferme : les Clés et les Ouvertures."},
-    "relique": {"nom": "Relique", "genre": "f", "emplacement": "talisman", "lignes": ["soins", "barrieres", "cle", "pv"], "description": "Un os de saint, dit-on : les soins, les barrières, la Clé et la vie."},
-    "idole": {"nom": "Idole", "genre": "f", "emplacement": "talisman", "lignes": ["degats", "dot", "ouverture", "soins"], "description": "Une petite figure de bois : le poison, la frappe, l'élan."},
-    "grigri": {"nom": "Grigri", "genre": "m", "emplacement": "talisman", "lignes": ["ouverture", "pv", "soins", "dot"], "description": "Un petit sac cousu : l'ouverture, la vie, les soins, le venin."},
-    "rune": {"nom": "Rune", "genre": "f", "emplacement": "talisman", "lignes": ["cle", "force", "barrieres", "degats"], "description": "Un galet gravé : la Clé, la force, la barrière, le coup."},
-    "charme": {"nom": "Charme", "genre": "m", "emplacement": "talisman", "lignes": ["barrieres", "soins", "force", "dot"], "description": "Un ruban noué : barrières, soins, force, venin."}
+    "fetiche": {"nom": "Fétiche", "genre": "m", "emplacement": "amulette", "lignes": ["cle", "force", "degats", "dot"], "description": "Des plumes et des dents : la Clé, la force, la frappe, le venin."}
   },
   "traits": {
     "tenacite": {"nom": "Ténacité", "texte": "la première fois que ses PV tomberaient à zéro, il reste à 1 PV (une fois par combat)", "valeur": 1},
@@ -75,8 +97,8 @@
     "carapace": {"nom": "Carapace", "texte": "au début du combat, une barrière de {v} % de ses PV max", "valeur": 0.15},
     "persistance": {"nom": "Persistance", "texte": "les poisons, brûlures et saignements qu'il pose durent un tour de plus", "valeur": 1}
   },
-  "butin": {"etage": {"commun": 70, "rare": 30}, "gardien": {"epique": 100}, "grand_gardien": {"epique": 70, "legendaire": 30}, "rejoue": 0.5},
+  "butin": {"etage": {"commun": 70, "peu_commun": 30}, "gardien": {"peu_commun": 100}, "grand_gardien": {"peu_commun": 60, "rare": 40}, "chance_etage": 0.7, "rejoue": 0.5},
   "reforge": {"cout": 20, "pente": 1.0},
-  "recyclage": {"commun": 5, "rare": 15, "epique": 40, "legendaire": 100},
+  "recyclage": {"commun": 5, "peu_commun": 10, "rare": 15, "epique": 40, "legendaire": 100},
   "eclats": {"duel_gagne": 15, "duel_perdu": 5, "etage_base": 10, "etage_pente": 2, "rejoue": 0.5}
 }

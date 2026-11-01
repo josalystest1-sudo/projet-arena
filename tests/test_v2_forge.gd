@@ -7,32 +7,36 @@ func _tour(classe: String = "mage", niveau: int = 12, graine: int = 77) -> Tour:
 	return Tour.commencer_camp(Trio.camp(Generateur.generer(classe, 5, niveau, Generateur.PAR_DEFAUT, donnees), niveau, donnees), niveau, graine, donnees)
 
 
-# Le butin d'un étage : du niveau de l'étage, épique au Gardien, commun ou rare ailleurs ; échangeable au premier
-# passage, lié sinon ; la même graine de montée donne le même objet.
+# Le butin d'un étage : du niveau de l'étage, peu commun au Gardien, commun ou peu commun ailleurs (pas toujours) ;
+# échangeable au premier passage, lié sinon ; la même graine de montée donne le même objet.
 func test_butin_de_la_tour() -> void:
 	var t := _tour()
 	var b5 := t.butin(5, true)
-	assert_eq(str(b5["rarete"]), "epique", "étage 5 (Gardien) : épique")
+	assert_eq(str(b5["rarete"]), "peu_commun", "étage 5 (Gardien) : peu commun")
 	assert_eq(int(b5["niveau"]), t.niveau_etage(5), "du niveau de l'étage")
 	assert_false(bool(b5["lie"]), "premier passage : échangeable")
 	assert_eq(_tour().butin(5, true), b5, "même montée, même butin")
 	var raretes := {}
 	var vides := 0
+	var sans := 0
 	for n in range(1, 41):
 		if n % 5 == 0:
 			continue
 		var b := t.butin(n, true)
-		assert_false(b.is_empty(), "étage %d, premier passage : un objet" % n)
-		assert_true(str(b["rarete"]) in ["commun", "rare"], "étage %d : commun ou rare" % n)
-		raretes[b["rarete"]] = true
+		if b.is_empty():
+			sans += 1
+		else:
+			assert_true(str(b["rarete"]) in ["commun", "peu_commun"], "étage %d : commun ou peu commun" % n)
+			raretes[b["rarete"]] = true
 		var r := t.butin(n, false)
 		if r.is_empty():
 			vides += 1
 		else:
 			assert_true(bool(r["lie"]), "étage %d rejoué : lié" % n)
-	assert_eq(raretes.size(), 2, "du commun et du rare sur 32 étages")
+	assert_eq(raretes.size(), 2, "du commun et du peu commun sur 32 étages")
+	assert_between(sans, 3, 18, "un premier passage ne lâche pas toujours (%d étages sans objet sur 32)" % sans)
 	assert_between(vides, 6, 26, "un étage rejoué ne lâche rien environ une fois sur deux (%d sur 32)" % vides)
-	assert_true(bool(t.butin(10, false)["lie"]) and str(t.butin(10, false)["rarete"]) == "epique", "Gardien rejoué : épique, lié")
+	assert_true(bool(t.butin(10, false)["lie"]) and str(t.butin(10, false)["rarete"]) in ["peu_commun", "rare"], "grand Gardien rejoué : peu commun ou rare, lié")
 
 
 # Les Éclats : par duel, par étage (moins si rejoué), au recyclage ; le revenu passif plafonné.
@@ -43,6 +47,7 @@ func test_eclats_et_revenu() -> void:
 	assert_eq(Equipement.eclats_etage(20, true, donnees), 50, "étage 20 : 10 + 40")
 	assert_eq(Equipement.eclats_etage(20, false, donnees), 25, "étage 20 rejoué : la moitié")
 	assert_eq(Equipement.recyclage({"rarete": "commun"}, donnees), 5, "recycler un commun : 5")
+	assert_eq(Equipement.recyclage({"rarete": "peu_commun"}, donnees), 10, "recycler un peu commun : 10")
 	assert_eq(Equipement.recyclage({"rarete": "legendaire"}, donnees), 100, "recycler un légendaire : 100")
 	assert_eq(Tour.revenu(0, donnees), {"eclats": 0, "xp": 0}, "sans record, rien")
 	assert_eq(Tour.revenu(10, donnees), {"eclats": 30, "xp": 20}, "record 10 : 30 Éclats, 20 XP")

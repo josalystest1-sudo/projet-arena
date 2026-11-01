@@ -3,7 +3,7 @@
 extends "res://tests/test_case.gd"
 
 const Lib := preload("res://tools/equilibrage_lib.gd")
-const RARETES := ["commun", "rare", "epique", "legendaire"]
+const RARETES := ["commun", "peu_commun", "rare", "epique", "legendaire"]
 
 
 func _bases() -> Array:
@@ -12,17 +12,17 @@ func _bases() -> Array:
 	return out
 
 
-# Les données : tout est connu et cohérent ; cinq emplacements d'au moins deux bases, huit lignes, quatre raretés.
+# Les données : tout est connu et cohérent ; huit emplacements de six bases, huit lignes, cinq raretés.
 func test_donnees_de_l_equipement() -> void:
 	for erreur in donnees.erreurs:
 		failures.append(erreur)
-	assert_eq(donnees.objets["emplacements"].size(), 5, "cinq emplacements")
+	assert_eq(donnees.objets["emplacements"].size(), 8, "huit emplacements")
 	assert_eq(donnees.objets["lignes"].size(), 8, "huit lignes")
-	assert_eq(donnees.objets["raretes"].size(), 4, "quatre raretés")
-	assert_eq(donnees.objets["bases"].size(), 30, "trente bases")
+	assert_eq(donnees.objets["raretes"].size(), 5, "cinq raretés")
+	assert_eq(donnees.objets["bases"].size(), 48, "quarante-huit bases")
 	for e in donnees.objets["emplacements"]:
 		assert_eq(Equipement.bases_de(str(e), donnees).size(), 6, "%s : six bases" % e)
-	# Chaque ligne est dans quinze réserves : aucune n'est plus facile à trouver qu'une autre.
+	# Chaque ligne est dans vingt-quatre réserves : aucune n'est plus facile à trouver qu'une autre.
 	var compte := {}
 	for id in donnees.objets["bases"]:
 		assert_eq(donnees.objets["bases"][id]["lignes"].size(), 4, id + " : quatre lignes possibles")
@@ -30,7 +30,7 @@ func test_donnees_de_l_equipement() -> void:
 		for l in donnees.objets["bases"][id]["lignes"]:
 			compte[l] = int(compte.get(l, 0)) + 1
 	for s in Equipement.STATS:
-		assert_eq(int(compte.get(s, 0)), 15, "la ligne « %s » est dans quinze réserves" % s)
+		assert_eq(int(compte.get(s, 0)), 24, "la ligne « %s » est dans vingt-quatre réserves" % s)
 	# Les paliers : du niveau 1 au-delà du plafond, un suffixe chacun.
 	assert_eq(str(Equipement.palier(1, donnees)["suffixe"]), "de fer", "niveau 1 : de fer")
 	assert_eq(str(Equipement.palier(9, donnees)["suffixe"]), "de fer", "niveau 9 : encore de fer")
@@ -85,26 +85,26 @@ func test_tirage_dans_ses_fourchettes() -> void:
 	assert_almost(Equipement.echelle_niveau(1, donnees), 0.5, "échelle du niveau 1")
 	assert_almost(Equipement.echelle_niveau(30, donnees), 1.0, "échelle du niveau 30")
 	assert_almost(Equipement.echelle_niveau(90, donnees), 1.0, "au-delà du niveau 30, l'échelle ne monte plus")
-	assert_eq(Equipement.fourchette("pv", "commun", 30, donnees), [3.0, 6.0], "PV max, commun, niveau 30 : la fourchette des données")
-	assert_eq(Equipement.fourchette("pv", "commun", 1, donnees), [1.5, 3.0], "au niveau 1, la moitié")
-	assert_eq(Equipement.fourchette("pv", "epique", 30, donnees), [3.9, 7.8], "épique : × 1,3")
+	assert_eq(Equipement.fourchette("pv", "commun", 30, donnees), [2.0, 4.0], "PV max, commun, niveau 30 : la fourchette des données")
+	assert_eq(Equipement.fourchette("pv", "commun", 1, donnees), [1.0, 2.0], "au niveau 1, la moitié")
+	assert_eq(Equipement.fourchette("pv", "epique", 30, donnees), [2.7, 5.4], "épique : × 1,35")
 	assert_true(float(Equipement.fourchette("cle", "legendaire", 12, donnees)[1]) > float(Equipement.fourchette("cle", "rare", 12, donnees)[1]), "légendaire plus haut que rare")
 
 
-# Les bonus : la somme des lignes portées, chacune sous son plafond ; un jeu complet couvre les cinq emplacements.
+# Les bonus : la somme des lignes portées, chacune sous son plafond ; un jeu complet couvre les huit emplacements.
 func test_bonus_et_plafonds() -> void:
 	var vides := Equipement.mods_vides()
 	assert_eq(vides.size(), 8, "huit lignes à zéro")
 	assert_eq(Equipement.mods([], donnees), vides, "sans objet, aucun bonus")
 	assert_true(Equipement.sans_bonus(vides), "des bonus à zéro n'apportent rien")
 	var jeu := Equipement.jeu(30, "epique", 11, donnees)
-	assert_eq(jeu.size(), 5, "un jeu complet : cinq objets")
+	assert_eq(jeu.size(), 8, "un jeu complet : huit objets")
 	var emplacements: Array = []
 	for o in jeu:
 		emplacements.append(Equipement.emplacement(o, donnees))
 		assert_eq(str(o["rarete"]), "epique", "chaque objet du jeu est épique")
 	emplacements.sort()
-	assert_eq(emplacements, ["amulette", "anneau", "arme", "armure", "talisman"], "un objet par emplacement")
+	assert_eq(emplacements, ["amulette", "anneau", "arme", "armure", "bottes", "cape", "casque", "ceinture"], "un objet par emplacement")
 	var m := Equipement.mods(jeu, donnees)
 	var attendu := Equipement.mods_vides()
 	for o in jeu:
@@ -132,13 +132,16 @@ func test_bonus_et_plafonds() -> void:
 
 
 # Lié ou échangeable (GDD V2, § 10.1) : échangeable seulement au premier passage ; lié dès qu'on l'équipe, pour
-# toujours ; un étage rejoué n'en lâche qu'une fois sur deux, un Gardien toujours.
+# toujours ; un étage ordinaire ne lâche pas toujours (7 fois sur 10 au premier passage, 1 sur 2 rejoué), un Gardien toujours.
 func test_lie_ou_echangeable() -> void:
 	var tombes := 0
+	var premiers := 0
 	var raretes_etage: Dictionary = {}
 	for graine in range(1, 201):
 		var premier := Equipement.butin("etage", 10, true, graine, donnees)
-		assert_false(premier.is_empty(), "graine %d : un premier passage lâche toujours un objet" % graine)
+		if premier.is_empty():
+			continue
+		premiers += 1
 		assert_false(bool(premier["lie"]), "graine %d : échangeable au premier passage" % graine)
 		assert_eq(int(premier["niveau"]), 10, "graine %d : du niveau de l'étage" % graine)
 		assert_true(Equipement.valide(premier, donnees), "graine %d : objet conforme" % graine)
@@ -149,13 +152,15 @@ func test_lie_ou_echangeable() -> void:
 			assert_true(bool(rejoue["lie"]), "graine %d : lié sur un étage rejoué" % graine)
 		var gardien := Equipement.butin("gardien", 23, false, graine, donnees)
 		assert_false(gardien.is_empty(), "graine %d : un Gardien lâche toujours un objet" % graine)
-		assert_eq(str(gardien["rarete"]), "epique", "graine %d : épique au Gardien" % graine)
+		assert_eq(str(gardien["rarete"]), "peu_commun", "graine %d : peu commun au Gardien" % graine)
 		assert_true(bool(gardien["lie"]), "graine %d : lié quand le Gardien est rejoué" % graine)
 		assert_false(bool(Equipement.butin("gardien", 23, true, graine, donnees)["lie"]), "graine %d : échangeable au premier Gardien" % graine)
+	assert_between(premiers, 110, 170, "un premier passage lâche un objet environ sept fois sur dix (%d sur 200)" % premiers)
 	assert_between(tombes, 60, 140, "un étage rejoué lâche un objet environ une fois sur deux (%d sur 200)" % tombes)
-	assert_true(int(raretes_etage.get("commun", 0)) > int(raretes_etage.get("rare", 0)), "à l'étage, plus de commun que de rare (%s)" % str(raretes_etage))
-	assert_false(raretes_etage.has("epique"), "pas d'épique à un étage ordinaire")
-	var trouve := Equipement.butin("etage", 10, true, 7, donnees)
+	assert_true(int(raretes_etage.get("commun", 0)) > int(raretes_etage.get("peu_commun", 0)), "à l'étage, plus de commun que de peu commun (%s)" % str(raretes_etage))
+	assert_true(int(raretes_etage.get("peu_commun", 0)) > 0, "du peu commun à l'étage")
+	assert_false(raretes_etage.has("rare") or raretes_etage.has("epique"), "ni rare ni épique à un étage ordinaire : ils viennent des donjons")
+	var trouve := Equipement.butin("gardien", 10, true, 7, donnees)
 	var porte := Equipement.equiper(trouve)
 	assert_false(bool(trouve["lie"]), "l'objet trouvé n'est pas modifié")
 	assert_true(bool(porte["lie"]), "équipé : lié")
@@ -250,16 +255,18 @@ func test_textes_de_l_equipement() -> void:
 	assert_eq(Equipement.nom(o, donnees), "Épée d'acier épique", "le nom d'une épée épique du niveau 12 : d'acier")
 	assert_eq(Equipement.nom(Equipement.tirer("cotte", "commun", 1, 2, donnees), donnees), "Cotte de mailles de fer commune", "le féminin, de fer au niveau 1")
 	assert_eq(Equipement.nom(Equipement.tirer("anneau", "commun", 1, 2, donnees), donnees), "Anneau de fer commun", "le masculin")
-	assert_eq(Equipement.nom(Equipement.tirer("rune", "legendaire", 45, 2, donnees), donnees), "Rune runique légendaire", "niveau 45 : runique")
+	assert_eq(Equipement.nom(Equipement.tirer("couronne", "legendaire", 45, 2, donnees), donnees), "Couronne runique légendaire", "niveau 45 : runique")
+	assert_eq(Equipement.nom(Equipement.tirer("sabots", "peu_commun", 12, 2, donnees), donnees), "Sabots d'acier peu communs", "peu commun, au pluriel")
+	assert_eq(Equipement.nom(Equipement.tirer("bottes", "commun", 1, 2, donnees), donnees), "Bottes de fer communes", "le féminin pluriel")
 	assert_eq(str(Equipement.fiche(o, donnees)["description"]), str(donnees.objets["bases"]["epee"]["description"]), "la fiche porte la description de la base")
 	assert_eq(Equipement.texte_ligne({"stat": "degats", "valeur": 5.3}, donnees), "+5,3 % de dégâts directs", "le texte d'une ligne")
 	assert_eq(Equipement.texte_ligne({"stat": "pv", "valeur": 5.0}, donnees), "+5 % de PV max", "un chiffre rond")
-	assert_eq(Equipement.texte_fourchette("pv", {"rarete": "commun", "niveau": 30}, donnees), "[3 – 6]", "la fourchette affichée")
+	assert_eq(Equipement.texte_fourchette("pv", {"rarete": "commun", "niveau": 30}, donnees), "[2 – 4]", "la fourchette affichée")
 	var f := Equipement.fiche(o, donnees)
 	assert_eq(f["nom"], "Épée d'acier épique", "fiche : nom")
 	assert_eq(f["emplacement"], "Arme", "fiche : emplacement")
 	assert_eq(f["rarete"], "épique", "fiche : rareté")
-	assert_eq(f["rang"], 3, "fiche : rang de la rareté")
+	assert_eq(f["rang"], 4, "fiche : rang de la rareté")
 	assert_eq(f["niveau"], 12, "fiche : niveau")
 	assert_eq(f["lignes"].size(), 3, "fiche : trois lignes")
 	for l in f["lignes"]:

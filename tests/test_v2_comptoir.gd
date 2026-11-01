@@ -28,9 +28,10 @@ func test_prix_plancher() -> void:
 
 func test_etal_du_jour() -> void:
 	var etal := Comptoir.etal_du_jour("2026-10-30", 12, donnees)
-	assert_eq(etal.size(), 2, "deux objets à l'étal")
+	assert_eq(etal.size(), 3, "trois objets à l'étal")
 	assert_eq(str(etal[0]["rarete"]), "commun", "un commun")
-	assert_eq(str(etal[1]["rarete"]), "rare", "un rare")
+	assert_eq(str(etal[1]["rarete"]), "peu_commun", "un peu commun")
+	assert_eq(str(etal[2]["rarete"]), "rare", "un rare")
 	for o in etal:
 		assert_true(bool(o["lie"]), "les objets de l'étal sont liés")
 		assert_eq(int(o["niveau"]), 12, "du niveau du joueur")
@@ -38,7 +39,8 @@ func test_etal_du_jour() -> void:
 	assert_eq(Comptoir.etal_du_jour("2026-10-30", 12, donnees), etal, "le même étal le même jour")
 	assert_true(Comptoir.etal_du_jour("2026-10-31", 12, donnees) != etal, "un autre étal le lendemain")
 	assert_eq(Comptoir.prix_etal(etal[0], donnees), 40, "un commun de l'étal : 40 Éclats")
-	assert_eq(Comptoir.prix_etal(etal[1], donnees), 120, "un rare : 120 Éclats")
+	assert_eq(Comptoir.prix_etal(etal[1], donnees), 80, "un peu commun : 80 Éclats")
+	assert_eq(Comptoir.prix_etal(etal[2], donnees), 120, "un rare : 120 Éclats")
 
 
 func test_profil_du_comptoir() -> void:

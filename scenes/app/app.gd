@@ -100,6 +100,7 @@ func _ready() -> void:
 	get_tree().node_added.connect(_let_scroll_through)
 	data = Donnees.defaut()
 	profile = PlayerProfile.load_profile()
+	_nettoyer_objets()
 	sfx = Sfx.new()
 	add_child(sfx)
 	sfx.muted = profile.muted
@@ -461,6 +462,23 @@ func gain_xp(amount: int) -> Dictionary:
 # ---------------------------------------------------------------------------
 # La Forge : l'équipement et les Éclats
 # ---------------------------------------------------------------------------
+
+## Les objets d'un profil d'avant la refonte de l'équipement (1er novembre : huit emplacements, d'autres bases) qui ne
+## correspondent plus aux données sont retirés (le Talisman et ses bases, par exemple) : un prototype, pas de migration.
+func _nettoyer_objets() -> void:
+	var change := false
+	for e in profile.portes.keys():
+		var o: Dictionary = profile.portes[e]
+		if not data.objets["emplacements"].has(e) or not Equipement.valide(o, data) or Equipement.emplacement(o, data) != str(e):
+			profile.portes.erase(e)
+			change = true
+	var sac: Array = profile.sac.filter(func(o): return o is Dictionary and Equipement.valide(o, data))
+	if sac.size() != profile.sac.size():
+		profile.sac = sac
+		change = true
+	if change:
+		profile.save()
+
 
 ## Les objets portés (un par emplacement au plus).
 func objets_portes() -> Array:

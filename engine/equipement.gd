@@ -1,13 +1,15 @@
 ## L'équipement (docs/GDD_V2.md, § 10.1 ; docs/PLAN.md, PR 3.1) : un objet est un paquet de modificateurs dans la langue
-## du Destin ; il n'a de valeur que pour un Destin. Cinq emplacements (Arme, Armure, Anneau, Amulette, Talisman), quatre
-## raretés (commun 1 ligne, rare 2, épique 3, légendaire 4), trente bases aux noms fixes (data/items.json : six par
-## emplacement, chaque ligne dans quinze réserves), chacune avec sa réserve de quatre lignes possibles, et des paliers
+## du Destin ; il n'a de valeur que pour un Destin. Huit emplacements (Arme, Casque, Armure, Cape, Bottes, Ceinture, Anneau,
+## Amulette ; décision de Gautier du 1er novembre), cinq raretés (commun 1 ligne, peu commun 2, rare 2 plus larges, épique 3,
+## légendaire 4), quarante-huit bases aux noms fixes (data/items.json : six par emplacement, chaque ligne dans vingt-quatre
+## réserves), chacune avec sa réserve de quatre lignes possibles, et des paliers
 ## de niveau qui donnent au nom son matériau (« Épée d'acier épique » : de fer, d'acier, d'argent, de mithril, runique,
 ## de dragon). Les huit lignes (décision de Gautier du 29 octobre) : PV max, Force (toutes les
 ## valeurs), Dégâts, Soins, Barrières, Poisons et brûlures (DoT), Clés, Ouvertures (moyeu et N1). Une ligne a une
 ## fourchette connue, affichée, qui grandit avec le niveau de l'objet et sa rareté ; ses chiffres sont tirés à la
 ## trouvaille (graine fournie), et la qualité en % dit où le tirage est tombé dans ses fourchettes. Des plafonds par
-## ligne, sur le total des cinq objets, pour qu'aucune ligne ne fasse un personnage à elle seule.
+## ligne, sur le total des objets portés, pour qu'aucune ligne ne fasse un personnage à elle seule (les fourchettes sont
+## taillées pour qu'un jeu complet épique vaille environ +50 %, décision du 29 octobre, quel que soit le nombre d'emplacements).
 ## Un objet : {base, rarete, niveau, lignes: [{stat, valeur (en %)}], qualite (0 à 100), lie, reforges, trait (un objet
 ## légendaire seulement : l'identifiant de son trait, data/items.json traits, tiré à la trouvaille ; un passif de combat
 ## que engine/regles.gd applique au porteur ; un même trait porté deux fois ne compte qu'une fois)}.
@@ -148,15 +150,19 @@ static func emplacement(objet: Dictionary, d: Donnees) -> String:
 # --- Le butin --------------------------------------------------------------------------
 
 ## Le butin d'une source (« etage », « gardien » ou « grand_gardien », data/items.json) à ce niveau : sa rareté tirée selon
-## les poids de la source, sa base parmi toutes ; échangeable seulement au premier passage ; un étage ordinaire rejoué
-## n'en lâche qu'une fois sur deux (vide alors). Un Gardien en lâche toujours (épique) ; un grand Gardien, parfois un
-## légendaire (GDD V2, § 10.1 ; les murs de la Tour, décision de Gautier du 31 octobre).
+## les poids de la source, sa base parmi toutes ; échangeable seulement au premier passage. Un étage ordinaire ne lâche
+## pas toujours un objet (« butin non assuré », décision de Gautier du 1er novembre : `chance_etage` au premier passage,
+## `rejoue` ensuite ; vide alors, et l'étage ne donne que ses Éclats et son XP). Un Gardien en lâche toujours. La Tour
+## lâche du commun et du peu commun ; les raretés au-dessus viennent des donjons (le grand Gardien lâche parfois un rare,
+## proposition à valider).
 ## bonus_rejoue : des points de chance en plus sur un étage rejoué (la Chasse de guilde, engine/guilde.gd).
 static func butin(source: String, niveau: int, premier_passage: bool, graine: int, d: Donnees, bonus_rejoue: float = 0.0) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = graine ^ 0x2F6E1B35
-	if not premier_passage and source == "etage" and rng.randf_range(0.0, 1.0) >= float(d.objets["butin"]["rejoue"]) + bonus_rejoue:
-		return {}
+	if source == "etage":
+		var chance := float(d.objets["butin"]["chance_etage"]) if premier_passage else float(d.objets["butin"]["rejoue"]) + bonus_rejoue
+		if rng.randf_range(0.0, 1.0) >= chance:
+			return {}
 	var poids: Dictionary = d.objets["butin"][source]
 	var total := 0.0
 	for r in poids:
@@ -328,13 +334,17 @@ static func palier(niveau: int, d: Donnees) -> Dictionary:
 	return out
 
 
-## « Épée d'acier épique », « Cotte de mailles de fer commune » : la base, le matériau de son palier, la rareté.
+## « Épée d'acier épique », « Cotte de mailles de fer commune », « Bottes de fer communes » (une base au pluriel) : la base,
+## le matériau de son palier, la rareté accordée.
 static func nom(objet: Dictionary, d: Donnees) -> String:
 	var base: Dictionary = d.objets["bases"][objet["base"]]
 	var genre := "f" if str(base["genre"]) == "f" else "m"
 	var p := palier(int(objet["niveau"]), d)
 	var materiau := (" " + str(p["suffixe"])) if p.has("suffixe") else ""
-	return "%s%s %s" % [base["nom"], materiau, d.objets["raretes"][objet["rarete"]]["nom"][genre]]
+	var rarete := str(d.objets["raretes"][objet["rarete"]]["nom"][genre])
+	if bool(base.get("pluriel", false)):
+		rarete += "s"
+	return "%s%s %s" % [base["nom"], materiau, rarete]
 
 
 ## Un chiffre en % à la française : « 5,3 ».
