@@ -3,14 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Proto Cadastre — Paris</title>
+<title>Proto Cadastre — V2</title>
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <style>
-  :root{--bg:#11131c;--panel:#171a26;--line:#2a2e40;--txt:#f3f4f8;--muted:#9aa0b8;--gold:#ffd65a;--me:#3b82f6;--other:#ef4444;--mixed:#a855f7}
+  :root{--bg:#11131c;--panel:#171a26;--card:#1c1f2c;--line:#2a2e40;--txt:#f3f4f8;--muted:#9aa0b8;--gold:#ffd65a;--me:#3b82f6;--other:#ef4444;--mixed:#a855f7;--ok:#7ee787;--nav:64px}
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
-  #map{position:absolute;inset:0}
+  #map{position:absolute;inset:0;bottom:calc(var(--nav) + env(safe-area-inset-bottom))}
+  button{font-family:inherit}
+  /* haut */
   #top{position:absolute;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top)) 12px 0;display:flex;flex-direction:column;gap:8px;pointer-events:none;z-index:5}
   #top > *{pointer-events:auto}
   .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
@@ -27,60 +29,131 @@
   #ctrls{position:absolute;right:12px;top:calc(118px + env(safe-area-inset-top));display:flex;flex-direction:column;gap:8px;z-index:5}
   .rbtn{width:46px;height:46px;border-radius:12px;background:rgba(17,19,28,.92);border:1px solid var(--line);color:var(--txt);font-weight:800;font-size:13px;cursor:pointer;backdrop-filter:blur(6px)}
   .rbtn.on{background:var(--gold);color:#111;border-color:var(--gold)}
-  #legend{position:absolute;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));background:rgba(17,19,28,.9);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:12px;z-index:5;display:flex;gap:10px;flex-wrap:wrap;max-width:70%}
-  #legend span{display:flex;align-items:center;gap:5px}
-  #sheet{position:absolute;left:0;right:0;bottom:0;max-height:80%;background:var(--panel);border-top:2px solid var(--gold);border-radius:22px 22px 0 0;transform:translateY(105%);transition:transform .25s ease;z-index:10;overflow:auto;padding:14px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.5)}
-  #sheet.open{transform:translateY(0)}
-  #sheet .close{position:absolute;right:12px;top:10px;background:var(--line);border:0;color:var(--txt);width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer}
-  h2{margin:4px 0 2px;font-size:20px}
-  .sub{color:var(--muted);font-size:13px;margin-bottom:10px}
-  .sv{width:100%;aspect-ratio:16/10;border:0;border-radius:14px;background:#000;display:block}
-  .svwrap{position:relative;margin-bottom:10px}
-  .svwrap a.ext{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;padding:5px 9px;border-radius:8px;text-decoration:none}
-  .addr{padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:#1c1f2c}
-  .addr .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .addr .n{font-weight:600;font-size:15px}
-  .addr .m{color:var(--muted);font-size:12px}
-  .build{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  #packbtn{position:absolute;left:12px;bottom:calc(var(--nav) + 14px + env(safe-area-inset-bottom));z-index:5;background:var(--gold);color:#111;border:0;border-radius:14px;padding:12px 16px;font-weight:800;font-size:15px;box-shadow:0 6px 20px rgba(0,0,0,.4);cursor:pointer}
+  #packbtn:disabled{background:rgba(17,19,28,.92);color:var(--muted);border:1px solid var(--line)}
+  #legend{position:absolute;right:12px;bottom:calc(var(--nav) + 14px + env(safe-area-inset-bottom));background:rgba(17,19,28,.9);border:1px solid var(--line);border-radius:10px;padding:6px 10px;font-size:11px;z-index:5;display:flex;gap:8px}
+  #legend span{display:flex;align-items:center;gap:4px}
+  /* nav */
+  #nav{position:absolute;left:0;right:0;bottom:0;height:calc(var(--nav) + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);background:var(--panel);border-top:1px solid var(--line);display:flex;z-index:40}
+  #nav button{flex:1;background:transparent;border:0;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;position:relative;cursor:pointer}
+  #nav button i{font-style:normal;font-size:20px}
+  #nav button.on{color:var(--gold)}
+  #nav .cnt{position:absolute;top:8px;right:calc(50% - 22px);background:var(--other);color:#fff;font-size:10px;font-weight:800;border-radius:999px;padding:1px 6px;display:none}
+  /* écrans */
+  .screen{position:absolute;inset:0;bottom:calc(var(--nav) + env(safe-area-inset-bottom));background:var(--bg);z-index:20;overflow:auto;padding:calc(12px + env(safe-area-inset-top)) 14px 24px;display:none}
+  .screen.on{display:block}
+  .screen h1{font-size:22px;margin:6px 0 12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+  .card .t{font-weight:700;font-size:15px}
+  .card .m{color:var(--muted);font-size:12px;margin-top:2px}
+  .kpis{display:flex;gap:8px;margin-bottom:12px}
+  .kpi{flex:1;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 8px;text-align:center}
+  .kpi small{display:block;color:var(--muted);font-size:10px;letter-spacing:.04em}
+  .kpi b{font-size:16px}
   .btn{background:var(--gold);color:#111;border:0;border-radius:10px;padding:9px 14px;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap}
   .btn.sm{padding:7px 10px;font-size:13px;background:#2a2e40;color:var(--txt)}
   .btn.sm.next{background:var(--gold);color:#111}
+  .btn.ghost{background:transparent;border:1px solid var(--line);color:var(--txt)}
   .btn:disabled{opacity:.4;cursor:default}
-  .own{font-size:13px;padding:6px 10px;border-radius:8px;white-space:nowrap;font-weight:600}
+  .own{font-size:13px;padding:6px 10px;border-radius:8px;white-space:nowrap;font-weight:600;cursor:pointer}
   .own.me{background:rgba(59,130,246,.2);color:#8ab4ff}
   .own.other{background:rgba(239,68,68,.2);color:#ff9b9b}
-  .stats{display:flex;gap:8px;margin:8px 0 12px}
-  .stat{flex:1;background:#1c1f2c;border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center}
-  .stat small{display:block;color:var(--muted);font-size:11px;letter-spacing:.04em}
-  .stat b{font-size:17px}
-  .note{color:var(--muted);font-size:12px;margin-top:8px}
-  .maplibregl-ctrl-attrib{font-size:10px}
-  #toast{position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);background:var(--gold);color:#111;padding:12px 18px;border-radius:12px;font-weight:700;z-index:20;display:none;text-align:center}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:#2a2e40;color:var(--muted);margin-left:6px;vertical-align:middle}
+  .tag.lieu{background:rgba(255,214,90,.18);color:var(--gold)}
+  .tag.monument{background:rgba(255,214,90,.35);color:#fff}
+  .flex{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .build{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  input.num{width:110px;background:#0f1118;border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px;font-size:14px}
+  /* fiche (bottom sheet) */
+  #sheet{position:absolute;left:0;right:0;bottom:calc(var(--nav) + env(safe-area-inset-bottom));max-height:78%;background:var(--panel);border-top:2px solid var(--gold);border-radius:22px 22px 0 0;transform:translateY(110%);transition:transform .25s ease;z-index:30;overflow:auto;padding:14px 16px 16px;box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+  #sheet.open{transform:translateY(0)}
+  .close{position:absolute;right:12px;top:10px;background:var(--line);border:0;color:var(--txt);width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer}
+  h2{margin:4px 0 2px;font-size:20px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:10px}
+  .sv{width:100%;aspect-ratio:16/9;border:0;border-radius:14px;background:#000;display:block}
+  .svwrap{position:relative;margin-bottom:10px}
+  .svwrap a.ext{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;padding:5px 9px;border-radius:8px;text-decoration:none}
+  .addr{padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:var(--card)}
+  .addr .n{font-weight:600;font-size:15px}
+  .addr .m{color:var(--muted);font-size:12px}
+  /* modales */
+  #modal{position:absolute;inset:0;background:rgba(0,0,0,.6);z-index:50;display:none;align-items:center;justify-content:center;padding:16px}
+  #modal.on{display:flex}
+  #modal .box{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;width:100%;max-width:420px;max-height:90%;overflow:auto}
+  .pack{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+  .pcard{background:linear-gradient(160deg,#20243a,#141726);border:1px solid var(--line);border-radius:12px;padding:10px;min-height:88px;transform:rotateY(90deg);transition:transform .35s ease}
+  .pcard.flip{transform:rotateY(0)}
+  .pcard.lieu{border-color:var(--gold);box-shadow:0 0 14px rgba(255,214,90,.3)}
+  .pcard .n{font-weight:700;font-size:13px}
+  .pcard .m{font-size:11px;color:var(--muted)}
+  #toast{position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);background:var(--gold);color:#111;padding:12px 18px;border-radius:12px;font-weight:700;z-index:60;display:none;text-align:center;max-width:80%}
   #diag{position:absolute;left:12px;right:12px;top:calc(130px + env(safe-area-inset-top));background:rgba(120,20,20,.92);border-radius:10px;padding:10px 12px;font-size:12px;z-index:30;display:none;white-space:pre-wrap}
   .badge{width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+  .r1{--rc:#9aa0b8}.r2{--rc:#5fd38d}.r3{--rc:#4fa3ff}.r4{--rc:#c26bff}.r5{--rc:#ffd65a}
+  .pcard,.acard{position:relative}
+  .acard{background:linear-gradient(165deg,#1f2335,#141726);border:2px solid var(--rc);border-radius:16px;padding:12px;margin-bottom:10px;box-shadow:0 0 0 1px rgba(0,0,0,.4), 0 0 18px color-mix(in srgb, var(--rc) 45%, transparent)}
+  .acard.r5{background:linear-gradient(165deg,#3a2f12,#1a1608)} .acard.r4{background:linear-gradient(165deg,#2a1f3d,#151226)}
+  .acard .rar{position:absolute;right:10px;top:10px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--rc);font-weight:800}
+  .acard .n{font-weight:800;font-size:16px;padding-right:90px}
+  .acard .m{color:var(--muted);font-size:12px;margin-top:2px}
+  .acard .big{font-size:34px;margin:6px 0 2px}
+  .pcard.r1,.pcard.r2,.pcard.r3,.pcard.r4,.pcard.r5{border-color:var(--rc);box-shadow:0 0 14px color-mix(in srgb, var(--rc) 50%, transparent)}
+  .av{width:34px;height:34px;border-radius:50%;background:#2a2e40;display:inline-flex;align-items:center;justify-content:center;font-size:18px}
+  .avgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:10px 0}
+  .avgrid button{font-size:24px;background:#1c1f2c;border:2px solid var(--line);border-radius:12px;padding:8px;cursor:pointer}
+  .avgrid button.on{border-color:var(--gold)}
+  input.txt{width:100%;background:#0f1118;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px;font-size:15px}
+  .badge.vente{background:#1b1e2b;border-color:var(--ok);color:var(--ok);font-size:13px;font-weight:800}
+  .sw{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--line)}
+  .sw:last-child{border-bottom:0}
+  .sw input{width:22px;height:22px}
+  .notif{border-left:3px solid var(--line)}
+  .notif.unread{border-left-color:var(--gold)}
+  .bar{height:8px;background:#2a2e40;border-radius:999px;overflow:hidden;margin:8px 0}
+  .bar i{display:block;height:100%;background:var(--gold)}
+  .rank{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+  .rank:last-child{border-bottom:0}
+  .rank .pos{width:26px;font-weight:800;color:var(--muted)}
+  .rank .who{flex:1;font-weight:600;cursor:pointer}
 </style>
 </head>
 <body>
 <div id="map"></div>
 <div id="top">
   <div class="row">
-    <div class="pill"><span class="dot" style="background:var(--me)"></span> Gautier · <span id="count">0</span> adr.</div>
-    <div class="pill" id="walletpill" title="Encaisser">Solde <b id="wallet">10 000 ₳</b> <span id="pending" style="color:#7ee787;font-size:12px"></span></div>
+    <div class="pill" id="mepill" style="cursor:pointer"><span id="meav">🙂</span> <span id="mename">Moi</span> · <span id="count">0</span> lieux</div>
+    <div class="pill" id="walletpill" style="cursor:pointer" title="Encaisser">Solde <b id="wallet">0 ₳</b> <span id="pending" style="color:var(--ok);font-size:12px"></span></div>
   </div>
-  <div id="search"><input id="q" type="search" placeholder="Chercher une adresse (ex. 67 rue des Martyrs Paris)" autocomplete="off"><button id="go">OK</button></div>
+  <div id="search"><input id="q" type="search" placeholder="Chercher une adresse ou une ville" autocomplete="off"><button id="go">OK</button></div>
   <div id="sugg"></div>
 </div>
 <div id="ctrls">
-  <button class="rbtn on" id="b3d" title="Vue 3D">3D</button>
-  <button class="rbtn" id="b2d" title="Vue de dessus">2D</button>
-  <button class="rbtn" id="bnorth" title="Remettre le nord en haut">N</button>
+  <button class="rbtn on" id="b3d">3D</button>
+  <button class="rbtn" id="b2d">2D</button>
+  <button class="rbtn" id="bnorth">N</button>
 </div>
+<button id="packbtn">🎁 Pack du jour</button>
 <div id="legend">
-  <span><i class="dot" style="background:var(--me)"></i>À moi</span>
-  <span><i class="dot" style="background:var(--other)"></i>Autre joueur</span>
+  <span><i class="dot" style="background:var(--me)"></i>Moi</span>
+  <span><i class="dot" style="background:var(--other)"></i>Autres</span>
   <span><i class="dot" style="background:var(--mixed)"></i>Partagée</span>
-  <span>🏠🏢🏙 construit</span>
+  <span>💰 en vente</span>
 </div>
+
+<!-- écrans -->
+<div class="screen" id="s-patrimoine"></div>
+<div class="screen" id="s-encheres"></div>
+<div class="screen" id="s-communes"></div>
+<div class="screen" id="s-notifs"></div>
+
+<div id="nav">
+  <button data-s="carte" class="on"><i>🗺️</i>Carte</button>
+  <button data-s="patrimoine"><i>🏘️</i>Patrimoine</button>
+  <button data-s="encheres"><i>🔨</i>Enchères<span class="cnt" id="cnt-ench"></span></button>
+  <button data-s="communes"><i>🏛️</i>Communes</button>
+  <button data-s="notifs"><i>🔔</i>Notifs<span class="cnt" id="cnt-notif"></span></button>
+</div>
+
 <div id="sheet">
   <button class="close" onclick="closeSheet()">×</button>
   <h2 id="title">Parcelle</h2>
@@ -89,54 +162,98 @@
     <iframe id="sv" class="sv" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
     <a class="ext" id="svlink" target="_blank" rel="noopener">Ouvrir Street View ↗</a>
   </div>
-  <div class="stats">
-    <div class="stat"><small>SURFACE</small><b id="surf">—</b></div>
-    <div class="stat"><small>LOYER / JOUR</small><b id="rent">—</b></div>
-    <div class="stat"><small>ADRESSES</small><b id="nb">—</b></div>
+  <div class="kpis">
+    <div class="kpi"><small>SURFACE</small><b id="surf">—</b></div>
+    <div class="kpi"><small>PLAFOND</small><b id="plafond">—</b></div>
+    <div class="kpi"><small>ADRESSES</small><b id="nb">—</b></div>
   </div>
   <div id="addrs"></div>
-  <div class="note">Devanture : Street View intégré (gratuit, rien n'est stocké). Bâtiments et rues © IGN BD TOPO · Parcelles © DGFiP/IGN · Adresses BAN. Démo : 1 jour de loyer = 1 minute réelle.</div>
+  <div class="sub" style="margin-top:8px">Devanture : Street View intégré. Bâtiments et rues © IGN BD TOPO · Parcelles © DGFiP/IGN · Adresses BAN. Démo : 1 jour = 1 minute.</div>
 </div>
+<div id="modal"><div class="box" id="modalbox"></div></div>
 <div id="toast"></div>
 <div id="diag"></div>
 
 <script>
-const ME = 'Gautier';
+// =================== réglages de la démo ===================
+const ME = 'moi';
+const AVATARS=['🦊','🐻','🐼','🦁','🐯','🐸','🐙','🦄','🐲','🤖','👑','🎩'];
+function disp(n){ return n===ME ? (state.pseudo||'Moi') : n; }
 const FAKE = ['Léa','Marco','Inès','Yanis','Chloé','Sacha'];
-// Niveaux de construction façon Monopoly : coût = multiple du prix de l'adresse, loyer = multiple du loyer de base
+const JOUR = 60*1000;            // démo : un jour = une minute
+const SALAIRE = 200;             // ₳ par jour pour tout le monde
+const LOYER_BASE = 10;           // ₳ par jour par lieu nu
 const NIVEAUX = [
-  { nom:'Terrain', icone:'', cout:0, loyer:1, hauteur:0 },
-  { nom:'Maison', icone:'🏠', cout:1.5, loyer:2.5, hauteur:6 },
-  { nom:'Immeuble', icone:'🏢', cout:4, loyer:6, hauteur:18 },
-  { nom:'Tour', icone:'🏙', cout:10, loyer:15, hauteur:45 }
+  { nom:'Terrain',  icone:'',   cout:0,   loyer:0,   hauteur:0 },
+  { nom:'Maison',   icone:'🏠', cout:1,   loyer:30,  hauteur:6 },
+  { nom:'Immeuble', icone:'🏢', cout:2.5, loyer:100, hauteur:18 },
+  { nom:'Tour',     icone:'🏙', cout:6,   loyer:300, hauteur:45 }
 ];
-const JOUR_MS = 60*1000; // démo : un jour = une minute
-let state = { wallet: 10000, owned: {}, encaisse: Date.now() };
-try { const s = localStorage.getItem('proto-cadastre-v2'); if (s) state = JSON.parse(s); } catch(e){}
-function save(){ try{ localStorage.setItem('proto-cadastre-v2', JSON.stringify(state)); }catch(e){} }
+const STANDING = { 1:{nom:'Maison', base:500}, 2:{nom:'Immeuble', base:1500}, 3:{nom:'Tour', base:4000} };
+const MONUMENTS = [
+  { nom:'Basilique du Sacré-Cœur', ville:'Paris 18e', lon:2.3431, lat:48.8867, depart:20000 },
+  { nom:'Opéra Garnier', ville:'Paris 9e', lon:2.3316, lat:48.8719, depart:25000 },
+  { nom:'Tour Eiffel', ville:'Paris 7e', lon:2.2945, lat:48.8584, depart:100000 },
+  { nom:'Arc de Triomphe', ville:'Paris 8e', lon:2.2950, lat:48.8738, depart:40000 },
+  { nom:'Mont-Saint-Michel', ville:'Le Mont-Saint-Michel', lon:-1.5115, lat:48.6360, depart:60000 },
+  { nom:'Château de Chambord', ville:'Chambord', lon:1.5170, lat:47.6161, depart:35000 }
+];
+const SEMAINE = 7*JOUR;
+// points de tirage des packs : toute la France (villes et villages), en vrai : tirage dans la BAN entière
+const FRANCE = [[2.3522,48.8566],[2.2945,48.8584],[2.3912,48.8600],[2.3200,48.8300],[4.8357,45.7640],[5.3698,43.2965],[1.4442,43.6047],[-1.5536,47.2184],[7.2620,43.7102],[-0.5792,44.8378],[3.0573,50.6292],[7.7521,48.5734],[3.8767,43.6108],[-1.6778,48.1173],[4.3872,45.4397],[5.7245,45.1885],[-0.3708,49.1829],[-1.0993,49.4432],[2.8794,42.6887],[4.0333,49.2583],[6.1757,48.6921],[3.0863,45.7772],[0.6889,47.3941],[1.9093,47.9029],[6.0240,47.2378],[-4.4861,48.3904],[-1.1511,46.1591],[5.9304,43.1242],[3.1764,50.6919],[1.2622,45.8336],[2.2137,48.7138],[1.3871,48.5467],[2.0330,47.0826],[-0.3661,43.2951],[5.4474,43.5297],[6.6335,46.0558],[4.0744,46.2857],[-2.7574,47.6582],[0.1079,49.4944],[3.1550,43.3442],[1.8370,50.9513],[0.3400,46.5802],[6.2280,45.8992],[2.1500,44.9300],[3.4166,46.5569],[-0.4800,48.0700],[4.0800,44.1300],[1.5200,43.3400],[5.1600,44.9300],[-1.2000,45.7100],[6.4500,48.1700],[2.9000,47.4200],[0.7000,45.1800],[3.6000,47.8000],[4.3600,47.0500],[1.0800,49.4400],[5.0400,47.3200],[-0.8200,47.1800],[3.4100,43.6300],[2.4600,50.3700]];
+
+// =================== état ===================
+let state = { wallet: 1500, owned:{}, pseudo:'', avatar:'🦊', prefs:{offres:true, seuil:true, encheres:true}, lastPack:-1, offersIn:[], offersOut:[], notifs:[], encaisse:Date.now(), auction:{}, seen:{} };
+try { const s = localStorage.getItem('proto-cadastre-v3'); if (s) state = Object.assign(state, JSON.parse(s)); } catch(e){}
+function save(){ try{ localStorage.setItem('proto-cadastre-v3', JSON.stringify(state)); }catch(e){} }
+const now = ()=>Date.now();
+const jour = ()=>Math.floor(now()/JOUR);
 
 const diag = document.getElementById('diag'); const diagMsgs=[];
 function dsay(m){ if(diagMsgs.includes(m)) return; diagMsgs.push(m); diag.textContent = diagMsgs.join('\n'); diag.style.display='block'; }
-try{ const cv=document.createElement('canvas'); if(!(cv.getContext('webgl2')||cv.getContext('webgl'))) dsay('WebGL indisponible dans ce navigateur : ouvre le lien dans Safari ou Chrome.'); }catch(e){}
 window.addEventListener('error', e=>dsay('Erreur JS : '+e.message));
 
-// ---------- style ----------
+// =================== aides ===================
+function fmt(n){ return Math.round(n).toLocaleString('fr-FR') + ' ₳'; }
+function hash(s){ let h=0; for(const c of String(s)) h=(h*31+c.charCodeAt(0))|0; return Math.abs(h); }
+function centroid(geom){ const ring = geom.type==='Polygon' ? geom.coordinates[0] : geom.coordinates[0][0]; let x=0,y=0; for(const [a,b] of ring){x+=a;y+=b;} return [x/ring.length, y/ring.length]; }
+function inside(pt, geom){ const rings = geom.type==='Polygon' ? [geom.coordinates[0]] : geom.coordinates.map(p=>p[0]);
+  return rings.some(r=>{ let ins=false; for(let i=0,j=r.length-1;i<r.length;j=i++){ const [xi,yi]=r[i],[xj,yj]=r[j]; if(((yi>pt[1])!==(yj>pt[1])) && (pt[0] < (xj-xi)*(pt[1]-yi)/(yj-yi)+xi)) ins=!ins; } return ins; }); }
+function dist(a,b){ const dx=(a[0]-b[0])*Math.cos(a[1]*Math.PI/180)*111320, dy=(a[1]-b[1])*110540; return Math.hypot(dx,dy); }
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.style.display='block'; setTimeout(()=>el.style.display='none',1700); }
+function communeName(citycode, city){ if(!citycode) return city||'?'; if(citycode.startsWith('751')) return 'Paris '+(parseInt(citycode.slice(3))+(parseInt(citycode.slice(3))===1?'er':'e')); return city||citycode; }
+// standing (plafond de construction) : démo, en vrai calculé avec DVF
+function standing(citycode){ if(!citycode) return 1; const c=String(citycode); if(c.startsWith('751')){ const a=parseInt(c.slice(3)); return (a<=8||a===16||a===17) ? 3 : 2; } if(c.startsWith('92')||c.startsWith('69')||c.startsWith('13')||c.startsWith('33')||c.startsWith('31')||c.startsWith('44')||c.startsWith('59')) return 2; return 1; }
+const RARETES = {1:'Commun',2:'Peu commun',3:'Rare',4:'Épique',5:'Légendaire'};
+function rarete(a){ if(a.type==='monument') return 5; const pl=plafond(a); if(pl>=3) return 4; if(a.type==='lieu') return 3; if(standing(a.citycode)>=2) return 2; return 1; }
+function enVente(a){ if(state.owned[a.id]) return !!state.owned[a.id].enVente; const o=ownerOf(a); return !!o && hash(a.id+'v')%100<25; }
+function plafond(a){ return Math.min(3, standing(a.citycode) + (a.type==='lieu'?1:0)); }
+function baseValue(a){ return STANDING[standing(a.citycode)].base * (a.type==='lieu'?2:1); }
+function coutNiveau(a, n){ return Math.round(baseValue(a)*NIVEAUX[n].cout); }
+function valeur(a){ let v=baseValue(a); for(let n=1;n<=(a.niveau||0);n++) v+=coutNiveau(a,n); return v; }
+function loyer(a){ return LOYER_BASE + NIVEAUX[a.niveau||0].loyer; }
+function loyerTotal(){ return Object.values(state.owned).reduce((s,a)=>s+loyer(a),0); }
+function pendingRent(){ return (SALAIRE + loyerTotal()) * (now()-state.encaisse)/JOUR; }
+function encaisser(silent){ const p=pendingRent(); if(p>=1){ state.wallet += Math.floor(p); state.encaisse = now(); save(); if(!silent) toast(`+${Math.floor(p)} ₳ encaissés (salaire + loyers)`); } else if(!silent) toast('Rien à encaisser pour l’instant'); refreshTop(); }
+function dispo(){ return state.wallet - (state.auction.myBid && isTop(state.auction) ? state.auction.myBid : 0); }
+function notify(type, text, extra){ state.notifs.unshift({ts:now(), type, text, read:false, ...(extra||{})}); if(state.notifs.length>60) state.notifs.length=60; save(); refreshTop(); }
+// propriétaires simulés (par adresse)
+function fakeOwner(addrId){ const h=hash(addrId)%100; return h<12 ? FAKE[hash(addrId+'o')%FAKE.length] : null; }
+function fakeLevel(addrId){ const h=hash(addrId+'n')%10; return h<5?0:(h<8?1:(h<9?2:3)); }
+function ownerOf(a){ if(state.owned[a.id]) return ME; if(state.seen[a.id]==='libre') return null; return fakeOwner(a.id); }
+function levelOf(a){ if(state.owned[a.id]) return state.owned[a.id].niveau||0; return ownerOf(a) ? fakeLevel(a.id) : 0; }
+
+// =================== carte ===================
 const ST = ['coalesce',['feature-state','st'],'free'];
 const SEL = ['boolean',['feature-state','sel'],false];
-// teinte de base d'un bâtiment libre : variée à partir des derniers chiffres de son identifiant
 const TEINTE = ['%',['to-number',['slice',['get','cleabs'],-2]],5];
 const COULEUR_LIBRE = ['match',TEINTE, 0,'#f3ead9', 1,'#ece0cc', 2,'#f6efe3', 3,'#e9dfd0', 4,'#f0e6d6', '#f1e8d8'];
-const COULEUR_BATI = ['case', SEL, '#ffd65a',
-  ['match',ST,'me','#5b93ff','other','#ff7b72','mixed','#c08cff', COULEUR_LIBRE]];
+const COULEUR_BATI = ['case', SEL, '#ffd65a', ['match',ST,'me','#5b93ff','other','#ff7b72','mixed','#c08cff', COULEUR_LIBRE]];
 const HAUTEUR = ['+', ['coalesce',['get','hauteur'],9], ['coalesce',['feature-state','bonus'],0]];
 const IMPORTANT = ['<=',['to-number',['coalesce',['get','importance'],'5']],3];
-
 const map = new maplibregl.Map({
-  container:'map',
-  center:[2.3396,48.8818], zoom:17, pitch:58, bearing:-17, minZoom:15, maxZoom:19.5,
-  attributionControl:true, antialias:true,
-  style:{
-    version:8,
+  container:'map', center:[2.3396,48.8818], zoom:17, pitch:58, bearing:-17, minZoom:15, maxZoom:19.5, attributionControl:true, antialias:true,
+  style:{ version:8,
     glyphs:'https://data.geopf.fr/annexes/ressources/vectorTiles/fonts/{fontstack}/{range}.pbf',
     light:{ anchor:'viewport', color:'#fff7e6', intensity:0.45, position:[1.3,200,40] },
     sources:{
@@ -151,238 +268,287 @@ const map = new maplibregl.Map({
       { id:'sport', type:'fill', source:'topo', 'source-layer':'terrain_de_sport', paint:{ 'fill-color':'#9fd3b0' } },
       { id:'water', type:'fill', source:'topo', 'source-layer':'surface_hydrographique', paint:{ 'fill-color':'#8fc3e6' } },
       { id:'parcel-fill', type:'fill', source:'pci', 'source-layer':'parcelle',
-        paint:{ 'fill-color':['match',ST,'me','#3b82f6','other','#ef4444','mixed','#a855f7','#ffffff'],
-                'fill-opacity':['match',ST,'free',0.0,0.25] } },
+        paint:{ 'fill-color':['match',ST,'me','#3b82f6','other','#ef4444','mixed','#a855f7','#ffffff'], 'fill-opacity':['match',ST,'free',0.0,0.25] } },
       { id:'parcel-line', type:'line', source:'pci', 'source-layer':'parcelle',
-        paint:{ 'line-color':['case',SEL,'#e0a800','#c9c0ac'], 'line-width':['case',SEL,3,0.6] } },
+        paint:{ 'line-color':['case',SEL,'#e0a800','#8f8775'], 'line-width':['case',SEL,3,1.4] } },
       { id:'rail', type:'line', source:'topo', 'source-layer':'troncon_de_voie_ferree', paint:{ 'line-color':'#8d877c', 'line-width':2, 'line-dasharray':[3,2] } },
-      // trottoirs (bande claire), puis la chaussée, puis l'axe des grandes rues
       { id:'road-side', type:'line', source:'topo', 'source-layer':'troncon_de_route', layout:{ 'line-cap':'round','line-join':'round' },
         paint:{ 'line-color':'#cfc8b8', 'line-width':['interpolate',['exponential',1.6],['zoom'],15,['case',IMPORTANT,9,4.5],19,['case',IMPORTANT,46,26]] } },
       { id:'road-casing', type:'line', source:'topo', 'source-layer':'troncon_de_route', layout:{ 'line-cap':'round','line-join':'round' },
         paint:{ 'line-color':'#a39d91', 'line-width':['interpolate',['exponential',1.6],['zoom'],15,['case',IMPORTANT,7,3.4],19,['case',IMPORTANT,36,19]] } },
       { id:'road', type:'line', source:'topo', 'source-layer':'troncon_de_route', layout:{ 'line-cap':'round','line-join':'round' },
         paint:{ 'line-color':['case',IMPORTANT,'#fbf3df','#f7f3ea'], 'line-width':['interpolate',['exponential',1.6],['zoom'],15,['case',IMPORTANT,6,2.8],19,['case',IMPORTANT,32,16]] } },
-      { id:'road-axis', type:'line', source:'topo', 'source-layer':'troncon_de_route', minzoom:17, filter:IMPORTANT,
-        paint:{ 'line-color':'#d9cfae', 'line-width':1.2, 'line-dasharray':[4,4] } },
+      { id:'road-axis', type:'line', source:'topo', 'source-layer':'troncon_de_route', minzoom:17, filter:IMPORTANT, paint:{ 'line-color':'#d9cfae', 'line-width':1.2, 'line-dasharray':[4,4] } },
       { id:'bati-3d', type:'fill-extrusion', source:'topo', 'source-layer':'batiment', filter:['!=',['get','construction_legere'],true],
-        paint:{ 'fill-extrusion-color':COULEUR_BATI, 'fill-extrusion-height':HAUTEUR, 'fill-extrusion-base':0,
-                'fill-extrusion-opacity':0.97, 'fill-extrusion-vertical-gradient':true } },
+        paint:{ 'fill-extrusion-color':COULEUR_BATI, 'fill-extrusion-height':HAUTEUR, 'fill-extrusion-base':0, 'fill-extrusion-opacity':0.97, 'fill-extrusion-vertical-gradient':true } },
       { id:'road-label', type:'symbol', source:'topo', 'source-layer':'troncon_de_route', minzoom:16,
         layout:{ 'symbol-placement':'line', 'text-field':['coalesce',['get','nom_voie_ban_droite'],['get','nom_voie_ban_gauche'],''], 'text-font':['Open Sans Regular'], 'text-size':12, 'symbol-spacing':320 },
         paint:{ 'text-color':'#5f584e', 'text-halo-color':'#ffffff', 'text-halo-width':1.3 } }
-    ]
-  }
+    ] }
 });
 map.addControl(new maplibregl.NavigationControl({showCompass:false}), 'bottom-right');
 map.on('error', e=>{ const m=(e&&e.error&&e.error.message)||String(e); if(/style/i.test(m)) dsay('Erreur de style : '+m.slice(0,160)); });
 map.on('load', ()=>{ setTimeout(()=>{ if(!map.isSourceLoaded('topo')) dsay('Données IGN non chargées (réseau bloqué ?).'); }, 9000); });
 
-// ---------- vues ----------
+// vues
 const b3d=document.getElementById('b3d'), b2d=document.getElementById('b2d');
-function vue3d(){ map.easeTo({pitch:58, duration:500}); b3d.classList.add('on'); b2d.classList.remove('on'); }
-function vue2d(){ map.easeTo({pitch:0, bearing:0, duration:500}); b2d.classList.add('on'); b3d.classList.remove('on'); }
+function styleParcelles(deDessus){ map.setPaintProperty('parcel-line','line-width',['case',SEL,3, deDessus?1.8:0.9]); map.setPaintProperty('parcel-line','line-color',['case',SEL,'#e0a800', deDessus?'#7a7262':'#a79f8c']); }
+function vue3d(){ map.easeTo({pitch:58, duration:500}); b3d.classList.add('on'); b2d.classList.remove('on'); styleParcelles(false); }
+function vue2d(){ map.easeTo({pitch:0, bearing:0, duration:500}); b2d.classList.add('on'); b3d.classList.remove('on'); styleParcelles(true); }
 b3d.onclick=vue3d; b2d.onclick=vue2d;
 document.getElementById('bnorth').onclick=()=>map.easeTo({bearing:0, duration:400});
-map.on('pitchend', ()=>{ const p=map.getPitch()>5; b3d.classList.toggle('on',p); b2d.classList.toggle('on',!p); });
+map.on('pitchend', ()=>{ const p=map.getPitch()>5; b3d.classList.toggle('on',p); b2d.classList.toggle('on',!p); styleParcelles(!p); });
+map.on('load', ()=>styleParcelles(false));
 
-// ---------- recherche ----------
-const q=document.getElementById('q'), sugg=document.getElementById('sugg');
-let tmr=null;
+// recherche
+const q=document.getElementById('q'), sugg=document.getElementById('sugg'); let tmr=null;
 q.addEventListener('input', ()=>{ clearTimeout(tmr); tmr=setTimeout(suggest, 250); });
 q.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); goFirst(); } });
 document.getElementById('go').onclick=goFirst;
-async function geocode(text, limit){
-  const r = await fetch(`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(text)}&index=address&limit=${limit}`);
-  const j = await r.json(); return j.features||[];
-}
-async function suggest(){
-  const t=q.value.trim(); if(t.length<3){ sugg.style.display='none'; return; }
-  try{ const f = await geocode(t,5); sugg.innerHTML='';
-    f.forEach(x=>{ const d=document.createElement('div'); d.innerHTML=`${x.properties.name}<small>${x.properties.postcode} ${x.properties.city}</small>`; d.onclick=()=>goTo(x); sugg.appendChild(d); });
-    sugg.style.display = f.length ? 'block':'none';
-  }catch(e){ sugg.style.display='none'; }
-}
+async function geocode(text, limit){ const r = await fetch(`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(text)}&index=address&limit=${limit}`); const j = await r.json(); return j.features||[]; }
+async function suggest(){ const t=q.value.trim(); if(t.length<3){ sugg.style.display='none'; return; }
+  try{ const f = await geocode(t,5); sugg.innerHTML=''; f.forEach(x=>{ const d=document.createElement('div'); d.innerHTML=`${x.properties.name}<small>${x.properties.postcode||''} ${x.properties.city||''}</small>`; d.onclick=()=>goTo(x); sugg.appendChild(d); }); sugg.style.display = f.length ? 'block':'none'; }catch(e){ sugg.style.display='none'; } }
 async function goFirst(){ const t=q.value.trim(); if(!t) return; try{ const f=await geocode(t,1); if(f[0]) goTo(f[0]); else toast('Adresse introuvable'); }catch(e){ toast('Recherche impossible'); } }
 let pin=null;
-function goTo(f){
-  sugg.style.display='none'; q.blur(); q.value=f.properties.label;
-  const [lon,lat]=f.geometry.coordinates;
-  map.flyTo({center:[lon,lat], zoom: f.properties.type==='housenumber'?18:16.5, duration:1200});
-  if(pin) pin.remove();
-  pin = new maplibregl.Marker({color:'#ffd65a'}).setLngLat([lon,lat]).addTo(map);
+function goTo(f){ sugg.style.display='none'; q.blur(); q.value=f.properties.label; showScreen('carte');
+  const [lon,lat]=f.geometry.coordinates; map.flyTo({center:[lon,lat], zoom: f.properties.type==='housenumber'?18:16.5, duration:1200});
+  if(pin) pin.remove(); pin = new maplibregl.Marker({color:'#ffd65a'}).setLngLat([lon,lat]).addTo(map);
   if(f.properties.type==='housenumber'){ map.once('moveend', ()=>{ const pt=map.project([lon,lat]); const ff=map.queryRenderedFeatures(pt,{layers:['parcel-fill']}); if(ff[0]) selectParcel(ff[0]); }); }
 }
+function flyToAddr(a){ showScreen('carte'); map.flyTo({center:[a.lon,a.lat], zoom:18, duration:1000}); map.once('moveend', ()=>{ const pt=map.project([a.lon,a.lat]); const ff=map.queryRenderedFeatures(pt,{layers:['parcel-fill']}); if(ff[0]) selectParcel(ff[0]); }); }
 
-// ---------- aides ----------
-function fmt(n){ return Math.round(n).toLocaleString('fr-FR') + ' ₳'; }
-function hash(s){ let h=0; for(const c of s) h=(h*31+c.charCodeAt(0))|0; return Math.abs(h); }
-function pricePerM2(citycode){ const a = parseInt((citycode||'').slice(3))||10; return a<=8 ? 4 : (a<=16 ? 3 : 2); }
-function addrPrice(contenance, citycode, nb){ return Math.max(300, Math.round((contenance||300)*pricePerM2(citycode)/Math.max(1,nb)/10)*10); }
-function rentBase(price){ return Math.max(5, Math.round(price*0.012)); }
-function rentOf(a){ return rentBase(a.price) * NIVEAUX[a.niveau||0].loyer; }
-function centroid(geom){ const ring = geom.type==='Polygon' ? geom.coordinates[0] : geom.coordinates[0][0]; let x=0,y=0; for(const [a,b] of ring){x+=a;y+=b;} return [x/ring.length, y/ring.length]; }
-function inside(pt, geom){ const rings = geom.type==='Polygon' ? [geom.coordinates[0]] : geom.coordinates.map(p=>p[0]);
-  return rings.some(r=>{ let ins=false; for(let i=0,j=r.length-1;i<r.length;j=i++){ const [xi,yi]=r[i],[xj,yj]=r[j]; if(((yi>pt[1])!==(yj>pt[1])) && (pt[0] < (xj-xi)*(pt[1]-yi)/(yj-yi)+xi)) ins=!ins; } return ins; }); }
-function dist(a,b){ const dx=(a[0]-b[0])*Math.cos(a[1]*Math.PI/180)*111320, dy=(a[1]-b[1])*110540; return Math.hypot(dx,dy); }
-
-// ---------- propriété ----------
-const parcelAddrs = {}; // idu -> [addr]
-function parcelSeed(idu){ const h = hash(String(idu)) % 100; return h<8 ? 'other' : (h<11 ? 'mixed' : 'free'); }
-function ownerOf(addrId, idu, idx){
-  if (state.owned[addrId]) return state.owned[addrId].owner;
-  const seed = parcelSeed(idu);
-  if (seed==='other' || (seed==='mixed' && idx===0)) return FAKE[hash(addrId) % FAKE.length];
-  return null;
-}
-function fakeLevel(addrId){ const h=hash(addrId+'n')%10; return h<5?0:(h<8?1:(h<9?2:3)); }
-function levelOf(addrId, idu, idx){ if(state.owned[addrId]) return state.owned[addrId].niveau||0; return ownerOf(addrId,idu,idx) ? fakeLevel(addrId) : 0; }
-function parcelState(idu){
-  const list = parcelAddrs[idu]; if(!list || !list.length) return null;
-  const owners = list.map((a,i)=>ownerOf(a.id, idu, i));
-  const mine = owners.filter(o=>o===ME).length, others = owners.filter(o=>o && o!==ME).length;
-  if(!mine && !others) return 'free'; if(mine && !others) return 'me'; if(others && !mine) return 'other'; return 'mixed';
-}
-function parcelBonus(idu){ const list=parcelAddrs[idu]; if(!list) return 0; let b=0; list.forEach((a,i)=>{ b=Math.max(b, NIVEAUX[levelOf(a.id,idu,i)].hauteur); }); return b; }
+// état des parcelles
+const parcelAddrs = {};
+function parcelSeed(idu){ const h = hash(idu) % 100; return h<8 ? 'other' : (h<11 ? 'mixed' : 'free'); }
+function parcelState(idu){ const list = parcelAddrs[idu]; if(!list || !list.length) return null;
+  const owners = list.map(a=>ownerOf(a)); const mine = owners.filter(o=>o===ME).length, others = owners.filter(o=>o && o!==ME).length;
+  if(!mine && !others) return 'free'; if(mine && !others) return 'me'; if(others && !mine) return 'other'; return 'mixed'; }
+function parcelBonus(idu){ const list=parcelAddrs[idu]; if(!list) return 0; let b=0; list.forEach(a=>{ b=Math.max(b, NIVEAUX[levelOf(a)].hauteur); }); return b; }
 function paintParcel(idu){ const st = parcelState(idu); if(st) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st}); paintBuildings(); paintBadges(idu); }
-
-function seedVisible(){
-  if(map.getZoom()<15) return;
-  const feats = map.queryRenderedFeatures({layers:['parcel-fill']}); const seen=new Set();
+function seedVisible(){ if(map.getZoom()<15) return; const feats = map.queryRenderedFeatures({layers:['parcel-fill']}); const seen=new Set();
   for(const f of feats){ const idu=f.id; if(!idu || seen.has(idu)) continue; seen.add(idu);
     if(parcelAddrs[idu]) { const st=parcelState(idu); if(st) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st}); continue; }
-    let st = parcelSeed(idu);
-    const mine = Object.values(state.owned).some(a=>a.idu===idu);
-    if(mine){ st = (st==='free') ? 'me' : 'mixed'; }
-    map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st});
-  }
-}
-const batiParcel = {};
-let selected = null;
-function paintBuildings(){
-  const feats = map.queryRenderedFeatures({layers:['bati-3d']});
-  const parcels = map.queryRenderedFeatures({layers:['parcel-fill']});
-  for(const b of feats){
-    const id=b.id; if(!id) continue;
-    let idu = batiParcel[id];
+    let st = parcelSeed(idu); const mine = Object.values(state.owned).some(a=>a.idu===idu); if(mine){ st = (st==='free') ? 'me' : 'mixed'; }
+    map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st}); } }
+const batiParcel = {}; let selected = null;
+function paintBuildings(){ const feats = map.queryRenderedFeatures({layers:['bati-3d']}); const parcels = map.queryRenderedFeatures({layers:['parcel-fill']});
+  for(const b of feats){ const id=b.id; if(!id) continue; let idu = batiParcel[id];
     if(idu===undefined){ const c=centroid(b.geometry); idu=null; for(const pf of parcels){ if(inside(c, pf.geometry)){ idu=pf.id; break; } } batiParcel[id]=idu; }
     const st = idu ? (map.getFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}).st || 'free') : 'free';
     const bonus = idu ? parcelBonus(idu) : 0;
-    map.setFeatureState({source:'topo', sourceLayer:'batiment', id}, {st, sel: !!idu && idu===selected, bonus});
-  }
-}
-// badges (🏠🏢🏙) sur les adresses construites
+    map.setFeatureState({source:'topo', sourceLayer:'batiment', id}, {st, sel: !!idu && idu===selected, bonus}); } }
 const badges = {};
-function paintBadges(idu){
-  const list=parcelAddrs[idu]; if(!list) return;
-  list.forEach((a,i)=>{ const lv=levelOf(a.id,idu,i); const key=a.id;
-    if(lv>0 && !badges[key]){ const el=document.createElement('div'); el.className='badge'; el.textContent=NIVEAUX[lv].icone; el.title=NIVEAUX[lv].nom;
-      badges[key]=new maplibregl.Marker({element:el}).setLngLat([a.lon,a.lat]).addTo(map); }
-    else if(badges[key]){ badges[key].getElement().textContent = lv>0 ? NIVEAUX[lv].icone : ''; if(lv===0){ badges[key].remove(); delete badges[key]; } }
-  });
-}
-// au démarrage : les adresses déjà possédées retrouvent leur badge
-function restoreBadges(){ for(const a of Object.values(state.owned)){ if((a.niveau||0)>0 && !badges[a.id]){ const el=document.createElement('div'); el.className='badge'; el.textContent=NIVEAUX[a.niveau].icone; badges[a.id]=new maplibregl.Marker({element:el}).setLngLat([a.lon,a.lat]).addTo(map); } } }
+function setBadge(a, lv){ const key=a.id; const vente = enVente(a); if(vente){ if(!badges[key]){ const el=document.createElement('div'); el.className='badge vente'; badges[key]=new maplibregl.Marker({element:el}).setLngLat([a.lon,a.lat]).addTo(map); } const el=badges[key].getElement(); el.className='badge vente'; el.textContent = lv>0 ? NIVEAUX[lv].icone+'💰' : '💰'; el.style.width='auto'; el.style.padding='0 6px'; return; } if(badges[key] && badges[key].getElement().classList.contains('vente')){ badges[key].remove(); delete badges[key]; }
+  if(lv>0){ if(!badges[key]){ const el=document.createElement('div'); el.className='badge'; badges[key]=new maplibregl.Marker({element:el}).setLngLat([a.lon,a.lat]).addTo(map); } badges[key].getElement().textContent=NIVEAUX[lv].icone; } else if(badges[key]){ badges[key].remove(); delete badges[key]; } }
+function paintBadges(idu){ const list=parcelAddrs[idu]; if(!list) return; list.forEach(a=>setBadge(a, levelOf(a))); }
+function restoreBadges(){ for(const a of Object.values(state.owned)) setBadge(a, a.niveau||0); }
 map.on('idle', ()=>{ seedVisible(); paintBuildings(); });
 map.on('load', restoreBadges);
 
-// ---------- clic ----------
-map.on('click', (e)=>{
-  if(sugg.style.display==='block'){ sugg.style.display='none'; }
-  const feats = map.queryRenderedFeatures(e.point, {layers:['bati-3d','parcel-fill']});
-  if(!feats.length){ closeSheet(); return; }
-  let f = feats.find(x=>x.layer.id==='parcel-fill');
-  const b = feats.find(x=>x.layer.id==='bati-3d');
+// clic
+map.on('click', (e)=>{ if(sugg.style.display==='block'){ sugg.style.display='none'; }
+  const feats = map.queryRenderedFeatures(e.point, {layers:['bati-3d','parcel-fill']}); if(!feats.length){ closeSheet(); return; }
+  let f = feats.find(x=>x.layer.id==='parcel-fill'); const b = feats.find(x=>x.layer.id==='bati-3d');
   if(b && batiParcel[b.id]){ const pf = map.querySourceFeatures('pci',{sourceLayer:'parcelle', filter:['==',['get','idu'],batiParcel[b.id]]})[0]; if(pf) f = pf; }
-  if(!f){ closeSheet(); return; }
-  selectParcel(f);
-});
-function selectParcel(f){
-  if(selected) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:false});
-  selected = f.id; map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:true}); paintBuildings();
-  openParcel(f);
-}
+  if(!f){ closeSheet(); return; } selectParcel(f); });
+function selectParcel(f){ if(selected) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:false});
+  selected = f.id; map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:true}); paintBuildings(); openParcel(f); }
 let currentParcel = null;
-async function openParcel(f){
-  const p = f.properties, idu = f.id; currentParcel = {p, idu, geometry:f.geometry};
+async function openParcel(f){ const p = f.properties, idu = f.id; currentParcel = {p, idu, geometry:f.geometry};
   document.getElementById('title').textContent = `Parcelle ${p.section} ${p.numero}`;
-  document.getElementById('subtitle').textContent = `${p.nom_com} · ${p.code_insee}`;
+  document.getElementById('subtitle').textContent = `${communeName(p.code_insee, p.nom_com)} · ${p.code_insee}`;
   document.getElementById('surf').textContent = (p.contenance||'—') + ' m²';
   document.getElementById('addrs').innerHTML = '<div class="sub">Recherche des adresses…</div>';
   document.getElementById('sheet').classList.add('open');
-  const c = centroid(f.geometry);
-  let addrs = parcelAddrs[idu];
-  if(!addrs){
-    try{
-      const r = await fetch(`https://data.geopf.fr/geocodage/reverse?lon=${c[0]}&lat=${c[1]}&limit=10&index=address&type=housenumber`);
-      const j = await r.json();
-      let all = j.features.map(x=>({ id:x.properties.id, label:x.properties.name, lon:x.geometry.coordinates[0], lat:x.geometry.coordinates[1], city:x.properties.citycode, postcode:x.properties.postcode }));
-      let within = all.filter(a=>inside([a.lon,a.lat], f.geometry));
+  const c = centroid(f.geometry); let addrs = parcelAddrs[idu];
+  if(!addrs){ try{ const r = await fetch(`https://data.geopf.fr/geocodage/reverse?lon=${c[0]}&lat=${c[1]}&limit=10&index=address&type=housenumber`); const j = await r.json();
+      let all = j.features.map(x=>mkAddr(x, idu)); let within = all.filter(a=>inside([a.lon,a.lat], f.geometry));
       if(!within.length){ all.sort((a,b)=>dist([a.lon,a.lat],c)-dist([b.lon,b.lat],c)); within = all.filter(a=>dist([a.lon,a.lat],c)<25).slice(0,2); if(!within.length && all.length) within=[all[0]]; }
-      addrs = within;
-    }catch(err){ addrs = []; }
-    parcelAddrs[idu] = addrs;
-  }
-  renderAddrs(); paintParcel(idu);
-}
-function renderAddrs(){
-  const {p, idu, geometry} = currentParcel; const addrs = parcelAddrs[idu]||[]; const nb=addrs.length;
-  const c = centroid(geometry);
+      addrs = within; }catch(err){ addrs = []; } parcelAddrs[idu] = addrs; }
+  // les lieux (POI) que je possède sur cette parcelle
+  for(const a of Object.values(state.owned)){ if(a.type==='lieu' && inside([a.lon,a.lat], f.geometry) && !addrs.find(x=>x.id===a.id)) addrs.push(a); }
+  renderAddrs(); paintParcel(idu); }
+function mkAddr(x, idu){ const p=x.properties; return { id:p.id, label:p.name, lon:x.geometry.coordinates[0], lat:x.geometry.coordinates[1], citycode:p.citycode, city:p.city, postcode:p.postcode, idu, type:'adresse' }; }
+function renderAddrs(){ const {p, idu, geometry} = currentParcel; const addrs = parcelAddrs[idu]||[]; const nb=addrs.length; const c = centroid(geometry);
   document.getElementById('nb').textContent = nb;
   const sv = addrs[0] ? [addrs[0].lat, addrs[0].lon] : [c[1], c[0]];
-  const svEl = document.getElementById('sv'); const url=`https://maps.google.com/maps?q=&layer=c&cbll=${sv[0]},${sv[1]}&cbp=12,0,0,0,0&output=svembed`;
-  if(svEl.src!==url) svEl.src=url;
+  const svEl = document.getElementById('sv'); const url=`https://maps.google.com/maps?q=&layer=c&cbll=${sv[0]},${sv[1]}&cbp=12,0,0,0,0&output=svembed`; if(svEl.src!==url) svEl.src=url;
   document.getElementById('svlink').href = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${sv[0]},${sv[1]}`;
-  const price = addrPrice(parseInt(p.contenance), p.code_insee, nb);
-  let totalRent = 0;
   const box = document.getElementById('addrs'); box.innerHTML='';
-  if(!nb){ box.innerHTML = '<div class="sub">Aucune adresse sur cette parcelle (cour, voirie, dépendance…). Non achetable.</div>'; document.getElementById('rent').textContent='—'; return; }
-  addrs.forEach((a, idx)=>{
-    const o = ownerOf(a.id, idu, idx); const lv = levelOf(a.id, idu, idx);
-    const rec = state.owned[a.id] || { price, niveau:lv };
-    const rent = rentBase(rec.price||price) * NIVEAUX[lv].loyer; totalRent += rent;
-    const row = document.createElement('div'); row.className='addr';
-    row.innerHTML = `<div class="top"><div><div class="n">${a.label} ${lv?NIVEAUX[lv].icone:''}</div><div class="m">${a.postcode} · ${fmt(price)} · ${NIVEAUX[lv].nom} · loyer +${rent} ₳/j</div></div></div>`;
-    const top=row.querySelector('.top');
-    if(o===ME){
-      top.insertAdjacentHTML('beforeend', `<span class="own me">À moi</span>`);
-      const build=document.createElement('div'); build.className='build';
-      NIVEAUX.forEach((n,i)=>{ if(i===0) return; const b=document.createElement('button'); b.className='btn sm'+(i===lv+1?' next':'');
-        const cost=Math.round(rec.price*n.cout);
-        b.textContent = i<=lv ? `${n.icone} ${n.nom} ✓` : `${n.icone} ${n.nom} · ${fmt(cost)}`;
-        b.disabled = i!==lv+1 || state.wallet<cost;
-        b.onclick=()=>construire(a, idu, i, cost); build.appendChild(b); });
-      row.appendChild(build);
-    }
-    else if(o) top.insertAdjacentHTML('beforeend', `<span class="own other">${o}</span>`);
-    else { const b=document.createElement('button'); b.className='btn'; b.textContent='Acheter'; b.disabled = state.wallet < price; b.onclick = ()=>buy(a, idu, price); top.appendChild(b); }
-    box.appendChild(row);
-  });
-  document.getElementById('rent').textContent = '+' + totalRent + ' ₳';
-}
-function buy(a, idu, price){
-  if(state.wallet < price) return;
-  encaisser(true);
-  state.wallet -= price;
-  state.owned[a.id] = { id:a.id, owner:ME, idu, label:a.label, price, lon:a.lon, lat:a.lat, niveau:0, depuis:Date.now() };
-  save(); refreshTop(); renderAddrs(); paintParcel(idu); toast(`${a.label} est à toi !`);
-}
-function construire(a, idu, niveau, cost){
-  if(state.wallet < cost) return;
-  encaisser(true);
-  state.wallet -= cost; state.owned[a.id].niveau = niveau;
-  save(); refreshTop(); renderAddrs(); paintParcel(idu); toast(`${NIVEAUX[niveau].icone} ${NIVEAUX[niveau].nom} construit·e au ${a.label}`);
-}
-// ---------- loyers ----------
-function loyerParJour(){ return Object.values(state.owned).reduce((s,a)=>s+rentOf(a),0); }
-function pendingRent(){ return loyerParJour() * (Date.now()-state.encaisse)/JOUR_MS; }
-function encaisser(silent){ const p=pendingRent(); if(p>=1){ state.wallet += Math.floor(p); state.encaisse = Date.now(); save(); if(!silent) toast(`+${Math.floor(p)} ₳ de loyers encaissés`); } else if(!silent) toast('Rien à encaisser pour l’instant'); refreshTop(); }
-document.getElementById('walletpill').onclick=()=>encaisser(false);
-setInterval(refreshTop, 5000);
-function refreshTop(){ document.getElementById('wallet').textContent = fmt(state.wallet); document.getElementById('count').textContent = Object.keys(state.owned).length; const p=Math.floor(pendingRent()); document.getElementById('pending').textContent = p>0 ? `+${p}` : ''; }
+  document.getElementById('plafond').textContent = addrs[0] ? NIVEAUX[plafond(addrs[0])].nom : '—';
+  if(!nb){ box.innerHTML = '<div class="sub">Aucune adresse sur cette parcelle (cour, voirie…). Non achetable.</div>'; return; }
+  addrs.forEach(a=>box.appendChild(addrRow(a, true))); }
+function addrRow(a, withBuild){
+  const o = ownerOf(a); const lv = levelOf(a); const rec = state.owned[a.id] || Object.assign({}, a, {niveau:lv}); const pl = plafond(a);
+  const row = document.createElement('div'); row.className='addr';
+  row.innerHTML = `<div class="flex"><div><div class="n">${a.label}${lv?' '+NIVEAUX[lv].icone:''}<span class="tag r${rarete(a)}" style="color:var(--rc)">${RARETES[rarete(a)]}</span>${enVente(a)?'<span class="tag" style="color:var(--ok)">💰 en vente</span>':''}</div>
+    <div class="m">${communeName(a.citycode,a.city)} · valeur ${fmt(valeur(rec))} · ${NIVEAUX[lv].nom} · loyer +${loyer(rec)} ₳/j · plafond ${NIVEAUX[pl].nom}</div></div></div>`;
+  const top=row.querySelector('.flex');
+  if(o===ME){ top.insertAdjacentHTML('beforeend', `<span class="own me">À moi</span>`);
+    if(withBuild){ const build=document.createElement('div'); build.className='build';
+      NIVEAUX.forEach((n,i)=>{ if(i===0) return; const b=document.createElement('button'); b.className='btn sm'+(i===lv+1&&i<=pl?' next':''); const cost=coutNiveau(rec,i);
+        if(i>pl){ b.textContent=`${n.icone} ${n.nom} · hors plafond`; b.disabled=true; }
+        else { b.textContent = i<=lv ? `${n.icone} ${n.nom} ✓` : `${n.icone} ${n.nom} · ${fmt(cost)}`; b.disabled = i!==lv+1 || dispo()<cost; b.onclick=()=>construire(a.id, i, cost); }
+        build.appendChild(b); });
+      const sell=document.createElement('button'); sell.className='btn sm'; sell.textContent = rec.enVente ? 'Retirer de la vente' : 'Mettre en vente'; sell.onclick=()=>{ state.owned[a.id].enVente=!state.owned[a.id].enVente; save(); setBadge(state.owned[a.id], lv); toast(state.owned[a.id].enVente?`${a.label} en vente à ${fmt(valeur(rec))}`:'Retirée de la vente'); if(currentParcel) renderAddrs(); renderPatrimoine(); }; build.appendChild(sell);
+      row.appendChild(build); } }
+  else if(o){ const s=document.createElement('span'); s.className='own other'; s.textContent=o; s.onclick=()=>showPlayer(o); top.appendChild(s);
+    const off=document.createElement('div'); off.className='build'; const existing = state.offersOut.find(x=>x.addrId===a.id && x.status==='attente');
+    if(enVente(a)){ const b=document.createElement('button'); b.className='btn sm next'; b.textContent=`💰 En vente · Acheter ${fmt(valeur(rec))}`; b.disabled=dispo()<valeur(rec); b.onclick=()=>{ encaisser(true); state.wallet-=valeur(rec); state.owned[a.id]=Object.assign({}, a, {niveau:lv, depuis:now()}); state.seen[a.id]='libre'; save(); refreshTop(); setBadge(a,lv); if(a.idu) paintParcel(a.idu); toast(`${a.label} achetée à ${o}`); if(currentParcel) renderAddrs(); }; off.appendChild(b); row.appendChild(off); return row; }
+    if(existing){ off.innerHTML=`<span class="m">Offre envoyée : ${fmt(existing.price)} (en attente)</span>`; }
+    else { const inp=document.createElement('input'); inp.className='num'; inp.type='number'; inp.value=Math.round(valeur(rec)*1.1); const b=document.createElement('button'); b.className='btn sm next'; b.textContent='Faire une offre'; b.onclick=()=>faireOffre(a, parseInt(inp.value)||0); off.appendChild(inp); off.appendChild(b); }
+    row.appendChild(off); }
+  else { const b=document.createElement('button'); b.className='btn'; b.textContent=`Acheter · ${fmt(valeur(rec))}`; b.disabled = dispo() < valeur(rec); b.onclick = ()=>buy(a, valeur(rec)); top.appendChild(b); }
+  return row; }
+function buy(a, price){ if(dispo() < price) return; encaisser(true); state.wallet -= price;
+  state.owned[a.id] = Object.assign({}, a, { niveau:0, depuis:now() }); save(); refreshTop(); if(currentParcel) renderAddrs(); if(a.idu) paintParcel(a.idu); setBadge(a,0); toast(`${a.label} est à toi !`); }
+function construire(id, niveau, cost){ const a=state.owned[id]; if(!a || dispo()<cost) return; encaisser(true); state.wallet -= cost; a.niveau = niveau; save(); refreshTop();
+  if(currentParcel) renderAddrs(); if(a.idu) paintParcel(a.idu); setBadge(a, niveau); toast(`${NIVEAUX[niveau].icone} ${NIVEAUX[niveau].nom} construit·e : ${a.label}`); }
 function closeSheet(){ document.getElementById('sheet').classList.remove('open'); document.getElementById('sv').src='about:blank'; if(selected){ map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:false}); selected=null; paintBuildings(); } }
-function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.style.display='block'; setTimeout(()=>el.style.display='none',1500); }
-refreshTop();
+
+// =================== offres ===================
+function faireOffre(a, price){ if(price<=0) return toast('Montant invalide'); if(dispo()<price) return toast('Fonds insuffisants');
+  state.offersOut.push({ id:'o'+now(), addrId:a.id, addr:a, to:ownerOf(a), price, ts:now(), status:'attente' }); save(); toast(`Offre de ${fmt(price)} envoyée à ${ownerOf(a)}`); renderAddrs(); }
+function tickOffers(){ let changed=false;
+  // réponses des joueurs simulés à mes offres (après 45 s)
+  for(const o of state.offersOut){ if(o.status!=='attente' || now()-o.ts < 45000) continue;
+    const v = valeur(Object.assign({}, o.addr, {niveau:fakeLevel(o.addrId)}));
+    if(o.price >= v*1.15 && dispo()>=o.price){ o.status='acceptee'; state.wallet -= o.price; state.owned[o.addrId]=Object.assign({}, o.addr, {niveau:fakeLevel(o.addrId), depuis:now()}); state.seen[o.addrId]='libre'; notify('offre', `${o.to} a accepté ton offre de ${fmt(o.price)} pour ${o.addr.label}`, {addrId:o.addrId}); if(o.addr.idu) paintParcel(o.addr.idu); setBadge(o.addr, fakeLevel(o.addrId)); }
+    else { o.status='refusee'; notify('offre', `${o.to} a refusé ton offre de ${fmt(o.price)} pour ${o.addr.label} (il en demande au moins ${fmt(v*1.15)})`, {addrId:o.addrId}); }
+    changed=true; }
+  // offres reçues des joueurs simulés (toutes les ~90 s si je possède quelque chose)
+  const mine = Object.values(state.owned).filter(a=>a.type!=='monument'); if(state.prefs.offres && mine.length && (!state.lastOfferIn || now()-state.lastOfferIn > 90000)){
+    const a = mine[hash(String(jour()))%mine.length]; const from = FAKE[hash(String(now()))%FAKE.length]; const price = Math.round(valeur(a)*(0.75+ (hash(String(now()+1))%60)/100));
+    state.lastOfferIn=now();
+    if(!(state.prefs.seuil && price < valeur(a))){ state.offersIn.unshift({ id:'i'+now(), addrId:a.id, from, price, ts:now(), status:'attente' }); notify('offre', `${from} te propose ${fmt(price)} pour ${a.label} (valeur ${fmt(valeur(a))})`, {offerId:state.offersIn[0].id}); changed=true; } }
+  if(changed){ save(); refreshTop(); } }
+function repondreOffre(id, ok){ const o=state.offersIn.find(x=>x.id===id); if(!o || o.status!=='attente') return; const a=state.owned[o.addrId];
+  if(ok && a){ o.status='acceptee'; state.wallet += o.price; delete state.owned[o.addrId]; state.seen[o.addrId]='libre'; setBadge(a,0); if(a.idu) paintParcel(a.idu); toast(`Vendu à ${o.from} pour ${fmt(o.price)}`); }
+  else { o.status='refusee'; toast('Offre refusée'); }
+  save(); refreshTop(); renderNotifs(); renderPatrimoine(); }
+
+// =================== enchères ===================
+function auctionIndex(){ return Math.floor(now()/SEMAINE); }
+function auctionOf(idx){ const m = MONUMENTS[idx % MONUMENTS.length]; const start = idx*SEMAINE; const bids=[]; const nmax = 4 + hash('n'+idx)%6; // 4 à 9 mises simulées
+  for(let k=0;k<nmax;k++){ const t = start + 25000 + k*42000; if(t>now()) break; bids.push({ who:FAKE[(hash('w'+idx)+k)%FAKE.length], amount:Math.round(m.depart*(1+0.12*k)), ts:t }); }
+  return { idx, m, start, end:start+SEMAINE, bids }; }
+function topBid(auc){ let top=null; for(const b of auc.bids){ if(!top || b.amount>top.amount) top=b; }
+  if(state.auction.idx===auc.idx && state.auction.myBid && state.auction.myBid > (top?top.amount:0)) top={who:ME, amount:state.auction.myBid, ts:state.auction.ts}; return top; }
+function isTop(a){ if(!a.myBid) return false; const auc=auctionOf(a.idx); const t=topBid(auc); return t && t.who===ME; }
+function encherir(amount){ const auc=auctionOf(auctionIndex()); const top=topBid(auc); const min = top ? Math.round(top.amount*1.05) : auc.m.depart;
+  if(amount<min) return toast(`Mise minimale : ${fmt(min)}`); if(state.wallet < amount) return toast('Fonds insuffisants : la mise doit être couverte par ton solde');
+  state.auction = { idx:auc.idx, myBid:amount, ts:now(), outbidNotified:false }; save(); toast(`Tu mènes l’enchère sur ${auc.m.nom} à ${fmt(amount)} (fonds bloqués)`); renderEncheres(); refreshTop(); }
+function tickAuction(){ const idx=auctionIndex(); const a=state.auction;
+  // clôture d'une enchère passée
+  if(a.idx!==undefined && a.idx<idx && !a.closed){ const auc=auctionOf(a.idx); const top=topBid(auc);
+    if(top && top.who===ME && state.wallet>=top.amount){ state.wallet-=top.amount; const m=auc.m; const id='mon'+a.idx; state.owned[id]={ id, label:m.nom, lon:m.lon, lat:m.lat, citycode:'', city:m.ville, type:'monument', niveau:0, depuis:now() }; notify('enchere', `🏆 Tu as remporté ${m.nom} pour ${fmt(top.amount)} !`); setBadge(state.owned[id],0); }
+    else if(a.myBid){ notify('enchere', `Enchère terminée : ${auc.m.nom} va à ${top?top.who:'personne'} (${top?fmt(top.amount):'—'})`); }
+    a.closed=true; save(); refreshTop(); }
+  if(a.idx===idx && a.myBid && !a.outbidNotified){ const auc=auctionOf(idx); const top=topBid(auc); if(top && top.who!==ME){ a.outbidNotified=true; if(state.prefs.encheres) notify('enchere', `${top.who} a surenchéri à ${fmt(top.amount)} sur ${auc.m.nom}. Tes fonds sont libérés.`); save(); } }
+  document.getElementById('cnt-ench').style.display = (a.idx===idx && a.myBid && !isTop(a)) ? 'block':'none'; document.getElementById('cnt-ench').textContent='!';
+  if(document.getElementById('s-encheres').classList.contains('on')) renderEncheres(); }
+
+// =================== pack du jour ===================
+function packDispo(){ return state.lastPack < jour(); }
+async function ouvrirPack(){ if(!packDispo()) return; const btn=document.getElementById('packbtn'); btn.disabled=true; btn.textContent='Ouverture…';
+  const cards=[]; let tries=0;
+  while(cards.length<5 && tries<12){ tries++;
+    try{
+      const [hx,hy]=FRANCE[hash(String(now())+tries)%FRANCE.length];
+      if(cards.length===4 && hash(String(jour()))%100<35 && !cards.some(c=>c.type==='lieu')){ // 35 % de chance d'un lieu en 5e carte
+        const kinds=['eglise','mairie','chateau','gare','musee']; const k=kinds[hash('k'+jour()+tries)%kinds.length];
+        const r=await fetch(`https://data.geopf.fr/geocodage/search?index=poi&q=${k}&lat=${hy}&lon=${hx}&limit=6`); const j=await r.json(); const f=j.features.filter(x=>!state.owned['poi'+hash(x.properties.toponym+x.geometry.coordinates)]);
+        if(f.length){ const x=f[hash(String(now()))%f.length]; const p=x.properties; const id='poi'+hash(p.toponym+x.geometry.coordinates);
+          cards.push({ id, label:p.toponym, lon:x.geometry.coordinates[0], lat:x.geometry.coordinates[1], citycode:(p.citycode||[])[0]||'', city:(p.city||[])[0]||'', type:'lieu', cat:(p.category||[])[0]||'' }); continue; } }
+      const ang=Math.random()*Math.PI*2, d=100+Math.random()*1200; const lon=hx + d*Math.cos(ang)/(111320*Math.cos(hy*Math.PI/180)), lat=hy + d*Math.sin(ang)/110540;
+      const r=await fetch(`https://data.geopf.fr/geocodage/reverse?lon=${lon}&lat=${lat}&limit=1&index=address&type=housenumber`); const j=await r.json(); const x=j.features[0]; if(!x) continue;
+      const a=mkAddr(x, null); if(state.owned[a.id] || cards.find(c=>c.id===a.id)) continue; a.type='adresse'; cards.push(a);
+    }catch(e){ }
+  }
+  if(!cards.length){ btn.disabled=false; btn.textContent='🎁 Pack du jour'; return toast('Impossible de tirer le pack (réseau)'); }
+  encaisser(true); state.lastPack=jour(); for(const c of cards){ state.owned[c.id]=Object.assign({}, c, {niveau:0, depuis:now()}); state.seen[c.id]='libre'; setBadge(c,0); } save(); refreshTop();
+  const box=document.getElementById('modalbox'); box.innerHTML=`<h2>🎁 Ton pack du jour</h2><div class="sub">5 lieux tirés dans toute la France</div><div class="pack" id="packgrid"></div><button class="btn" style="width:100%" onclick="closeModal();renderPatrimoine()">Super !</button>`;
+  const grid=box.querySelector('#packgrid'); cards.forEach((c,i)=>{ const el=document.createElement('div'); el.className='pcard r'+rarete(c); el.innerHTML=`<div class="n">${c.type==='lieu'?'⭐ ':''}${c.label}</div><div class="m">${communeName(c.citycode,c.city)}</div><div class="m">${RARETES[rarete(c)]} · plafond ${NIVEAUX[plafond(c)].nom} · ${fmt(valeur(c))}</div>`; el.onclick=()=>{ closeModal(); flyToAddr(c); }; grid.appendChild(el); setTimeout(()=>el.classList.add('flip'), 150+i*220); });
+  document.getElementById('modal').classList.add('on'); }
+function closeModal(){ document.getElementById('modal').classList.remove('on'); }
+document.getElementById('packbtn').onclick=ouvrirPack;
+function refreshPack(){ const b=document.getElementById('packbtn'); if(packDispo()){ b.disabled=false; b.textContent='🎁 Pack du jour'; } else { b.disabled=true; const s=Math.ceil(((jour()+1)*JOUR-now())/1000); b.textContent=`🎁 Prochain pack dans ${s} s`; } }
+
+// =================== écrans ===================
+function showScreen(name){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on')); document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on', b.dataset.s===name));
+  const hide = name!=='carte'; ['top','ctrls','packbtn','legend'].forEach(id=>document.getElementById(id).style.display = hide?'none':''); closeSheet();
+  if(name==='patrimoine') renderPatrimoine(); if(name==='encheres') renderEncheres(); if(name==='communes') renderCommunes(); if(name==='notifs') renderNotifs();
+  if(hide) document.getElementById('s-'+name).classList.add('on'); else map.resize(); }
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>showScreen(b.dataset.s));
+
+function renderPatrimoine(){ const el=document.getElementById('s-patrimoine'); const list=Object.values(state.owned); const total=list.reduce((s,a)=>s+valeur(a),0);
+  const byCommune={}; list.forEach(a=>{ const k=communeName(a.citycode,a.city); byCommune[k]=(byCommune[k]||0)+1; });
+  let h=`<h1>Mon patrimoine</h1><div class="kpis"><div class="kpi"><small>LIEUX</small><b>${list.length}</b></div><div class="kpi"><small>VALEUR</small><b>${fmt(total)}</b></div><div class="kpi"><small>REVENU / JOUR</small><b>+${SALAIRE+loyerTotal()} ₳</b></div></div>`;
+  h+=`<div class="card"><div class="t">Revenus</div><div class="m">Salaire ${SALAIRE} ₳/j + loyers ${loyerTotal()} ₳/j · à encaisser : <b style="color:var(--ok)">${fmt(pendingRent())}</b></div><div style="margin-top:8px"><button class="btn sm next" onclick="encaisser(false);renderPatrimoine()">Encaisser</button></div></div>`;
+  const pending=state.offersIn.filter(o=>o.status==='attente'); if(pending.length) h+=`<div class="card"><div class="t">${pending.length} offre(s) reçue(s)</div><div class="m">Réponds depuis l’onglet Notifs.</div></div>`;
+  if(!list.length) h+=`<div class="card"><div class="t">Aucun lieu pour l’instant</div><div class="m">Ouvre ton pack du jour sur la carte.</div></div>`;
+  const counts={}; list.forEach(a=>{ counts[rarete(a)]=(counts[rarete(a)]||0)+1; });
+  h+=`<div class="card"><div class="flex" style="flex-wrap:wrap;gap:6px">${[5,4,3,2,1].map(r=>`<span class="tag r${r}" style="color:var(--rc)">${RARETES[r]} ${counts[r]||0}</span>`).join('')}</div></div>`;
+  h+=`<div id="cards"></div>`; el.innerHTML=h; const g=el.querySelector('#cards');
+  list.sort((a,b)=>rarete(b)-rarete(a) || valeur(b)-valeur(a)).forEach(a=>{ const lv=a.niveau||0; const r=rarete(a); const c=document.createElement('div'); c.className='acard r'+r;
+    c.innerHTML=`<div class="rar">${RARETES[r]}</div><div class="big">${a.type==='monument'?'🏛️':(lv?NIVEAUX[lv].icone:(a.type==='lieu'?'⭐':'📍'))}</div><div class="n">${a.label}</div><div class="m">${communeName(a.citycode,a.city)}${a.enVente?' · <b style="color:var(--ok)">💰 en vente</b>':''}</div>
+      <div class="m">${NIVEAUX[lv].nom} · plafond ${NIVEAUX[plafond(a)].nom} · valeur ${fmt(valeur(a))} · loyer +${loyer(a)} ₳/j</div><div id="x-${hash(a.id)}"></div>`;
+    c.querySelector('.n').onclick=()=>flyToAddr(a); c.querySelector('.n').style.cursor='pointer';
+    const row=addrRow(a,true); const build=row.querySelector('.build'); if(build) c.querySelector('#x-'+hash(a.id)).appendChild(build); g.appendChild(c); }); }
+
+function renderEncheres(){ const el=document.getElementById('s-encheres'); const idx=auctionIndex(); const auc=auctionOf(idx); const top=topBid(auc); const reste=auc.end-now(); const pct=100*(now()-auc.start)/SEMAINE;
+  const min = top ? Math.round(top.amount*1.05) : auc.m.depart;
+  let h=`<h1>Enchères</h1><div class="card" style="border-color:var(--gold)"><div class="t">🏛️ ${auc.m.nom} <span class="tag monument">Monument de la semaine</span></div><div class="m">${auc.m.ville} · mise de départ ${fmt(auc.m.depart)}</div>
+    <div class="bar"><i style="width:${pct}%"></i></div><div class="m">Clôture dans ${Math.floor(reste/60000)} min ${Math.floor(reste/1000)%60} s (démo : 1 semaine = 7 min)</div>
+    <div style="margin:10px 0"><b>Meilleure mise : ${top?fmt(top.amount)+' par '+(top.who===ME?'toi 🎉':top.who):'aucune'}</b></div>
+    <div class="flex"><input class="num" id="bid" type="number" value="${min}"><button class="btn" onclick="encherir(parseInt(document.getElementById('bid').value)||0)">Enchérir (min ${fmt(min)})</button></div>
+    <div class="m" style="margin-top:6px">Ta mise doit être couverte par ton solde ; elle bloque les fonds tant que tu mènes. Si tu es dépassé, ils sont libérés. ${state.auction.idx===idx&&state.auction.myBid?`Ta dernière mise : ${fmt(state.auction.myBid)}.`:''}</div>
+    <div style="margin-top:8px"><button class="btn sm" onclick="showScreen('carte');map.flyTo({center:[${auc.m.lon},${auc.m.lat}],zoom:17,duration:1200})">Voir sur la carte</button></div></div>`;
+  h+=`<div class="card"><div class="t">Historique des mises</div>`; const all=[...auc.bids]; if(state.auction.idx===idx&&state.auction.myBid) all.push({who:ME,amount:state.auction.myBid,ts:state.auction.ts}); all.sort((a,b)=>b.ts-a.ts);
+  h+= all.length ? all.map(b=>`<div class="rank"><span class="who" onclick="showPlayer('${b.who}')">${disp(b.who)}</span><b>${fmt(b.amount)}</b></div>`).join('') : '<div class="m">Aucune mise pour l’instant.</div>'; h+=`</div>`;
+  h+=`<div class="card"><div class="t">Prochains monuments</div>`; for(let k=1;k<=3;k++){ const m=MONUMENTS[(idx+k)%MONUMENTS.length]; h+=`<div class="rank"><span class="pos">S+${k}</span><span class="who">${m.nom}</span><span class="m">${m.ville} · dès ${fmt(m.depart)}</span></div>`; } h+=`</div>`;
+  el.innerHTML=h; }
+
+function renderCommunes(){ const el=document.getElementById('s-communes'); const mine={}; Object.values(state.owned).forEach(a=>{ const k=communeName(a.citycode,a.city); mine[k]=(mine[k]||0)+1; });
+  const communes = Object.keys(mine); if(!communes.length) communes.push('Paris 9e');
+  let h=`<h1>Communes</h1><div class="sub">Le Maire est le joueur qui possède le plus de lieux dans la commune. Classement remis à zéro chaque saison (90 jours).</div>`;
+  for(const k of communes){ const rows=FAKE.map(f=>({who:f, n:(hash(k+f)%9)+ (hash(k)%3===0?6:0)})); rows.push({who:ME, n:mine[k]||0}); rows.sort((a,b)=>b.n-a.n); const maire=rows[0];
+    h+=`<div class="card"><div class="t">${k} · Maire : <span style="color:var(--gold)">${maire.who===ME?'toi 🎉':maire.who}</span></div>`;
+    rows.forEach((r,i)=>{ h+=`<div class="rank"><span class="pos">${i+1}</span><span class="who" onclick="showPlayer('${r.who}')">${r.who===ME?disp(ME)+' (toi)':r.who}</span><b>${r.n} lieu${r.n>1?'x':''}</b></div>`; }); h+=`</div>`; }
+  h+=`<div class="card"><div class="m">Cherche une autre ville dans la barre de recherche de la carte pour y jouer ; elle apparaîtra ici dès que tu y possèdes un lieu.</div></div>`;
+  el.innerHTML=h; }
+
+function setPref(k,v){ state.prefs[k]=v; save(); }
+function renderNotifs(){ const el=document.getElementById('s-notifs'); let h=`<h1>Notifications</h1>`;
+  h+=`<div class="card"><div class="t">Réglages</div>
+    <div class="sw"><span>Recevoir les offres d’achat sur mes lieux</span><input type="checkbox" ${state.prefs.offres?'checked':''} onchange="setPref('offres',this.checked)"></div>
+    <div class="sw"><span>Ignorer les offres sous la valeur du lieu</span><input type="checkbox" ${state.prefs.seuil?'checked':''} onchange="setPref('seuil',this.checked)"></div>
+    <div class="sw"><span>M’alerter quand je suis dépassé aux enchères</span><input type="checkbox" ${state.prefs.encheres?'checked':''} onchange="setPref('encheres',this.checked)"></div></div>`; if(!state.notifs.length) h+=`<div class="card"><div class="m">Rien pour l’instant. Les offres reçues, les enchères et les ventes arrivent ici.</div></div>`;
+  for(const n of state.notifs){ const d=new Date(n.ts); h+=`<div class="card notif ${n.read?'':'unread'}"><div class="m">${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}</div><div>${n.text}</div>`;
+    if(n.offerId){ const o=state.offersIn.find(x=>x.id===n.offerId); if(o && o.status==='attente') h+=`<div class="build"><button class="btn sm next" onclick="repondreOffre('${o.id}',true)">Accepter ${fmt(o.price)}</button><button class="btn sm" onclick="repondreOffre('${o.id}',false)">Refuser</button></div>`; else if(o) h+=`<div class="m">${o.status==='acceptee'?'Acceptée':'Refusée'}</div>`; }
+    if(n.addrId && state.owned[n.addrId]) h+=`<div class="build"><button class="btn sm" onclick="flyToAddr(state.owned['${n.addrId}'])">Voir sur la carte</button></div>`;
+    h+=`</div>`; }
+  el.innerHTML=h; state.notifs.forEach(n=>n.read=true); save(); refreshTop(); }
+
+function showPlayer(name){ const box=document.getElementById('modalbox'); let h;
+  if(name===ME){ const list=Object.values(state.owned); h=`<h2><span class="av">${state.avatar}</span> ${disp(ME)} (toi)</h2><div class="sub">Membre depuis aujourd’hui · <a href="#" onclick="creationProfil();return false" style="color:var(--gold)">modifier mon profil</a></div><div class="kpis"><div class="kpi"><small>LIEUX</small><b>${list.length}</b></div><div class="kpi"><small>VALEUR</small><b>${fmt(list.reduce((s,a)=>s+valeur(a),0))}</b></div><div class="kpi"><small>CONSTRUITS</small><b>${list.filter(a=>a.niveau>0).length}</b></div></div>`; }
+  else { const n=5+hash(name)%40, c=1+hash(name+'c')%4, b=Math.floor(n*(0.3+ (hash(name+'b')%50)/100)); const v=n*1200+b*900;
+    h=`<h2>${name}</h2><div class="sub">Joueur simulé · membre depuis ${1+hash(name+'d')%60} jours</div><div class="kpis"><div class="kpi"><small>LIEUX</small><b>${n}</b></div><div class="kpi"><small>VALEUR</small><b>${fmt(v)}</b></div><div class="kpi"><small>CONSTRUITS</small><b>${b}</b></div></div><div class="card"><div class="t">Présent dans ${c} commune${c>1?'s':''}</div><div class="m">Ses lieux apparaissent en rouge sur la carte. Clique sur l’un d’eux pour lui faire une offre.</div></div>`; }
+  box.innerHTML = h + `<button class="btn" style="width:100%" onclick="closeModal()">Fermer</button>`; document.getElementById('modal').classList.add('on'); }
+document.getElementById('mepill').onclick=()=>showPlayer(ME);
+document.getElementById('walletpill').onclick=()=>encaisser(false);
+document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
+
+function creationProfil(){ const box=document.getElementById('modalbox'); let av=state.avatar||AVATARS[0];
+  box.innerHTML=`<h2>${state.pseudo?'Mon profil':'Bienvenue !'}</h2><div class="sub">Choisis ton pseudo et ton icône, visibles par les autres joueurs.</div><input class="txt" id="pseudo" maxlength="16" placeholder="Ton pseudo" value="${state.pseudo||''}"><div class="avgrid" id="avgrid"></div><button class="btn" style="width:100%" id="okprofil">C’est parti</button>`;
+  const grid=box.querySelector('#avgrid'); AVATARS.forEach(e=>{ const b=document.createElement('button'); b.textContent=e; b.className=e===av?'on':''; b.onclick=()=>{ av=e; grid.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.textContent===e)); }; grid.appendChild(b); });
+  box.querySelector('#okprofil').onclick=()=>{ const ps=box.querySelector('#pseudo').value.trim(); if(ps.length<3) return toast('Pseudo : 3 caractères minimum'); state.pseudo=ps; state.avatar=av; save(); closeModal(); refreshTop(); toast(`Bienvenue, ${ps} !`); };
+  document.getElementById('modal').classList.add('on'); }
+function refreshTop(){ document.getElementById('wallet').textContent = fmt(dispo()); document.getElementById('meav').textContent=state.avatar||'🙂'; document.getElementById('mename').textContent=disp(ME); document.getElementById('count').textContent = Object.keys(state.owned).length;
+  const p=Math.floor(pendingRent()); document.getElementById('pending').textContent = p>0 ? `+${p}` : '';
+  const unread=state.notifs.filter(n=>!n.read).length; const c=document.getElementById('cnt-notif'); c.style.display=unread?'block':'none'; c.textContent=unread; refreshPack(); }
+setInterval(()=>{ refreshTop(); tickOffers(); tickAuction(); }, 1000);
+refreshTop(); tickAuction(); if(!state.pseudo) setTimeout(creationProfil, 600);
 </script>
 </body>
 </html>
