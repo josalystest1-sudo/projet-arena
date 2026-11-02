@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Proto Cadastre — Paris</title>
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<style>
+  :root{--bg:#11131c;--panel:#171a26;--line:#2a2e40;--txt:#f3f4f8;--muted:#9aa0b8;--gold:#ffd65a;--me:#3b82f6;--other:#ef4444;--mixed:#a855f7}
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  #map{position:absolute;inset:0}
+  #top{position:absolute;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;display:flex;gap:8px;align-items:center;justify-content:space-between;pointer-events:none;z-index:5}
+  #top > *{pointer-events:auto}
+  .pill{background:rgba(17,19,28,.92);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:14px;display:flex;gap:10px;align-items:center;backdrop-filter:blur(6px)}
+  .pill b{color:var(--gold)}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  #hint{position:absolute;left:50%;transform:translateX(-50%);top:calc(60px + env(safe-area-inset-top));background:rgba(17,19,28,.9);border:1px solid var(--line);padding:8px 14px;border-radius:10px;font-size:13px;color:var(--muted);z-index:5;display:none}
+  #legend{position:absolute;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));background:rgba(17,19,28,.9);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:12px;z-index:5;display:flex;gap:12px}
+  #legend span{display:flex;align-items:center;gap:5px}
+  #sheet{position:absolute;left:0;right:0;bottom:0;max-height:78%;background:var(--panel);border-top:2px solid var(--gold);border-radius:22px 22px 0 0;transform:translateY(105%);transition:transform .25s ease;z-index:10;overflow:auto;padding:14px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+  #sheet.open{transform:translateY(0)}
+  #sheet .close{position:absolute;right:12px;top:10px;background:var(--line);border:0;color:var(--txt);width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer}
+  h2{margin:4px 0 2px;font-size:20px}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:10px}
+  .sv{width:100%;aspect-ratio:16/10;border:0;border-radius:14px;background:#000;display:block}
+  .svwrap{position:relative;margin-bottom:10px}
+  .svwrap a.ext{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;padding:5px 9px;border-radius:8px;text-decoration:none}
+  .addr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:#1c1f2c}
+  .addr .n{font-weight:600;font-size:15px}
+  .addr .m{color:var(--muted);font-size:12px}
+  .btn{background:var(--gold);color:#111;border:0;border-radius:10px;padding:9px 14px;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap}
+  .btn:disabled{opacity:.4;cursor:default}
+  .own{font-size:13px;padding:6px 10px;border-radius:8px;white-space:nowrap;font-weight:600}
+  .own.me{background:rgba(59,130,246,.2);color:#8ab4ff}
+  .own.other{background:rgba(239,68,68,.2);color:#ff9b9b}
+  .stats{display:flex;gap:8px;margin:8px 0 12px}
+  .stat{flex:1;background:#1c1f2c;border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center}
+  .stat small{display:block;color:var(--muted);font-size:11px;letter-spacing:.04em}
+  .stat b{font-size:17px}
+  .note{color:var(--muted);font-size:12px;margin-top:8px}
+  .maplibregl-ctrl-attrib{font-size:10px}
+  #toast{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--gold);color:#111;padding:12px 18px;border-radius:12px;font-weight:700;z-index:20;display:none}
+</style>
+</head>
+<body>
+<div id="map"></div>
+<div id="top">
+  <div class="pill"><span class="dot" style="background:var(--me)"></span> Gautier · <span id="count">0</span> adresse(s)</div>
+  <div class="pill">Solde <b id="wallet">5 000 ₳</b></div>
+</div>
+<div id="hint">Zoomez pour voir les parcelles</div>
+<div id="legend">
+  <span><i class="dot" style="background:var(--me)"></i>À moi</span>
+  <span><i class="dot" style="background:var(--other)"></i>Autre joueur</span>
+  <span><i class="dot" style="background:var(--mixed)"></i>Partagée</span>
+  <span><i class="dot" style="background:#ffffff55;border:1px solid #fff"></i>Libre</span>
+</div>
+<div id="sheet">
+  <button class="close" onclick="closeSheet()">×</button>
+  <h2 id="title">Parcelle</h2>
+  <div class="sub" id="subtitle"></div>
+  <div class="svwrap">
+    <iframe id="sv" class="sv" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+    <a class="ext" id="svlink" target="_blank" rel="noopener">Ouvrir Street View ↗</a>
+  </div>
+  <div class="stats">
+    <div class="stat"><small>SURFACE</small><b id="surf">—</b></div>
+    <div class="stat"><small>LOYER / JOUR</small><b id="rent">—</b></div>
+    <div class="stat"><small>ADRESSES</small><b id="nb">—</b></div>
+  </div>
+  <div id="addrs"></div>
+  <div class="note">Photo de devanture : Street View intégré (gratuit, rien n'est stocké). Vue aérienne © IGN · Parcelles © DGFiP/IGN · Adresses BAN.</div>
+</div>
+<div id="toast"></div>
+
+<script>
+const ME = 'Gautier';
+const FAKE = ['Léa','Marco','Inès','Yanis','Chloé','Sacha'];
+let state = { wallet: 5000, owned: {} }; // owned[addrId] = {owner, idu, label, price, lon, lat}
+try { const s = localStorage.getItem('proto-cadastre'); if (s) state = JSON.parse(s); } catch(e){}
+function save(){ try{ localStorage.setItem('proto-cadastre', JSON.stringify(state)); }catch(e){} }
+
+const map = new maplibregl.Map({
+  container:'map',
+  center:[2.3396,48.8818], zoom:17, minZoom:11, maxZoom:19.5,
+  attributionControl:true,
+  style:{
+    version:8,
+    sources:{
+      ortho:{ type:'raster', tileSize:256, maxzoom:19,
+        tiles:['https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=HR.ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/jpeg'],
+        attribution:'© IGN' },
+      pci:{ type:'vector', tiles:['https://data.geopf.fr/tms/1.0.0/PCI/{z}/{x}/{y}.pbf'], minzoom:15, maxzoom:19, promoteId:{parcelle:'idu'}, attribution:'© DGFiP/IGN' }
+    },
+    layers:[
+      { id:'ortho', type:'raster', source:'ortho', paint:{ 'raster-saturation':-0.25, 'raster-brightness-max':0.85 } },
+      { id:'parcel-fill', type:'fill', source:'pci', 'source-layer':'parcelle', minzoom:15,
+        paint:{ 'fill-color':['match',['coalesce',['feature-state','st'],'free'],'me','#3b82f6','other','#ef4444','mixed','#a855f7','#ffffff'],
+                'fill-opacity':['match',['coalesce',['feature-state','st'],'free'],'free',0.06,0.45] } },
+      { id:'parcel-line', type:'line', source:'pci', 'source-layer':'parcelle', minzoom:15,
+        paint:{ 'line-color':['case',['boolean',['feature-state','sel'],false],'#ffd65a','#ffffff'], 'line-width':['case',['boolean',['feature-state','sel'],false],3,0.8], 'line-opacity':0.9 } },
+      { id:'parcel-label', type:'symbol', source:'pci', 'source-layer':'parcelle', minzoom:18,
+        layout:{ 'text-field':['get','numero'], 'text-size':11 }, paint:{ 'text-color':'#fff','text-halo-color':'#000','text-halo-width':1 } }
+    ]
+  }
+});
+map.addControl(new maplibregl.NavigationControl({showCompass:false}), 'bottom-right');
+
+const hint = document.getElementById('hint');
+map.on('zoom', ()=>{ hint.style.display = map.getZoom() < 15 ? 'block' : 'none'; });
+
+// ---------- helpers ----------
+function fmt(n){ return n.toLocaleString('fr-FR') + ' ₳'; }
+function hash(s){ let h=0; for(const c of s) h=(h*31+c.charCodeAt(0))|0; return Math.abs(h); }
+function pricePerM2(citycode){ const a = parseInt((citycode||'').slice(3))||10; return a<=8 ? 12 : (a<=16 ? 8 : 6); }
+function addrPrice(contenance, citycode, nb){ return Math.max(300, Math.round((contenance||300)*pricePerM2(citycode)/Math.max(1,nb)/10)*10); }
+function rentOf(price){ return Math.max(5, Math.round(price*0.012)); }
+function fakeOwner(addrId){ const h = hash(addrId); return (h % 100) < 18 ? FAKE[h % FAKE.length] : null; }
+function ownerOf(addrId){ if (state.owned[addrId]) return state.owned[addrId].owner; return fakeOwner(addrId); }
+function centroid(geom){
+  const ring = geom.type==='Polygon' ? geom.coordinates[0] : geom.coordinates[0][0];
+  let x=0,y=0; for(const [a,b] of ring){x+=a;y+=b;} return [x/ring.length, y/ring.length];
+}
+function inside(pt, geom){
+  const rings = geom.type==='Polygon' ? [geom.coordinates[0]] : geom.coordinates.map(p=>p[0]);
+  return rings.some(r=>{ let ins=false; for(let i=0,j=r.length-1;i<r.length;j=i++){ const [xi,yi]=r[i],[xj,yj]=r[j];
+    if(((yi>pt[1])!==(yj>pt[1])) && (pt[0] < (xj-xi)*(pt[1]-yi)/(yj-yi)+xi)) ins=!ins; } return ins; });
+}
+function dist(a,b){ const dx=(a[0]-b[0])*Math.cos(a[1]*Math.PI/180)*111320, dy=(a[1]-b[1])*110540; return Math.hypot(dx,dy); }
+
+// parcel state (colors) : computed from addresses we know about (cache)
+const parcelAddrs = {}; // idu -> [addr]
+function parcelState(idu){
+  const list = parcelAddrs[idu]; if(!list || !list.length) return null;
+  const owners = list.map(a=>ownerOf(a.id));
+  const mine = owners.filter(o=>o===ME).length, others = owners.filter(o=>o && o!==ME).length;
+  if(!mine && !others) return 'free';
+  if(mine && !others) return 'me';
+  if(others && !mine) return 'other';
+  return 'mixed';
+}
+function paintParcel(idu){ const st = parcelState(idu); if(st) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st}); }
+
+// Pre-color visible parcels (demo): fake owners derived deterministically from the parcel id
+function seedVisible(){
+  if(map.getZoom()<15) return;
+  const feats = map.queryRenderedFeatures({layers:['parcel-fill']});
+  const seen = new Set();
+  for(const f of feats){ const idu=f.id; if(!idu || seen.has(idu)) continue; seen.add(idu);
+    if(parcelAddrs[idu]) { paintParcel(idu); continue; }
+    const h = hash(String(idu)) % 100;
+    let st = 'free'; if (h<14) st='other'; else if (h<17) st='mixed';
+    // my own purchases override
+    const mine = Object.values(state.owned).some(a=>a.idu===idu);
+    if(mine){ st = Object.values(state.owned).filter(a=>a.idu===idu).length>0 && (h<14||h<17) ? 'mixed' : 'me'; }
+    map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st});
+  }
+}
+map.on('idle', seedVisible);
+
+// ---------- click ----------
+let selected = null;
+map.on('click', async (e)=>{
+  const feats = map.queryRenderedFeatures(e.point, {layers:['parcel-fill']});
+  if(!feats.length){ closeSheet(); return; }
+  const f = feats[0];
+  if(selected) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:false});
+  selected = f.id; map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:true});
+  openParcel(f, [e.lngLat.lng, e.lngLat.lat]);
+});
+
+async function openParcel(f, clickPt){
+  const p = f.properties, idu = f.id;
+  document.getElementById('title').textContent = `Parcelle ${p.section} ${p.numero}`;
+  document.getElementById('subtitle').textContent = `${p.nom_com} · ${p.code_insee}`;
+  document.getElementById('surf').textContent = (p.contenance||'—') + ' m²';
+  document.getElementById('addrs').innerHTML = '<div class="sub">Recherche des adresses…</div>';
+  document.getElementById('sheet').classList.add('open');
+
+  const c = centroid(f.geometry);
+  let addrs = parcelAddrs[idu];
+  if(!addrs){
+    try{
+      const r = await fetch(`https://data.geopf.fr/geocodage/reverse?lon=${c[0]}&lat=${c[1]}&limit=10&index=address&type=housenumber`);
+      const j = await r.json();
+      let all = j.features.map(x=>({ id:x.properties.id, label:x.properties.name, lon:x.geometry.coordinates[0], lat:x.geometry.coordinates[1], city:x.properties.citycode, postcode:x.properties.postcode }));
+      let within = all.filter(a=>inside([a.lon,a.lat], f.geometry));
+      if(!within.length){ all.sort((a,b)=>dist([a.lon,a.lat],c)-dist([b.lon,b.lat],c)); within = all.filter(a=>dist([a.lon,a.lat],c)<25).slice(0,2); if(!within.length && all.length) within=[all[0]]; }
+      addrs = within;
+    }catch(err){ addrs = []; }
+    parcelAddrs[idu] = addrs;
+  }
+  const nb = addrs.length;
+  document.getElementById('nb').textContent = nb || '0';
+  // Street View at the first address (or centroid)
+  const sv = addrs[0] ? [addrs[0].lat, addrs[0].lon] : [c[1], c[0]];
+  document.getElementById('sv').src = `https://maps.google.com/maps?q=&layer=c&cbll=${sv[0]},${sv[1]}&cbp=12,0,0,0,0&output=svembed`;
+  document.getElementById('svlink').href = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${sv[0]},${sv[1]}`;
+
+  const price = addrPrice(parseInt(p.contenance), p.code_insee, nb);
+  document.getElementById('rent').textContent = '+' + rentOf(price) + ' ₳';
+  const box = document.getElementById('addrs'); box.innerHTML = '';
+  if(!nb){ box.innerHTML = '<div class="sub">Aucune adresse BAN sur cette parcelle (cour, voirie, dépendance…). Non achetable.</div>'; paintParcel(idu); return; }
+  for(const a of addrs){
+    const o = ownerOf(a.id);
+    const row = document.createElement('div'); row.className='addr';
+    row.innerHTML = `<div><div class="n">${a.label}</div><div class="m">${a.postcode} · ${fmt(price)} · loyer +${rentOf(price)} ₳/j</div></div>`;
+    if(o===ME) row.insertAdjacentHTML('beforeend', `<span class="own me">À moi</span>`);
+    else if(o) row.insertAdjacentHTML('beforeend', `<span class="own other">${o}</span>`);
+    else { const b=document.createElement('button'); b.className='btn'; b.textContent='Acheter'; b.disabled = state.wallet < price;
+      b.onclick = ()=>buy(a, idu, price); row.appendChild(b); }
+    box.appendChild(row);
+  }
+  paintParcel(idu);
+}
+
+function buy(a, idu, price){
+  if(state.wallet < price) return;
+  state.wallet -= price;
+  state.owned[a.id] = { owner:ME, idu, label:a.label, price, lon:a.lon, lat:a.lat };
+  save(); refreshTop(); paintParcel(idu);
+  toast(`${a.label} est à toi !`);
+  // re-render sheet rows
+  const f = { id:idu };
+  document.querySelectorAll('#addrs .addr').forEach(row=>{ if(row.querySelector('.n').textContent===a.label){ row.querySelector('.btn').replaceWith(Object.assign(document.createElement('span'),{className:'own me',textContent:'À moi'})); } });
+  document.querySelectorAll('#addrs .btn').forEach(b=>{ b.disabled = state.wallet < price; });
+}
+function refreshTop(){ document.getElementById('wallet').textContent = fmt(state.wallet); document.getElementById('count').textContent = Object.keys(state.owned).length; }
+function closeSheet(){ document.getElementById('sheet').classList.remove('open'); document.getElementById('sv').src='about:blank'; }
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.style.display='block'; setTimeout(()=>el.style.display='none',1400); }
+refreshTop();
+</script>
+</body>
+</html>
