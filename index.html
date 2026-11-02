@@ -7,6 +7,7 @@
 <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="geo.js"></script>
 <style>
   :root{--bg:#11131c;--panel:#171a26;--card:#1c1f2c;--line:#2a2e40;--txt:#f3f4f8;--muted:#9aa0b8;--gold:#ffd65a;--me:#3b82f6;--other:#ef4444;--mixed:#a855f7;--ok:#7ee787;--nav:64px}
   *{box-sizing:border-box}
@@ -148,6 +149,21 @@
   .rcard.flip{transform:translateX(var(--x)) translateY(var(--y)) rotate(var(--r)) rotateY(180deg) scale(var(--s))}
   .rcard.pos{transform:translateX(var(--x)) translateY(var(--y)) rotate(var(--r)) scale(var(--s))}
   #packdone{position:absolute;left:16px;right:16px;bottom:calc(24px + env(safe-area-inset-bottom));display:none}
+
+  /* ---- révélation façon FIFA ---- */
+  #reveal{position:absolute;inset:0;z-index:5;display:none;background:radial-gradient(circle at 50% 40%,#101a3a,#000 70%)}
+  #reveal.on{display:block}
+  #reveal svg{position:absolute;inset:0;width:100%;height:100%}
+  #reveal .sil{fill:#1d2b5e;stroke:#5f8dff;stroke-width:0.6;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 10px rgba(95,141,255,.7))}
+  #reveal .sil.hi{fill:#2a3f8a;stroke:#9fd0ff}
+  #reveal .dot{fill:#ffd65a;filter:drop-shadow(0 0 8px #ffd65a)}
+  #reveal .ring{fill:none;stroke:#ffd65a;stroke-width:0.5;vector-effect:non-scaling-stroke;opacity:0;transform-box:fill-box;transform-origin:center;animation:ring 1.4s ease-out infinite}
+  @keyframes ring{0%{transform:scale(.2);opacity:.9}100%{transform:scale(3);opacity:0}}
+  #rlabels{position:absolute;left:0;right:0;bottom:calc(120px + env(safe-area-inset-bottom));text-align:center;pointer-events:none}
+  #rlabels .l{color:#fff;font-weight:900;letter-spacing:.12em;text-transform:uppercase;font-size:14px;opacity:0;transform:translateY(12px);transition:all .45s ease;text-shadow:0 2px 16px rgba(0,0,0,.6)}
+  #rlabels .l.on{opacity:1;transform:translateY(0)}
+  #rlabels .l.big{font-size:30px;letter-spacing:.04em;text-transform:none;margin-top:6px}
+  #rlabels .l.rar{font-size:12px;letter-spacing:.3em;margin-top:10px}
   .notif{border-left:3px solid var(--line)}
   .notif.unread{border-left-color:var(--gold)}
   .bar{height:8px;background:#2a2e40;border-radius:999px;overflow:hidden;margin:8px 0}
@@ -217,6 +233,7 @@
     <canvas id="pkgl" style="width:100%;height:100%;display:block;touch-action:none"></canvas>
     <div id="pkload" style="position:absolute;bottom:calc(90px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:#fff;opacity:.8;font-size:13px">Le pack arrive…</div>
     <div class="cards" id="pkcards"></div>
+    <div id="reveal"><svg id="rsvg" preserveAspectRatio="xMidYMid meet"><g id="rg"></g></svg><div id="rlabels"><div class="l" id="rl1"></div><div class="l big" id="rl2"></div><div class="l rar" id="rl3"></div></div></div>
   </div>
   <div class="hint" id="pkhint">Glisse ton doigt sur le haut du pack pour l’ouvrir</div>
   <button class="btn" id="packdone" onclick="finPack()">Super !</button>
@@ -570,6 +587,43 @@ function sonDechirure(){ const a=audio(); if(!a) return; const n=a.sampleRate*0.
   const src=a.createBufferSource(); src.buffer=b; const f=a.createBiquadFilter(); f.type='bandpass'; f.frequency.value=2200; f.Q.value=0.7; const g=a.createGain(); g.gain.value=0.5; src.connect(f); f.connect(g); g.connect(a.destination); src.start(); if(navigator.vibrate) navigator.vibrate([30,20,40]); }
 function sonCarte(r){ const a=audio(); if(!a) return; const notes = r>=4 ? [523,659,784,1046,1318] : (r===3 ? [523,659,784] : [660,880]); notes.forEach((fq,i)=>{ const o=a.createOscillator(); const g=a.createGain(); o.type='sine'; o.frequency.value=fq; g.gain.setValueAtTime(0.0001,a.currentTime+i*0.08); g.gain.exponentialRampToValueAtTime(0.25,a.currentTime+i*0.08+0.02); g.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+i*0.08+0.6); o.connect(g); g.connect(a.destination); o.start(a.currentTime+i*0.08); o.stop(a.currentTime+i*0.08+0.7); }); if(navigator.vibrate) navigator.vibrate(r>=4?[20,30,60]:20); }
 
+
+// =================== révélation façon FIFA (France → département → commune → rue) ===================
+const KY=1.0, KX=Math.cos(46.5*Math.PI/180);
+const px=(lon,lat)=>[lon*KX*100, -lat*KY*100];
+function ringsPath(rings){ return rings.map(r=>'M'+r.map(([x,y])=>{ const [a,b]=px(x,y); return a.toFixed(1)+' '+b.toFixed(1); }).join('L')+'Z').join(''); }
+function bboxOf(rings, pad){ let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9; rings.forEach(r=>r.forEach(([x,y])=>{ const [a,b]=px(x,y); x0=Math.min(x0,a);y0=Math.min(y0,b);x1=Math.max(x1,a);y1=Math.max(y1,b); })); const w=x1-x0,h=y1-y0; const m=Math.max(w,h)*pad; return [x0-m, y0-m, w+2*m, h+2*m]; }
+const communeCache={};
+async function fetchCommune(c){ const code=c.citycode||''; if(!code) return null; if(communeCache[code]!==undefined) return communeCache[code];
+  const arr = /^(751|693|132)/.test(code); const typ = arr ? 'arrondissement_municipal' : 'commune';
+  try{ const r=await fetch(`https://data.geopf.fr/wfs/ows?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=ADMINEXPRESS-COG-CARTO.LATEST:${typ}&OUTPUTFORMAT=application/json&SRSNAME=EPSG:4326&CQL_FILTER=code_insee%3D%27${code}%27`); const j=await r.json(); const f=j.features[0]; if(!f){ communeCache[code]=null; return null; }
+    const g=f.geometry; const polys = g.type==='Polygon' ? [g.coordinates] : g.coordinates; // EPSG:4326 WFS : lat,lon
+    const rings = polys.map(pg=>pg[0].map(([a,b])=> Math.abs(a)>Math.abs(b) ? [b,a] : [a,b]));
+    communeCache[code]={ nom: f.properties.nom_officiel||f.properties.nom||c.city, rings }; return communeCache[code]; }catch(e){ communeCache[code]=null; return null; } }
+function depOf(code){ if(!code) return null; let k=code.slice(0,2); if(k==='97') k=code.slice(0,3); if(code.startsWith('2A')||code.startsWith('2B')) k=code.slice(0,2); return GEO.deps[k] ? {code:k, ...GEO.deps[k]} : null; }
+let vbCur=null, vbAnim=0;
+function setVB(vb){ document.getElementById('rsvg').setAttribute('viewBox', vb.join(' ')); vbCur=vb; }
+function animVB(target, ms){ cancelAnimationFrame(vbAnim); const from=vbCur.slice(); const t0=performance.now(); return new Promise(res=>{ const step=()=>{ const t=Math.min(1,(performance.now()-t0)/ms); const e=t<.5?2*t*t:-1+(4-2*t)*t; setVB(from.map((v,i)=>v+(target[i]-v)*e)); if(t<1) vbAnim=requestAnimationFrame(step); else res(); }; step(); }); }
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+function label(id, text, on){ const el=document.getElementById(id); if(text!==undefined) el.textContent=text; el.classList.toggle('on', !!on); }
+async function revealSequence(c){ const rv=document.getElementById('reveal'); const g=document.getElementById('rg'); g.innerHTML=''; ['rl1','rl2','rl3'].forEach(i=>label(i,'',false)); rv.classList.add('on');
+  const [dx,dy]=px(c.lon,c.lat); const dep=depOf(c.citycode); const comP=fetchCommune(c);
+  // 1. la France
+  const fr=document.createElementNS('http://www.w3.org/2000/svg','path'); fr.setAttribute('class','sil'); fr.setAttribute('d', ringsPath(GEO.france)); g.appendChild(fr);
+  const dot=document.createElementNS('http://www.w3.org/2000/svg','circle'); dot.setAttribute('class','dot'); dot.setAttribute('cx',dx); dot.setAttribute('cy',dy); dot.setAttribute('r',1.6); 
+  const ring=document.createElementNS('http://www.w3.org/2000/svg','circle'); ring.setAttribute('class','ring'); ring.setAttribute('cx',dx); ring.setAttribute('cy',dy); ring.setAttribute('r',3);
+  setVB(bboxOf(GEO.france,0.08)); await wait(250); label('rl1','France',true); await wait(500); g.appendChild(ring); g.appendChild(dot); sonTick(); await wait(900);
+  // 2. le département
+  if(dep){ const dp=document.createElementNS('http://www.w3.org/2000/svg','path'); dp.setAttribute('class','sil hi'); dp.setAttribute('d', ringsPath(dep.rings)); g.insertBefore(dp, ring);
+    label('rl1', dep.nom + ' · ' + dep.code, true); dot.setAttribute('r',0.5); ring.setAttribute('r',1); sonTick(); await animVB(bboxOf(dep.rings,0.12), 1000); await wait(700); }
+  // 3. la commune
+  const com=await comP; if(com){ const cp=document.createElementNS('http://www.w3.org/2000/svg','path'); cp.setAttribute('class','sil hi'); cp.setAttribute('d', ringsPath(com.rings)); cp.style.fill='#3b58b8'; g.insertBefore(cp, ring);
+    label('rl1', com.nom, true); const bb=bboxOf(com.rings,0.15); dot.setAttribute('r', Math.max(0.05, bb[2]/60)); ring.setAttribute('r', Math.max(0.1, bb[2]/30)); sonTick(); await animVB(bb, 1100); await wait(600); }
+  // 4. la rue
+  label('rl2', c.label, true); label('rl3', RARETES[rarete(c)], true); sonTick(); await wait(1300);
+  rv.classList.remove('on'); }
+function sonTick(){ const a=audio(); if(!a) return; const o=a.createOscillator(); const gn=a.createGain(); o.type='triangle'; o.frequency.value=880; gn.gain.setValueAtTime(0.0001,a.currentTime); gn.gain.exponentialRampToValueAtTime(0.18,a.currentTime+0.01); gn.gain.exponentialRampToValueAtTime(0.0001,a.currentTime+0.18); o.connect(gn); gn.connect(a.destination); o.start(); o.stop(a.currentTime+0.2); }
+let revealing=false;
 let packCards=null, packTorn=false;
 function openScene(){ const sc=document.getElementById('packscene'); packTorn=false; packCards=null; document.getElementById('pkgl').style.display='block';
   document.getElementById('pkcards').innerHTML=''; document.getElementById('packdone').style.display='none'; document.getElementById('pkhint').textContent='Incline ton téléphone…'; document.getElementById('pkload').textContent='Le pack arrive…';
@@ -584,7 +638,7 @@ function sortirCartes(){ const wrap=document.getElementById('pkcards'); const n=
     el.style.setProperty('--x','0px'); el.style.setProperty('--y','0px'); el.style.setProperty('--r','0deg'); el.style.setProperty('--s','1');
     wrap.appendChild(el);
     setTimeout(()=>{ el.classList.add('in','pos'); }, 120+i*140);
-    el.onclick=()=>{ if(el.classList.contains('flip')) return; el.classList.remove('pos'); el.classList.add('flip'); revealed++; sonCarte(r);
+    el.onclick=async()=>{ if(el.classList.contains('flip')||revealing) return; revealing=true; document.getElementById('pkhint').textContent=''; try{ await revealSequence(c); }catch(e){} revealing=false; el.classList.remove('pos'); el.classList.add('flip'); revealed++; sonCarte(r);
       // la carte révélée se range en bas, en éventail
       setTimeout(()=>{ const k=revealed-1; el.style.setProperty('--x',(k-(n-1)/2)*64+'px'); el.style.setProperty('--y','230px'); el.style.setProperty('--r',((k-(n-1)/2)*7)+'deg'); el.style.setProperty('--s','.55'); el.style.zIndex=k; }, 1700);
       if(revealed===n){ document.getElementById('packdone').style.display='block'; document.getElementById('pkhint').textContent='5 nouveaux lieux dans ton patrimoine'; } else document.getElementById('pkhint').textContent='Touche la carte suivante'; };
@@ -610,7 +664,7 @@ async function ouvrirPack(){ if(!packDispo()) return; const btn=document.getElem
   if(!cards.length){ btn.disabled=false; btn.textContent='🎁 Pack du jour'; finPack(); return toast('Impossible de tirer le pack (réseau)'); }
   encaisser(true); state.lastPack=jour(); for(const c of cards){ state.owned[c.id]=Object.assign({}, c, {niveau:0, depuis:now()}); state.seen[c.id]='libre'; setBadge(c,0); } save(); refreshTop();
   // tri : les communes d'abord, la meilleure carte en dernier (suspense)
-  cards.sort((a,b)=>rarete(a)-rarete(b)); packCards=cards; document.getElementById('pkload').textContent=''; if(GL.uni) GL.uni.uReady.value=1; document.getElementById('pkhint').textContent='Glisse ton doigt sur le haut du pack pour l’ouvrir'; }
+  cards.sort((a,b)=>rarete(a)-rarete(b)); packCards=cards; cards.forEach(c=>fetchCommune(c)); document.getElementById('pkload').textContent=''; if(GL.uni) GL.uni.uReady.value=1; document.getElementById('pkhint').textContent='Glisse ton doigt sur le haut du pack pour l’ouvrir'; }
 function closeModal(){ document.getElementById('modal').classList.remove('on'); }
 document.getElementById('packbtn').onclick=ouvrirPack;
 function refreshPack(){ const b=document.getElementById('packbtn'); if(packDispo()){ b.disabled=false; b.textContent='🎁 Pack du jour'; } else { b.disabled=true; const s=Math.ceil(((jour()+1)*JOUR-now())/1000); b.textContent=`🎁 Prochain pack dans ${s} s`; } }
