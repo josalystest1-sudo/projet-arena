@@ -55,7 +55,7 @@
   <span><i class="dot" style="background:var(--me)"></i>À moi</span>
   <span><i class="dot" style="background:var(--other)"></i>Autre joueur</span>
   <span><i class="dot" style="background:var(--mixed)"></i>Partagée</span>
-  <span><i class="dot" style="background:#ffffff55;border:1px solid #fff"></i>Libre</span>
+  <span><i class="dot" style="background:#f4efe4;border:1px solid #b9b09c"></i>Libre</span>
 </div>
 <div id="sheet">
   <button class="close" onclick="closeSheet()">×</button>
@@ -71,7 +71,7 @@
     <div class="stat"><small>ADRESSES</small><b id="nb">—</b></div>
   </div>
   <div id="addrs"></div>
-  <div class="note">Photo de devanture : Street View intégré (gratuit, rien n'est stocké). Vue aérienne © IGN · Parcelles © DGFiP/IGN · Adresses BAN.</div>
+  <div class="note">Photo de devanture : Street View intégré (gratuit, rien n'est stocké). Bâtiments et rues © IGN BD TOPO · Parcelles © DGFiP/IGN · Adresses BAN.</div>
 </div>
 <div id="toast"></div>
 <div id="diag" style="position:absolute;left:12px;right:12px;top:calc(60px + env(safe-area-inset-top));background:rgba(120,20,20,.92);border-radius:10px;padding:10px 12px;font-size:12px;z-index:30;display:none;white-space:pre-wrap"></div>
@@ -85,33 +85,49 @@ function save(){ try{ localStorage.setItem('proto-cadastre', JSON.stringify(stat
 
 const diag = document.getElementById('diag'); const diagMsgs=[];
 function dsay(m){ if(diagMsgs.includes(m)) return; diagMsgs.push(m); diag.textContent = diagMsgs.join('\n'); diag.style.display='block'; }
-if(!maplibregl.supported || !maplibregl.supported()) dsay('WebGL indisponible dans ce navigateur : ouvre le lien dans Safari ou Chrome.');
+try{ const cv=document.createElement('canvas'); if(!(cv.getContext('webgl2')||cv.getContext('webgl'))) dsay('WebGL indisponible dans ce navigateur : ouvre le lien dans Safari ou Chrome.'); }catch(e){ dsay('WebGL indisponible : ouvre le lien dans Safari ou Chrome.'); }
 window.addEventListener('error', e=>dsay('Erreur JS : '+e.message));
+const ST_COLOR = ['match',['coalesce',['feature-state','st'],'free'],'me','#4f8cff','other','#ff6b6b','mixed','#b57bff','#f4efe4'];
 const map = new maplibregl.Map({
   container:'map',
-  center:[2.3396,48.8818], zoom:17, minZoom:11, maxZoom:19.5,
-  attributionControl:true,
+  center:[2.3396,48.8818], zoom:17, pitch:58, bearing:-17, minZoom:15, maxZoom:19.5,
+  attributionControl:true, antialias:true,
   style:{
     version:8,
+    glyphs:'https://data.geopf.fr/annexes/ressources/vectorTiles/fonts/{fontstack}/{range}.pbf',
     sources:{
-      ortho:{ type:'raster', tileSize:256, maxzoom:19,
-        tiles:['https://data.geopf.fr/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=HR.ORTHOIMAGERY.ORTHOPHOTOS&STYLE=normal&TILEMATRIXSET=PM&TILEMATRIX={z}&TILEROW={y}&TILECOL={x}&FORMAT=image/jpeg'],
-        attribution:'© IGN' },
+      topo:{ type:'vector', tiles:['https://data.geopf.fr/tms/1.0.0/BDTOPO/{z}/{x}/{y}.pbf'], minzoom:15, maxzoom:19, promoteId:{batiment:'cleabs'}, attribution:'© IGN BD TOPO' },
       pci:{ type:'vector', tiles:['https://data.geopf.fr/tms/1.0.0/PCI/{z}/{x}/{y}.pbf'], minzoom:15, maxzoom:19, promoteId:{parcelle:'idu'}, attribution:'© DGFiP/IGN' }
     },
     layers:[
-      { id:'ortho', type:'raster', source:'ortho', paint:{ 'raster-saturation':-0.25, 'raster-brightness-max':0.85 } },
-      { id:'parcel-fill', type:'fill', source:'pci', 'source-layer':'parcelle', minzoom:15,
-        paint:{ 'fill-color':['match',['coalesce',['feature-state','st'],'free'],'me','#3b82f6','other','#ef4444','mixed','#a855f7','#ffffff'],
-                'fill-opacity':['match',['coalesce',['feature-state','st'],'free'],'free',0.06,0.45] } },
-      { id:'parcel-line', type:'line', source:'pci', 'source-layer':'parcelle', minzoom:15,
-        paint:{ 'line-color':['case',['boolean',['feature-state','sel'],false],'#ffd65a','#ffffff'], 'line-width':['case',['boolean',['feature-state','sel'],false],3,0.8], 'line-opacity':0.9 } }
+      { id:'bg', type:'background', paint:{ 'background-color':'#e9e3d6' } },
+      { id:'veget', type:'fill', source:'topo', 'source-layer':'zone_de_vegetation', paint:{ 'fill-color':'#cfe2b4', 'fill-opacity':0.9 } },
+      { id:'parc', type:'fill', source:'topo', 'source-layer':'parc_ou_reserve', paint:{ 'fill-color':'#c3dca6', 'fill-opacity':0.5 } },
+      { id:'sport', type:'fill', source:'topo', 'source-layer':'terrain_de_sport', paint:{ 'fill-color':'#bfe0c2' } },
+      { id:'water', type:'fill', source:'topo', 'source-layer':'surface_hydrographique', paint:{ 'fill-color':'#a6cfe8' } },
+      { id:'parcel-fill', type:'fill', source:'pci', 'source-layer':'parcelle',
+        paint:{ 'fill-color':['match',['coalesce',['feature-state','st'],'free'],'me','#4f8cff','other','#ff6b6b','mixed','#b57bff','#ffffff'],
+                'fill-opacity':['match',['coalesce',['feature-state','st'],'free'],'free',0.0,0.28] } },
+      { id:'parcel-line', type:'line', source:'pci', 'source-layer':'parcelle',
+        paint:{ 'line-color':['case',['boolean',['feature-state','sel'],false],'#e0a800','#b9b09c'], 'line-width':['case',['boolean',['feature-state','sel'],false],3,0.7] } },
+      { id:'rail', type:'line', source:'topo', 'source-layer':'troncon_de_voie_ferree', paint:{ 'line-color':'#9a948a', 'line-width':2, 'line-dasharray':[3,2] } },
+      { id:'road-casing', type:'line', source:'topo', 'source-layer':'troncon_de_route', layout:{ 'line-cap':'round','line-join':'round' },
+        paint:{ 'line-color':'#cfc7b6', 'line-width':['interpolate',['linear'],['zoom'],15,['case',['<=',['coalesce',['get','importance'],5],3],6,3],19,['case',['<=',['coalesce',['get','importance'],5],3],30,16]] } },
+      { id:'road', type:'line', source:'topo', 'source-layer':'troncon_de_route', layout:{ 'line-cap':'round','line-join':'round' },
+        paint:{ 'line-color':['case',['<=',['coalesce',['get','importance'],5],3],'#fff8e6','#ffffff'], 'line-width':['interpolate',['linear'],['zoom'],15,['case',['<=',['coalesce',['get','importance'],5],3],4,2],19,['case',['<=',['coalesce',['get','importance'],5],3],26,13]] } },
+      { id:'bati-3d', type:'fill-extrusion', source:'topo', 'source-layer':'batiment', filter:['!=',['get','construction_legere'],true],
+        paint:{ 'fill-extrusion-color':['case',['boolean',['feature-state','sel'],false],'#ffd65a',ST_COLOR],
+                'fill-extrusion-height':['coalesce',['get','hauteur'],9], 'fill-extrusion-base':0,
+                'fill-extrusion-opacity':0.96, 'fill-extrusion-vertical-gradient':true } },
+      { id:'road-label', type:'symbol', source:'topo', 'source-layer':'troncon_de_route', minzoom:16,
+        layout:{ 'symbol-placement':'line', 'text-field':['coalesce',['get','nom_voie_ban_droite'],['get','nom_voie_ban_gauche'],''], 'text-font':['Open Sans Regular'], 'text-size':12, 'symbol-spacing':300 },
+        paint:{ 'text-color':'#6b645a', 'text-halo-color':'#ffffff', 'text-halo-width':1.2 } }
     ]
   }
 });
 map.addControl(new maplibregl.NavigationControl({showCompass:false}), 'bottom-right');
 map.on('error', e=>{ const m=(e&&e.error&&e.error.message)||String(e); if(/style/i.test(m)) dsay('Erreur de style : '+m); else dsay('Erreur de tuiles : '+m.slice(0,140)); });
-map.on('load', ()=>{ setTimeout(()=>{ if(!map.isStyleLoaded()) dsay('Le style ne se charge pas.'); const src=map.getSource('ortho'); if(src && !map.isSourceLoaded('ortho')) dsay('Photos IGN non chargées (réseau bloqué ?).'); }, 8000); });
+map.on('load', ()=>{ setTimeout(()=>{ if(!map.isStyleLoaded()) dsay('Le style ne se charge pas.'); if(!map.isSourceLoaded('topo')) dsay('Données IGN non chargées (réseau bloqué ?).'); }, 8000); });
 
 const hint = document.getElementById('hint');
 map.on('zoom', ()=>{ hint.style.display = map.getZoom() < 15 ? 'block' : 'none'; });
@@ -122,7 +138,7 @@ function hash(s){ let h=0; for(const c of s) h=(h*31+c.charCodeAt(0))|0; return 
 function pricePerM2(citycode){ const a = parseInt((citycode||'').slice(3))||10; return a<=8 ? 4 : (a<=16 ? 3 : 2); }
 function addrPrice(contenance, citycode, nb){ return Math.max(300, Math.round((contenance||300)*pricePerM2(citycode)/Math.max(1,nb)/10)*10); }
 function rentOf(price){ return Math.max(5, Math.round(price*0.012)); }
-function parcelSeed(idu){ const h = hash(String(idu)) % 100; return h<14 ? 'other' : (h<17 ? 'mixed' : 'free'); }
+function parcelSeed(idu){ const h = hash(String(idu)) % 100; return h<8 ? 'other' : (h<11 ? 'mixed' : 'free'); }
 function ownerOf(addrId, idu, idx){
   if (state.owned[addrId]) return state.owned[addrId].owner;
   const seed = parcelSeed(idu);
@@ -151,7 +167,7 @@ function parcelState(idu){
   if(others && !mine) return 'other';
   return 'mixed';
 }
-function paintParcel(idu){ const st = parcelState(idu); if(st) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st}); }
+function paintParcel(idu){ const st = parcelState(idu); if(st) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st}); if(typeof paintBuildings==='function') paintBuildings(); }
 
 // Pre-color visible parcels (demo): fake owners derived deterministically from the parcel id
 function seedVisible(){
@@ -166,16 +182,35 @@ function seedVisible(){
     map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st});
   }
 }
-map.on('idle', seedVisible);
+const batiParcel = {}; // cleabs -> idu
+function paintBuildings(){
+  const feats = map.queryRenderedFeatures({layers:['bati-3d']});
+  const parcels = map.queryRenderedFeatures({layers:['parcel-fill']});
+  for(const b of feats){
+    const id = b.id; if(!id) continue;
+    let idu = batiParcel[id];
+    if(idu===undefined){
+      const c = centroid(b.geometry); idu = null;
+      for(const pf of parcels){ if(inside(c, pf.geometry)){ idu = pf.id; break; } }
+      batiParcel[id] = idu;
+    }
+    const st = idu ? (map.getFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}).st || 'free') : 'free';
+    map.setFeatureState({source:'topo', sourceLayer:'batiment', id}, {st, sel: idu && idu===selected});
+  }
+}
+map.on('idle', ()=>{ seedVisible(); paintBuildings(); });
 
 // ---------- click ----------
 let selected = null;
 map.on('click', async (e)=>{
-  const feats = map.queryRenderedFeatures(e.point, {layers:['parcel-fill']});
+  let feats = map.queryRenderedFeatures(e.point, {layers:['bati-3d','parcel-fill']});
   if(!feats.length){ closeSheet(); return; }
-  const f = feats[0];
+  let f = feats.find(x=>x.layer.id==='parcel-fill');
+  const b = feats.find(x=>x.layer.id==='bati-3d');
+  if(b && batiParcel[b.id]){ const pf = map.querySourceFeatures('pci',{sourceLayer:'parcelle', filter:['==',['get','idu'],batiParcel[b.id]]})[0]; if(pf) f = pf; }
+  if(!f){ closeSheet(); return; }
   if(selected) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:false});
-  selected = f.id; map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:true});
+  selected = f.id; map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:true}); paintBuildings();
   openParcel(f, [e.lngLat.lng, e.lngLat.lat]);
 });
 
