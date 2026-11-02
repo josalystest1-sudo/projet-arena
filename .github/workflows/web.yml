@@ -2,7 +2,7 @@ name: Export web et publication sur GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, proto-cadastre]
   # Aperçu du combat V2 (branche combat-v2, docs/SPEC-COMBAT-V2.md) : chaque fois que ses tests passent après une
   # fusion, le site est republié avec le jeu de main à la racine et celui de combat-v2 sous /v2/. Ce flux tourne
   # depuis main, la seule branche autorisée à publier sur GitHub Pages.
