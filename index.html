@@ -9,17 +9,27 @@
 <style>
   :root{--bg:#11131c;--panel:#171a26;--line:#2a2e40;--txt:#f3f4f8;--muted:#9aa0b8;--gold:#ffd65a;--me:#3b82f6;--other:#ef4444;--mixed:#a855f7}
   *{box-sizing:border-box}
-  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  html,body{margin:0;height:100%;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
   #map{position:absolute;inset:0}
-  #top{position:absolute;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top)) 12px 10px;display:flex;gap:8px;align-items:center;justify-content:space-between;pointer-events:none;z-index:5}
+  #top{position:absolute;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top)) 12px 0;display:flex;flex-direction:column;gap:8px;pointer-events:none;z-index:5}
   #top > *{pointer-events:auto}
-  .pill{background:rgba(17,19,28,.92);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:14px;display:flex;gap:10px;align-items:center;backdrop-filter:blur(6px)}
+  .row{display:flex;gap:8px;align-items:center;justify-content:space-between}
+  .pill{background:rgba(17,19,28,.92);border:1px solid var(--line);border-radius:999px;padding:8px 14px;font-size:14px;display:flex;gap:8px;align-items:center;backdrop-filter:blur(6px);white-space:nowrap}
   .pill b{color:var(--gold)}
   .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
-  #hint{position:absolute;left:50%;transform:translateX(-50%);top:calc(60px + env(safe-area-inset-top));background:rgba(17,19,28,.9);border:1px solid var(--line);padding:8px 14px;border-radius:10px;font-size:13px;color:var(--muted);z-index:5;display:none}
-  #legend{position:absolute;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));background:rgba(17,19,28,.9);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:12px;z-index:5;display:flex;gap:12px}
+  #search{display:flex;gap:6px;background:rgba(17,19,28,.94);border:1px solid var(--line);border-radius:14px;padding:6px 6px 6px 12px;backdrop-filter:blur(6px);align-items:center}
+  #search input{flex:1;background:transparent;border:0;color:var(--txt);font-size:15px;outline:none;min-width:0}
+  #search button{background:var(--gold);border:0;border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+  #sugg{background:rgba(17,19,28,.96);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:none}
+  #sugg div{padding:10px 12px;font-size:14px;border-bottom:1px solid var(--line);cursor:pointer}
+  #sugg div:last-child{border-bottom:0}
+  #sugg small{color:var(--muted);display:block;font-size:12px}
+  #ctrls{position:absolute;right:12px;top:calc(118px + env(safe-area-inset-top));display:flex;flex-direction:column;gap:8px;z-index:5}
+  .rbtn{width:46px;height:46px;border-radius:12px;background:rgba(17,19,28,.92);border:1px solid var(--line);color:var(--txt);font-weight:800;font-size:13px;cursor:pointer;backdrop-filter:blur(6px)}
+  .rbtn.on{background:var(--gold);color:#111;border-color:var(--gold)}
+  #legend{position:absolute;left:12px;bottom:calc(12px + env(safe-area-inset-bottom));background:rgba(17,19,28,.9);border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:12px;z-index:5;display:flex;gap:10px;flex-wrap:wrap;max-width:70%}
   #legend span{display:flex;align-items:center;gap:5px}
-  #sheet{position:absolute;left:0;right:0;bottom:0;max-height:78%;background:var(--panel);border-top:2px solid var(--gold);border-radius:22px 22px 0 0;transform:translateY(105%);transition:transform .25s ease;z-index:10;overflow:auto;padding:14px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.5)}
+  #sheet{position:absolute;left:0;right:0;bottom:0;max-height:80%;background:var(--panel);border-top:2px solid var(--gold);border-radius:22px 22px 0 0;transform:translateY(105%);transition:transform .25s ease;z-index:10;overflow:auto;padding:14px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.5)}
   #sheet.open{transform:translateY(0)}
   #sheet .close{position:absolute;right:12px;top:10px;background:var(--line);border:0;color:var(--txt);width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer}
   h2{margin:4px 0 2px;font-size:20px}
@@ -27,10 +37,14 @@
   .sv{width:100%;aspect-ratio:16/10;border:0;border-radius:14px;background:#000;display:block}
   .svwrap{position:relative;margin-bottom:10px}
   .svwrap a.ext{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.65);color:#fff;font-size:12px;padding:5px 9px;border-radius:8px;text-decoration:none}
-  .addr{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:#1c1f2c}
+  .addr{padding:10px 12px;border:1px solid var(--line);border-radius:12px;margin-bottom:8px;background:#1c1f2c}
+  .addr .top{display:flex;align-items:center;justify-content:space-between;gap:10px}
   .addr .n{font-weight:600;font-size:15px}
   .addr .m{color:var(--muted);font-size:12px}
+  .build{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
   .btn{background:var(--gold);color:#111;border:0;border-radius:10px;padding:9px 14px;font-weight:700;font-size:14px;cursor:pointer;white-space:nowrap}
+  .btn.sm{padding:7px 10px;font-size:13px;background:#2a2e40;color:var(--txt)}
+  .btn.sm.next{background:var(--gold);color:#111}
   .btn:disabled{opacity:.4;cursor:default}
   .own{font-size:13px;padding:6px 10px;border-radius:8px;white-space:nowrap;font-weight:600}
   .own.me{background:rgba(59,130,246,.2);color:#8ab4ff}
@@ -41,21 +55,31 @@
   .stat b{font-size:17px}
   .note{color:var(--muted);font-size:12px;margin-top:8px}
   .maplibregl-ctrl-attrib{font-size:10px}
-  #toast{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--gold);color:#111;padding:12px 18px;border-radius:12px;font-weight:700;z-index:20;display:none}
+  #toast{position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);background:var(--gold);color:#111;padding:12px 18px;border-radius:12px;font-weight:700;z-index:20;display:none;text-align:center}
+  #diag{position:absolute;left:12px;right:12px;top:calc(130px + env(safe-area-inset-top));background:rgba(120,20,20,.92);border-radius:10px;padding:10px 12px;font-size:12px;z-index:30;display:none;white-space:pre-wrap}
+  .badge{width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
 <div id="map"></div>
 <div id="top">
-  <div class="pill"><span class="dot" style="background:var(--me)"></span> Gautier · <span id="count">0</span> adresse(s)</div>
-  <div class="pill">Solde <b id="wallet">10 000 ₳</b></div>
+  <div class="row">
+    <div class="pill"><span class="dot" style="background:var(--me)"></span> Gautier · <span id="count">0</span> adr.</div>
+    <div class="pill" id="walletpill" title="Encaisser">Solde <b id="wallet">10 000 ₳</b> <span id="pending" style="color:#7ee787;font-size:12px"></span></div>
+  </div>
+  <div id="search"><input id="q" type="search" placeholder="Chercher une adresse (ex. 67 rue des Martyrs Paris)" autocomplete="off"><button id="go">OK</button></div>
+  <div id="sugg"></div>
 </div>
-<div id="hint">Zoomez pour voir les parcelles</div>
+<div id="ctrls">
+  <button class="rbtn on" id="b3d" title="Vue 3D">3D</button>
+  <button class="rbtn" id="b2d" title="Vue de dessus">2D</button>
+  <button class="rbtn" id="bnorth" title="Remettre le nord en haut">N</button>
+</div>
 <div id="legend">
   <span><i class="dot" style="background:var(--me)"></i>À moi</span>
   <span><i class="dot" style="background:var(--other)"></i>Autre joueur</span>
   <span><i class="dot" style="background:var(--mixed)"></i>Partagée</span>
-  <span><i class="dot" style="background:#f4efe4;border:1px solid #b9b09c"></i>Libre</span>
+  <span>🏠🏢🏙 construit</span>
 </div>
 <div id="sheet">
   <button class="close" onclick="closeSheet()">×</button>
@@ -71,23 +95,42 @@
     <div class="stat"><small>ADRESSES</small><b id="nb">—</b></div>
   </div>
   <div id="addrs"></div>
-  <div class="note">Photo de devanture : Street View intégré (gratuit, rien n'est stocké). Bâtiments et rues © IGN BD TOPO · Parcelles © DGFiP/IGN · Adresses BAN.</div>
+  <div class="note">Devanture : Street View intégré (gratuit, rien n'est stocké). Bâtiments et rues © IGN BD TOPO · Parcelles © DGFiP/IGN · Adresses BAN. Démo : 1 jour de loyer = 1 minute réelle.</div>
 </div>
 <div id="toast"></div>
-<div id="diag" style="position:absolute;left:12px;right:12px;top:calc(60px + env(safe-area-inset-top));background:rgba(120,20,20,.92);border-radius:10px;padding:10px 12px;font-size:12px;z-index:30;display:none;white-space:pre-wrap"></div>
+<div id="diag"></div>
 
 <script>
 const ME = 'Gautier';
 const FAKE = ['Léa','Marco','Inès','Yanis','Chloé','Sacha'];
-let state = { wallet: 10000, owned: {} }; // owned[addrId] = {owner, idu, label, price, lon, lat}
-try { const s = localStorage.getItem('proto-cadastre'); if (s) state = JSON.parse(s); } catch(e){}
-function save(){ try{ localStorage.setItem('proto-cadastre', JSON.stringify(state)); }catch(e){} }
+// Niveaux de construction façon Monopoly : coût = multiple du prix de l'adresse, loyer = multiple du loyer de base
+const NIVEAUX = [
+  { nom:'Terrain', icone:'', cout:0, loyer:1, hauteur:0 },
+  { nom:'Maison', icone:'🏠', cout:1.5, loyer:2.5, hauteur:6 },
+  { nom:'Immeuble', icone:'🏢', cout:4, loyer:6, hauteur:18 },
+  { nom:'Tour', icone:'🏙', cout:10, loyer:15, hauteur:45 }
+];
+const JOUR_MS = 60*1000; // démo : un jour = une minute
+let state = { wallet: 10000, owned: {}, encaisse: Date.now() };
+try { const s = localStorage.getItem('proto-cadastre-v2'); if (s) state = JSON.parse(s); } catch(e){}
+function save(){ try{ localStorage.setItem('proto-cadastre-v2', JSON.stringify(state)); }catch(e){} }
 
 const diag = document.getElementById('diag'); const diagMsgs=[];
 function dsay(m){ if(diagMsgs.includes(m)) return; diagMsgs.push(m); diag.textContent = diagMsgs.join('\n'); diag.style.display='block'; }
-try{ const cv=document.createElement('canvas'); if(!(cv.getContext('webgl2')||cv.getContext('webgl'))) dsay('WebGL indisponible dans ce navigateur : ouvre le lien dans Safari ou Chrome.'); }catch(e){ dsay('WebGL indisponible : ouvre le lien dans Safari ou Chrome.'); }
+try{ const cv=document.createElement('canvas'); if(!(cv.getContext('webgl2')||cv.getContext('webgl'))) dsay('WebGL indisponible dans ce navigateur : ouvre le lien dans Safari ou Chrome.'); }catch(e){}
 window.addEventListener('error', e=>dsay('Erreur JS : '+e.message));
-const ST_COLOR = ['match',['coalesce',['feature-state','st'],'free'],'me','#4f8cff','other','#ff6b6b','mixed','#b57bff','#f4efe4'];
+
+// ---------- style ----------
+const ST = ['coalesce',['feature-state','st'],'free'];
+const SEL = ['boolean',['feature-state','sel'],false];
+// teinte de base d'un bâtiment libre : variée à partir des derniers chiffres de son identifiant
+const TEINTE = ['%',['to-number',['slice',['get','cleabs'],-2]],5];
+const COULEUR_LIBRE = ['match',TEINTE, 0,'#f3ead9', 1,'#ece0cc', 2,'#f6efe3', 3,'#e9dfd0', 4,'#f0e6d6', '#f1e8d8'];
+const COULEUR_BATI = ['case', SEL, '#ffd65a',
+  ['match',ST,'me','#5b93ff','other','#ff7b72','mixed','#c08cff', COULEUR_LIBRE]];
+const HAUTEUR = ['+', ['coalesce',['get','hauteur'],9], ['coalesce',['feature-state','bonus'],0]];
+const IMPORTANT = ['<=',['to-number',['coalesce',['get','importance'],'5']],3];
+
 const map = new maplibregl.Map({
   container:'map',
   center:[2.3396,48.8818], zoom:17, pitch:58, bearing:-17, minZoom:15, maxZoom:19.5,
@@ -95,49 +138,96 @@ const map = new maplibregl.Map({
   style:{
     version:8,
     glyphs:'https://data.geopf.fr/annexes/ressources/vectorTiles/fonts/{fontstack}/{range}.pbf',
+    light:{ anchor:'viewport', color:'#fff7e6', intensity:0.45, position:[1.3,200,40] },
     sources:{
       topo:{ type:'vector', tiles:['https://data.geopf.fr/tms/1.0.0/BDTOPO/{z}/{x}/{y}.pbf'], minzoom:15, maxzoom:19, promoteId:{batiment:'cleabs'}, attribution:'© IGN BD TOPO' },
       pci:{ type:'vector', tiles:['https://data.geopf.fr/tms/1.0.0/PCI/{z}/{x}/{y}.pbf'], minzoom:15, maxzoom:19, promoteId:{parcelle:'idu'}, attribution:'© DGFiP/IGN' }
     },
     layers:[
-      { id:'bg', type:'background', paint:{ 'background-color':'#e9e3d6' } },
-      { id:'veget', type:'fill', source:'topo', 'source-layer':'zone_de_vegetation', paint:{ 'fill-color':'#cfe2b4', 'fill-opacity':0.9 } },
-      { id:'parc', type:'fill', source:'topo', 'source-layer':'parc_ou_reserve', paint:{ 'fill-color':'#c3dca6', 'fill-opacity':0.5 } },
-      { id:'sport', type:'fill', source:'topo', 'source-layer':'terrain_de_sport', paint:{ 'fill-color':'#bfe0c2' } },
-      { id:'water', type:'fill', source:'topo', 'source-layer':'surface_hydrographique', paint:{ 'fill-color':'#a6cfe8' } },
+      { id:'bg', type:'background', paint:{ 'background-color':'#dcd6c6' } },
+      { id:'ilot', type:'fill', source:'pci', 'source-layer':'parcelle', paint:{ 'fill-color':'#e7e0cf' } },
+      { id:'veget', type:'fill', source:'topo', 'source-layer':'zone_de_vegetation', paint:{ 'fill-color':'#b9d79a', 'fill-opacity':0.9 } },
+      { id:'parc', type:'fill', source:'topo', 'source-layer':'parc_ou_reserve', paint:{ 'fill-color':'#a9cf8c', 'fill-opacity':0.5 } },
+      { id:'sport', type:'fill', source:'topo', 'source-layer':'terrain_de_sport', paint:{ 'fill-color':'#9fd3b0' } },
+      { id:'water', type:'fill', source:'topo', 'source-layer':'surface_hydrographique', paint:{ 'fill-color':'#8fc3e6' } },
       { id:'parcel-fill', type:'fill', source:'pci', 'source-layer':'parcelle',
-        paint:{ 'fill-color':['match',['coalesce',['feature-state','st'],'free'],'me','#4f8cff','other','#ff6b6b','mixed','#b57bff','#ffffff'],
-                'fill-opacity':['match',['coalesce',['feature-state','st'],'free'],'free',0.0,0.28] } },
+        paint:{ 'fill-color':['match',ST,'me','#3b82f6','other','#ef4444','mixed','#a855f7','#ffffff'],
+                'fill-opacity':['match',ST,'free',0.0,0.25] } },
       { id:'parcel-line', type:'line', source:'pci', 'source-layer':'parcelle',
-        paint:{ 'line-color':['case',['boolean',['feature-state','sel'],false],'#e0a800','#b9b09c'], 'line-width':['case',['boolean',['feature-state','sel'],false],3,0.7] } },
-      { id:'rail', type:'line', source:'topo', 'source-layer':'troncon_de_voie_ferree', paint:{ 'line-color':'#9a948a', 'line-width':2, 'line-dasharray':[3,2] } },
+        paint:{ 'line-color':['case',SEL,'#e0a800','#c9c0ac'], 'line-width':['case',SEL,3,0.6] } },
+      { id:'rail', type:'line', source:'topo', 'source-layer':'troncon_de_voie_ferree', paint:{ 'line-color':'#8d877c', 'line-width':2, 'line-dasharray':[3,2] } },
+      // trottoirs (bande claire), puis la chaussée, puis l'axe des grandes rues
+      { id:'road-side', type:'line', source:'topo', 'source-layer':'troncon_de_route', layout:{ 'line-cap':'round','line-join':'round' },
+        paint:{ 'line-color':'#cfc8b8', 'line-width':['interpolate',['exponential',1.6],['zoom'],15,['case',IMPORTANT,9,4.5],19,['case',IMPORTANT,46,26]] } },
       { id:'road-casing', type:'line', source:'topo', 'source-layer':'troncon_de_route', layout:{ 'line-cap':'round','line-join':'round' },
-        paint:{ 'line-color':'#cfc7b6', 'line-width':['interpolate',['linear'],['zoom'],15,['case',['<=',['coalesce',['get','importance'],5],3],6,3],19,['case',['<=',['coalesce',['get','importance'],5],3],30,16]] } },
+        paint:{ 'line-color':'#a39d91', 'line-width':['interpolate',['exponential',1.6],['zoom'],15,['case',IMPORTANT,7,3.4],19,['case',IMPORTANT,36,19]] } },
       { id:'road', type:'line', source:'topo', 'source-layer':'troncon_de_route', layout:{ 'line-cap':'round','line-join':'round' },
-        paint:{ 'line-color':['case',['<=',['coalesce',['get','importance'],5],3],'#fff8e6','#ffffff'], 'line-width':['interpolate',['linear'],['zoom'],15,['case',['<=',['coalesce',['get','importance'],5],3],4,2],19,['case',['<=',['coalesce',['get','importance'],5],3],26,13]] } },
+        paint:{ 'line-color':['case',IMPORTANT,'#fbf3df','#f7f3ea'], 'line-width':['interpolate',['exponential',1.6],['zoom'],15,['case',IMPORTANT,6,2.8],19,['case',IMPORTANT,32,16]] } },
+      { id:'road-axis', type:'line', source:'topo', 'source-layer':'troncon_de_route', minzoom:17, filter:IMPORTANT,
+        paint:{ 'line-color':'#d9cfae', 'line-width':1.2, 'line-dasharray':[4,4] } },
       { id:'bati-3d', type:'fill-extrusion', source:'topo', 'source-layer':'batiment', filter:['!=',['get','construction_legere'],true],
-        paint:{ 'fill-extrusion-color':['case',['boolean',['feature-state','sel'],false],'#ffd65a',ST_COLOR],
-                'fill-extrusion-height':['coalesce',['get','hauteur'],9], 'fill-extrusion-base':0,
-                'fill-extrusion-opacity':0.96, 'fill-extrusion-vertical-gradient':true } },
+        paint:{ 'fill-extrusion-color':COULEUR_BATI, 'fill-extrusion-height':HAUTEUR, 'fill-extrusion-base':0,
+                'fill-extrusion-opacity':0.97, 'fill-extrusion-vertical-gradient':true } },
       { id:'road-label', type:'symbol', source:'topo', 'source-layer':'troncon_de_route', minzoom:16,
-        layout:{ 'symbol-placement':'line', 'text-field':['coalesce',['get','nom_voie_ban_droite'],['get','nom_voie_ban_gauche'],''], 'text-font':['Open Sans Regular'], 'text-size':12, 'symbol-spacing':300 },
-        paint:{ 'text-color':'#6b645a', 'text-halo-color':'#ffffff', 'text-halo-width':1.2 } }
+        layout:{ 'symbol-placement':'line', 'text-field':['coalesce',['get','nom_voie_ban_droite'],['get','nom_voie_ban_gauche'],''], 'text-font':['Open Sans Regular'], 'text-size':12, 'symbol-spacing':320 },
+        paint:{ 'text-color':'#5f584e', 'text-halo-color':'#ffffff', 'text-halo-width':1.3 } }
     ]
   }
 });
 map.addControl(new maplibregl.NavigationControl({showCompass:false}), 'bottom-right');
-map.on('error', e=>{ const m=(e&&e.error&&e.error.message)||String(e); if(/style/i.test(m)) dsay('Erreur de style : '+m); else dsay('Erreur de tuiles : '+m.slice(0,140)); });
-map.on('load', ()=>{ setTimeout(()=>{ if(!map.isStyleLoaded()) dsay('Le style ne se charge pas.'); if(!map.isSourceLoaded('topo')) dsay('Données IGN non chargées (réseau bloqué ?).'); }, 8000); });
+map.on('error', e=>{ const m=(e&&e.error&&e.error.message)||String(e); if(/style/i.test(m)) dsay('Erreur de style : '+m.slice(0,160)); });
+map.on('load', ()=>{ setTimeout(()=>{ if(!map.isSourceLoaded('topo')) dsay('Données IGN non chargées (réseau bloqué ?).'); }, 9000); });
 
-const hint = document.getElementById('hint');
-map.on('zoom', ()=>{ hint.style.display = map.getZoom() < 15 ? 'block' : 'none'; });
+// ---------- vues ----------
+const b3d=document.getElementById('b3d'), b2d=document.getElementById('b2d');
+function vue3d(){ map.easeTo({pitch:58, duration:500}); b3d.classList.add('on'); b2d.classList.remove('on'); }
+function vue2d(){ map.easeTo({pitch:0, bearing:0, duration:500}); b2d.classList.add('on'); b3d.classList.remove('on'); }
+b3d.onclick=vue3d; b2d.onclick=vue2d;
+document.getElementById('bnorth').onclick=()=>map.easeTo({bearing:0, duration:400});
+map.on('pitchend', ()=>{ const p=map.getPitch()>5; b3d.classList.toggle('on',p); b2d.classList.toggle('on',!p); });
 
-// ---------- helpers ----------
-function fmt(n){ return n.toLocaleString('fr-FR') + ' ₳'; }
+// ---------- recherche ----------
+const q=document.getElementById('q'), sugg=document.getElementById('sugg');
+let tmr=null;
+q.addEventListener('input', ()=>{ clearTimeout(tmr); tmr=setTimeout(suggest, 250); });
+q.addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); goFirst(); } });
+document.getElementById('go').onclick=goFirst;
+async function geocode(text, limit){
+  const r = await fetch(`https://data.geopf.fr/geocodage/search?q=${encodeURIComponent(text)}&index=address&limit=${limit}`);
+  const j = await r.json(); return j.features||[];
+}
+async function suggest(){
+  const t=q.value.trim(); if(t.length<3){ sugg.style.display='none'; return; }
+  try{ const f = await geocode(t,5); sugg.innerHTML='';
+    f.forEach(x=>{ const d=document.createElement('div'); d.innerHTML=`${x.properties.name}<small>${x.properties.postcode} ${x.properties.city}</small>`; d.onclick=()=>goTo(x); sugg.appendChild(d); });
+    sugg.style.display = f.length ? 'block':'none';
+  }catch(e){ sugg.style.display='none'; }
+}
+async function goFirst(){ const t=q.value.trim(); if(!t) return; try{ const f=await geocode(t,1); if(f[0]) goTo(f[0]); else toast('Adresse introuvable'); }catch(e){ toast('Recherche impossible'); } }
+let pin=null;
+function goTo(f){
+  sugg.style.display='none'; q.blur(); q.value=f.properties.label;
+  const [lon,lat]=f.geometry.coordinates;
+  map.flyTo({center:[lon,lat], zoom: f.properties.type==='housenumber'?18:16.5, duration:1200});
+  if(pin) pin.remove();
+  pin = new maplibregl.Marker({color:'#ffd65a'}).setLngLat([lon,lat]).addTo(map);
+  if(f.properties.type==='housenumber'){ map.once('moveend', ()=>{ const pt=map.project([lon,lat]); const ff=map.queryRenderedFeatures(pt,{layers:['parcel-fill']}); if(ff[0]) selectParcel(ff[0]); }); }
+}
+
+// ---------- aides ----------
+function fmt(n){ return Math.round(n).toLocaleString('fr-FR') + ' ₳'; }
 function hash(s){ let h=0; for(const c of s) h=(h*31+c.charCodeAt(0))|0; return Math.abs(h); }
 function pricePerM2(citycode){ const a = parseInt((citycode||'').slice(3))||10; return a<=8 ? 4 : (a<=16 ? 3 : 2); }
 function addrPrice(contenance, citycode, nb){ return Math.max(300, Math.round((contenance||300)*pricePerM2(citycode)/Math.max(1,nb)/10)*10); }
-function rentOf(price){ return Math.max(5, Math.round(price*0.012)); }
+function rentBase(price){ return Math.max(5, Math.round(price*0.012)); }
+function rentOf(a){ return rentBase(a.price) * NIVEAUX[a.niveau||0].loyer; }
+function centroid(geom){ const ring = geom.type==='Polygon' ? geom.coordinates[0] : geom.coordinates[0][0]; let x=0,y=0; for(const [a,b] of ring){x+=a;y+=b;} return [x/ring.length, y/ring.length]; }
+function inside(pt, geom){ const rings = geom.type==='Polygon' ? [geom.coordinates[0]] : geom.coordinates.map(p=>p[0]);
+  return rings.some(r=>{ let ins=false; for(let i=0,j=r.length-1;i<r.length;j=i++){ const [xi,yi]=r[i],[xj,yj]=r[j]; if(((yi>pt[1])!==(yj>pt[1])) && (pt[0] < (xj-xi)*(pt[1]-yi)/(yj-yi)+xi)) ins=!ins; } return ins; }); }
+function dist(a,b){ const dx=(a[0]-b[0])*Math.cos(a[1]*Math.PI/180)*111320, dy=(a[1]-b[1])*110540; return Math.hypot(dx,dy); }
+
+// ---------- propriété ----------
+const parcelAddrs = {}; // idu -> [addr]
 function parcelSeed(idu){ const h = hash(String(idu)) % 100; return h<8 ? 'other' : (h<11 ? 'mixed' : 'free'); }
 function ownerOf(addrId, idu, idx){
   if (state.owned[addrId]) return state.owned[addrId].owner;
@@ -145,83 +235,81 @@ function ownerOf(addrId, idu, idx){
   if (seed==='other' || (seed==='mixed' && idx===0)) return FAKE[hash(addrId) % FAKE.length];
   return null;
 }
-function centroid(geom){
-  const ring = geom.type==='Polygon' ? geom.coordinates[0] : geom.coordinates[0][0];
-  let x=0,y=0; for(const [a,b] of ring){x+=a;y+=b;} return [x/ring.length, y/ring.length];
-}
-function inside(pt, geom){
-  const rings = geom.type==='Polygon' ? [geom.coordinates[0]] : geom.coordinates.map(p=>p[0]);
-  return rings.some(r=>{ let ins=false; for(let i=0,j=r.length-1;i<r.length;j=i++){ const [xi,yi]=r[i],[xj,yj]=r[j];
-    if(((yi>pt[1])!==(yj>pt[1])) && (pt[0] < (xj-xi)*(pt[1]-yi)/(yj-yi)+xi)) ins=!ins; } return ins; });
-}
-function dist(a,b){ const dx=(a[0]-b[0])*Math.cos(a[1]*Math.PI/180)*111320, dy=(a[1]-b[1])*110540; return Math.hypot(dx,dy); }
-
-// parcel state (colors) : computed from addresses we know about (cache)
-const parcelAddrs = {}; // idu -> [addr]
+function fakeLevel(addrId){ const h=hash(addrId+'n')%10; return h<5?0:(h<8?1:(h<9?2:3)); }
+function levelOf(addrId, idu, idx){ if(state.owned[addrId]) return state.owned[addrId].niveau||0; return ownerOf(addrId,idu,idx) ? fakeLevel(addrId) : 0; }
 function parcelState(idu){
   const list = parcelAddrs[idu]; if(!list || !list.length) return null;
   const owners = list.map((a,i)=>ownerOf(a.id, idu, i));
   const mine = owners.filter(o=>o===ME).length, others = owners.filter(o=>o && o!==ME).length;
-  if(!mine && !others) return 'free';
-  if(mine && !others) return 'me';
-  if(others && !mine) return 'other';
-  return 'mixed';
+  if(!mine && !others) return 'free'; if(mine && !others) return 'me'; if(others && !mine) return 'other'; return 'mixed';
 }
-function paintParcel(idu){ const st = parcelState(idu); if(st) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st}); if(typeof paintBuildings==='function') paintBuildings(); }
+function parcelBonus(idu){ const list=parcelAddrs[idu]; if(!list) return 0; let b=0; list.forEach((a,i)=>{ b=Math.max(b, NIVEAUX[levelOf(a.id,idu,i)].hauteur); }); return b; }
+function paintParcel(idu){ const st = parcelState(idu); if(st) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st}); paintBuildings(); paintBadges(idu); }
 
-// Pre-color visible parcels (demo): fake owners derived deterministically from the parcel id
 function seedVisible(){
   if(map.getZoom()<15) return;
-  const feats = map.queryRenderedFeatures({layers:['parcel-fill']});
-  const seen = new Set();
+  const feats = map.queryRenderedFeatures({layers:['parcel-fill']}); const seen=new Set();
   for(const f of feats){ const idu=f.id; if(!idu || seen.has(idu)) continue; seen.add(idu);
-    if(parcelAddrs[idu]) { paintParcel(idu); continue; }
+    if(parcelAddrs[idu]) { const st=parcelState(idu); if(st) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st}); continue; }
     let st = parcelSeed(idu);
     const mine = Object.values(state.owned).some(a=>a.idu===idu);
     if(mine){ st = (st==='free') ? 'me' : 'mixed'; }
     map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st});
   }
 }
-const batiParcel = {}; // cleabs -> idu
+const batiParcel = {};
+let selected = null;
 function paintBuildings(){
   const feats = map.queryRenderedFeatures({layers:['bati-3d']});
   const parcels = map.queryRenderedFeatures({layers:['parcel-fill']});
   for(const b of feats){
-    const id = b.id; if(!id) continue;
+    const id=b.id; if(!id) continue;
     let idu = batiParcel[id];
-    if(idu===undefined){
-      const c = centroid(b.geometry); idu = null;
-      for(const pf of parcels){ if(inside(c, pf.geometry)){ idu = pf.id; break; } }
-      batiParcel[id] = idu;
-    }
+    if(idu===undefined){ const c=centroid(b.geometry); idu=null; for(const pf of parcels){ if(inside(c, pf.geometry)){ idu=pf.id; break; } } batiParcel[id]=idu; }
     const st = idu ? (map.getFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}).st || 'free') : 'free';
-    map.setFeatureState({source:'topo', sourceLayer:'batiment', id}, {st, sel: idu && idu===selected});
+    const bonus = idu ? parcelBonus(idu) : 0;
+    map.setFeatureState({source:'topo', sourceLayer:'batiment', id}, {st, sel: !!idu && idu===selected, bonus});
   }
 }
+// badges (🏠🏢🏙) sur les adresses construites
+const badges = {};
+function paintBadges(idu){
+  const list=parcelAddrs[idu]; if(!list) return;
+  list.forEach((a,i)=>{ const lv=levelOf(a.id,idu,i); const key=a.id;
+    if(lv>0 && !badges[key]){ const el=document.createElement('div'); el.className='badge'; el.textContent=NIVEAUX[lv].icone; el.title=NIVEAUX[lv].nom;
+      badges[key]=new maplibregl.Marker({element:el}).setLngLat([a.lon,a.lat]).addTo(map); }
+    else if(badges[key]){ badges[key].getElement().textContent = lv>0 ? NIVEAUX[lv].icone : ''; if(lv===0){ badges[key].remove(); delete badges[key]; } }
+  });
+}
+// au démarrage : les adresses déjà possédées retrouvent leur badge
+function restoreBadges(){ for(const a of Object.values(state.owned)){ if((a.niveau||0)>0 && !badges[a.id]){ const el=document.createElement('div'); el.className='badge'; el.textContent=NIVEAUX[a.niveau].icone; badges[a.id]=new maplibregl.Marker({element:el}).setLngLat([a.lon,a.lat]).addTo(map); } } }
 map.on('idle', ()=>{ seedVisible(); paintBuildings(); });
+map.on('load', restoreBadges);
 
-// ---------- click ----------
-let selected = null;
-map.on('click', async (e)=>{
-  let feats = map.queryRenderedFeatures(e.point, {layers:['bati-3d','parcel-fill']});
+// ---------- clic ----------
+map.on('click', (e)=>{
+  if(sugg.style.display==='block'){ sugg.style.display='none'; }
+  const feats = map.queryRenderedFeatures(e.point, {layers:['bati-3d','parcel-fill']});
   if(!feats.length){ closeSheet(); return; }
   let f = feats.find(x=>x.layer.id==='parcel-fill');
   const b = feats.find(x=>x.layer.id==='bati-3d');
   if(b && batiParcel[b.id]){ const pf = map.querySourceFeatures('pci',{sourceLayer:'parcelle', filter:['==',['get','idu'],batiParcel[b.id]]})[0]; if(pf) f = pf; }
   if(!f){ closeSheet(); return; }
+  selectParcel(f);
+});
+function selectParcel(f){
   if(selected) map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:false});
   selected = f.id; map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:true}); paintBuildings();
-  openParcel(f, [e.lngLat.lng, e.lngLat.lat]);
-});
-
-async function openParcel(f, clickPt){
-  const p = f.properties, idu = f.id;
+  openParcel(f);
+}
+let currentParcel = null;
+async function openParcel(f){
+  const p = f.properties, idu = f.id; currentParcel = {p, idu, geometry:f.geometry};
   document.getElementById('title').textContent = `Parcelle ${p.section} ${p.numero}`;
   document.getElementById('subtitle').textContent = `${p.nom_com} · ${p.code_insee}`;
   document.getElementById('surf').textContent = (p.contenance||'—') + ' m²';
   document.getElementById('addrs').innerHTML = '<div class="sub">Recherche des adresses…</div>';
   document.getElementById('sheet').classList.add('open');
-
   const c = centroid(f.geometry);
   let addrs = parcelAddrs[idu];
   if(!addrs){
@@ -235,44 +323,65 @@ async function openParcel(f, clickPt){
     }catch(err){ addrs = []; }
     parcelAddrs[idu] = addrs;
   }
-  const nb = addrs.length;
-  document.getElementById('nb').textContent = nb || '0';
-  // Street View at the first address (or centroid)
+  renderAddrs(); paintParcel(idu);
+}
+function renderAddrs(){
+  const {p, idu, geometry} = currentParcel; const addrs = parcelAddrs[idu]||[]; const nb=addrs.length;
+  const c = centroid(geometry);
+  document.getElementById('nb').textContent = nb;
   const sv = addrs[0] ? [addrs[0].lat, addrs[0].lon] : [c[1], c[0]];
-  document.getElementById('sv').src = `https://maps.google.com/maps?q=&layer=c&cbll=${sv[0]},${sv[1]}&cbp=12,0,0,0,0&output=svembed`;
+  const svEl = document.getElementById('sv'); const url=`https://maps.google.com/maps?q=&layer=c&cbll=${sv[0]},${sv[1]}&cbp=12,0,0,0,0&output=svembed`;
+  if(svEl.src!==url) svEl.src=url;
   document.getElementById('svlink').href = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${sv[0]},${sv[1]}`;
-
   const price = addrPrice(parseInt(p.contenance), p.code_insee, nb);
-  document.getElementById('rent').textContent = '+' + rentOf(price) + ' ₳';
-  const box = document.getElementById('addrs'); box.innerHTML = '';
-  if(!nb){ box.innerHTML = '<div class="sub">Aucune adresse BAN sur cette parcelle (cour, voirie, dépendance…). Non achetable.</div>'; paintParcel(idu); return; }
+  let totalRent = 0;
+  const box = document.getElementById('addrs'); box.innerHTML='';
+  if(!nb){ box.innerHTML = '<div class="sub">Aucune adresse sur cette parcelle (cour, voirie, dépendance…). Non achetable.</div>'; document.getElementById('rent').textContent='—'; return; }
   addrs.forEach((a, idx)=>{
-    const o = ownerOf(a.id, idu, idx);
+    const o = ownerOf(a.id, idu, idx); const lv = levelOf(a.id, idu, idx);
+    const rec = state.owned[a.id] || { price, niveau:lv };
+    const rent = rentBase(rec.price||price) * NIVEAUX[lv].loyer; totalRent += rent;
     const row = document.createElement('div'); row.className='addr';
-    row.innerHTML = `<div><div class="n">${a.label}</div><div class="m">${a.postcode} · ${fmt(price)} · loyer +${rentOf(price)} ₳/j</div></div>`;
-    if(o===ME) row.insertAdjacentHTML('beforeend', `<span class="own me">À moi</span>`);
-    else if(o) row.insertAdjacentHTML('beforeend', `<span class="own other">${o}</span>`);
-    else { const b=document.createElement('button'); b.className='btn'; b.textContent='Acheter'; b.disabled = state.wallet < price;
-      b.onclick = ()=>buy(a, idu, price); row.appendChild(b); }
+    row.innerHTML = `<div class="top"><div><div class="n">${a.label} ${lv?NIVEAUX[lv].icone:''}</div><div class="m">${a.postcode} · ${fmt(price)} · ${NIVEAUX[lv].nom} · loyer +${rent} ₳/j</div></div></div>`;
+    const top=row.querySelector('.top');
+    if(o===ME){
+      top.insertAdjacentHTML('beforeend', `<span class="own me">À moi</span>`);
+      const build=document.createElement('div'); build.className='build';
+      NIVEAUX.forEach((n,i)=>{ if(i===0) return; const b=document.createElement('button'); b.className='btn sm'+(i===lv+1?' next':'');
+        const cost=Math.round(rec.price*n.cout);
+        b.textContent = i<=lv ? `${n.icone} ${n.nom} ✓` : `${n.icone} ${n.nom} · ${fmt(cost)}`;
+        b.disabled = i!==lv+1 || state.wallet<cost;
+        b.onclick=()=>construire(a, idu, i, cost); build.appendChild(b); });
+      row.appendChild(build);
+    }
+    else if(o) top.insertAdjacentHTML('beforeend', `<span class="own other">${o}</span>`);
+    else { const b=document.createElement('button'); b.className='btn'; b.textContent='Acheter'; b.disabled = state.wallet < price; b.onclick = ()=>buy(a, idu, price); top.appendChild(b); }
     box.appendChild(row);
   });
-  paintParcel(idu);
+  document.getElementById('rent').textContent = '+' + totalRent + ' ₳';
 }
-
 function buy(a, idu, price){
   if(state.wallet < price) return;
+  encaisser(true);
   state.wallet -= price;
-  state.owned[a.id] = { owner:ME, idu, label:a.label, price, lon:a.lon, lat:a.lat };
-  save(); refreshTop(); paintParcel(idu);
-  toast(`${a.label} est à toi !`);
-  // re-render sheet rows
-  const f = { id:idu };
-  document.querySelectorAll('#addrs .addr').forEach(row=>{ if(row.querySelector('.n').textContent===a.label){ row.querySelector('.btn').replaceWith(Object.assign(document.createElement('span'),{className:'own me',textContent:'À moi'})); } });
-  document.querySelectorAll('#addrs .btn').forEach(b=>{ b.disabled = state.wallet < price; });
+  state.owned[a.id] = { id:a.id, owner:ME, idu, label:a.label, price, lon:a.lon, lat:a.lat, niveau:0, depuis:Date.now() };
+  save(); refreshTop(); renderAddrs(); paintParcel(idu); toast(`${a.label} est à toi !`);
 }
-function refreshTop(){ document.getElementById('wallet').textContent = fmt(state.wallet); document.getElementById('count').textContent = Object.keys(state.owned).length; }
-function closeSheet(){ document.getElementById('sheet').classList.remove('open'); document.getElementById('sv').src='about:blank'; }
-function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.style.display='block'; setTimeout(()=>el.style.display='none',1400); }
+function construire(a, idu, niveau, cost){
+  if(state.wallet < cost) return;
+  encaisser(true);
+  state.wallet -= cost; state.owned[a.id].niveau = niveau;
+  save(); refreshTop(); renderAddrs(); paintParcel(idu); toast(`${NIVEAUX[niveau].icone} ${NIVEAUX[niveau].nom} construit·e au ${a.label}`);
+}
+// ---------- loyers ----------
+function loyerParJour(){ return Object.values(state.owned).reduce((s,a)=>s+rentOf(a),0); }
+function pendingRent(){ return loyerParJour() * (Date.now()-state.encaisse)/JOUR_MS; }
+function encaisser(silent){ const p=pendingRent(); if(p>=1){ state.wallet += Math.floor(p); state.encaisse = Date.now(); save(); if(!silent) toast(`+${Math.floor(p)} ₳ de loyers encaissés`); } else if(!silent) toast('Rien à encaisser pour l’instant'); refreshTop(); }
+document.getElementById('walletpill').onclick=()=>encaisser(false);
+setInterval(refreshTop, 5000);
+function refreshTop(){ document.getElementById('wallet').textContent = fmt(state.wallet); document.getElementById('count').textContent = Object.keys(state.owned).length; const p=Math.floor(pendingRent()); document.getElementById('pending').textContent = p>0 ? `+${p}` : ''; }
+function closeSheet(){ document.getElementById('sheet').classList.remove('open'); document.getElementById('sv').src='about:blank'; if(selected){ map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:selected}, {sel:false}); selected=null; paintBuildings(); } }
+function toast(t){ const el=document.getElementById('toast'); el.textContent=t; el.style.display='block'; setTimeout(()=>el.style.display='none',1500); }
 refreshTop();
 </script>
 </body>
