@@ -86,6 +86,14 @@ jobs:
             fi
           fi
 
+      - name: Prototype carte cadastre sous /proto-cadastre/ (branche proto-cadastre, page statique)
+        run: |
+          if git ls-remote --exit-code --heads origin proto-cadastre > /dev/null; then
+            git fetch --depth 1 origin proto-cadastre
+            mkdir -p build/web/proto-cadastre
+            git show FETCH_HEAD:index.html > build/web/proto-cadastre/index.html
+          fi
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
