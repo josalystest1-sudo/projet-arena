@@ -91,7 +91,7 @@ jobs:
           if git ls-remote --exit-code --heads origin proto-cadastre > /dev/null; then
             git fetch --depth 1 origin proto-cadastre
             mkdir -p build/web/proto-cadastre
-            git show FETCH_HEAD:index.html > build/web/proto-cadastre/index.html
+            git archive FETCH_HEAD | tar -x -C build/web/proto-cadastre
           fi
 
       - uses: actions/upload-pages-artifact@v3
