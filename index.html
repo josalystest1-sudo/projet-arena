@@ -48,7 +48,7 @@
 <div id="map"></div>
 <div id="top">
   <div class="pill"><span class="dot" style="background:var(--me)"></span> Gautier · <span id="count">0</span> adresse(s)</div>
-  <div class="pill">Solde <b id="wallet">5 000 ₳</b></div>
+  <div class="pill">Solde <b id="wallet">10 000 ₳</b></div>
 </div>
 <div id="hint">Zoomez pour voir les parcelles</div>
 <div id="legend">
@@ -78,7 +78,7 @@
 <script>
 const ME = 'Gautier';
 const FAKE = ['Léa','Marco','Inès','Yanis','Chloé','Sacha'];
-let state = { wallet: 5000, owned: {} }; // owned[addrId] = {owner, idu, label, price, lon, lat}
+let state = { wallet: 10000, owned: {} }; // owned[addrId] = {owner, idu, label, price, lon, lat}
 try { const s = localStorage.getItem('proto-cadastre'); if (s) state = JSON.parse(s); } catch(e){}
 function save(){ try{ localStorage.setItem('proto-cadastre', JSON.stringify(state)); }catch(e){} }
 
@@ -100,9 +100,7 @@ const map = new maplibregl.Map({
         paint:{ 'fill-color':['match',['coalesce',['feature-state','st'],'free'],'me','#3b82f6','other','#ef4444','mixed','#a855f7','#ffffff'],
                 'fill-opacity':['match',['coalesce',['feature-state','st'],'free'],'free',0.06,0.45] } },
       { id:'parcel-line', type:'line', source:'pci', 'source-layer':'parcelle', minzoom:15,
-        paint:{ 'line-color':['case',['boolean',['feature-state','sel'],false],'#ffd65a','#ffffff'], 'line-width':['case',['boolean',['feature-state','sel'],false],3,0.8], 'line-opacity':0.9 } },
-      { id:'parcel-label', type:'symbol', source:'pci', 'source-layer':'parcelle', minzoom:18,
-        layout:{ 'text-field':['get','numero'], 'text-size':11 }, paint:{ 'text-color':'#fff','text-halo-color':'#000','text-halo-width':1 } }
+        paint:{ 'line-color':['case',['boolean',['feature-state','sel'],false],'#ffd65a','#ffffff'], 'line-width':['case',['boolean',['feature-state','sel'],false],3,0.8], 'line-opacity':0.9 } }
     ]
   }
 });
@@ -114,11 +112,16 @@ map.on('zoom', ()=>{ hint.style.display = map.getZoom() < 15 ? 'block' : 'none';
 // ---------- helpers ----------
 function fmt(n){ return n.toLocaleString('fr-FR') + ' ₳'; }
 function hash(s){ let h=0; for(const c of s) h=(h*31+c.charCodeAt(0))|0; return Math.abs(h); }
-function pricePerM2(citycode){ const a = parseInt((citycode||'').slice(3))||10; return a<=8 ? 12 : (a<=16 ? 8 : 6); }
+function pricePerM2(citycode){ const a = parseInt((citycode||'').slice(3))||10; return a<=8 ? 4 : (a<=16 ? 3 : 2); }
 function addrPrice(contenance, citycode, nb){ return Math.max(300, Math.round((contenance||300)*pricePerM2(citycode)/Math.max(1,nb)/10)*10); }
 function rentOf(price){ return Math.max(5, Math.round(price*0.012)); }
-function fakeOwner(addrId){ const h = hash(addrId); return (h % 100) < 18 ? FAKE[h % FAKE.length] : null; }
-function ownerOf(addrId){ if (state.owned[addrId]) return state.owned[addrId].owner; return fakeOwner(addrId); }
+function parcelSeed(idu){ const h = hash(String(idu)) % 100; return h<14 ? 'other' : (h<17 ? 'mixed' : 'free'); }
+function ownerOf(addrId, idu, idx){
+  if (state.owned[addrId]) return state.owned[addrId].owner;
+  const seed = parcelSeed(idu);
+  if (seed==='other' || (seed==='mixed' && idx===0)) return FAKE[hash(addrId) % FAKE.length];
+  return null;
+}
 function centroid(geom){
   const ring = geom.type==='Polygon' ? geom.coordinates[0] : geom.coordinates[0][0];
   let x=0,y=0; for(const [a,b] of ring){x+=a;y+=b;} return [x/ring.length, y/ring.length];
@@ -134,7 +137,7 @@ function dist(a,b){ const dx=(a[0]-b[0])*Math.cos(a[1]*Math.PI/180)*111320, dy=(
 const parcelAddrs = {}; // idu -> [addr]
 function parcelState(idu){
   const list = parcelAddrs[idu]; if(!list || !list.length) return null;
-  const owners = list.map(a=>ownerOf(a.id));
+  const owners = list.map((a,i)=>ownerOf(a.id, idu, i));
   const mine = owners.filter(o=>o===ME).length, others = owners.filter(o=>o && o!==ME).length;
   if(!mine && !others) return 'free';
   if(mine && !others) return 'me';
@@ -150,11 +153,9 @@ function seedVisible(){
   const seen = new Set();
   for(const f of feats){ const idu=f.id; if(!idu || seen.has(idu)) continue; seen.add(idu);
     if(parcelAddrs[idu]) { paintParcel(idu); continue; }
-    const h = hash(String(idu)) % 100;
-    let st = 'free'; if (h<14) st='other'; else if (h<17) st='mixed';
-    // my own purchases override
+    let st = parcelSeed(idu);
     const mine = Object.values(state.owned).some(a=>a.idu===idu);
-    if(mine){ st = Object.values(state.owned).filter(a=>a.idu===idu).length>0 && (h<14||h<17) ? 'mixed' : 'me'; }
+    if(mine){ st = (st==='free') ? 'me' : 'mixed'; }
     map.setFeatureState({source:'pci', sourceLayer:'parcelle', id:idu}, {st});
   }
 }
@@ -203,8 +204,8 @@ async function openParcel(f, clickPt){
   document.getElementById('rent').textContent = '+' + rentOf(price) + ' ₳';
   const box = document.getElementById('addrs'); box.innerHTML = '';
   if(!nb){ box.innerHTML = '<div class="sub">Aucune adresse BAN sur cette parcelle (cour, voirie, dépendance…). Non achetable.</div>'; paintParcel(idu); return; }
-  for(const a of addrs){
-    const o = ownerOf(a.id);
+  addrs.forEach((a, idx)=>{
+    const o = ownerOf(a.id, idu, idx);
     const row = document.createElement('div'); row.className='addr';
     row.innerHTML = `<div><div class="n">${a.label}</div><div class="m">${a.postcode} · ${fmt(price)} · loyer +${rentOf(price)} ₳/j</div></div>`;
     if(o===ME) row.insertAdjacentHTML('beforeend', `<span class="own me">À moi</span>`);
@@ -212,7 +213,7 @@ async function openParcel(f, clickPt){
     else { const b=document.createElement('button'); b.className='btn'; b.textContent='Acheter'; b.disabled = state.wallet < price;
       b.onclick = ()=>buy(a, idu, price); row.appendChild(b); }
     box.appendChild(row);
-  }
+  });
   paintParcel(idu);
 }
 
