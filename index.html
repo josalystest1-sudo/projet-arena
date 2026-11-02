@@ -110,6 +110,43 @@
   .halo{width:70px;height:70px;border-radius:50%;border:3px solid var(--gold);box-shadow:0 0 30px 8px rgba(255,214,90,.55), inset 0 0 20px rgba(255,214,90,.4);animation:pulse 2.2s ease-in-out infinite;pointer-events:none}
   @keyframes pulse{0%{transform:scale(.85);opacity:.9}50%{transform:scale(1.15);opacity:.45}100%{transform:scale(.85);opacity:.9}}
   .mlabel{background:linear-gradient(135deg,#ffd65a,#ff9f1c);color:#1a1200;font-weight:800;font-size:13px;padding:6px 10px;border-radius:999px;box-shadow:0 4px 14px rgba(0,0,0,.45);white-space:nowrap;cursor:pointer}
+
+  /* ---- scène d'ouverture de pack ---- */
+  #packscene{position:absolute;inset:0;z-index:70;display:none;background:#000;opacity:0;transition:opacity .45s ease;overflow:hidden;touch-action:none}
+  #packscene.on{display:block} #packscene.show{opacity:1}
+  #packscene .stage{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;perspective:1200px}
+  #packscene .hint{position:absolute;bottom:calc(40px + env(safe-area-inset-bottom));left:0;right:0;text-align:center;color:#fff;opacity:.85;font-size:15px}
+  .pk{width:230px;height:340px;position:relative;transform-style:preserve-3d;animation:float 3.2s ease-in-out infinite}
+  @keyframes float{0%{transform:translateY(0) rotateY(-6deg) rotateX(4deg)}50%{transform:translateY(-12px) rotateY(6deg) rotateX(-3deg)}100%{transform:translateY(0) rotateY(-6deg) rotateX(4deg)}}
+  .pk.ready{animation:float 2.4s ease-in-out infinite}
+  .pk .body,.pk .top{position:absolute;left:0;right:0;background:linear-gradient(160deg,#1b2a6b 0%,#3a2c8f 35%,#7a2fb0 65%,#ff8a3d 100%);box-shadow:0 30px 60px rgba(0,0,0,.6)}
+  .pk .body{top:54px;bottom:0;border-radius:0 0 18px 18px}
+  .pk .top{top:0;height:56px;border-radius:18px 18px 0 0;border-bottom:2px dashed rgba(255,255,255,.55);transition:transform .5s cubic-bezier(.3,1.4,.5,1),opacity .5s}
+  .pk .top::after{content:'↔ glisse pour déchirer';position:absolute;left:0;right:0;top:18px;text-align:center;font-size:12px;color:#fff;opacity:.9;letter-spacing:.04em}
+  .pk .shine{position:absolute;inset:0;border-radius:18px;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.45) 48%,rgba(120,255,255,.35) 52%,transparent 65%);background-size:250% 250%;animation:shine 2.6s linear infinite;pointer-events:none;mix-blend-mode:screen}
+  @keyframes shine{0%{background-position:120% 0}100%{background-position:-60% 0}}
+  .pk .logo{position:absolute;left:0;right:0;top:105px;text-align:center;color:#fff;font-weight:900;font-size:30px;letter-spacing:.06em;text-shadow:0 4px 16px rgba(0,0,0,.5)}
+  .pk .logo small{display:block;font-size:12px;font-weight:600;opacity:.85;letter-spacing:.2em;margin-top:6px}
+  .pk .ico{position:absolute;left:0;right:0;top:215px;text-align:center;font-size:64px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.5))}
+  .pk .load{position:absolute;left:0;right:0;bottom:22px;text-align:center;color:#fff;font-size:12px;opacity:.8}
+  .pk.torn .top{transform:translateY(-120px) rotate(-14deg);opacity:0}
+  .pk.gone{animation:none;transform:scale(.6) translateY(80px);opacity:0;transition:all .6s ease}
+  .cards{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .rcard{position:absolute;width:220px;height:320px;border-radius:18px;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.9,.3,1.1),opacity .4s;opacity:0;pointer-events:auto;cursor:pointer}
+  .rcard .face{position:absolute;inset:0;border-radius:18px;backface-visibility:hidden;overflow:hidden}
+  .rcard .back{background:linear-gradient(160deg,#1b2a6b,#7a2fb0);display:flex;align-items:center;justify-content:center;font-size:54px;border:3px solid rgba(255,255,255,.25)}
+  .rcard .front{transform:rotateY(180deg);background:linear-gradient(165deg,#1f2335,#101320);border:3px solid var(--rc);box-shadow:0 0 40px color-mix(in srgb,var(--rc) 70%,transparent);padding:16px;display:flex;flex-direction:column;align-items:center;text-align:center;justify-content:center;gap:6px}
+  .rcard .front .big{font-size:70px}
+  .rcard .front .n{font-weight:800;font-size:18px;color:#fff}
+  .rcard .front .m{font-size:12px;color:var(--muted)}
+  .rcard .front .rar{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--rc);font-weight:900}
+  .rcard.r5 .front{background:radial-gradient(circle at 30% 20%,#5a4a12,#1a1608 70%)} .rcard.r4 .front{background:radial-gradient(circle at 30% 20%,#3b2a5e,#141026 70%)}
+  .rcard.r4 .front::before,.rcard.r5 .front::before{content:'';position:absolute;inset:-40%;background:conic-gradient(from 0deg,transparent 0 70%,rgba(255,255,255,.18) 75%,transparent 80%);animation:spin 3s linear infinite;pointer-events:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .rcard.in{opacity:1}
+  .rcard.flip{transform:translateX(var(--x)) translateY(var(--y)) rotate(var(--r)) rotateY(180deg) scale(var(--s))}
+  .rcard.pos{transform:translateX(var(--x)) translateY(var(--y)) rotate(var(--r)) scale(var(--s))}
+  #packdone{position:absolute;left:16px;right:16px;bottom:calc(24px + env(safe-area-inset-bottom));display:none}
   .notif{border-left:3px solid var(--line)}
   .notif.unread{border-left-color:var(--gold)}
   .bar{height:8px;background:#2a2e40;border-radius:999px;overflow:hidden;margin:8px 0}
@@ -174,6 +211,14 @@
   <div class="sub" style="margin-top:8px">Devanture : Street View intégré. Bâtiments et rues © IGN BD TOPO · Parcelles © DGFiP/IGN · Adresses BAN. Démo : 1 jour = 1 minute.</div>
 </div>
 <div id="modal"><div class="box" id="modalbox"></div></div>
+<div id="packscene">
+  <div class="stage">
+    <div class="pk" id="pk"><div class="body"><div class="logo">PACK DU JOUR<small>5 LIEUX · FRANCE</small></div><div class="ico">🎁</div><div class="load" id="pkload">Le pack arrive…</div></div><div class="top" id="pktop"></div><div class="shine"></div></div>
+    <div class="cards" id="pkcards"></div>
+  </div>
+  <div class="hint" id="pkhint">Glisse ton doigt sur le haut du pack pour l’ouvrir</div>
+  <button class="btn" id="packdone" onclick="finPack()">Super !</button>
+</div>
 <div id="toast"></div>
 <div id="diag"></div>
 
@@ -457,7 +502,37 @@ function tickAuction(){ const idx=auctionIndex(); const a=state.auction;
 
 // =================== pack du jour ===================
 function packDispo(){ return state.lastPack < jour(); }
-async function ouvrirPack(){ if(!packDispo()) return; const btn=document.getElementById('packbtn'); btn.disabled=true; btn.textContent='Ouverture…';
+let packCards=null, packTorn=false;
+function openScene(){ const sc=document.getElementById('packscene'); const pk=document.getElementById('pk'); pk.className='pk'; packTorn=false; packCards=null;
+  document.getElementById('pkcards').innerHTML=''; document.getElementById('packdone').style.display='none'; document.getElementById('pkhint').textContent='Glisse ton doigt sur le haut du pack pour l’ouvrir'; document.getElementById('pkload').textContent='Le pack arrive…';
+  sc.classList.add('on'); requestAnimationFrame(()=>sc.classList.add('show')); }
+function finPack(){ const sc=document.getElementById('packscene'); sc.classList.remove('show'); setTimeout(()=>sc.classList.remove('on'), 500); renderPatrimoine(); refreshTop(); }
+// geste de déchirure (glisser horizontalement sur le haut du pack)
+(function(){ const top=document.getElementById('pktop'); let x0=null;
+  const down=e=>{ if(!packCards||packTorn) return; x0=(e.touches?e.touches[0].clientX:e.clientX); };
+  const move=e=>{ if(x0===null) return; const x=(e.touches?e.touches[0].clientX:e.clientX); if(Math.abs(x-x0)>110){ x0=null; dechirer(); } };
+  const up=()=>{ x0=null; };
+  top.addEventListener('pointerdown',down); window.addEventListener('pointermove',move); window.addEventListener('pointerup',up);
+  top.addEventListener('touchstart',down,{passive:true}); window.addEventListener('touchmove',move,{passive:true}); window.addEventListener('touchend',up);
+  top.addEventListener('click',()=>{ if(packCards&&!packTorn) dechirer(); }); })();
+function dechirer(){ packTorn=true; const pk=document.getElementById('pk'); pk.classList.add('torn'); document.getElementById('pkhint').textContent='';
+  setTimeout(()=>{ pk.classList.add('gone'); sortirCartes(); }, 450); }
+function sortirCartes(){ const wrap=document.getElementById('pkcards'); const n=packCards.length; let revealed=0;
+  packCards.forEach((c,i)=>{ const el=document.createElement('div'); const r=rarete(c); el.className='rcard r'+r;
+    el.innerHTML=`<div class="face back">🎁</div><div class="face front"><div class="rar">${RARETES[r]}</div><div class="big">${c.type==='lieu'?'⭐':'📍'}</div><div class="n">${c.label}</div><div class="m">${communeName(c.citycode,c.city)}</div><div class="m">plafond ${NIVEAUX[plafond(c)].nom} · ${fmt(valeur(c))}</div></div>`;
+    // pile : chaque carte sort du pack, puis se range en éventail en bas
+    el.style.setProperty('--x','0px'); el.style.setProperty('--y','0px'); el.style.setProperty('--r','0deg'); el.style.setProperty('--s','1');
+    wrap.appendChild(el);
+    setTimeout(()=>{ el.classList.add('in','pos'); }, 120+i*140);
+    el.onclick=()=>{ if(el.classList.contains('flip')) return; el.classList.remove('pos'); el.classList.add('flip'); revealed++;
+      // la carte révélée se range en bas, en éventail
+      setTimeout(()=>{ const k=revealed-1; el.style.setProperty('--x',(k-(n-1)/2)*64+'px'); el.style.setProperty('--y','230px'); el.style.setProperty('--r',((k-(n-1)/2)*7)+'deg'); el.style.setProperty('--s','.55'); el.style.zIndex=k; }, 1700);
+      if(revealed===n){ document.getElementById('packdone').style.display='block'; document.getElementById('pkhint').textContent='5 nouveaux lieux dans ton patrimoine'; } else document.getElementById('pkhint').textContent='Touche la carte suivante'; };
+  });
+  // la carte du dessus est cliquable ; les autres en dessous (z-index inversé)
+  [...wrap.children].forEach((el,i)=>{ el.style.zIndex=n-i; });
+  document.getElementById('pkhint').textContent='Touche la carte pour la retourner'; }
+async function ouvrirPack(){ if(!packDispo()) return; const btn=document.getElementById('packbtn'); btn.disabled=true; btn.textContent='Ouverture…'; openScene();
   const cards=[]; let tries=0;
   while(cards.length<5 && tries<12){ tries++;
     try{
@@ -472,11 +547,10 @@ async function ouvrirPack(){ if(!packDispo()) return; const btn=document.getElem
       const a=mkAddr(x, null); if(state.owned[a.id] || cards.find(c=>c.id===a.id)) continue; a.type='adresse'; cards.push(a);
     }catch(e){ }
   }
-  if(!cards.length){ btn.disabled=false; btn.textContent='🎁 Pack du jour'; return toast('Impossible de tirer le pack (réseau)'); }
+  if(!cards.length){ btn.disabled=false; btn.textContent='🎁 Pack du jour'; finPack(); return toast('Impossible de tirer le pack (réseau)'); }
   encaisser(true); state.lastPack=jour(); for(const c of cards){ state.owned[c.id]=Object.assign({}, c, {niveau:0, depuis:now()}); state.seen[c.id]='libre'; setBadge(c,0); } save(); refreshTop();
-  const box=document.getElementById('modalbox'); box.innerHTML=`<h2>🎁 Ton pack du jour</h2><div class="sub">5 lieux tirés dans toute la France</div><div class="pack" id="packgrid"></div><button class="btn" style="width:100%" onclick="closeModal();renderPatrimoine()">Super !</button>`;
-  const grid=box.querySelector('#packgrid'); cards.forEach((c,i)=>{ const el=document.createElement('div'); el.className='pcard r'+rarete(c); el.innerHTML=`<div class="n">${c.type==='lieu'?'⭐ ':''}${c.label}</div><div class="m">${communeName(c.citycode,c.city)}</div><div class="m">${RARETES[rarete(c)]} · plafond ${NIVEAUX[plafond(c)].nom} · ${fmt(valeur(c))}</div>`; el.onclick=()=>{ closeModal(); flyToAddr(c); }; grid.appendChild(el); setTimeout(()=>el.classList.add('flip'), 150+i*220); });
-  document.getElementById('modal').classList.add('on'); }
+  // tri : les communes d'abord, la meilleure carte en dernier (suspense)
+  cards.sort((a,b)=>rarete(a)-rarete(b)); packCards=cards; document.getElementById('pkload').textContent=''; document.getElementById('pk').classList.add('ready'); }
 function closeModal(){ document.getElementById('modal').classList.remove('on'); }
 document.getElementById('packbtn').onclick=ouvrirPack;
 function refreshPack(){ const b=document.getElementById('packbtn'); if(packDispo()){ b.disabled=false; b.textContent='🎁 Pack du jour'; } else { b.disabled=true; const s=Math.ceil(((jour()+1)*JOUR-now())/1000); b.textContent=`🎁 Prochain pack dans ${s} s`; } }
@@ -549,13 +623,13 @@ document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==
 function creationProfil(){ const box=document.getElementById('modalbox'); let av=state.avatar||AVATARS[0];
   box.innerHTML=`<h2>${state.pseudo?'Mon profil':'Bienvenue !'}</h2><div class="sub">Choisis ton pseudo et ton icône, visibles par les autres joueurs.</div><input class="txt" id="pseudo" maxlength="16" placeholder="Ton pseudo" value="${state.pseudo||''}"><div class="avgrid" id="avgrid"></div><button class="btn" style="width:100%" id="okprofil">C’est parti</button>`;
   const grid=box.querySelector('#avgrid'); AVATARS.forEach(e=>{ const b=document.createElement('button'); b.textContent=e; b.className=e===av?'on':''; b.onclick=()=>{ av=e; grid.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.textContent===e)); }; grid.appendChild(b); });
-  box.querySelector('#okprofil').onclick=()=>{ const ps=box.querySelector('#pseudo').value.trim(); if(ps.length<3) return toast('Pseudo : 3 caractères minimum'); state.pseudo=ps; state.avatar=av; save(); closeModal(); refreshTop(); toast(`Bienvenue, ${ps} !`); };
+  box.querySelector('#okprofil').onclick=()=>{ const ps=box.querySelector('#pseudo').value.trim(); if(ps.length<3) return toast('Pseudo : 3 caractères minimum'); state.pseudo=ps; state.avatar=av; save(); closeModal(); refreshTop(); toast(`Bienvenue, ${ps} !`); if(packDispo()) setTimeout(ouvrirPack, 900); };
   document.getElementById('modal').classList.add('on'); }
 function refreshTop(){ document.getElementById('wallet').textContent = fmt(dispo()); document.getElementById('meav').textContent=state.avatar||'🙂'; document.getElementById('mename').textContent=disp(ME); document.getElementById('count').textContent = Object.keys(state.owned).length;
   const p=Math.floor(pendingRent()); document.getElementById('pending').textContent = p>0 ? `+${p}` : '';
   const unread=state.notifs.filter(n=>!n.read).length; const c=document.getElementById('cnt-notif'); c.style.display=unread?'block':'none'; c.textContent=unread; refreshPack(); }
 setInterval(()=>{ refreshTop(); tickOffers(); tickAuction(); }, 1000);
-refreshTop(); tickAuction(); if(!state.pseudo) setTimeout(creationProfil, 600);
+refreshTop(); tickAuction(); if(!state.pseudo) setTimeout(creationProfil, 600); else if(packDispo()) map.once('idle', ()=>setTimeout(ouvrirPack, 900));
 </script>
 </body>
 </html>
